@@ -8,10 +8,10 @@ LD_FLAGS += -Wall -shared
 LIBS = $(LAPACK) -lboost_system -lpugixml -lntl -lm 
 
 install: synarmosma
-	mkdir -p ../lib
-	cp libsynarmosma.so ../lib/
-	mkdir -p ../include
-	cp *.h ../include/
+	mkdir -p $(SYNARMOSMA)/lib
+	cp libsynarmosma.so $(SYNARMOSMA)/lib/
+	mkdir -p $(SYNARMOSMA)/include
+	cp *.h $(SYNARMOSMA)/include/
 
 synarmosma: $(OBJECTS) 
 	$(CXX) $(LD_FLAGS) -o libsynarmosma.so $(OBJECTS) $(LIBS)   
@@ -86,8 +86,8 @@ clean:
 	rm -f $(OBJECTS)
 	rm -f *~
 	rm -f libsynarmosma.so
-	rm -f ../lib/*
-	rm -f ../include/*
+	rm -f $(SYNARMOSMA)/lib/*
+	rm -f $(SYNARMOSMA)/include/*
 
 
 
