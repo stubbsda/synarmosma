@@ -49,6 +49,7 @@ class Matrix {
   void display() const;
   bool divisible(unsigned int,unsigned int*,unsigned int*,kind*) const;
   void transpose(const Matrix<kind>&);
+  void clear();
   void clear(bool);
  public:
   static const kind zero;

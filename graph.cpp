@@ -436,18 +436,18 @@ double Graph::return_probability(int base,int depth) const
   return output;
 }
 
-void Graph::build_laplacian()
+void Graph::build_laplacian(Matrix<double>* laplacian)
 {
   int i;
   std::set<int>::const_iterator it;
   const double m_one = -1.0;
 
-  laplacian.initialize(nvertex,nvertex);
+  laplacian->initialize(nvertex,nvertex);
 
   for(i=0; i<nvertex; ++i) {
-    laplacian.set(i,i,double(neighbours[i].size()));
+    laplacian->set(i,i,double(neighbours[i].size()));
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
-      laplacian.set(i,*it,m_one);
+      laplacian->set(i,*it,m_one);
     }
   }
 }

@@ -10,8 +10,6 @@ class Graph : public Schema {
  protected:
   // The number of edges
   int nedge;
-  // The graph Lapacian
-  Matrix<double> laplacian;
   // Returns the topological energy of this graph
   virtual double compute_energy() const;
 
@@ -44,7 +42,7 @@ class Graph : public Schema {
   void compute_adjacency_matrix(Binary_Matrix*) const;
   void genus(int*) const;
   int minimize_topology(int,double,std::vector<double>&);
-  void build_laplacian();
+  void build_laplacian(Matrix<double>*);
   friend void build_graph(int,int,Graph*);
   friend class Spacetime;
 };

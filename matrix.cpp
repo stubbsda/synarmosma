@@ -57,7 +57,8 @@ template<class kind>
 Matrix<kind>::Matrix(const Matrix<kind>& source)
 {
   unsigned int i;
-  delete[] elements;
+
+  clear();
   nrow = source.nrow;
   ncolumn = source.ncolumn;
   normalized = source.normalized;
@@ -73,7 +74,8 @@ Matrix<kind>& Matrix<kind>::operator =(const Matrix<kind>& source)
   if (this == &source) return *this;
 
   unsigned int i;
-  delete[] elements;
+
+  clear();
   nrow = source.nrow;
   ncolumn = source.ncolumn;
   normalized = source.normalized;
@@ -88,7 +90,7 @@ Matrix<kind>& Matrix<kind>::operator =(const Matrix<kind>& source)
 template<class kind>
 Matrix<kind>::~Matrix()
 {
-  delete[] elements;
+  if (nrow > 0) delete[] elements;
 }
 
 template<class kind>
@@ -155,6 +157,14 @@ bool Matrix<kind>::divisible(unsigned int n,unsigned int* out1,unsigned int* out
 }
 
 template<class kind>
+void Matrix<kind>::clear()
+{
+  if (nrow > 0) delete[] elements;
+  nrow = 0;
+  ncolumn = 0;
+}
+
+template<class kind>
 void Matrix<kind>::clear(bool deep)
 {
   normalized = false;
@@ -179,10 +189,10 @@ void Matrix<kind>::initialize(unsigned int n,unsigned int m)
   }
   else {
     clear(true);
+    nrow = n;
+    elements = new std::vector<std::pair<kind,unsigned int> >[nrow];
   }
-  nrow = n;
   ncolumn = m;
-  elements = new std::vector<std::pair<kind,unsigned int> >[nrow];
 }
 
 template<class kind>

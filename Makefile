@@ -87,7 +87,7 @@ clean:
 	rm -f *~
 	rm -f libsynarmosma.so
 	rm -f $(SYNARMOSMA)/lib/*
-	rm -f $(SYNARMOSMA)/include/*
+	rm -rf $(SYNARMOSMA)/include/*
 
 
 
