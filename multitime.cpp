@@ -92,7 +92,7 @@ bool operator <(const Multitime& t1,const Multitime& t2)
 
 Multitime operator +(const Multitime& t1,const Multitime& t2)
 {
-  unsigned int i;
+  int i;
   Multitime output;
 
   output.clear();

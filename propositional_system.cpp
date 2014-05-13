@@ -97,7 +97,7 @@ void Propositional_System::initialize(unsigned int n)
 
 void Propositional_System::write(const char* filename,unsigned int pointer)
 {
-  int i;
+  unsigned int i;
   std::ofstream s(filename,std::ios_base::out | std::ios_base::ate | std::ios_base::binary);
   s.seekp(pointer);
   for(i=0; i<theorems.size(); ++i) {

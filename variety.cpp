@@ -43,7 +43,8 @@ void Variety<kind>::allocate()
 template<class kind>
 void Variety<kind>::initialize()
 {
-  int i,j,k,l,test,alpha,beta;
+  int i,j,k,l,alpha,beta;
+  unsigned int test;
   Monomial<kind> term;
   std::set<int> atoms;
   std::pair<int,int> duo;
@@ -110,8 +111,8 @@ void Variety<kind>::elaborate()
 
   for(i=0; i<nequation; ++i) {
     atoms.clear();
-    for(j=0; j<equations[i].size(); ++j) {
-      for(k=0; k<equations[i][j].exponents.size(); ++k) {
+    for(j=0; j<(signed) equations[i].size(); ++j) {
+      for(k=0; k<(signed) equations[i][j].exponents.size(); ++k) {
         atoms.insert(equations[i][j].exponents[k].first);
       }
     }
@@ -122,7 +123,8 @@ void Variety<kind>::elaborate()
 template<class kind>
 void Variety<kind>::write2screen() const
 {
-  int i,j,k;
+  int i;
+  unsigned int j,k;
   Monomial<kind> term;
 
   for(i=0; i<nequation; ++i) {
@@ -154,10 +156,10 @@ void Variety<kind>::make_projective()
 
   duo.first = nvariable + 1;
   for(i=0; i<nequation; ++i) {
-    for(j=0; j<equations[i].size(); ++j) {
+    for(j=0; j<(signed) equations[i].size(); ++j) {
       term = equations[i][j];
       sum = 0;
-      for(k=0; k<term.exponents.size(); ++k) {
+      for(k=0; k<(signed) term.exponents.size(); ++k) {
         sum += term.exponents[k].second;
       }
       exponents.push_back(sum);
@@ -165,12 +167,12 @@ void Variety<kind>::make_projective()
     // We need to know if all the values of "exponents" are equal
     equal = true;
     in1 = exponents[0];
-    for(j=1; j<exponents.size(); ++j) {
+    for(j=1; j<(signed) exponents.size(); ++j) {
       if (exponents[j] != in1) equal = false;
       if (exponents[j] > in1) in1 = exponents[j];
     }
     if (!equal) {
-      for(j=0; j<equations[i].size(); ++j) {
+      for(j=0; j<(signed) equations[i].size(); ++j) {
         if (exponents[j] < in1) {
           duo.second = in1 - exponents[j];
           equations[i][j].exponents.push_back(duo);
@@ -223,10 +225,10 @@ int Variety<kind>::compute_zeros()
     soln = true;
     for(j=0; j<nequation; ++j) {
       value = 0;
-      for(k=0; k<equations[j].size(); ++k) {
+      for(k=0; k<(signed) equations[j].size(); ++k) {
         term = equations[j][k];
         wt = term.coefficient;
-        for(l=0; l<term.exponents.size(); ++l) {
+        for(l=0; l<(signed) term.exponents.size(); ++l) {
           wt *= ipow(vec[term.exponents[l].first],term.exponents[l].second);
         }
         value += wt;
@@ -256,7 +258,7 @@ void Variety<kind>::find_partial(bool* connected,int first,const std::vector<int
   do {
     for(it=current.begin(); it!=current.end(); ++it) {
       in1 = *it;
-      for(i=0; i<dual_system[in1].size(); ++i) {
+      for(i=0; i<(signed) dual_system[in1].size(); ++i) {
         in2 = dual_system[in1][i];
         if (!connected[in2]) {
           handled.insert(in2);
@@ -356,7 +358,7 @@ void Variety<kind>::zeta_function(int k,int* output)
     do {
       wt = NTL::random_ZZ_pE();
       found = false;
-      for(i=0; i<elements.size(); ++i) {
+      for(i=0; i<(signed) elements.size(); ++i) {
         if (wt == elements[i]) {
           found = true;
           break;
@@ -380,10 +382,10 @@ void Variety<kind>::zeta_function(int k,int* output)
       soln = true;
       for(j=0; j<nequation; ++j) {
         value = NTL::ZZ_pE::zero();
-        for(m=0; m<equations[j].size(); ++m) {
+        for(m=0; m<(signed) equations[j].size(); ++m) {
           term = equations[j][m];
           wt = term.coefficient;
-          for(l=0; l<term.exponents.size(); ++l) {
+          for(l=0; l<(signed) term.exponents.size(); ++l) {
             wt *= power(vec[term.exponents[l].first],term.exponents[l].second);
           }
           value += wt;
@@ -405,7 +407,7 @@ void Variety<int>::normalize(int n)
 {
   if (characteristic == 0) return;
   int i,in1;
-  for(i=0; i<equations[n].size(); ++i) {
+  for(i=0; i<(signed) equations[n].size(); ++i) {
     in1 = equations[n][i].coefficient;
     in1 = in1 % characteristic;
     equations[n][i].coefficient = in1;
@@ -433,7 +435,7 @@ void Variety<kind>::add_term(int n,const Monomial<kind>& t)
   int i,in1;
   bool found = false;
   std::vector<std::pair<unsigned int,unsigned int> > power,term = t.exponents;
-  for(i=0; i<equations[n].size(); ++i) {
+  for(i=0; i<(signed) equations[n].size(); ++i) {
     power = equations[n][i].exponents;
     if (power == term) {
       in1 = i;
@@ -474,17 +476,17 @@ void Variety<kind>::add_term(int n,kind alpha,const int* xp)
 
   if (sum > 1) linear = false;
   if (sum == 0) homogeneous = false;
-  for(i=0; i<equations[n].size(); ++i) {
+  for(i=0; i<(signed) equations[n].size(); ++i) {
     term = equations[n][i];
     sum = 0;
-    for(j=0; j<term.exponents.size(); ++j) {
+    for(j=0; j<(signed) term.exponents.size(); ++j) {
       sum += term.exponents[j].second;
     }
     exponents.push_back(sum);
   }
   equal = true;
   in1 = exponents[0];
-  for(i=1; i<exponents.size(); ++i) {
+  for(i=1; i<(signed) exponents.size(); ++i) {
     if (exponents[i] != in1) {
       equal = false;
       break;
