@@ -9,8 +9,51 @@ Group::Group()
 
 Group::Group(const std::string& name,int n)
 {
-  assert(n > 2);
-  if (name == "Dihedral") {
+  assert(n > 0);
+  if (name == "Order") {
+    // Here the user has specified the desired order of the 
+    // group that is to be constructed
+    switch (n) {
+      case 1:
+        // Fairly simple, it's just the trivial group
+        break;
+      case 2:
+        // Also simple, the only group of order two is Z/2
+        break;
+      case 3:
+        // The only group here is Z/3
+        break;
+      case 4:
+        if (RND.irandom(2) == 0) {
+          // Z/4
+        }
+        else {
+          // Z/2 x Z/2, i.e. the Klein Viergruppe
+        }
+        break;
+      case 5:
+        // The only group here is Z/5
+        break;
+      case 6:
+        if (RND.irandom(2) == 0) {
+          // This is Z/6
+        }
+        else {
+          // The dihedral group D_3
+        } 
+        break;
+      case 7:
+        // The only group here is Z/7
+        break;
+      case 8:
+        // There are five possibilities here: Z/2 x Z/2 x Z/2, Z/4 x Z/2, Z/8, D_4 and H  
+        break;
+      default:
+        // Create a random group with this many elements...
+        create_random();
+    }
+  }
+  else if (name == "Dihedral") {
     // Dihedral group
     finite = true;
     abelian = (n > 2) ? false : true;
@@ -56,7 +99,7 @@ Group::Group(const std::string& name,int n)
   }
   else {
     std::cout << "Unknown group, creating a random group..." << std::endl;
-    Group();
+    create_random();
   }
 }
 

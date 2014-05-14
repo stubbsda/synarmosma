@@ -2,7 +2,8 @@ include Makefile.def
 
 OBJECTS = global.o random.o cell.o nexus.o schema.o group.o graph.o geometry.o word.o rational.o\
 variety_wrapper.o polynomial_wrapper.o proposition.o propositional_system.o logic_graph.o edge.o\
-event.o eventspace.o multitime.o binary_matrix.o matrix_wrapper.o functional_equation_wrapper.o
+event.o eventspace.o multitime.o binary_matrix.o matrix_wrapper.o functional_equation_wrapper.o\
+homology.o homotopy.o
 
 LD_FLAGS += -Wall -shared
 LIBS = $(LAPACK) -lboost_system -lpugixml -lntl -lm 
@@ -30,6 +31,12 @@ proposition.o: proposition.cpp proposition.h global.h
 
 word.o: word.cpp word.h global.h
 	$(CXX) $(CXX_FLAGS) -c word.cpp
+
+homology.o: homology.h homology.cpp nexus.h matrix.h group.h global.h
+	$(CXX) $(CXX_FLAGS) -c homology.cpp
+
+homotopy.o: homotopy.h homotopy.cpp nexus.h matrix.h group.h global.h
+	$(CXX) $(CXX_FLAGS) -c homotopy.cpp
 
 binary_matrix.o: binary_matrix.cpp binary_matrix.h global.h
 	$(CXX) $(CXX_FLAGS) -c binary_matrix.cpp

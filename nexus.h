@@ -6,11 +6,6 @@
 #ifndef _nexush
 #define _nexush
 
-// How to handle the base ZZ_p ?
-enum FIELD {INT,ZZ,GF2};
-
-enum METHOD {GAP,NATIVE};
-
 class Nexus : public Schema {
  private:
   int dimension;
@@ -36,11 +31,9 @@ class Nexus : public Schema {
   void closure(const std::set<std::string>&,Nexus*,int*) const;
   void compute_entourages();
   void compute_neighbours();
-  void compute_integral_homology(std::vector<Group>&,FIELD) const;
-  void compute_homology_native(std::vector<Group>&,FIELD) const;
-  void compute_homology(std::vector<Group>&,FIELD) const;
-  void compute_homotopy(Group*) const;
   inline int get_dimension() const {return dimension;};
+  friend class Homology;
+  friend class Homotopy;
 };
 #endif
 

@@ -1,4 +1,5 @@
 #include "group.h"
+#include "nexus.h"
 
 #ifndef _homotopyh
 #define _homotopyh
@@ -14,8 +15,13 @@ class Homotopy {
   Homotopy(int);
   Homotopy(const Homotopy&);
   ~Homotopy();
+  std::string write() const;
   void mutate();
-  double get_fitness() const;
+  void clear();
+  void compute(const Nexus*);
+  void serialize(std::ofstream&) const;
+  void deserialize(std::ifstream&);
+  inline double get_fitness() {return fitness;} const;
   friend Homotopy operator +(const Homotopy&,const Homotopy&);
   Homotopy& operator =(const Homotopy&);  
   void write();
