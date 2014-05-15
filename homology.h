@@ -26,6 +26,8 @@ class Homology {
   std::string write() const;
   inline void set_method(METHOD m) {method = m;};
   inline void set_field(FIELD f) {field = f;};
+  inline METHOD get_method() const {return method;};
+  inline FIELD get_field() const {return field;};
   void initialize(FIELD,METHOD);
   void clear();
   void compute(const Nexus*);

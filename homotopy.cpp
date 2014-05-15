@@ -54,19 +54,38 @@ void Homotopy::mutate()
 
 std::string Homotopy::write() const 
 {
-  std::string output;
-
+  int i,n = (signed) sequence.size() - 1;
+  std::string output = "[";
+  for(i=0; i<n; ++i) {
+    output += sequence[i].compact_form() + "],[";
+  }
+  output += sequence[n].compact_form() + "]";
   return output;
 }
 
 void Homotopy::serialize(std::ofstream& s) const
 {
-
+  int i,n = (signed) sequence.size();
+  s.write((char*)(&n),sizeof(int));
+  for(i=0; i<n; ++i) {
+    sequence[i].serialize(s);
+  }
+  s.write((char*)(&fitness),sizeof(double));
 }
 
 void Homotopy::deserialize(std::ifstream& s)
 {
+  int i,n;
+  Group g;
 
+  clear();
+
+  s.read((char*)(&n),sizeof(int));
+  for(i=0; i<n; ++i) {
+    g.deserialize(s);
+    sequence.push_back(g);
+  }
+  s.read((char*)(&fitness),sizeof(double));
 }
 
 Homotopy& Homotopy::operator =(const Homotopy& source)
