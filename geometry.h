@@ -2,7 +2,6 @@
 
 class Geometry {
  private:
-  bool euclidean;
   int nvertex;
   int vperturb;
   std::vector<double> original;
@@ -13,9 +12,17 @@ class Geometry {
   std::vector<std::vector<double> > coordinates;
 #endif
 
+ public:
+  // Whether the geometry is Euclidean or Lorentzian
+  bool euclidean;
   // The asymptotic "flat space" dimension
   static const int background_dimension = 2;
 
+  Geometry();
+  Geometry(bool);
+  Geometry(const Geometry&);
+  Geometry& operator =(const Geometry&);
+  ~Geometry();
   void reciprocate();
   void clear();
   void serialize(std::ofstream&) const;
@@ -51,17 +58,7 @@ class Geometry {
   inline double get_distance(int,const std::vector<double>&,bool) const;
   inline void get_coordinates(int,std::vector<double>&) const;
   inline void set_coordinates(int,const std::vector<double>&);
-
- public:
-  Geometry();
-  Geometry(bool);
-  Geometry(const Geometry&);
-  Geometry& operator =(const Geometry&);
-  ~Geometry();
   friend double geometry_change(const Geometry*,const Geometry*);
-  friend class Event;
-  friend class Eventspace;
-  friend class Spacetime;
 };
 
 double Geometry::get_element(int n) const

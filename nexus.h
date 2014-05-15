@@ -1,7 +1,5 @@
 #include "cell.h"
-#include "group.h"
 #include "graph.h"
-#include "matrix.h"
 
 #ifndef _nexush
 #define _nexush

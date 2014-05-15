@@ -227,6 +227,5 @@ class Random {
   int irandom(const std::vector<int>&);
   int irandom(int,const std::vector<int>&);
   void shuffle(std::vector<int>&,int);
-  friend class Spacetime;
 };
 #endif

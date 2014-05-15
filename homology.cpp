@@ -5,9 +5,10 @@ Homology::Homology()
 
 }
 
-Homology::Homology(FIELD f)
+Homology::Homology(FIELD f,METHOD m)
 {
   field = f;
+  method = m;
 }
 
 Homology::~Homology()
@@ -15,77 +16,7 @@ Homology::~Homology()
 
 }
 
-unsigned int Homology::normalize_operator(const std::vector<signed int>* boundary_operator,unsigned int r,unsigned int c,std::vector<unsigned int>& torsion) const
-{
-  unsigned int i,j,s,rank = 0;
-  std::string cx;
-  std::stringstream ss;
-
-  if (field == INTEGER) {
-    Matrix<int> A(r,c),Q(r,c),NQ(r,c),R(r,c),NR(r,c);
-    int v;
-
-    for(i=0; i<r; ++i) {
-      for(j=0; j<boundary_operator[i].size(); ++j) {
-        s = std::abs(boundary_operator[i][j]);
-        v = (boundary_operator[i][j] > 0) ? 1 : -1;
-        A.set(i,s-1,v);
-      }
-    }
-    normalize(A,Q,NQ,R,NR);
-    for(i=0; i<r; ++i) {
-      if (A.empty_row(i)) break;
-      s = (unsigned) A.get_first_nonzero(i);
-      if (s == 1) {
-        rank += 1;
-      }
-      else {
-        torsion.push_back(s);
-      }
-    }
-  }
-  else if (field == ZZ) {
-    Matrix<NTL::ZZ> A(r,c),Q(r,c),NQ(r,c),R(r,c),NR(r,c);
-    NTL::ZZ v;
-
-    for(i=0; i<r; ++i) {
-      for(j=0; j<boundary_operator[i].size(); ++j) {
-        s = std::abs(boundary_operator[i][j]);
-        v = (boundary_operator[i][j] > 0) ? Matrix<NTL::ZZ>::unity : Matrix<NTL::ZZ>::neg1;
-        A.set(i,s-1,v); 
-      }
-    }
-    normalize(A,Q,NQ,R,NR);
-    for(i=0; i<r; ++i) {
-      if (A.empty_row(i)) break;
-      v = A.get_first_nonzero(i);
-      if (v == Matrix<NTL::ZZ>::unity) {
-        rank += 1;
-      }
-      else {
-        ss << v;
-        cx = ss.str();
-        torsion.push_back(boost::lexical_cast<unsigned int>(cx.c_str()));
-        ss.str("");
-      }
-    }
-  }
-  else {
-    // The Galois field GF2
-    Binary_Matrix A(r,c);
-
-    for(i=0; i<r; ++i) {
-      for(j=0; j<boundary_operator[i].size(); ++j) {
-        s = std::abs(boundary_operator[i][j]);
-        if (s != 0) A.set(i,s-1);
-      }
-    }
-    rank = A.rank();
-  }
-  return rank;
-}
-
-void Homology::betti_numbers(std::vector<unsigned int>& bnumbers) const
+void Homology::betti_numbers(std::vector<int>& bnumbers) const
 {
   unsigned int i;
   bnumbers.clear();
@@ -104,15 +35,34 @@ void Homology::clear()
   sequence.clear();
 }
 
+std::string Homology::write() const
+{
+  std::string output;
+
+  return output;
+}
+
+void Homology::serialize(std::ofstream& s) const 
+{
+
+}
+
+void Homology::deserialize(std::ifstream& s)
+{
+
+} 
+
 void Homology::compute_integral_native(const Nexus* NX)
 {
   assert(field == INT || field == ZZ);
+  const int dimension = NX->dimension;
+  const int nvertex = NX->nvertex;
   int i,j,d,p,v2[2];
-  unsigned int k,r,betti,ulimit,d1 = NX->nvertex,d2 = NX->elements[1].size();
+  unsigned int k,r,betti,ulimit,d1 = nvertex,d2 = NX->elements[1].size();
   std::string cx;
   std::stringstream ss;
   std::vector<unsigned int> image,kernel,tgenerators;
-  std::vector<unsigned int>* torsion = new std::vector<unsigned int>[1+NX->dimension];
+  std::vector<unsigned int>* torsion = new std::vector<unsigned int>[1+dimension];
   std::set<int> vx;
   std::set<int>::const_iterator it;
   hash_map::const_iterator qt;
@@ -128,11 +78,11 @@ void Homology::compute_integral_native(const Nexus* NX)
     Matrix<int>* A = new Matrix<int>(d1,d2);
 
     for(i=0; i<nvertex; ++i) {
-      for(it=neighbours[i].begin(); it!=neighbours[i].end(); it++) {
+      for(it=NX->neighbours[i].begin(); it!=NX->neighbours[i].end(); it++) {
         p = *it;
-        qt = index_table[1].find(make_key(i,p));
+        qt = NX->index_table[1].find(make_key(i,p));
         j = qt->second;
-        elements[1][j].get_vertices(v2);
+        NX->elements[1][j].get_vertices(v2);
         if (i == v2[0]) {
           A->set(i,j,-1); 
         }
@@ -164,14 +114,14 @@ void Homology::compute_integral_native(const Nexus* NX)
     tgenerators.clear();
 
     for(d=2; d<=dimension; ++d) {
-      d1 = elements[d-1].size();
-      d2 = elements[d].size();
+      d1 = NX->elements[d-1].size();
+      d2 = NX->elements[d].size();
       A->initialize(d1,d2);
       for(k=0; k<d1; ++k) {
-        vx = elements[d-1][k].vertices;
-        for(it=elements[d-1][k].entourage.begin(); it!=elements[d-1][k].entourage.end(); it++) {
+        vx = NX->elements[d-1][k].vertices;
+        for(it=NX->elements[d-1][k].entourage.begin(); it!=NX->elements[d-1][k].entourage.end(); it++) {
           j = *it;
-          alpha = coincidence(vx,elements[d][j].vertices);
+          alpha = coincidence(vx,NX->elements[d][j].vertices);
           if (alpha != 0) A->set(k,j,alpha); 
         }
       }
@@ -204,11 +154,11 @@ void Homology::compute_integral_native(const Nexus* NX)
     Matrix<NTL::ZZ>* A = new Matrix<NTL::ZZ>(d1,d2);
 
     for(i=0; i<nvertex; ++i) {
-      for(it=neighbours[i].begin(); it!=neighbours[i].end(); it++) {
+      for(it=NX->neighbours[i].begin(); it!=NX->neighbours[i].end(); it++) {
         p = *it;
-        qt = index_table[1].find(make_key(i,p));
+        qt = NX->index_table[1].find(make_key(i,p));
         j = qt->second;
-        elements[1][j].get_vertices(v2);
+        NX->elements[1][j].get_vertices(v2);
         if (i == v2[0]) {
           A->set(i,j,Matrix<NTL::ZZ>::neg1); 
         }
@@ -240,14 +190,14 @@ void Homology::compute_integral_native(const Nexus* NX)
     tgenerators.clear();    
 
     for(d=2; d<=dimension; ++d) {
-      d1 = elements[d-1].size();
-      d2 = elements[d].size();
+      d1 = NX->elements[d-1].size();
+      d2 = NX->elements[d].size();
       A->initialize(d1,d2);
       for(k=0; k<d1; ++k) {
-        vx = elements[d-1][k].vertices;
-        for(it=elements[d-1][k].entourage.begin(); it!=elements[d-1][k].entourage.end(); it++) {
+        vx = NX->elements[d-1][k].vertices;
+        for(it=NX->elements[d-1][k].entourage.begin(); it!=NX->elements[d-1][k].entourage.end(); it++) {
           j = *it;
-          alpha = NTL::to_ZZ(coincidence(vx,elements[d][j].vertices));
+          alpha = NTL::to_ZZ(coincidence(vx,NX->elements[d][j].vertices));
           if (alpha != 0) A->set(k,j,alpha); 
         }
       }
@@ -296,7 +246,7 @@ void Homology::compute_native(const Nexus* NX)
     // In this case the integral homology group is just the free abelian group
     // on the number of distinct components...
     std::vector<int> components;
-    betti = component_analysis(components);
+    betti = NX->component_analysis(components);
   }
   sequence.push_back(Group(betti,torsion));
 
@@ -304,7 +254,7 @@ void Homology::compute_native(const Nexus* NX)
   if (field == GF2) {
     // Note that torsion isn't possible in this case - all we need to do is compute the Betti numbers
     int i,j,p,alpha;
-    unsigned int r,k,d1 = nvertex,d2 = elements[1].size();
+    unsigned int r,k,d1 = NX->nvertex,d2 = NX->elements[1].size();
     std::vector<unsigned int> image,kernel;
     std::set<int> vx;
     std::set<int>::const_iterator it;
@@ -314,10 +264,10 @@ void Homology::compute_native(const Nexus* NX)
     image.push_back(0);
     kernel.push_back(0);
 
-    for(i=0; i<nvertex; ++i) {
-      for(it=neighbours[i].begin(); it!=neighbours[i].end(); it++) {
+    for(i=0; i<NX->nvertex; ++i) {
+      for(it=NX->neighbours[i].begin(); it!=NX->neighbours[i].end(); it++) {
         p = *it;
-        qt = index_table[1].find(make_key(i,p));
+        qt = NX->index_table[1].find(make_key(i,p));
         j = qt->second;
         A->set(i,j);
       }
@@ -326,15 +276,15 @@ void Homology::compute_native(const Nexus* NX)
     image.push_back(r);
     kernel.push_back(d2 - r);
 
-    for(d=2; d<=dimension; ++d) {
-      d1 = elements[d-1].size();
-      d2 = elements[d].size();
+    for(d=2; d<=NX->dimension; ++d) {
+      d1 = NX->elements[d-1].size();
+      d2 = NX->elements[d].size();
       A->initialize(d1,d2);
       for(k=0; k<d1; ++k) {
-        vx = elements[d-1][k].vertices;
-        for(it=elements[d-1][k].entourage.begin(); it!=elements[d-1][k].entourage.end(); it++) {
+        vx = NX->elements[d-1][k].vertices;
+        for(it=NX->elements[d-1][k].entourage.begin(); it!=NX->elements[d-1][k].entourage.end(); it++) {
           j = *it;
-          alpha = coincidence(vx,elements[d][j].vertices);
+          alpha = coincidence(vx,NX->elements[d][j].vertices);
           if (alpha != 0) A->set(k,j);   
         }
       }
@@ -342,20 +292,20 @@ void Homology::compute_native(const Nexus* NX)
       image.push_back(r);
       kernel.push_back(d2 - r);
     }
-    for(d=1; d<dimension; ++d) {
+    for(d=1; d<NX->dimension; ++d) {
       betti = kernel[d] - image[d+1];
-      HZ.push_back(Group(betti,torsion));
+      sequence.push_back(Group(betti,torsion));
     }
-    betti = kernel[dimension];
-    HZ.push_back(Group(betti,torsion));
+    betti = kernel[NX->dimension];
+    sequence.push_back(Group(betti,torsion));
     delete A;
   }
   else {
-    compute_integral_homology(NX);
+    compute_integral_native(NX);
   }
 }
 
-void Nexus::compute_gap(const Nexus* NX)
+void Homology::compute_gap(const Nexus* NX)
 {
   if (NX->dimension < 1) return;
   int n;
@@ -377,27 +327,27 @@ void Nexus::compute_gap(const Nexus* NX)
     
     kernel.push_back(0);
     image.push_back(0);
-    if (!connected()) {
+    if (!(NX->connected())) {
       // In this case the integral homology group is just the free abelian group
       // on the number of distinct components...
       std::vector<int> components;
-      betti = component_analysis(components);
+      betti = NX->component_analysis(components);
     }
-    HZ.push_back(Group(betti,torsion));
+    sequence.push_back(Group(betti,torsion));
 
-    for(d=1; d<=dimension; ++d) {
+    for(d=1; d<=NX->dimension; ++d) {
       std::ofstream s("input.gap");
       s << "A := [";
-      d1 = elements[d-1].size();
-      d2 = elements[d].size();
+      d1 = NX->elements[d-1].size();
+      d2 = NX->elements[d].size();
       for(i=0; i<d1; ++i) {        
         for(j=0; j<d2; ++j) {
           rvector.push_back(0);
         }
-        vx = elements[d-1][i].vertices;
-        for(it=elements[d-1][i].entourage.begin(); it!=elements[d-1][i].entourage.end(); it++) {
+        vx = NX->elements[d-1][i].vertices;
+        for(it=NX->elements[d-1][i].entourage.begin(); it!=NX->elements[d-1][i].entourage.end(); it++) {
           j = *it;
-          alpha = coincidence(vx,elements[d][j].vertices);
+          alpha = coincidence(vx,NX->elements[d][j].vertices);
           if (alpha != 0) rvector[j] = 1;
         }
         s << "[";
@@ -456,11 +406,11 @@ void Nexus::compute_gap(const Nexus* NX)
       image.push_back(r);
       kernel.push_back(d2 - r);
     }
-    for(d=1; d<dimension; ++d) {
+    for(d=1; d<NX->dimension; ++d) {
       betti = kernel[d] - image[d+1];
       sequence.push_back(Group(betti,torsion));
     }
-    betti = kernel[dimension];
+    betti = kernel[NX->dimension];
     sequence.push_back(Group(betti,torsion));
     return;
   }
@@ -478,11 +428,11 @@ void Nexus::compute_gap(const Nexus* NX)
   std::ofstream s("input.gap");
   s << "LoadPackage(\"simpcomp\");;" << std::endl;
   s << "complex := SCFromFacets([";
-  for(i=1; i<=dimension; ++i) {
-    n = (signed) elements[i].size();
+  for(i=1; i<=NX->dimension; ++i) {
+    n = (signed) NX->elements[i].size();
     k = 0;
     for(j=0; j<n; ++j) {
-      if (!elements[i][j].entourage.empty()) continue;
+      if (!(NX->elements[i][j].entourage.empty())) continue;
       if (first) {
         s << "[";
         first = false;
@@ -491,7 +441,7 @@ void Nexus::compute_gap(const Nexus* NX)
         s << ",[";
       }
       k = 0;
-      for(it=elements[i][j].vertices.begin(); it!=elements[i][j].vertices.end(); it++) {
+      for(it=NX->elements[i][j].vertices.begin(); it!=NX->elements[i][j].vertices.end(); it++) {
         if (k < i) {
           s << *it << ",";
         }
@@ -556,7 +506,7 @@ void Nexus::compute_gap(const Nexus* NX)
   }
   // Due to a weird issue with simpcomp...
   bnumber[0] += 1;
-  for(i=0; i<=dimension; ++i) {
+  for(i=0; i<=NX->dimension; ++i) {
     sequence.push_back(Group(bnumber[i],telements[i]));
   }
 }

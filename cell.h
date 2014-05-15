@@ -43,6 +43,7 @@ class Cell {
   friend Cell operator ^(const Cell&,const Cell&);
   friend std::ostream& operator<< (std::ostream&,const Cell&);
   friend class Nexus;
+  friend class Homology;
 };
 
 inline void Cell::get_vertices(std::vector<int>& v) const

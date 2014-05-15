@@ -38,7 +38,6 @@ class Word {
   friend Word operator *(const Word&,const Word&);
   friend std::ostream& operator <<(std::ostream&,const Word&);
   friend class Group;
-  friend class Nexus;
-  friend class Spacetime;
+  friend class Homotopy;
 };
 #endif

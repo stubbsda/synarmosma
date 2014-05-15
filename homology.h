@@ -1,5 +1,3 @@
-#include "matrix.h"
-#include "binary_matrix.h"
 #include "group.h"
 #include "nexus.h"
 
@@ -25,8 +23,9 @@ class Homology {
   Homology();
   Homology(FIELD,METHOD);
   ~Homology();
-  unsigned int normalize_operator(const std::vector<int>*,int,int,std::vector<int>&) const;
   std::string write() const;
+  inline void set_method(METHOD m) {method = m;};
+  inline void set_field(FIELD f) {field = f;};
   void initialize(FIELD,METHOD);
   void clear();
   void compute(const Nexus*);

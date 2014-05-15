@@ -21,6 +21,5 @@ class Schema {
   bool consistent() const;
   void components(std::vector<int>&,std::vector<int>&) const;
   inline int get_order() const {return nvertex;};
-  friend class Spacetime;
 };
 #endif

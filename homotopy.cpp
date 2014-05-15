@@ -13,10 +13,9 @@ Homotopy::Homotopy(const Homotopy& source)
   fitness = source.fitness;
 }
 
-Homotopy::Homotopy(unsigned int n)
+Homotopy::Homotopy(int n)
 {
-  unsigned int i;
-  for(i=0; i<n; ++i) {
+  for(int i=0; i<n; ++i) {
     Group g;
     sequence.push_back(g);
   }
@@ -53,9 +52,21 @@ void Homotopy::mutate()
   compute_fitness();
 }
 
-void Homotopy::write()
+std::string Homotopy::write() const 
 {
-  std::cout << "This homotopy sequence has " << sequence.size() << " groups and a fitness of " << fitness << std::endl;
+  std::string output;
+
+  return output;
+}
+
+void Homotopy::serialize(std::ofstream& s) const
+{
+
+}
+
+void Homotopy::deserialize(std::ifstream& s)
+{
+
 }
 
 Homotopy& Homotopy::operator =(const Homotopy& source)
@@ -68,7 +79,7 @@ Homotopy& Homotopy::operator =(const Homotopy& source)
   return *this;
 }
 
-Homotopy& operator +(const Homotopy& h1,const Homotopy& h2)
+Homotopy operator +(const Homotopy& h1,const Homotopy& h2)
 {
   if (h1.sequence.size() != h2.sequence.size()) {
     std::cerr << "These two homotopy sequences cannot be added: they don't have the same length!" << std::endl;
@@ -100,7 +111,7 @@ void Homotopy::compute(const Nexus* NX)
   sequence.clear();
 
   // First we need to calculate a spanning tree for the 1-skeleton of this complex...
-  ntree = spanning_tree(tree_edges);
+  ntree = NX->spanning_tree(tree_edges);
   for(i=0; i<ne; ++i) {
     s1.push_back(i);
   }

@@ -41,5 +41,6 @@ class Group {
   void deserialize(std::ifstream&);
   std::string compact_form() const;
   friend std::ostream& operator <<(std::ostream&,const Group&);
+  friend class Homotopy;
 };
 #endif
