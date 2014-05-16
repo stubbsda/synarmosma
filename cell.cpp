@@ -143,7 +143,7 @@ void Cell::string_assembly()
   for(i=0; i<n; ++i) {
     j = -1;
     for(it=vertices.begin(); it!=vertices.end(); it++) {
-      j++;
+      ++j;
       if (j == i) continue;
       if (j == (n-1) || (i == (n-1) && j == (n-2))) {
         sf[i] << *it;

@@ -405,7 +405,7 @@ int coincidence(const std::set<int>& v1,const std::set<int>& v2)
       output = (i%2) ? 1 : -1;
       return output;
     }
-    i++;
+    ++i;
   }
   // We should never get here in fact...
   return 0;
