@@ -2,6 +2,11 @@
 
 extern Random RND;
 
+Word::Word()
+{
+  NL = 0;
+}
+
 Word::Word(unsigned int p)
 {
   NL = p;
@@ -19,8 +24,8 @@ Word::Word(unsigned int p,unsigned int n,int m)
 {
   NL = p;
   assert(n < p);
-  std::pair<unsigned int,int> pair(n,m);
-  content.push_back(pair);
+  std::pair<unsigned int,int> doublet(n,m);
+  content.push_back(doublet);
 }
 
 Word::Word(const Word& source)
@@ -107,30 +112,38 @@ void Word::permute(unsigned int n,Word& w) const
 void Word::initialize(unsigned int n)
 {
   unsigned int i;
-  std::pair<unsigned int,int> pair;
+  std::pair<unsigned int,int> doublet;
 
   content.clear();
   for(i=0; i<n; ++i) {
-    pair.first = (unsigned) RND.irandom(NL);
-    pair.second = RND.irandom(1,10);
-    if (RND.drandom() < 0.5) pair.second *= -1;
-    content.push_back(pair);
+    doublet.first = (unsigned) RND.irandom(NL);
+    doublet.second = RND.irandom(1,10);
+    if (RND.drandom() < 0.5) doublet.second *= -1;
+    content.push_back(doublet);
   }
+}
+
+void Word::initialize(unsigned int p,unsigned int n,int m)
+{
+  NL = p;
+  assert(n < p);
+  std::pair<unsigned int,int> doublet(n,m);
+  content.push_back(doublet);
 }
 
 void Word::initialize(const std::vector<unsigned int>& base,const std::vector<int>& exponent)
 {
   unsigned int i;
-  std::pair<unsigned int,int> pair;
+  std::pair<unsigned int,int> doublet;
 
   assert(base.size() == exponent.size());
 
   content.clear();
   for(i=0; i<base.size(); ++i) {
     assert(base[i] < NL);
-    pair.first = base[i];
-    pair.second = exponent[i];
-    content.push_back(pair);
+    doublet.first = base[i];
+    doublet.second = exponent[i];
+    content.push_back(doublet);
   }
 }
 
@@ -143,12 +156,12 @@ Word Word::invert() const
 {
   unsigned int i,n = content.size();
   Word output(0);
-  std::pair<unsigned int,int> pair;
+  std::pair<unsigned int,int> doublet;
 
   for(i=0; i<n; ++i) {
-    pair.first = content[n-(i-1)].first;
-    pair.second = -content[n-(i-1)].second;
-    output.content.push_back(pair);
+    doublet.first = content[n-(i-1)].first;
+    doublet.second = -content[n-(i-1)].second;
+    output.content.push_back(doublet);
   }
   return output;
 }
@@ -157,18 +170,19 @@ Word Word::swap(unsigned int p,unsigned int q,bool inv) const
 {
   unsigned int i,n = content.size();
   Word output(0);
-  std::pair<unsigned int,int> pair;
+  std::pair<unsigned int,int> doublet;
+
   for(i=0; i<n; ++i) {
-    pair.first = content[i].first;
-    pair.second = content[i].second;
-    if (pair.first == q) {
-      pair.first = p;
-      if (inv) pair.second *= -1;
+    doublet.first = content[i].first;
+    doublet.second = content[i].second;
+    if (doublet.first == q) {
+      doublet.first = p;
+      if (inv) doublet.second *= -1;
     }
-    else if (pair.first > q) {
-      pair.first -= 1;
+    else if (doublet.first > q) {
+      doublet.first -= 1;
     }
-    output.content.push_back(pair);
+    output.content.push_back(doublet);
   }
   return output;
 }
@@ -176,15 +190,15 @@ Word Word::swap(unsigned int p,unsigned int q,bool inv) const
 Word Word::mutate() const
 {
   Word output(0);
-  std::pair<unsigned int,int> pair;
+  std::pair<unsigned int,int> doublet;
   int n = RND.irandom(content.size());
 
   output.content = content;
 
-  pair.first = RND.irandom(NL);
-  pair.second = RND.irandom(1,10);
-  if (RND.drandom() < 0.5) pair.second = -pair.second;
-  output.content[n] = pair;
+  doublet.first = RND.irandom(NL);
+  doublet.second = RND.irandom(1,10);
+  if (RND.drandom() < 0.5) doublet.second = -doublet.second;
+  output.content[n] = doublet;
 
   return output;
 }
@@ -192,6 +206,7 @@ Word Word::mutate() const
 bool operator ==(const Word& w1,const Word& w2)
 {
   unsigned int i;
+
   if (w1.content.size() == w2.content.size()) {
     bool good = true;
     for(i=0; i<w1.content.size(); ++i) {
@@ -218,44 +233,49 @@ void Word::clear()
 
 void Word::serialize(std::ofstream& s) const
 {
-  int i,j,n = content.size();
+  unsigned int i,j,n = content.size();
+  int k;
+
   s.write((char*)(&NL),sizeof(int));
   s.write((char*)(&n),sizeof(int));
   for(i=0; i<n; ++i) {
     j = content[i].first;
     s.write((char*)(&j),sizeof(int));
-    j = content[i].second;
-    s.write((char*)(&j),sizeof(int));
+    k = content[i].second;
+    s.write((char*)(&k),sizeof(int));
   }
 }
 
 void Word::deserialize(std::ifstream& s)
 {
-  int i,n,base,exponent;
-  std::pair<unsigned int,int> p;
+  unsigned int i,n,base;
+  int exponent;
+  std::pair<unsigned int,int> doublet;
+
   clear();
+
   s.read((char*)(&NL),sizeof(int));
   s.read((char*)(&n),sizeof(int));
   for(i=0; i<n; ++i) {
     s.read((char*)(&base),sizeof(int));
     s.read((char*)(&exponent),sizeof(int));
-    p.first = base;
-    p.second = exponent;
-    content.push_back(p);
+    doublet.first = base;
+    doublet.second = exponent;
+    content.push_back(doublet);
   }
 }
 
 Word Word::reduce(int M,const std::set<unsigned int>& trivial_generators,const unsigned int* offset) const
 {
   Word output(M,0);
-  std::pair<unsigned int,int> p;
+  std::pair<unsigned int,int> doublet;
   std::vector<std::pair<unsigned int,int> >::const_iterator it;
 
   for(it=content.begin(); it!=content.end(); it++) {
     if (trivial_generators.count(it->first) == 1) continue;
-    p.first = offset[it->first];
-    p.second = it->second;
-    output.content.push_back(p);
+    doublet.first = offset[it->first];
+    doublet.second = it->second;
+    output.content.push_back(doublet);
   }
   assert(output.legal());
   return output;
@@ -265,10 +285,9 @@ Word Word::normalize() const
 {
   unsigned int i = 0;
   const unsigned int n = content.size();
-  std::vector<int> pair;
-  std::pair<unsigned int,int> temp;
-
+  std::pair<unsigned int,int> doublet;
   Word output(NL,0);
+
   if (content.size() < 2) {
     for(i=0; i<content.size(); ++i) {
       output.content.push_back(content[i]);
@@ -277,14 +296,14 @@ Word Word::normalize() const
   }
   do {
     if (i >= n) break;
-    if (i == (n-1)) {
+    if (i == (n - 1)) {
       if (content[i].second != 0) output.content.push_back(content[i]);
       break;
     }
     if (content[i].first == content[i+1].first) {
-      temp.first = content[i].first;
-      temp.second = content[i].second + content[i+1].second;
-      if (temp.second != 0) output.content.push_back(temp);
+      doublet.first = content[i].first;
+      doublet.second = content[i].second + content[i+1].second;
+      if (doublet.second != 0) output.content.push_back(doublet);
       i += 2;
     }
     else {
@@ -312,14 +331,16 @@ Word operator *(const Word& w1,const Word& w2)
 std::ostream& operator <<(std::ostream& os,const Word& source)
 {
   unsigned int i;
-  std::pair<unsigned int,int> pair;
+  std::pair<unsigned int,int> doublet;
+
   if (source.content.empty()) return os;
+
   for(i=0; i<source.content.size()-1; ++i) {
-    pair = source.content[i];
-    os << "x[" << 1+pair.first << "]^(" << pair.second << ")*";
+    doublet = source.content[i];
+    os << "x[" << 1 + doublet.first << "]^(" << doublet.second << ")*";
   }
-  pair = source.content[source.content.size()-1];
-  os << "x[" << 1+pair.first << "]^(" << pair.second << ")";
+  doublet = source.content[source.content.size()-1];
+  os << "x[" << 1 + doublet.first << "]^(" << doublet.second << ")";
   return os;
 }
 

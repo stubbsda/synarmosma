@@ -44,6 +44,5 @@ class Graph : public Schema {
   int minimize_topology(int,double,std::vector<double>&);
   void build_laplacian(Matrix<double>*);
   inline int size() const {return nedge;};
-  friend void build_graph(int,int,Graph*);
 };
 #endif

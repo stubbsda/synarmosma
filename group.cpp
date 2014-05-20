@@ -13,40 +13,163 @@ Group::Group(const std::string& name,int n)
   if (name == "Order") {
     // Here the user has specified the desired order of the 
     // group that is to be constructed
+    Word w;
+    int alpha;
+    cardinality = n;
+    finite = true;
     switch (n) {
       case 1:
         // Fairly simple, it's just the trivial group
+        abelian = true;
+        free = true;
+        solvable = true;
+        ngenerator = 0;
         break;
       case 2:
         // Also simple, the only group of order two is Z/2
+        abelian = true;
+        free = false;
+        solvable = true;
+        ngenerator = 1;
+        w.initialize(ngenerator,0,2);
+        relations.push_back(w);
         break;
       case 3:
         // The only group here is Z/3
+        abelian = true;
+        free = false;
+        solvable = true;
+        ngenerator = 1;
+        w.initialize(ngenerator,0,3);
+        relations.push_back(w);
         break;
       case 4:
+        abelian = true;
+        free = false;
+        solvable = true;
         if (RND.irandom(2) == 0) {
           // Z/4
+          ngenerator = 1;
+          // {e,a,a^2,a^3}
+          w.initialize(ngenerator,0,4);
+          relations.push_back(w);
         }
         else {
-          // Z/2 x Z/2, i.e. the Klein Viergruppe
+          // Z/2 x Z/2, i.e. the Klein Vierergruppe
+          ngenerator = 2;
+          // {e,a,b,ab}
+          Word w1(ngenerator,0,2);
+          relations.push_back(w1);
+          Word w2(ngenerator,1,2);
+          relations.push_back(w2);
+          relations.push_back(w1*w2);
         }
         break;
       case 5:
         // The only group here is Z/5
+        abelian = true;
+        free = false;
+        solvable = true;
+        ngenerator = 1;
+        w.initialize(ngenerator,0,5);
+        relations.push_back(w);
         break;
       case 6:
+        free = false;
+        solvable = true;
         if (RND.irandom(2) == 0) {
           // This is Z/6
+          abelian = true;
+          ngenerator = 1;
+          w.initialize(ngenerator,0,6);
+          relations.push_back(w);
         }
         else {
           // The dihedral group D_3
+          abelian = false;
+          ngenerator = 2;
+          Word w1(ngenerator,0,2);
+          Word w2(ngenerator,1,2);
+          Word w3(ngenerator,0,3);
+          Word w4(ngenerator,1,3);
+          Word w5 = w3*w4;
+          relations.push_back(w1);
+          relations.push_back(w2);
+          relations.push_back(w5);
         } 
         break;
       case 7:
         // The only group here is Z/7
+        abelian = true;
+        free = false;
+        solvable = true;
+        ngenerator = 1;
+        w.initialize(ngenerator,0,7);
+        relations.push_back(w);
         break;
       case 8:
-        // There are five possibilities here: Z/2 x Z/2 x Z/2, Z/4 x Z/2, Z/8, D_4 and H  
+        // There are five possibilities here: Z/2 x Z/2 x Z/2, Z/4 x Z/2, Z/8, D_4 and H
+        free = false;
+        solvable = true;
+        alpha = RND.irandom(5);
+        if (alpha == 0) {
+          // Z/2 x Z/2 x Z/2
+          abelian = true;
+          ngenerator = 3;
+          // {e,a,b,c,ab,ac,bc,abc}
+          Word w1(ngenerator,0,1);
+          Word w2(ngenerator,1,1);
+          Word w3(ngenerator,2,1);
+          relations.push_back(w1*w1);
+          relations.push_back(w2*w2);
+          relations.push_back(w3*w3);
+          relations.push_back(w1*w2*w1.invert()*w2.invert());
+          relations.push_back(w1*w3*w1.invert()*w3.invert());
+          relations.push_back(w2*w3*w2.invert()*w3.invert());
+        }
+        else if (alpha == 1) {
+          // Z/4 x Z/2
+          abelian = true;
+          ngenerator = 2;
+          // {e,b,b^2,b^3,a,ab,ab^2,ab^3}
+          Word w1(ngenerator,0,1);
+          Word w2(ngenerator,1,1);
+          relations.push_back(w1*w1*w1*w1);
+          relations.push_back(w2*w2);
+          relations.push_back(w1*w2*w1.invert()*w2.invert());
+        }
+        else if (alpha == 2) {
+          // Z/8
+          abelian = true;
+          ngenerator = 1;
+          // {e,a,a^2,a^3,a^4,a^5,a^6,a^7}
+          w.initialize(ngenerator,0,8);
+          relations.push_back(w);
+        }
+        else if (alpha == 3) {
+          // D_4
+          abelian = false;
+          ngenerator = 2;
+          Word w1(ngenerator,0,2);
+          Word w2(ngenerator,1,2);
+          Word w3(ngenerator,0,4);
+          Word w4(ngenerator,1,4);
+          Word w5 = w3*w4;
+          relations.push_back(w1);
+          relations.push_back(w2);
+          relations.push_back(w5);
+        }
+        else {
+          // H, the quaternion group
+          abelian = false;
+          ngenerator = 2;
+          Word w1(ngenerator,0,1);
+          Word w2(ngenerator,1,1);
+          Word w3(ngenerator,1,-2);
+          relations.push_back(w1*w1*w1*w1);
+          relations.push_back(w2.invert()*w2.invert()*w1*w1);
+          relations.push_back(w1*w2.invert()*w1*w2);
+        }  
         break;
       default:
         // Create a random group with this many elements...

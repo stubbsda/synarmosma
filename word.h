@@ -13,6 +13,7 @@ class Word {
   void initialize(const std::vector<unsigned int>&,const std::vector<int>&);
   void clear();
  public:
+  Word();
   Word(unsigned int);
   Word(unsigned int,unsigned int);
   Word(unsigned int,unsigned int,int);
@@ -33,6 +34,7 @@ class Word {
   bool empty() const;
   void serialize(std::ofstream&) const;
   void deserialize(std::ifstream&);
+  void initialize(unsigned int,unsigned int,int);
   friend bool operator ==(const Word&,const Word&);
   friend bool operator !=(const Word&,const Word&);
   friend Word operator *(const Word&,const Word&);

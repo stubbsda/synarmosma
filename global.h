@@ -67,13 +67,6 @@ extern "C" {
   void dgetrf_(int*,int*,double*,int*,int*,int*);
 }
 
-enum DIRECTION
-{
-    PAST,
-    FUTURE,
-    SPACELIKE
-};
-
 template<class kind>
 class Monomial {
  public:

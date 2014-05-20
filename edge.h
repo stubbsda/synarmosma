@@ -3,23 +3,30 @@
 #ifndef _edgeh
 #define _edgeh
 
+enum DIRECTION 
+{
+    FORWARD,
+    BACKWARD
+};
+
 class Edge {
  private:
   double length;
-  std::string name;
-  std::vector<std::string> entourage;
-  int direction;
+  DIRECTION arrow;
   bool cyclic;
   double flow;
   double capacity;
-  unsigned int nodes[2];
-  unsigned int colour;
+  int nodes[2];
 
   void clear();
  public:
   Edge();
+  Edge(int,int);
+  Edge(int,int,DIRECTION);
   Edge(const Edge&);
   ~Edge();
-  Edge& operator=(const Edge&);
+  Edge& operator =(const Edge&);
+  inline std::string key() const {std::string k = make_key(nodes[0],nodes[1]); k += (arrow == FORWARD) ? ":1" : ":-1"; return k;};
+  friend class Directed_Graph;
 };
 #endif

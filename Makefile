@@ -3,7 +3,7 @@ include Makefile.def
 OBJECTS = global.o random.o cell.o nexus.o schema.o group.o graph.o geometry.o word.o rational.o\
 variety_wrapper.o polynomial_wrapper.o proposition.o propositional_system.o logic_graph.o edge.o\
 event.o eventspace.o multitime.o binary_matrix.o matrix_wrapper.o functional_equation_wrapper.o\
-homology.o homotopy.o
+homology.o homotopy.o directed_graph.o lattice.o
 
 LD_FLAGS += -Wall -shared
 LIBS = $(LAPACK) -lboost_system -lpugixml -lntl -lm 
@@ -19,6 +19,12 @@ synarmosma: $(OBJECTS)
 
 schema.o: schema.cpp schema.h global.h
 	$(CXX) $(CXX_FLAGS) -c schema.cpp
+
+lattice.o: lattice.cpp lattice.h global.h
+	$(CXX) $(CXX_FLAGS) -c lattice.cpp
+
+directed_graph.o: directed_graph.cpp directed_graph.h schema.h edge.h global.h
+	$(CXX) $(CXX_FLAGS) -c directed_graph.cpp
 
 rational.o: global.h rational.h rational.cpp
 	$(CXX) $(CXX_FLAGS) -c rational.cpp

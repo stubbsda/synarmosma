@@ -5,9 +5,18 @@
 #define _homologyh
 
 // How to handle the base ZZ_p ?
-enum FIELD {INT,ZZ,GF2};
+enum FIELD 
+{
+    INT,
+    ZZ,
+    GF2
+};
 
-enum METHOD {GAP,NATIVE};
+enum METHOD 
+{
+    GAP,
+    NATIVE
+};
 
 class Homology {
  private:
