@@ -64,6 +64,7 @@ extern "C" {
   void dgemm_(char*,char*,int*,int*,int*,double*,double*,int*,double*,int*,double*,double*,int*);
   void dsyev_(char*,char*,int*,double*,int*,double*,double*,int*,int*);
   void dgetri_(int*,double*,int*,int*,double*,int*,int*);
+  void dgesv_(int*,int*,double*,int*,int*,double*,int*,int*);
   void dgetrf_(int*,int*,double*,int*,int*,int*);
 }
 
