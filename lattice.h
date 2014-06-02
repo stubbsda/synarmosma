@@ -21,6 +21,9 @@ class Lattice {
   Lattice(const Lattice&);
   ~Lattice();
   void clear();
+  void add_vertex();
+  RELATION get_relation(int,int) const;
+  bool consistent() const;
 };
 #endif
 

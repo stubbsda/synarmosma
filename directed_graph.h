@@ -15,5 +15,7 @@ class Directed_Graph : public Schema {
   virtual ~Directed_Graph();
   bool add_edge(int,int);
   bool add_edge(int,int,DIRECTION);
+  int two_cycles() const;
+  bool path_connected(int,int) const;
 };
 #endif
