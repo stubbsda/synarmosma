@@ -7,6 +7,11 @@ Directed_Graph::Directed_Graph() : Schema()
 
 }
 
+Directed_Graph::Directed_Graph(int n) : Schema(n)
+{
+
+}
+
 Directed_Graph::~Directed_Graph()
 {
 
@@ -59,7 +64,12 @@ bool Directed_Graph::add_edge(int v1,int v2,DIRECTION d)
 {
   hash_map::const_iterator qt;
   std::string name = make_key(v1,v2) + ":";
-  name += (d == FORWARD) ? "1" : "-1";
+  if (v1 < v2) {
+    name += (d == FORWARD) ? "1" : "-1";
+  }
+  else {
+    name += (d == FORWARD) ? "-1" : "1";
+  }
   qt = index_table.find(name);
   if (qt != index_table.end()) return false;
   neighbours[v1].insert(v2);
@@ -78,7 +88,7 @@ bool Directed_Graph::path_connected(int u,int v) const
   std::set<int>::const_iterator it,jt;
   hash_map::const_iterator qt;
 
-  current = neighbours[u];
+  current.insert(u);
   do {
     for(it=current.begin(); it!=current.end(); ++it) {
       i = *it;
