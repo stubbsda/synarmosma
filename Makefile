@@ -1,11 +1,22 @@
-include Makefile.def
-
 OBJECTS = global.o random.o cell.o nexus.o schema.o group.o graph.o geometry.o word.o rational.o\
 variety_wrapper.o polynomial_wrapper.o proposition.o propositional_system.o logic_graph.o edge.o\
 event.o eventspace.o multitime.o binary_matrix.o matrix_wrapper.o functional_equation_wrapper.o\
 homology.o homotopy.o directed_graph.o lattice.o
 
+CXX_FLAGS += -Wall -fPIC -DFLAT #-DLEIBNIZ
+
+DEBUG    = -g 
+
+OPT      = $(CXX_OPT)
+
+#CXX_FLAGS += $(OPT)
+CXX_FLAGS += $(DEBUG) 
+
+#LD_FLAGS += $(OPT)
+LD_FLAGS += $(DEBUG)
+
 LD_FLAGS += -Wall -shared
+
 LIBS = $(LAPACK) -lboost_system -lpugixml -lntl -lm 
 
 install: synarmosma
