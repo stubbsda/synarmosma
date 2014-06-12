@@ -5,7 +5,7 @@ homology.o homotopy.o directed_graph.o lattice.o
 
 CXX_FLAGS += -Wall -fPIC 
 
-DEBUG    = -g 
+DEBUG    = -g
 
 OPT      = $(CXX_OPT)
 
