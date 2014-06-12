@@ -6,20 +6,21 @@ class Geometry {
   int vperturb;
   std::vector<double> original;
   std::vector<double> distances;
-#ifdef LEIBNIZ
   hash_map index;
-#else
   std::vector<std::vector<double> > coordinates;
-#endif
-
- public:
   // Whether the geometry is Euclidean or Lorentzian
   bool euclidean;
+  // Whether the geometry is based on a relational or absolute model of space
+  bool relational;
+  // Whether the geometry is dimensionally uniform
+  bool uniform; 
+
+ public:
   // The asymptotic "flat space" dimension
   static const int background_dimension = 2;
 
   Geometry();
-  Geometry(bool);
+  Geometry(bool,bool,bool);
   Geometry(const Geometry&);
   Geometry& operator =(const Geometry&);
   ~Geometry();
@@ -48,10 +49,15 @@ class Geometry {
   void rollback();
   void geometry_modification(int,double,double);
   void geometry_restoration();
-  void set_metric(const std::string&);
-  inline void set_metric(bool t) {euclidean = t;};
+  inline void set_euclidean(bool t) {euclidean = t;};
+  inline bool get_euclidean() const {return euclidean;};
+  inline void set_relational(bool t) {relational = t;};
+  inline bool get_relational() const {return relational;};
+  inline void set_uniform(bool t) {uniform = t;};
+  inline bool get_uniform() const {return uniform;};
   inline void add(int,double);
   inline void set_element(int,double);
+  inline double get_argument(const std::vector<double>&,const std::vector<double>&) const;
   inline double get_element(int) const;
   inline double get_computed_distance(int,int,bool) const;
   inline double get_distance(int,int,bool) const;
@@ -61,11 +67,26 @@ class Geometry {
   friend double geometry_change(const Geometry*,const Geometry*);
 };
 
+double Geometry::get_argument(const std::vector<double>& vx,const std::vector<double>& vy) const
+{
+  double d,t,alpha,nv1 = norm(vx),nv2 = norm(vy);
+
+  d = dot_product(vx,vy);
+  alpha = d/(nv1*nv2);
+  t = std::abs(alpha);
+  if (uniform) {
+    if (t > 1.0) alpha = alpha/t;
+  }
+  else {
+    if (t > 1.0) alpha = 1.0/alpha;
+  }
+  return alpha;
+}
+
 double Geometry::get_element(int n) const
 {
-#ifdef LEIBNIZ
-  return distances[n];
-#else
+  if (relational) return distances[n];
+
   int i,j,kt = 0;
   for(i=0; i<nvertex; ++i) {
     assert(coordinates[i].size() == 2);
@@ -76,14 +97,12 @@ double Geometry::get_element(int n) const
   }
   std::cerr << "Error: Geometry element not found!" << std::endl;
   std::exit(1);
-#endif
 }
 
 void Geometry::set_element(int n,double alpha)
 {
-#ifdef LEIBNIZ
-  distances[n] = alpha;
-#else
+  if (relational) distances[n] = alpha;
+
   int i,j,kt = 0;
   for(i=0; i<nvertex; ++i) {
     for(j=0; j<(signed) coordinates[i].size(); ++j) {
@@ -94,14 +113,12 @@ void Geometry::set_element(int n,double alpha)
       kt++;
     }
   }
-#endif
 }
 
 void Geometry::add(int n,double alpha)
 {
-#ifdef LEIBNIZ
-  distances[n] += alpha;
-#else
+  if (relational) distances[n] += alpha;
+
   int i,j,kt = 0;
   for(i=0; i<nvertex; ++i) {
     for(j=0; j<(signed) coordinates[i].size(); ++j) {
@@ -112,47 +129,44 @@ void Geometry::add(int n,double alpha)
       kt++;
     }
   }
-#endif
 }
 
 void Geometry::add_vertex(const std::vector<double>& x)
 {
-#ifdef LEIBNIZ
-  std::cerr << "Illegal geometric method call for relational model!" << std::endl;
-  std::exit(1);
-#else
+  if (relational) {
+    std::cerr << "Illegal geometric method call for relational model!" << std::endl;
+    std::exit(1);
+  }
   coordinates.push_back(x);
   nvertex++;
-#endif
 }
 
 void Geometry::get_coordinates(int v,std::vector<double>& x) const
 {
-#ifdef LEIBNIZ
-  std::cerr << "Illegal geometric method call for relational model!" << std::endl;
-  std::exit(1);
-#else
+  if (relational) {
+    std::cerr << "Illegal geometric method call for relational model!" << std::endl;
+    std::exit(1);
+  }
   x = coordinates[v];
-#endif
 }
 
 void Geometry::set_coordinates(int v,const std::vector<double>& x)
 {
-#ifdef LEIBNIZ
-  std::cerr << "Illegal geometric method call for relational model!" << std::endl;
-  std::exit(1);
-#else
+  if (relational) {
+    std::cerr << "Illegal geometric method call for relational model!" << std::endl;
+    std::exit(1);
+  }
   coordinates[v] = x;
-#endif
 }
 
 double Geometry::get_distance(int v,const std::vector<double>& x,bool causal) const 
 {
+  if (relational) {
+    std::cerr << "Illegal geometric method call for relational model!" << std::endl;
+    std::exit(1);
+  }
   double delta = 0.0;
-#ifdef LEIBNIZ
-  std::cerr << "Illegal geometric method call for relational model!" << std::endl;
-  std::exit(1);
-#else
+
   if (causal) {
     delta = -(coordinates[v][0] - x[0])*(coordinates[v][0] - x[0]);
     for(int i=1; i<background_dimension; ++i) {
@@ -164,7 +178,6 @@ double Geometry::get_distance(int v,const std::vector<double>& x,bool causal) co
       delta += (coordinates[v][i] - x[i])*(coordinates[v][i] - x[i]);
     }
   }
-#endif
   return delta;
 }
 
@@ -173,19 +186,20 @@ double Geometry::get_distance(int v1,int v2,bool lorentzian) const
   assert(v1 != v2);
   int n;
   double l;
-#ifdef LEIBNIZ
-  hash_map::const_iterator qt = index.find(make_key(v1,v2));
-  n = qt->second;
-#else
-  if (v1 < v2) {
-    n = nvertex*v1 - v1*(1+v1)/2;
-    n += (v2 - (1+v1));
+  if (relational) {
+    hash_map::const_iterator qt = index.find(make_key(v1,v2));
+    n = qt->second;
   }
   else {
-    n = nvertex*v2 - v2*(1+v2)/2;
-    n += (v1 - (1+v2));
+    if (v1 < v2) {
+      n = nvertex*v1 - v1*(1+v1)/2;
+      n += (v2 - (1+v1));
+    }
+    else {
+      n = nvertex*v2 - v2*(1+v2)/2;
+      n += (v1 - (1+v2));
+    }
   }
-#endif
   l = distances[n];
   if (!lorentzian && l < 0.0) l = -l;
   return l;
@@ -196,19 +210,20 @@ double Geometry::get_computed_distance(int v1,int v2,bool lorentzian) const
   assert(v1 != v2);
   double l;
   int n;
-#ifdef LEIBNIZ
-  hash_map::const_iterator qt = index.find(make_key(v1,v2));
-  assert(qt != index.end());
-  n = qt->second;
-  l = distances[n];
-  if (!lorentzian && l < 0.0) l = -l;
-#else
-  l = (coordinates[v1][0] - coordinates[v2][0])*(coordinates[v1][0] - coordinates[v2][0]);
-  if (lorentzian) l = -l;
-  for(n=1; n<background_dimension; ++n) {
-    l += (coordinates[v1][n] - coordinates[v2][n])*(coordinates[v1][n] - coordinates[v2][n]);
+  if (relational) {
+    hash_map::const_iterator qt = index.find(make_key(v1,v2));
+    assert(qt != index.end());
+    n = qt->second;
+    l = distances[n];
+    if (!lorentzian && l < 0.0) l = -l;
   }
-#endif
+  else {
+    l = (coordinates[v1][0] - coordinates[v2][0])*(coordinates[v1][0] - coordinates[v2][0]);
+    if (lorentzian) l = -l;
+    for(n=1; n<background_dimension; ++n) {
+      l += (coordinates[v1][n] - coordinates[v2][n])*(coordinates[v1][n] - coordinates[v2][n]);
+    }
+  }
   return l;
 }
 

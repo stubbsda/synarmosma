@@ -8,13 +8,17 @@ Geometry::Geometry()
 {
   nvertex = 0;
   euclidean = true;
+  relational = false;
+  uniform = true;
   vperturb = -1;
 }
 
-Geometry::Geometry(bool type)
+Geometry::Geometry(bool type,bool model,bool flat)
 {
   nvertex = 0;
   euclidean = type;
+  relational = model;
+  uniform = flat;
   vperturb = -1;
 }
 
@@ -22,14 +26,13 @@ Geometry::Geometry(const Geometry& source)
 {
   nvertex = source.nvertex;
   euclidean = source.euclidean;
+  relational = source.relational;
+  uniform = source.uniform;
   vperturb = source.vperturb;
   original = source.original;
   distances = source.distances;
-#ifdef LEIBNIZ
   index = source.index;
-#else
   coordinates = source.coordinates;
-#endif
 }
 
 Geometry& Geometry::operator =(const Geometry& source)
@@ -38,14 +41,13 @@ Geometry& Geometry::operator =(const Geometry& source)
 
   nvertex = source.nvertex;
   euclidean = source.euclidean;
+  relational = source.relational;
+  uniform = source.uniform;
   vperturb = source.vperturb;
   original = source.original;
   distances = source.distances;
-#ifdef LEIBNIZ
   index = source.index;
-#else
   coordinates = source.coordinates;
-#endif
 
   return *this;
 }
@@ -55,35 +57,24 @@ Geometry::~Geometry()
   clear();
 }
 
-void Geometry::set_metric(const std::string& type)
-{
-  if (type == "EUCLIDEAN") {
-    euclidean = true;
-  }
-  else if (type == "LORENTZIAN") {
-    euclidean = false;
-  }
-  else {
-    std::cerr << "Illegal argument for geometry metric type" << std::endl;
-    std::exit(1);
-  }
-}
-
 void Geometry::clear()
 {
-#ifdef LEIBNIZ
-  index.clear();
-#else
-  for(int i=0; i<nvertex; ++i) {
-    coordinates[i].clear();
+  if (relational) {
+    index.clear();
   }
-  coordinates.clear();
-#endif
+  else {
+    for(int i=0; i<nvertex; ++i) {
+      coordinates[i].clear();
+    }
+    coordinates.clear();
+  }
   distances.clear();
   original.clear();
   vperturb = -1;
   nvertex = 0;
   euclidean = true;
+  relational = false;
+  uniform = true;
 }
 
 void Geometry::serialize(std::ofstream& s) const
@@ -93,26 +84,29 @@ void Geometry::serialize(std::ofstream& s) const
 
   s.write((char*)(&nvertex),sizeof(int));
   s.write((char*)(&euclidean),sizeof(bool));
-#ifdef LEIBNIZ
-  hash_map::const_iterator qt;
-  for(i=0; i<nvertex; ++i) {
-    for(j=1+i; j<nvertex; ++j) {
-      qt = index.find(make_key(i,j));
-      x = distances[qt->second];
-      s.write((char*)(&x),sizeof(double));
+  s.write((char*)(&relational),sizeof(bool));
+  s.write((char*)(&uniform),sizeof(bool));
+  if (relational) {
+    hash_map::const_iterator qt;
+    for(i=0; i<nvertex; ++i) {
+      for(j=1+i; j<nvertex; ++j) {
+        qt = index.find(make_key(i,j));
+        x = distances[qt->second];
+        s.write((char*)(&x),sizeof(double));
+      }
     }
   }
-#else
-  int n;
-  for(i=0; i<nvertex; ++i) {
-    n = (signed) coordinates[i].size();
-    s.write((char*)(&n),sizeof(int));
-    for(j=0; j<n; ++j) {
-      x = coordinates[i][j];
-      s.write((char*)(&x),sizeof(double));
+  else {
+    int n;
+    for(i=0; i<nvertex; ++i) {
+      n = (signed) coordinates[i].size();
+      s.write((char*)(&n),sizeof(int));
+      for(j=0; j<n; ++j) {
+        x = coordinates[i][j];
+        s.write((char*)(&x),sizeof(double));
+      }
     }
   }
-#endif
 }
 
 void Geometry::deserialize(std::ifstream& s)
@@ -124,45 +118,47 @@ void Geometry::deserialize(std::ifstream& s)
 
   s.read((char*)(&nvertex),sizeof(int));
   s.read((char*)(&euclidean),sizeof(bool));
-#ifdef LEIBNIZ
-  n = 0;
-  for(i=0; i<nvertex; ++i) {
-    for(j=1+i; j<nvertex; ++j) {
-      s.read((char*)(&x),sizeof(double));
-      index[make_key(i,j)] = n;
-      distances.push_back(x);
-      n++;
+  s.read((char*)(&relational),sizeof(bool));
+  s.read((char*)(&uniform),sizeof(bool));
+  if (relational) {
+    n = 0;
+    for(i=0; i<nvertex; ++i) {
+      for(j=1+i; j<nvertex; ++j) {
+        s.read((char*)(&x),sizeof(double));
+        index[make_key(i,j)] = n;
+        distances.push_back(x);
+        n++;
+      }
     }
   }
-#else
-  std::vector<double> xc;
-  for(i=0; i<nvertex; ++i) {
-    s.read((char*)(&n),sizeof(int));
-    for(j=0; j<n; ++j) {
-      s.read((char*)(&x),sizeof(double));
-      xc.push_back(x);
+  else {
+    std::vector<double> xc;
+    for(i=0; i<nvertex; ++i) {
+      s.read((char*)(&n),sizeof(int));
+      for(j=0; j<n; ++j) {
+        s.read((char*)(&x),sizeof(double));
+        xc.push_back(x);
+      }
+      coordinates.push_back(xc);
+      xc.clear();
     }
-    coordinates.push_back(xc);
-    xc.clear();
   }
-#endif
   compute_distances();
 }
 
 double Geometry::dot_product(const std::vector<double>& vx,const std::vector<double>& vy) const
 {
-  int i;
   double output = 0.0;
-#ifdef FLAT
-  for(i=0; i<Geometry::background_dimension; ++i) {
-    output += vx[i]*vy[i];
+  if (uniform) {
+    for(int i=0; i<Geometry::background_dimension; ++i) {
+      output += vx[i]*vy[i];
+    }
+    return output;
   }
-#else
-  int n = (signed) vx.size();
-  int m = (signed) vy.size();
+  int i,k = 0,n = (signed) vx.size(),m = (signed) vy.size();
   std::vector<double> vlx = vx;
   std::vector<double> vly = vy;
-  int k=0,l = n;
+  int l = n;
 
   if (n < m) {
     for(i=n; i<m; ++i) {
@@ -180,39 +176,39 @@ double Geometry::dot_product(const std::vector<double>& vx,const std::vector<dou
   for(i=0; i<l; ++i) {
     output += vlx[i]*vly[i];
   }
-#endif
   return output;
 }
 
 void Geometry::get_implied_vertices(int n,std::set<int>& vx) const
 {
   int i,j;
-#ifdef LEIBNIZ
-  // Loop over all vertex pairs and find the one that corresponds to index
-  // "n"
-  hash_map::const_iterator qt;
-  for(i=0; i<nvertex; ++i) {
-    for(j=1+i; j<nvertex; ++j) {
-      qt = index.find(make_key(i,j));
-      if (qt->second == n) {
-        vx.insert(i);
-        vx.insert(j);
-        return;
+  if (relational) {
+    // Loop over all vertex pairs and find the one that corresponds to index
+    // "n"
+    hash_map::const_iterator qt;
+    for(i=0; i<nvertex; ++i) {
+      for(j=1+i; j<nvertex; ++j) {
+        qt = index.find(make_key(i,j));
+        if (qt->second == n) {
+          vx.insert(i);
+          vx.insert(j);
+          return;
+        }
       }
     }
   }
-#else
-  int kt = 0;
-  for(i=0; i<nvertex; ++i) {
-    for(j=0; j<(signed) coordinates[i].size(); ++j) {
-      if (kt == n) {
-        vx.insert(i);
-        return;
+  else {
+    int kt = 0;
+    for(i=0; i<nvertex; ++i) {
+      for(j=0; j<(signed) coordinates[i].size(); ++j) {
+        if (kt == n) {
+          vx.insert(i);
+          return;
+        }
+        kt++;
       }
-      kt++;
     }
   }
-#endif
 }
 
 void Geometry::load(const Geometry* source)
@@ -220,11 +216,12 @@ void Geometry::load(const Geometry* source)
   nvertex = source->nvertex;
   euclidean = source->euclidean;
   distances = source->distances;
-#ifdef LEIBNIZ
-  index = source->index;
-#else
-  coordinates = source->coordinates;
-#endif
+  if (relational) {
+    index = source->index;
+  }
+  else {
+    coordinates = source->coordinates;
+  }
 }
 
 void Geometry::store(Geometry* target) const
@@ -232,19 +229,18 @@ void Geometry::store(Geometry* target) const
   target->nvertex = nvertex;
   target->euclidean = euclidean;
   target->distances = distances;
-#ifdef LEIBNIZ
-  target->index = index;
-#else
-  target->coordinates = coordinates;
-#endif
+  if (relational) {
+    target->index = index;
+  }
+  else {
+    target->coordinates = coordinates;
+  }
 }
 
 int Geometry::vertex_order(int n,int m) const
 {
-#ifdef LEIBNIZ
-  return -1;
-#else
-  if (euclidean) return -1;
+  if (relational || euclidean) return -1;
+
   double sum = -(coordinates[n][0] - coordinates[m][0])*(coordinates[n][0] - coordinates[m][0]);
   for(int i=1; i<Geometry::background_dimension; ++i) {
     sum += (coordinates[n][i] - coordinates[m][i])*(coordinates[n][i] - coordinates[m][i]);
@@ -252,12 +248,15 @@ int Geometry::vertex_order(int n,int m) const
   if (sum > 0.0) return -1;
   int output = (coordinates[n][0] < coordinates[m][0]) ? 1 : 0;
   return output;
-#endif
 }
 
 void Geometry::initialize(int n,const std::string& type)
 {
-#ifdef LEIBNIZ
+  if (!relational) {
+    std::cerr << "Illegal geometric method call (initialize) for absolute model!" << std::endl;
+    std::exit(1);
+  }
+
   distances.clear();
   index.clear();
 
@@ -367,26 +366,23 @@ void Geometry::initialize(int n,const std::string& type)
     std::cerr << "Illegal spacetime type in Geometry::initialize!" << std::endl;
     std::exit(1);
   }
-#else
-  std::cerr << "Illegal geometric method call (initialize) for absolute model!" << std::endl;
-  std::exit(1);
-#endif
 }
 
 void Geometry::vertex_difference(int n,int m,std::vector<double>& delta) const
 {
-#ifdef LEIBNIZ
-  std::cerr << "Illegal geometric method call (vertex_difference) for relational model!" << std::endl;
-  std::exit(1);
-#else
+  if (relational) {
+    std::cerr << "Illegal geometric method call (vertex_difference) for relational model!" << std::endl;
+    std::exit(1);
+  }
   int i;
 
   delta.clear();
-#ifdef FLAT
-  for(i=0; i<Geometry::background_dimension; ++i) {
-    delta.push_back(coordinates[n][i] - coordinates[m][i]);
+  if (uniform) {
+    for(i=0; i<Geometry::background_dimension; ++i) {
+      delta.push_back(coordinates[n][i] - coordinates[m][i]);
+    }
+    return;
   }
-#else
   int d1 = (signed) coordinates[n].size();
   int d2 = (signed) coordinates[m].size();
   int k=0,l = d1;
@@ -411,16 +407,15 @@ void Geometry::vertex_difference(int n,int m,std::vector<double>& delta) const
   for(i=0; i<l; ++i) {
     delta.push_back(vlx[i] - vly[i]);
   }
-#endif
-#endif
 }
 
 double Geometry::inner_product(const std::vector<double>* laplacian,const std::vector<int>& offset,int nv) const
 {
-  double energy = 0.0;
-#ifndef LEIBNIZ
+  if (relational) return 0.0;
+
   int i,j,k,l,nelements,column;
   double value,result[nv][Geometry::background_dimension],sum[Geometry::background_dimension];
+  double energy = 0.0;
 
   for(i=0; i<nv; ++i) {
     for(j=0; j<Geometry::background_dimension; ++j) {
@@ -449,58 +444,60 @@ double Geometry::inner_product(const std::vector<double>* laplacian,const std::v
     }
     energy += value;
   }
-#endif
   return energy;
 }
 
 void Geometry::reciprocate()
 {
-#ifdef LEIBNIZ
-  const int n = (signed) distances.size();
-  for(int i=0; i<n; ++i) {
-    distances[i] = 1.0/distances[i];
+  if (relational) {
+    const int n = (signed) distances.size();
+    for(int i=0; i<n; ++i) {
+      distances[i] = 1.0/distances[i];
+    }
   }
-#else
+  else {
 
-#endif
+  }
 }
 
 void Geometry::rollback()
 {
-#ifdef LEIBNIZ
-  int i,j = 0;
-  hash_map::const_iterator qt;
-  for(i=0; i<nvertex; ++i) {
-    if (i == vperturb) continue;
-    qt = index.find(make_key(i,vperturb));
-    distances[qt->second] = original[j];
-    j++;
+  if (relational) {
+    int i,j = 0;
+    hash_map::const_iterator qt;
+    for(i=0; i<nvertex; ++i) {
+      if (i == vperturb) continue;
+      qt = index.find(make_key(i,vperturb));
+      distances[qt->second] = original[j];
+      j++;
+    }
   }
-#else
-  coordinates[vperturb] = original;
-#endif
+  else {
+    coordinates[vperturb] = original;
+  }
 }
 
 void Geometry::perturb_vertex(int v)
 {
   vperturb = v;
-#ifdef LEIBNIZ
-  int i,j;
-  hash_map::const_iterator qt;
+  if (relational) {
+    int i,j;
+    hash_map::const_iterator qt;
 
-  original.clear();
-  for(i=0; i<nvertex; ++i) {
-    if (i == v) continue;
-    qt = index.find(make_key(i,v));
-    j = qt->second;
-    original.push_back(distances[j]);
-    distances[j] += RND.nrandom(0.0,0.5);
+    original.clear();
+    for(i=0; i<nvertex; ++i) {
+      if (i == v) continue;
+      qt = index.find(make_key(i,v));
+      j = qt->second;
+      original.push_back(distances[j]);
+      distances[j] += RND.nrandom(0.0,0.5);
+    }
   }
-#else
-  int k = RND.irandom(Geometry::background_dimension);
-  original = coordinates[v];
-  coordinates[v][k] += RND.nrandom(0.0,0.1);
-#endif
+  else {
+    int k = RND.irandom(Geometry::background_dimension);
+    original = coordinates[v];
+    coordinates[v][k] += RND.nrandom(0.0,0.1);
+  }
 }
 
 void Geometry::add_vertex(const std::set<int>& antecedents)
@@ -514,119 +511,117 @@ void Geometry::add_vertex(const std::set<int>& antecedents)
     }
     else {
       int i,j;
-      double na = double(antecedents.size());
+      double l,na = double(antecedents.size());
       std::set<int>::const_iterator it;
-#ifdef LEIBNIZ
-      hash_map::const_iterator qt;
-      double l;
+      if (relational) {
+        hash_map::const_iterator qt;
 
-      j = (signed) distances.size();
-      for(i=0; i<nvertex; ++i) {
-        l = 0.0;
-        for(it=antecedents.begin(); it!=antecedents.end(); it++) {
-          qt = index.find(make_key(i,*it));
-          l += distances[qt->second];
+        j = (signed) distances.size();
+        for(i=0; i<nvertex; ++i) {
+          l = 0.0;
+          for(it=antecedents.begin(); it!=antecedents.end(); it++) {
+            qt = index.find(make_key(i,*it));
+            l += distances[qt->second];
+          }
+          l = l/na;
+          index[make_key(i,nvertex)] = j;
+          distances.push_back(l);
+          j++;
         }
-        l = l/na;
-        index[make_key(i,nvertex)] = j;
-        distances.push_back(l);
-        j++;
+        nvertex++;
       }
-      nvertex++;
-#else
-      std::vector<double> xc,avg_x;
-      for(i=0; i<Geometry::background_dimension; ++i) {
-        avg_x.push_back(0.0);
-      }
-      for(it=antecedents.begin(); it!=antecedents.end(); it++) {
-        j = *it;
+      else {
+        std::vector<double> xc,avg_x;
         for(i=0; i<Geometry::background_dimension; ++i) {
-          avg_x[i] += coordinates[j][i];
+          avg_x.push_back(0.0);
         }
+        for(it=antecedents.begin(); it!=antecedents.end(); it++) {
+          j = *it;
+          for(i=0; i<Geometry::background_dimension; ++i) {
+            avg_x[i] += coordinates[j][i];
+          }
+        }
+        for(i=0; i<Geometry::background_dimension; ++i) {
+          avg_x[i] /= na;
+        }
+        for(i=0; i<Geometry::background_dimension; ++i) {
+          xc.push_back(RND.nrandom(avg_x[i],0.5));
+        }
+        add_vertex(xc);
       }
-      for(i=0; i<Geometry::background_dimension; ++i) {
-        avg_x[i] /= na;
-      }
-      for(i=0; i<Geometry::background_dimension; ++i) {
-        xc.push_back(RND.nrandom(avg_x[i],0.5));
-      }
-      add_vertex(xc);
-#endif
     }
   }
 }
 
 void Geometry::add_vertex(int parent,double mutation)
 {
-  int i;
+  int i,j;
   double alpha;
-#ifdef LEIBNIZ
-  int j;
-#else
   std::vector<double> x;
-#endif
 
   if (parent == -1) {
     // No antecedent, so place the vertex randomly...
-#ifdef LEIBNIZ
-    j = (signed) distances.size();
-    if (euclidean) {
-      for(i=0; i<nvertex; ++i) {
-        alpha = 1.0 + 15.0*RND.drandom();
-        distances.push_back(alpha);
-        index[make_key(i,nvertex)] = j;
-        j++;
+    if (relational) {
+      j = (signed) distances.size();
+      if (euclidean) {
+        for(i=0; i<nvertex; ++i) {
+          alpha = 1.0 + 15.0*RND.drandom();
+          distances.push_back(alpha);
+          index[make_key(i,nvertex)] = j;
+          j++;
+        }
+      }
+      else {
+        // Skew the random number generation so the inter-vertex
+        // lengths are properly weighted between timelike and
+        // spacelike...
+        double r = 1.0 + double(Geometry::background_dimension-1);
+        for(i=0; i<nvertex; ++i) {
+          alpha = -5.0 + 5.0*r*RND.drandom();
+          distances.push_back(alpha);
+          index[make_key(i,nvertex)] = j;
+          j++;
+        }
       }
     }
     else {
-      // Skew the random number generation so the inter-vertex
-      // lengths are properly weighted between timelike and
-      // spacelike...
-      double r = 1.0 + double(Geometry::background_dimension-1);
+      for(i=0; i<Geometry::background_dimension; ++i) {
+        alpha = -10.0 + 20.0*RND.drandom();
+        x.push_back(alpha);
+      }
+      coordinates.push_back(x);
+    }
+  }
+  else {
+    // Should be close to its parent vertex...
+    if (relational) {
+      hash_map::const_iterator qt;
+      j = (signed) distances.size();
       for(i=0; i<nvertex; ++i) {
-        alpha = -5.0 + 5.0*r*RND.drandom();
+        if (i == parent) continue;
+        qt = index.find(make_key(i,parent));
+        alpha = RND.nrandom(distances[qt->second],mutation/10.0);
         distances.push_back(alpha);
         index[make_key(i,nvertex)] = j;
         j++;
       }
-    }
-#else
-    for(i=0; i<Geometry::background_dimension; ++i) {
-      alpha = -10.0 + 20.0*RND.drandom();
-      x.push_back(alpha);
-    }
-    coordinates.push_back(x);
-#endif
-  }
-  else {
-    // Should be close to its parent vertex...
-#ifdef LEIBNIZ
-    hash_map::const_iterator qt;
-    j = (signed) distances.size();
-    for(i=0; i<nvertex; ++i) {
-      if (i == parent) continue;
-      qt = index.find(make_key(i,parent));
-      alpha = RND.nrandom(distances[qt->second],mutation/10.0);
+      alpha = RND.nrandom(0.0,0.1);
       distances.push_back(alpha);
-      index[make_key(i,nvertex)] = j;
-      j++;
+      index[make_key(parent,nvertex)] = j;
     }
-    alpha = RND.nrandom(0.0,0.1);
-    distances.push_back(alpha);
-    index[make_key(parent,nvertex)] = j;
-#else
-    int q,p = RND.irandom(Geometry::background_dimension);
-    double r = RND.drandom(0.1+0.5*mutation,0.2+mutation);
-    x = coordinates[parent];
-    alpha = RND.drandom(0.0,2.0*M_PI);
-    do {
-      q = RND.irandom(Geometry::background_dimension);
-      if (q != p) break;
-    } while(true);
-    x[p] += r*std::cos(alpha);
-    x[q] += r*std::sin(alpha);
-    coordinates.push_back(x);
-#endif
+    else {
+      int q,p = RND.irandom(Geometry::background_dimension);
+      double r = RND.drandom(0.1+0.5*mutation,0.2+mutation);
+      x = coordinates[parent];
+      alpha = RND.drandom(0.0,2.0*M_PI);
+      do {
+        q = RND.irandom(Geometry::background_dimension);
+        if (q != p) break;
+      } while(true);
+      x[p] += r*std::cos(alpha);
+      x[q] += r*std::sin(alpha);
+      coordinates.push_back(x);
+    }
   }
   nvertex++;
 }
@@ -635,10 +630,11 @@ void Geometry::geometry_modification(int n,double mu,double sigma)
 {
   vperturb = n;
   original.clear();
-#ifdef LEIBNIZ
-  original.push_back(distances[n]);
-  distances[n] *= RND.nrandom(mu,sigma);
-#else
+  if (relational) {
+    original.push_back(distances[n]);
+    distances[n] *= RND.nrandom(mu,sigma);
+    return;
+  }
   int i,j,kt = 0;
   for(i=0; i<nvertex; ++i) {
     for(j=0; j<(signed) coordinates[i].size(); ++j) {
@@ -650,14 +646,14 @@ void Geometry::geometry_modification(int n,double mu,double sigma)
       kt++;
     }
   }
-#endif
 }
 
 void Geometry::geometry_restoration()
 {
-#ifdef LEIBNIZ
-  distances[vperturb] = original[0];
-#else
+  if (relational) {
+    distances[vperturb] = original[0];
+    return;
+  }
   int i,j,kt = 0;
   for(i=0; i<nvertex; ++i) {
     for(j=0; j<(signed) coordinates[i].size(); ++j) {
@@ -668,7 +664,6 @@ void Geometry::geometry_restoration()
       kt++;
     }
   }
-#endif
 }
 
 void Geometry::multiplicative_modification(int v,bool total,double mu,double sigma)
@@ -676,30 +671,31 @@ void Geometry::multiplicative_modification(int v,bool total,double mu,double sig
   int i;
 
   vperturb = v;
-#ifdef LEIBNIZ
-  int j;
-  hash_map::const_iterator qt;
+  if (relational) {
+    int j;
+    hash_map::const_iterator qt;
 
-  original.clear();
-  for(i=0; i<nvertex; ++i) {
-    if (i == v) continue;
-    qt = index.find(make_key(v,i));
-    j = qt->second;
-    original.push_back(distances[j]);
-    distances[j] *= RND.nrandom(mu,sigma);
-  }
-#else
-  original = coordinates[v];
-  if (total) {
-    for(i=0; i<(signed) coordinates[v].size(); ++i) {
-      coordinates[v][i] *= RND.nrandom(mu,sigma);
+    original.clear();
+    for(i=0; i<nvertex; ++i) {
+      if (i == v) continue;
+      qt = index.find(make_key(v,i));
+      j = qt->second;
+      original.push_back(distances[j]);
+      distances[j] *= RND.nrandom(mu,sigma);
     }
   }
   else {
-    i = (signed) coordinates[v].size();
-    coordinates[v][RND.irandom(i)] *= RND.nrandom(mu,sigma);
+    original = coordinates[v];
+    if (total) {
+      for(i=0; i<(signed) coordinates[v].size(); ++i) {
+        coordinates[v][i] *= RND.nrandom(mu,sigma);
+      }
+    }
+    else {
+      i = (signed) coordinates[v].size();
+      coordinates[v][RND.irandom(i)] *= RND.nrandom(mu,sigma);
+    }
   }
-#endif
 }
 
 void Geometry::additive_modification(int v,bool total,double mu,double sigma)
@@ -707,36 +703,37 @@ void Geometry::additive_modification(int v,bool total,double mu,double sigma)
   int i;
 
   vperturb = v;
-#ifdef LEIBNIZ
-  int j;
-  hash_map::const_iterator qt;
+  if (relational) {
+    int j;
+    hash_map::const_iterator qt;
 
-  original.clear();
-  for(i=0; i<nvertex; ++i) {
-    if (i == v) continue;
-    qt = index.find(make_key(v,i));
-    j = qt->second;
-    original.push_back(distances[j]);
-    distances[j] += RND.nrandom(mu,sigma);
-  }
-#else
-  original = coordinates[v];
-  if (total) {
-    for(i=0; i<(signed) coordinates[v].size(); ++i) {
-      coordinates[v][i] += RND.nrandom(mu,sigma);
+    original.clear();
+    for(i=0; i<nvertex; ++i) {
+      if (i == v) continue;
+      qt = index.find(make_key(v,i));
+      j = qt->second;
+      original.push_back(distances[j]);
+      distances[j] += RND.nrandom(mu,sigma);
     }
   }
   else {
-    i = (signed) coordinates[v].size();
-    coordinates[v][RND.irandom(i)] += RND.nrandom(mu,sigma);
+    original = coordinates[v];
+    if (total) {
+      for(i=0; i<(signed) coordinates[v].size(); ++i) {
+        coordinates[v][i] += RND.nrandom(mu,sigma);
+      }
+    }
+    else {
+      i = (signed) coordinates[v].size();
+      coordinates[v][RND.irandom(i)] += RND.nrandom(mu,sigma);
+    }
   }
-#endif
 }
 
 bool Geometry::adjust_dimension(const std::vector<int>& vdimension)
 {
-  bool modified = false;
-#ifndef LEIBNIZ
+  if (relational) return false;
+  
   int i,j,n,m;
   std::set<int> vmodified;
   std::vector<double> x;
@@ -757,36 +754,36 @@ bool Geometry::adjust_dimension(const std::vector<int>& vdimension)
       }
     }
     else {
-#ifndef FLAT
-      if (n != m) {
-        vmodified.insert(i);
-        if (n > m) {
-          x = coordinates[i];
-          coordinates[i].clear();
-          for(j=0; j<m; ++j) {
-            coordinates[i].push_back(x[j]);
+      if (!uniform) {
+        if (n != m) {
+          vmodified.insert(i);
+          if (n > m) {
+            x = coordinates[i];
+            coordinates[i].clear();
+            for(j=0; j<m; ++j) {
+              coordinates[i].push_back(x[j]);
+            }
           }
-        }
-        else {
-          for(j=n; j<m; ++j) {
-            coordinates[i].push_back(RND.nrandom(0.0,1.0));
+          else {
+            for(j=n; j<m; ++j) {
+              coordinates[i].push_back(RND.nrandom(0.0,1.0));
+            }
           }
         }
       }
-#endif
     }
   }
   if (!vmodified.empty()) {
-    modified = true;
     compute_distances(vmodified);
+    return true;
   }
-#endif
-  return modified;
+  return false;
 }
 
 void Geometry::compute_distances(const std::set<int>& vmodified)
 {
-#ifndef LEIBNIZ
+  if (relational) return;
+
   int i,j,k,in1;
   double delta;
   std::set<int>::const_iterator it;
@@ -833,12 +830,12 @@ void Geometry::compute_distances(const std::set<int>& vmodified)
       }
     }
   }
-#endif
 }
 
 void Geometry::compute_distances()
 {
-#ifndef LEIBNIZ
+  if (relational) return;
+
   int i,j,k,in1;
   double delta;
 
@@ -876,14 +873,32 @@ void Geometry::compute_distances()
       }
     }
   }
-#endif
 }
 
 int Geometry::compute_coordinates(std::vector<double>& x) const
 {
   int i,j,k,edim = 0;
   x.clear();
-#ifdef LEIBNIZ
+
+  if (!relational) {
+    // Calculate the maximum simplicial dimension...
+    for(i=0; i<nvertex; ++i) {
+      j = (signed) coordinates[i].size();
+      if (j > edim) edim = j;
+    }
+    // Pad with zeroes as necessary...
+    for(i=0; i<nvertex; ++i) {
+      k = (signed) coordinates[i].size();
+      for(j=0; j<k; ++j) {
+        x.push_back(coordinates[i][j]);
+      }
+      for(j=k; j<edim; ++j) {
+        x.push_back(0.0);
+      }
+    }
+    return edim;
+  }
+
   assert(euclidean);
   /*
   int k,in1,its = 0;
@@ -1045,23 +1060,7 @@ int Geometry::compute_coordinates(std::vector<double>& x) const
   delete[] J;
   delete[] w;
   delete[] work;
-#else
-  // Calculate the maximum simplicial dimension...
-  for(i=0; i<nvertex; ++i) {
-    j = (signed) coordinates[i].size();
-    if (j > edim) edim = j;
-  }
-  // Pad with zeroes as necessary...
-  for(i=0; i<nvertex; ++i) {
-    k = (signed) coordinates[i].size();
-    for(j=0; j<k; ++j) {
-      x.push_back(coordinates[i][j]);
-    }
-    for(j=k; j<edim; ++j) {
-      x.push_back(0.0);
-    }
-  }
-#endif
+
   return edim;
 }
 
@@ -1071,6 +1070,9 @@ double geometry_change(const Geometry* g1,const Geometry* g2)
   bool arg1 = true;
   double gdelta = 0.0;
 
+  assert(g1->relational == g2->relational);
+  assert(g1->euclidean == g2->euclidean);
+
   if (g1->nvertex < g2->nvertex) {
     nva = g1->nvertex;
     arg1 = false;
@@ -1078,93 +1080,94 @@ double geometry_change(const Geometry* g1,const Geometry* g2)
   else {
     nva = g2->nvertex;
   }
-#ifdef LEIBNIZ
-  double d1,d2;
-  hash_map::const_iterator qt;
+  if (g1->relational) {
+    double d1,d2;
+    hash_map::const_iterator qt;
 
-  for(i=0; i<nva; ++i) {
-    for(j=1+i; j<nva; ++j) {
-      qt = g1->index.find(make_key(i,j));
-      d1 = g1->distances[qt->second];
+    for(i=0; i<nva; ++i) {
+      for(j=1+i; j<nva; ++j) {
+        qt = g1->index.find(make_key(i,j));
+        d1 = g1->distances[qt->second];
 
-      qt = g2->index.find(make_key(i,j));
-      d2 = g2->distances[qt->second];
-      gdelta += std::abs(d1 - d2);
-    }
-  }
-  if (arg1) {
-    for(i=nva; i<g1->nvertex; ++i) {
-      for(j=0; j<nva; ++j) {
-        qt = g1->index.find(make_key(i,j));
-        gdelta += std::abs(g1->distances[qt->second]);
-      }
-      for(j=1+i; j<g1->nvertex; ++j) {
-        qt = g1->index.find(make_key(i,j));
-        gdelta += std::abs(g1->distances[qt->second]);
-      }
-    }
-  }
-  else {
-    for(i=nva; i<g2->nvertex; ++i) {
-      for(j=0; j<nva; ++j) {
         qt = g2->index.find(make_key(i,j));
-        gdelta += std::abs(g2->distances[qt->second]);
-      }
-      for(j=1+i; j<g2->nvertex; ++j) {
-        qt = g2->index.find(make_key(i,j));
-        gdelta += std::abs(g2->distances[qt->second]);
+        d2 = g2->distances[qt->second];
+        gdelta += std::abs(d1 - d2);
       }
     }
-  }
-#else
-  double d;
-  int n1,n2,m;
-  for(i=0; i<nva; ++i) {
-    n1 = (signed) g1->coordinates[i].size();
-    n2 = (signed) g2->coordinates[i].size();
-    m = n2 - n1;
-    d = 0.0;
-    if (m == 0) {
-      for(j=0; j<n1; ++j) {
-        d += std::abs(g1->coordinates[i][j] - g2->coordinates[i][j]);
-      }
-    }
-    else if (m > 0) {
-      for(j=0; j<n1; ++j) {
-        d += std::abs(g1->coordinates[i][j] - g2->coordinates[i][j]);
-      }
-      for(j=n1; j<n2; ++j) {
-        d += std::abs(g2->coordinates[i][j]);
+    if (arg1) {
+      for(i=nva; i<g1->nvertex; ++i) {
+        for(j=0; j<nva; ++j) {
+          qt = g1->index.find(make_key(i,j));
+          gdelta += std::abs(g1->distances[qt->second]);
+        }
+        for(j=1+i; j<g1->nvertex; ++j) {
+          qt = g1->index.find(make_key(i,j));
+          gdelta += std::abs(g1->distances[qt->second]);
+        }
       }
     }
     else {
-      for(j=0; j<n2; ++j) {
-        d += std::abs(g1->coordinates[i][j] - g2->coordinates[i][j]);
+      for(i=nva; i<g2->nvertex; ++i) {
+        for(j=0; j<nva; ++j) {
+          qt = g2->index.find(make_key(i,j));
+          gdelta += std::abs(g2->distances[qt->second]);
+        }
+        for(j=1+i; j<g2->nvertex; ++j) {
+          qt = g2->index.find(make_key(i,j));
+          gdelta += std::abs(g2->distances[qt->second]);
+        }
       }
-      for(j=n2; j<n1; ++j) {
-        d += std::abs(g1->coordinates[i][j]);
-      }
-    }
-    gdelta += d;
-  }
-  if (arg1) {
-    for(i=nva; i<g1->nvertex; ++i) {
-      d = 0.0;
-      for(j=0; j<(signed) g1->coordinates[i].size(); ++j) {
-        d += std::abs(g1->coordinates[i][j]);
-      }
-      gdelta += d;
     }
   }
   else {
-    for(i=nva; i<g2->nvertex; ++i) {
+    double d;
+    int n1,n2,m;
+    for(i=0; i<nva; ++i) {
+      n1 = (signed) g1->coordinates[i].size();
+      n2 = (signed) g2->coordinates[i].size();
+      m = n2 - n1;
       d = 0.0;
-      for(j=0; j<(signed) g2->coordinates[i].size(); ++j) {
-        d += std::abs(g2->coordinates[i][j]);
+      if (m == 0) {
+        for(j=0; j<n1; ++j) {
+          d += std::abs(g1->coordinates[i][j] - g2->coordinates[i][j]);
+        }
+      }
+      else if (m > 0) {
+        for(j=0; j<n1; ++j) {
+          d += std::abs(g1->coordinates[i][j] - g2->coordinates[i][j]);
+        }
+        for(j=n1; j<n2; ++j) {
+          d += std::abs(g2->coordinates[i][j]);
+        }
+      }
+      else {
+        for(j=0; j<n2; ++j) {
+          d += std::abs(g1->coordinates[i][j] - g2->coordinates[i][j]);
+        }
+        for(j=n2; j<n1; ++j) {
+          d += std::abs(g1->coordinates[i][j]);
+        }
       }
       gdelta += d;
     }
+    if (arg1) {
+      for(i=nva; i<g1->nvertex; ++i) {
+        d = 0.0;
+        for(j=0; j<(signed) g1->coordinates[i].size(); ++j) {
+          d += std::abs(g1->coordinates[i][j]);
+        }
+        gdelta += d;
+      }
+    }
+    else {
+      for(i=nva; i<g2->nvertex; ++i) {
+        d = 0.0;
+        for(j=0; j<(signed) g2->coordinates[i].size(); ++j) {
+          d += std::abs(g2->coordinates[i][j]);
+        }
+        gdelta += d;
+      }
+    }
   }
-#endif
   return gdelta;
 }

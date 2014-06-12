@@ -129,6 +129,17 @@ void Homotopy::compute(const Nexus* NX)
 
   sequence.clear();
 
+  // We need to first compute the zeroth homotopy "group"...
+  if (NX->connected()) {
+    // Just the trivial group
+    sequence.push_back(Group(0));
+  }
+  else {
+    // There isn't really any sort of group structure here, so we'll 
+    // just add the "null" group...
+    sequence.push_back(Group());
+  }
+
   // First we need to calculate a spanning tree for the 1-skeleton of this complex...
   ntree = NX->spanning_tree(tree_edges);
   for(i=0; i<ne; ++i) {

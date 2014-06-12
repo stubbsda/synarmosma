@@ -97,16 +97,11 @@ void Eventspace::write(const std::vector<double>& distances,double delta,const c
 
   s.write((char*)(&nevent),sizeof(int));
   for(i=0; i<nevent; ++i) {
-#ifdef LEIBNIZ
-    // A little more complicated - how to convert from a Leibnizian (relational) space to a
-    // Newtonian (absolute) one?
-#else
     // What should be done if the the number of spatial coordinates isn't equal to three?
     for(j=0; j<Geometry::background_dimension; ++j) {
       x = float(events[i].space[j]);
       s.write((char*)(&x),sizeof(float));
     }
-#endif
   }
 
   for(i=0; i<nevent; ++i) {

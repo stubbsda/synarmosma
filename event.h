@@ -15,10 +15,8 @@ class Event {
   std::set<int> future,past;  
   std::set<int> neighbours;
   std::vector<std::string> entourage;
-#ifndef LEIBNIZ
   std::vector<double> space;  
   Multitime proper_time;
-#endif
 
   double norm() const;
   void allocate();
