@@ -3,7 +3,7 @@ variety_wrapper.o polynomial_wrapper.o proposition.o propositional_system.o logi
 event.o eventspace.o multitime.o binary_matrix.o matrix_wrapper.o functional_equation_wrapper.o\
 homology.o homotopy.o directed_graph.o lattice.o
 
-CXX_FLAGS += -Wall -fPIC 
+CXX_FLAGS += -Wall -fPIC
 
 DEBUG    = -g
 
