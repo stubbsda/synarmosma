@@ -28,6 +28,7 @@ class Graph : public Schema {
   double cyclicity() const;
   double connectivity() const;
   int omega() const;
+  double percolation(bool) const;
   double return_probability(int,int) const;
   double cyclic_resistance() const;
   double entwinement() const;

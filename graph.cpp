@@ -109,6 +109,23 @@ bool Graph::biconnected() const
   return true;
 }
 
+double Graph::percolation(bool site) const 
+{
+  assert(connected());
+  double output = 0.0;
+
+  Graph wcopy(*this);
+
+  if (site) {
+    // Site percolation - we remove vertices and their associated edges...
+  }
+  else {
+    // Bond percolation - we only remove edges...
+  }
+
+  return output;
+}
+
 double Graph::inverse_girth() const
 {
   assert(nvertex > 0);
