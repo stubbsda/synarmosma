@@ -109,6 +109,50 @@ bool Graph::biconnected() const
   return true;
 }
 
+void Graph::degree_distribution(bool logarithmic,std::vector<double>& histogram) const
+{
+  assert(connected());
+  int i;
+  const int max = max_degree();
+  const double nv = double(nvertex);
+  int counter[1+max];
+
+  for(i=0; i<=max; ++i) {
+    counter[i] = 0;
+  }
+
+  for(i=0; i<nvertex; ++i) {
+    counter[neighbours[i].size()] += 1;
+  }
+
+  histogram.clear();
+  histogram.push_back(double(counter[1])/nv);
+  if (logarithmic) {
+    // Use logarithmic binning, so intervals of size {1,2,4,8,16...}
+    int lbound,ubound,sum,its = 1;
+    double alpha;
+    do {
+      lbound = std::pow(2,its);
+      ubound = std::pow(2,1+its);
+      if (lbound > max) break;
+      if (ubound > (1+max)) ubound = 1+max;
+      sum = 0;
+      for(i=lbound; i<ubound; ++i) {
+        sum += counter[i];
+      }
+      alpha = double(sum)/double(ubound - lbound);
+      histogram.push_back(alpha/nv);
+      its++;
+    } while(true);
+  }
+  else {
+    // Use a uniform bin width of unity...
+    for(i=2; i<=max; ++i) {
+      histogram.push_back(double(counter[i])/nv);
+    }
+  }
+}
+
 double Graph::percolation(bool site) const 
 {
   assert(connected());
@@ -453,7 +497,7 @@ double Graph::return_probability(int base,int depth) const
   return output;
 }
 
-void Graph::build_laplacian(Matrix<double>* laplacian)
+void Graph::compute_laplacian(Matrix<double>* laplacian) const
 {
   int i;
   std::set<int>::const_iterator it;

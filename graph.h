@@ -28,6 +28,7 @@ class Graph : public Schema {
   double cyclicity() const;
   double connectivity() const;
   int omega() const;
+  void degree_distribution(bool,std::vector<double>&) const;
   double percolation(bool) const;
   double return_probability(int,int) const;
   double cyclic_resistance() const;
@@ -41,9 +42,9 @@ class Graph : public Schema {
   double average_degree() const;
   bool add_edge(int,int);
   void compute_adjacency_matrix(Binary_Matrix*) const;
+  void compute_laplacian(Matrix<double>*) const;
   void genus(int*) const;
   int minimize_topology(int,double,std::vector<double>&);
-  void build_laplacian(Matrix<double>*);
   inline int size() const {return nedge;};
 };
 #endif
