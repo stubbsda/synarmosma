@@ -129,11 +129,11 @@ void Graph::degree_distribution(bool logarithmic,std::vector<double>& histogram)
   histogram.push_back(double(counter[1])/nv);
   if (logarithmic) {
     // Use logarithmic binning, so intervals of size {1,2,4,8,16...}
-    int lbound,ubound,sum,its = 1;
+    int lbound = 1,ubound = 2,sum,its = 1;
     double alpha;
     do {
-      lbound = std::pow(2,its);
-      ubound = std::pow(2,1+its);
+      lbound *= 2;
+      ubound *= 2;
       if (lbound > max) break;
       if (ubound > (1+max)) ubound = 1+max;
       sum = 0;
@@ -156,15 +156,58 @@ void Graph::degree_distribution(bool logarithmic,std::vector<double>& histogram)
 double Graph::percolation(bool site) const 
 {
   assert(connected());
-  double output = 0.0;
-
+  int n,m,nc;
+  double output;
+  std::vector<int> components;
+  const double NE = double(nedge);
+  const double NV = double(nvertex);
+  
   Graph wcopy(*this);
 
   if (site) {
     // Site percolation - we remove vertices and their associated edges...
+    int i,j;
+    std::set<int> S;
+    std::set<int>::const_iterator it;
+
+    do {
+      n = RND.irandom(wcopy.nvertex);
+      S = wcopy.neighbours[n];
+      for(it=S.begin(); it!=S.end(); ++it) {
+        wcopy.neighbours[*it].erase(n);
+      }
+      wcopy.nedge -= S.size();
+      for(i=0; i<wcopy.nvertex; ++i) {
+        if (i == n) continue;
+        S.clear();
+        for(it=wcopy.neighbours[i].begin(); it!=wcopy.neighbours[i].end(); ++it) {
+          j = *it;
+          if (j > n) {
+            S.insert(j-1);
+          }
+          else {
+            S.insert(j);
+          }
+        }
+        wcopy.neighbours[i] = S;
+      }
+      wcopy.nvertex--;
+      wcopy.neighbours.erase(wcopy.neighbours.begin() + n);
+      nc = wcopy.component_analysis(components);
+    } while(true);
+    output = double(wcopy.nvertex)/NV;
   }
   else {
-    // Bond percolation - we only remove edges...
+    // Bond percolation - we only remove edges..
+    do {
+      n = RND.irandom(wcopy.nvertex);
+      m = RND.irandom(wcopy.neighbours[n]);
+      wcopy.neighbours[n].erase(m);
+      wcopy.neighbours[m].erase(n);
+      wcopy.nedge--;
+      nc = wcopy.component_analysis(components);
+    } while(true);
+    output = double(wcopy.nedge)/NE;
   }
 
   return output;
