@@ -30,7 +30,6 @@ class Graph : public Schema {
   int omega() const;
   void degree_distribution(bool,std::vector<double>&) const;
   double percolation(bool) const;
-  double return_probability(int,int) const;
   double cyclic_resistance() const;
   double entwinement() const;
   double completeness() const;
@@ -41,6 +40,8 @@ class Graph : public Schema {
   int min_degree() const;
   double average_degree() const;
   bool add_edge(int,int);
+  double return_probability(int,int) const;
+  void random_walk(double*,double*,int) const;
   void compute_adjacency_matrix(Binary_Matrix*) const;
   void compute_laplacian(Matrix<double>*) const;
   void genus(int*) const;

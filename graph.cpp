@@ -109,6 +109,66 @@ bool Graph::biconnected() const
   return true;
 }
 
+double Graph::return_probability(int base,int length) const
+{
+  int i,j,h = 0,next,current;
+  bool home;
+  double rho;
+  const int ntrials = 50;
+
+  for(i=0; i<ntrials; ++i) {
+    current = base;
+    home = false;
+    for(j=0; j<length; ++j) {
+      next = RND.irandom(neighbours[current]);
+      current = next;
+      if (current == base) {
+        home = true;
+        break;
+      }
+    }
+    if (home) h++;
+  }
+
+  rho = double(h)/double(ntrials);
+  return rho;
+}
+
+void Graph::random_walk(double* mean,double* sdeviation,int D) const
+{
+  int i,j,v;
+  double mu,rho = 0.0,sigma = 0.0;
+  std::set<int> vx;
+  const int ntrials = 15;
+  const int L = int(std::pow(nvertex,1.0/double(D)));
+  const int nbase = int(0.05*nvertex);
+  double value[nbase];
+
+  for(i=0; i<nbase; ++i) {
+    do {
+      v = RND.irandom(nvertex);
+      if (vx.count(v) > 0) continue;
+      vx.insert(v);
+      break;
+    } while(true);
+    mu = 0.0;
+    for(j=0; j<ntrials; ++j) {
+      mu += return_probability(v,L);
+    }
+    mu = mu/double(ntrials);
+    value[i] = mu;
+    rho += mu;
+  }
+
+  rho = rho/double(nbase);
+  for(i=0; i<nbase; ++i) {
+    sigma = (value[i] - rho)*(value[i] - rho);
+  }
+  sigma = std::sqrt(sigma/double(nbase));
+  *mean = rho;
+  *sdeviation = sigma;
+}
+
 void Graph::degree_distribution(bool logarithmic,std::vector<double>& histogram) const
 {
   assert(connected());
@@ -527,17 +587,6 @@ int Graph::omega() const
     sum += 1.0/double(nvertex - neighbours[i].size());
   }
   return int(sum);
-}
-
-double Graph::return_probability(int base,int depth) const
-{
-  // This method is used if we want to compute the cyclicity, which we normally
-  // don't want to do as it takes too much memory and is too slow. It measures
-  // what percentage of the total number of paths emanating from vertex p, of length
-  // depth, will loop back to the starting vertex. 
-  double output = 0.0;
-
-  return output;
 }
 
 void Graph::compute_laplacian(Matrix<double>* laplacian) const
