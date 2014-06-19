@@ -216,9 +216,9 @@ void Graph::degree_distribution(bool logarithmic,std::vector<double>& histogram)
 double Graph::percolation(bool site) const 
 {
   assert(connected());
-  int n,m,nc;
+  int i,n,m,nc;
   double output;
-  std::vector<int> components;
+  std::vector<int> csize,components;
   const double NE = double(nedge);
   const double NV = double(nvertex);
   
@@ -226,7 +226,7 @@ double Graph::percolation(bool site) const
 
   if (site) {
     // Site percolation - we remove vertices and their associated edges...
-    int i,j;
+    int j;
     std::set<int> S;
     std::set<int>::const_iterator it;
 
@@ -254,6 +254,17 @@ double Graph::percolation(bool site) const
       wcopy.nvertex--;
       wcopy.neighbours.erase(wcopy.neighbours.begin() + n);
       nc = wcopy.component_analysis(components);
+      if (nc == 1) continue;
+      // We need to see if the giant component still exists...
+      for(i=0; i<nc; ++i) {
+        csize.push_back(0);
+      }
+      for(i=0; i<wcopy.nvertex; ++i) {
+        csize[components[i]] += 1;
+      }
+      std::sort(csize.begin(),csize.end());
+      if (double(csize[nc-1])/double(csize[nc-2]) < 0.5) break;
+      csize.clear();
     } while(true);
     output = double(wcopy.nvertex)/NV;
   }
@@ -266,6 +277,17 @@ double Graph::percolation(bool site) const
       wcopy.neighbours[m].erase(n);
       wcopy.nedge--;
       nc = wcopy.component_analysis(components);
+      if (nc == 1) continue;
+      // We need to see if the giant component still exists...
+      for(i=0; i<nc; ++i) {
+        csize.push_back(0);
+      }
+      for(i=0; i<wcopy.nvertex; ++i) {
+        csize[components[i]] += 1;
+      }
+      std::sort(csize.begin(),csize.end());
+      if (double(csize[nc-1])/double(csize[nc-2]) < 0.5) break;
+      csize.clear();
     } while(true);
     output = double(wcopy.nedge)/NE;
   }
