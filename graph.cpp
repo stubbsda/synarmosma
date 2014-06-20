@@ -262,8 +262,11 @@ double Graph::percolation(bool site) const
       for(i=0; i<wcopy.nvertex; ++i) {
         csize[components[i]] += 1;
       }
+      // Sort the component sizes in ascending order
       std::sort(csize.begin(),csize.end());
-      if (double(csize[nc-1])/double(csize[nc-2]) < 0.5) break;
+      // The giant component has vanished if the largest component is less than 
+      // twice the size of the next largest component...
+      if (double(csize[nc-1])/double(csize[nc-2]) < 2.0) break;
       csize.clear();
     } while(true);
     output = double(wcopy.nvertex)/NV;
@@ -285,14 +288,33 @@ double Graph::percolation(bool site) const
       for(i=0; i<wcopy.nvertex; ++i) {
         csize[components[i]] += 1;
       }
+      // Sort the component sizes in ascending order
       std::sort(csize.begin(),csize.end());
-      if (double(csize[nc-1])/double(csize[nc-2]) < 0.5) break;
+      // The giant component has vanished if the largest component is less than 
+      // twice the size of the next largest component...
+      if (double(csize[nc-1])/double(csize[nc-2]) < 2.0) break;
       csize.clear();
     } while(true);
     output = double(wcopy.nedge)/NE;
   }
 
   return output;
+}
+
+double Graph::cosine_similarity(int u,int v) const
+{
+  // The value for this is the (u,v) element of the square of the 
+  // adjacency matrix divided by the square root of the product of 
+  // degree(u) and degree(v)
+  int i,sum = 0;
+  Binary_Matrix A(nvertex,nvertex);
+  const double denominator = std::sqrt(double(neighbours[u].size()*neighbours[v].size()));
+  compute_adjacency_matrix(&A);
+  // Now we need to square this binary matrix A...
+  for(i=0; i<nvertex; ++i) {
+    if (A.get(u,i) && A.get(i,v)) sum += 1;
+  }
+  return double(sum)/denominator;
 }
 
 double Graph::inverse_girth() const

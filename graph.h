@@ -22,6 +22,7 @@ class Graph : public Schema {
   virtual void clear();
   bool planar() const;
   bool biconnected() const;
+  double cosine_similarity(int,int) const;
   double inverse_girth() const;
   int bridge_count() const;
   int depth_first_search(int,int,int,int*,int*) const;
