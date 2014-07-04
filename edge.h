@@ -11,6 +11,7 @@ enum DIRECTION
 
 class Edge {
  private:
+  bool active;
   double length;
   DIRECTION arrow;
   bool cyclic;

@@ -27,6 +27,7 @@ Edge::~Edge()
 
 Edge::Edge(const Edge& source)
 {
+  active = source.active;
   length = source.length;
   arrow = source.arrow;
   flow = source.flow;
@@ -40,6 +41,7 @@ Edge& Edge::operator =(const Edge& source)
 {
   if (this == &source) return *this;
 
+  active = source.active;
   length = source.length;
   arrow = source.arrow;
   flow = source.flow;
@@ -53,6 +55,7 @@ Edge& Edge::operator =(const Edge& source)
 
 void Edge::clear()
 {
+  active = true;
   length = 0.0;
   nodes[0] = -1;
   nodes[1] = -1;

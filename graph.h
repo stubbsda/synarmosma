@@ -10,20 +10,32 @@ class Graph : public Schema {
  protected:
   // The number of edges
   int nedge;
+
   // Returns the topological energy of this graph
   virtual double compute_energy() const;
-
+  virtual void clear();
+  // Hyphantic operators
+  virtual bool amputation(int);
+  virtual bool fusion(int,int);
+  virtual bool foliation_x(int,int);
+  virtual bool foliation_m(int,int);
+  virtual int fission_x(int);
+  virtual int fission_m(int);
  public:
+  // The usual public methods for a class
   Graph();
   Graph(const char*);
   Graph(int);
   Graph(int,double);
   virtual ~Graph();
-  virtual void clear();
+  virtual bool add_edge(int,int);
+  int minimize_topology(int,double,std::vector<double>&);
+  // A series of const methods to calculate various graph properties
   bool planar() const;
   bool biconnected() const;
   double cosine_similarity(int,int) const;
   double inverse_girth() const;
+  double clustering_coefficient(int) const;
   int bridge_count() const;
   int depth_first_search(int,int,int,int*,int*) const;
   double cyclicity() const;
@@ -40,13 +52,11 @@ class Graph : public Schema {
   int max_degree() const;
   int min_degree() const;
   double average_degree() const;
-  bool add_edge(int,int);
   double return_probability(int,int) const;
   void random_walk(double*,double*,int) const;
   void compute_adjacency_matrix(Binary_Matrix*) const;
   void compute_laplacian(Matrix<double>*) const;
   void genus(int*) const;
-  int minimize_topology(int,double,std::vector<double>&);
   inline int size() const {return nedge;};
 };
 #endif

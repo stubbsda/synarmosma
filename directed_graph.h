@@ -9,6 +9,13 @@ class Directed_Graph : public Schema {
   std::vector<Edge> edges;
   hash_map index_table;
 
+  // Hyphantic operators
+  bool amputation(int);
+  bool fusion(int,int);
+  bool foliation_x(int,int);
+  bool foliation_m(int,int);
+  int fission_x(int);
+  int fission_m(int);
  public:
   Directed_Graph();
   Directed_Graph(int);

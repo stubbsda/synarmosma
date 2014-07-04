@@ -55,13 +55,12 @@ bool Graph::planar() const
   return output;
 }
 
-bool Graph::add_edge(int v1,int v2)
+bool Graph::add_edge(int v,int u)
 {
-  if (v1 == v2) return false;
-  std::set<int>::const_iterator it = std::find(neighbours[v1].begin(),neighbours[v1].end(),v2);
-  if (it == neighbours[v1].end()) {
-    neighbours[v1].insert(v2);
-    neighbours[v2].insert(v1);
+  if (u == v) return false;
+  if (neighbours[v].count(u) == 0) {
+    neighbours[v].insert(u);
+    neighbours[u].insert(v);
     nedge++;
     return true;
   }
@@ -73,6 +72,121 @@ void Graph::clear()
   nedge = 0;
   nvertex = 0;
   neighbours.clear();
+}
+
+bool Graph::amputation(int v)
+{
+  assert(v >= 0 && v < nvertex);
+  int i,j;
+  std::set<int> S = neighbours[v];
+  std::set<int>::const_iterator it;
+
+  for(it=S.begin(); it!=S.end(); ++it) {
+    neighbours[*it].erase(v);
+  }
+  nedge -= S.size();
+  for(i=0; i<nvertex; ++i) {
+    if (i == v) continue;
+    S.clear();
+    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+      j = *it;
+      if (j > v) {
+        S.insert(j-1);
+      }
+      else {
+        S.insert(j);
+      }
+    }
+    neighbours[i] = S;
+  }
+  nvertex--;
+  neighbours.erase(neighbours.begin() + v);
+  return true;
+}
+
+bool Graph::fusion(int v,int u)
+{
+  if (u == -1) {
+    if (neighbours[v].empty()) return false;
+    u = RND.irandom(neighbours[v]);
+  }
+  int i;
+  std::set<int> S = neighbours[u];
+  std::set<int>::const_iterator it;
+  amputation(u);
+  if (u < v) v = v - 1;
+  for(it=S.begin(); it!=S.end(); ++it) {
+    i = *it;
+    if (u < i) i = i - 1;
+    if (i == v) continue;
+    add_edge(v,i);
+  }
+  return true;
+}
+
+bool Graph::foliation_x(int v,int u)
+{
+  if (u == v) return false;
+  if (neighbours[v].empty()) return false;
+  if (u == -1) u = RND.irandom(neighbours[v]);
+  neighbours[v].erase(u);
+  neighbours[u].erase(v);
+  nedge--;
+  return true;
+}
+
+bool Graph::foliation_m(int v,int u)
+{
+  if (u == -1) {
+    do {
+      u = RND.irandom(nvertex);
+      if (u != v) break;
+    } while(true);
+  }
+  return add_edge(v,u);
+}
+
+int Graph::fission_x(int v)
+{
+  int u = nvertex;
+  nvertex++;
+  add_edge(v,u);
+  return u;
+}
+
+int Graph::fission_m(int v)
+{
+  int u = nvertex;
+  std::set<int> S = neighbours[v];
+  std::set<int>::const_iterator it;
+  nvertex++;
+  add_edge(v,u);
+  for(it=S.begin(); it!=S.end(); ++it) {
+    add_edge(u,*it);
+  }
+  return u;
+}
+
+double Graph::clustering_coefficient(int v) const
+{
+  // This method calculates the percentage of distinct pairs (u,w) 
+  // of neighbours of v which are also connected directly
+  if (neighbours[v].size() < 2) return 0.0;
+  int i,j,n,np,nf = 0;
+  std::vector<int> vx;
+  std::set<int>::const_iterator it;
+
+  for(it=neighbours[v].begin(); it!=neighbours[v].end(); ++it) {
+    vx.push_back(*it);
+  }
+  n = (signed) vx.size();
+  for(i=0; i<n; ++i) {
+    for(j=1+i; j<n; ++j) {
+      if (neighbours[vx[i]].count(vx[j]) > 0 && neighbours[vx[j]].count(vx[i]) > 0) nf++;
+    }
+  }
+  np = n*(n-1)/2;
+  return double(nf)/double(np);
 }
 
 bool Graph::biconnected() const
@@ -216,7 +330,7 @@ void Graph::degree_distribution(bool logarithmic,std::vector<double>& histogram)
 double Graph::percolation(bool site) const 
 {
   assert(connected());
-  int i,n,m,nc;
+  int i,n,nc;
   double output;
   std::vector<int> csize,components;
   const double NE = double(nedge);
@@ -226,33 +340,9 @@ double Graph::percolation(bool site) const
 
   if (site) {
     // Site percolation - we remove vertices and their associated edges...
-    int j;
-    std::set<int> S;
-    std::set<int>::const_iterator it;
-
     do {
       n = RND.irandom(wcopy.nvertex);
-      S = wcopy.neighbours[n];
-      for(it=S.begin(); it!=S.end(); ++it) {
-        wcopy.neighbours[*it].erase(n);
-      }
-      wcopy.nedge -= S.size();
-      for(i=0; i<wcopy.nvertex; ++i) {
-        if (i == n) continue;
-        S.clear();
-        for(it=wcopy.neighbours[i].begin(); it!=wcopy.neighbours[i].end(); ++it) {
-          j = *it;
-          if (j > n) {
-            S.insert(j-1);
-          }
-          else {
-            S.insert(j);
-          }
-        }
-        wcopy.neighbours[i] = S;
-      }
-      wcopy.nvertex--;
-      wcopy.neighbours.erase(wcopy.neighbours.begin() + n);
+      if (!wcopy.amputation(n)) continue;
       nc = wcopy.component_analysis(components);
       if (nc == 1) continue;
       // We need to see if the giant component still exists...
@@ -275,10 +365,8 @@ double Graph::percolation(bool site) const
     // Bond percolation - we only remove edges..
     do {
       n = RND.irandom(wcopy.nvertex);
-      m = RND.irandom(wcopy.neighbours[n]);
-      wcopy.neighbours[n].erase(m);
-      wcopy.neighbours[m].erase(n);
-      wcopy.nedge--;
+      // Eliminate a random edge connected to vertex "n"...
+      if (!wcopy.foliation_x(n,-1)) continue;
       nc = wcopy.component_analysis(components);
       if (nc == 1) continue;
       // We need to see if the giant component still exists...
@@ -297,7 +385,6 @@ double Graph::percolation(bool site) const
     } while(true);
     output = double(wcopy.nedge)/NE;
   }
-
   return output;
 }
 

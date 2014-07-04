@@ -17,8 +17,27 @@ Directed_Graph::~Directed_Graph()
 
 }
 
+bool Directed_Graph::foliation_x(int v1,int v2)
+{
+  if (v1 == v2) return false;
+  if (neighbours[v1].empty()) return false;
+  if (v2 == -1) v2 = RND.irandom(neighbours[v1]);
+  neighbours[v1].erase(v2);
+  neighbours[v2].erase(v1);
+  std::string clef = make_key(v1,v2);
+  hash_map::const_iterator qt = index_table.find(clef + ":-1");
+  if (qt != index_table.end()) {
+    edges[qt->second].active = false;
+    return true;
+  }
+  qt = index_table.find(clef+":+1");
+  edges[qt->second].active = false;
+  return true;  
+}
+
 bool Directed_Graph::add_edge(int v1,int v2)
 {
+  if (v1 == v2) return false;
   bool frwd,bkwd;
   std::string name,base = make_key(v1,v2);
   hash_map::const_iterator qt;
@@ -62,6 +81,7 @@ bool Directed_Graph::add_edge(int v1,int v2)
 
 bool Directed_Graph::add_edge(int v1,int v2,DIRECTION d)
 {
+  if (v1 == v2) return false;
   hash_map::const_iterator qt;
   std::string name = make_key(v1,v2) + ":";
   if (v1 < v2) {
@@ -97,7 +117,7 @@ bool Directed_Graph::path_connected(int u,int v) const
         if (j < i) continue;
         qt = index_table.find(make_key(i,j) + ":1");
         if (qt == index_table.end()) continue;
-        next.insert(j);
+        if (edges[qt->second].active) next.insert(j);
       }
     }
     if (next.empty()) break;
@@ -126,9 +146,11 @@ int Directed_Graph::two_cycles() const
       key = make_key(i,j);
       qt = index_table.find(key + ":1");
       if (qt == index_table.end()) continue;
+      if (!edges[qt->second].active) continue;
       // Now see if there is an edge going back from j to i...
       qt = index_table.find(key + ":-1");
       if (qt == index_table.end()) continue;
+      if (!edges[qt->second].active) continue;
       t_cycle++;
     }
   }
