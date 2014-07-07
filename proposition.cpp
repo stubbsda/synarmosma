@@ -234,13 +234,13 @@ std::ostream& operator <<(std::ostream& s,const Proposition& p)
         s << "p[" << 1 + pvalue << "]";
         continue;
       }
-      if (parity == 1) std::cout << "!";
+      if (parity == 1) s << "!";
       s << "p[" << 1 + pvalue << "] | ";
     }
     pvalue = p.clause[2*NP*i+2*NP-2];
     parity = p.clause[2*NP*i+2*NP-1];
     if (pvalue >= 0) {
-      if (parity == 1) std::cout << "!";
+      if (parity == 1) s << "!";
       s << "p[" << 1 + pvalue << "]";
     }
     if (i < (nc - 1)) {

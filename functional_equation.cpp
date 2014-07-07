@@ -34,7 +34,7 @@ Functional_Equation<kind>::Functional_Equation(const char* filename)
   std::ifstream s(filename,std::ios_base::in);
   if (!s.is_open()) {
     // File doesn't exist, print an error message and die
-    std::cout << "The file " << filename << " cannot be found!" << std::endl;
+    std::cerr << "The file " << filename << " cannot be found!" << std::endl;
     std::exit(1);
   }
   // Loop through all lines in the parameter file
@@ -55,7 +55,7 @@ Functional_Equation<kind>::Functional_Equation(const char* filename)
       if (line[i] == ':') bk.push_back(i);
     }
     if (bk.size() != 2) {
-      std::cout << "The file format is incorrect at line " << line << std::endl;
+      std::cerr << "The file format is incorrect at line " << line << std::endl;
       std::exit(1);
     }
     store = line.substr(0,bk[0]);
@@ -242,18 +242,16 @@ void Functional_Equation<kind>::initialize(unsigned int n)
 template<class kind>
 Variety<unsigned int> Functional_Equation<kind>::reduce(unsigned int p)
 {
+  unsigned int i,j,in1;
+  std::pair<unsigned int,unsigned int> duo;
+  boost::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int> trio;
   Variety<unsigned int> output(p,p);
   Polynomial<kind> py;
   Monomial<unsigned int> term;
-  boost::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int> trio;
-  std::pair<unsigned int,unsigned int> duo;
-  unsigned int i,j,in1;
 
   output.clear();
-  std::cout << std::endl;
-  std::cout << "The reduction of this functional equation over the field GF(" << p << ") is:" << std::endl;
+
   for(i=0; i<p; ++i) {
-    std::cout << "p = " << i << ": " << std::endl;
     for(j=0; j<terms.size(); ++j) {
       trio = terms[j];
       // First convert alpha(p) to an element of GF(p)
@@ -267,13 +265,10 @@ Variety<unsigned int> Functional_Equation<kind>::reduce(unsigned int p)
       // Finally we have to find out the exponent 
       duo.second = boost::get<2>(trio);
       term.exponents.push_back(duo);
-      std::cout << "       " << in1 << "*x(" << duo.first << ")^" << duo.second << " + " << std::endl;
       output.add_term(i,term);
       term.exponents.clear();
     }
     in1 = convert(remainder.evaluate(i),p);
-    std::cout << "       " << in1 << " = 0" << std::endl;
-    std::cout << std::endl;
     output.set_value(i,in1);
   }
   output.elaborate();

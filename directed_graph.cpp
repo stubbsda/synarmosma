@@ -35,6 +35,38 @@ bool Directed_Graph::foliation_x(int v1,int v2)
   return true;  
 }
 
+bool Directed_Graph::foliation_m(int v1,int v2)
+{
+  if (v2 == -1) {
+    do {
+      v2 = RND.irandom(nvertex);
+      if (v2 != v1) break;
+    } while(true);
+  }
+  return add_edge(v1,v2);
+}
+
+int Directed_Graph::fission_x(int v)
+{
+  int u = nvertex;
+  nvertex++;
+  add_edge(v,u);
+  return u;
+}
+
+int Directed_Graph::fission_m(int v)
+{
+  int u = nvertex;
+  std::set<int> S = neighbours[v];
+  std::set<int>::const_iterator it;
+  nvertex++;
+  add_edge(v,u);
+  for(it=S.begin(); it!=S.end(); ++it) {
+    add_edge(u,*it);
+  }
+  return u;
+}
+
 bool Directed_Graph::add_edge(int v1,int v2)
 {
   if (v1 == v2) return false;

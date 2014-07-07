@@ -10,8 +10,6 @@ class Directed_Graph : public Schema {
   hash_map index_table;
 
   // Hyphantic operators
-  bool amputation(int);
-  bool fusion(int,int);
   bool foliation_x(int,int);
   bool foliation_m(int,int);
   int fission_x(int);

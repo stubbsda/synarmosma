@@ -24,7 +24,7 @@ Propositional_System::Propositional_System(unsigned int n,const char* filename)
   if (s.is_open() == false) {
     // If the file isn't there, print an error message and
     // exit cleanly
-    std::cout << "The file " << filename << " cannot be found!" << std::endl;
+    std::cerr << "The file " << filename << " cannot be found!" << std::endl;
     std::exit(1);
   }
 
@@ -59,7 +59,7 @@ Propositional_System::Propositional_System(unsigned int n,const char* filename)
 
 Propositional_System::Propositional_System(unsigned int n,unsigned int m)
 {
-  // n = axiomezahl und m = natom
+  // n = number of axioms und m = number of atoms
   set_default_values();
   natom = m;
   initialize(n);
@@ -87,7 +87,6 @@ void Propositional_System::initialize(unsigned int n)
     truth.push_back(boost::dynamic_bitset<>(nuniverse));
   }
   build_logical_universe();
-  std::cout << "Computing the internal logic..." << std::endl;
   compute_internal_logic();
   for(i=0; i<nuniverse; ++i) {
     delete[] logical_universe[i];
@@ -224,26 +223,26 @@ void Propositional_System::compute_internal_logic()
   }
 }
 
-void Propositional_System::compute_pairs(unsigned int* edges)
+void Propositional_System::compute_pairs(unsigned int* edges,std::set<unsigned int>& sink,std::set<unsigned int>& source) const 
 {
   // This method must determine which propositions imply other propositions among
   // our collection, "theorems".
+  // The output scheme for the edges is as follows:
+  // edges[i] = 0 => null edge
+  // edges[i] = 1 or 2 => directed edge
+  // edges[i] = 3 => multi-edge
   unsigned int i,j,kt;
-  const unsigned int nnode = theorems.size();
+  std::vector<unsigned int> vsink,vsource;
   boost::dynamic_bitset<> temp(nuniverse),p1(nuniverse);
-  unsigned int* sink = new unsigned int[nnode];
-  unsigned int* source = new unsigned int[nnode];
-
-  std::cout << "Computing the logical pairs..." << std::endl;
-
+  const unsigned int nnode = theorems.size();
   const unsigned int nedge = (nnode*(nnode-1))/2;
 
   for(i=0; i<nedge; ++i) {
     edges[i] = 0;
   }
   for(i=0; i<nnode; ++i) {
-    sink[i] = 1;
-    source[i] = 1;
+    vsink.push_back(1);
+    vsource.push_back(1);
   }
   for(i=0; i<nnode; ++i) {
     p1 = truth[i];
@@ -262,47 +261,24 @@ void Propositional_System::compute_pairs(unsigned int* edges)
           kt = (i-j-1) + nedge - ((nnode-j)*(nnode-j-1))/2;
           edges[kt] = (edges[kt] == 0) ? 2 : 3;
         }
-        source[j] = 0;
-        sink[i] = 0;
+        vsource[j] = 0;
+        vsink[i] = 0;
       }
     }
   }
 
-  unsigned int null = 0;
-  unsigned int ndirected = 0;
-  unsigned int ndouble = 0;
-  for(i=0; i<nedge; ++i) {
-    if (edges[i] == 0) null++;
-    if (edges[i] == 1 || edges[i] == 2) ndirected++;
-    if (edges[i] == 3) ndouble++;
-  }
-  std::cout << "The percent of null edges is " << 100.0*double(null)/double(nedge) << std::endl;
-  std::cout << "The percent of directed edges is " << 100.0*double(ndirected)/double(nedge) << std::endl;
-  std::cout << "The percent of double edges is " << 100.0*double(ndouble)/double(nedge) << std::endl;
   // What is a logical sink? A proposition which doesn't imply any other propositions
-  unsigned int nsink = 0;
+  sink.clear();
   for(i=0; i<nnode; ++i) {
     // A proposition that never implies any other but is implied by at least one other...
-    if (sink[i] == 1 && source[i] == 0) nsink++;
+    if (vsink[i] == 1 && vsource[i] == 0) sink.insert(i);
   }
 
   // What is a logical source? A proposition is never implied by other propositions
-  unsigned int nsource = 0;
+  source.clear();
   for(i=0; i<nnode; ++i) {
     // A proposition that is never implied by any other but implies at least one other...
-    if (source[i] == 1 && sink[i] == 0) nsource++;
-  }
-  if (nsource == 0 && nsink == 0) {
-    std::cout << "There are no logical sources and sinks in this graph." << std::endl;
-  }
-  else if (nsource == 0) {
-    std::cout << "There are no logical sources and " << nsink << " logical sinks in this graph." << std::endl;
-  }
-  else if (nsink == 0) {
-    std::cout << "There are " << nsource << " logical sources and no logical sinks in this graph." << std::endl;
-  }
-  else {
-    std::cout << "There are " << nsource << " logical sources and " << nsink << " logical sinks in this graph." << std::endl;
+    if (vsource[i] == 1 && vsink[i] == 0) source.insert(i);
   }
 }
 

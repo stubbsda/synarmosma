@@ -121,30 +121,6 @@ void Variety<kind>::elaborate()
 }
 
 template<class kind>
-void Variety<kind>::write2screen() const
-{
-  int i;
-  unsigned int j,k;
-  Monomial<kind> term;
-
-  for(i=0; i<nequation; ++i) {
-    for(j=0; j<equations[i].size(); ++j) {
-      term = equations[i][j];
-      if (term.coefficient != kind(1)) std::cout << term.coefficient << "*";
-      for(k=0; k<term.exponents.size()-1; ++k) {
-        std::cout << "x(" << term.exponents[k].first << ")";
-        if (term.exponents[k].second > 1) std::cout << "^" << term.exponents[k].second;
-        std::cout << "*";
-      }
-      std::cout << "x(" << term.exponents[term.exponents.size()-1].first << ")^" << term.exponents[term.exponents.size()-1].second;
-      if (j < equations[i].size()-1) std::cout << " + ";
-    }
-    if (remainder[i] > kind(0)) std::cout << " + " << remainder[i];
-    std::cout << " = 0" << std::endl;
-  }
-}
-
-template<class kind>
 void Variety<kind>::make_projective()
 {
   if (projective) return;

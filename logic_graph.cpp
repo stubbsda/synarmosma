@@ -10,13 +10,11 @@ Logic_Graph::Logic_Graph() : Graph()
 Logic_Graph::Logic_Graph(int n) : Graph(n)
 {
   logic = new Propositional_System(nvertex);
-  logical_breadth = new int[nvertex];
 }
 
 Logic_Graph::~Logic_Graph()
 {
   delete logic;
-  delete[] logical_breadth;
 }
 
 void Logic_Graph::create()
@@ -30,6 +28,8 @@ void Logic_Graph::compute_logical_breadth()
   std::set<int>::const_iterator it,jt;
   std::set<int> current,atoms;
 
+  logical_breadth.clear();
+
   for(i=0; i<nvertex; ++i) {
     // First count the number of atomic propositions in my own
     // proposition:
@@ -41,35 +41,34 @@ void Logic_Graph::compute_logical_breadth()
         atoms.insert(*it);
       }
     }
-    logical_breadth[i] = atoms.size();
+    logical_breadth.push_back(atoms.size());
   }
 }
 
-void Logic_Graph::rationalize_topology()
+int Logic_Graph::rationalize_topology()
 {
   // We begin this method with a random graph topology, which is
-  // however connected. At each iteration, one examines the causal
+  // however connected. At each iteration, we examine the causal
   // edges to verify that the proposition of the antecedent vertex
   // implies the propositions of its descendent vertex neighbours
-  int i,j,k,tt,test,in1,in2,nfalse,iter = 1;
-  double percent_false;
+  int i,j,k,tt,test,in1,in2,nfalse,its = 0;
   bool flag,good;
   std::set<int> S;
   std::set<int>::const_iterator it;
   int* ntrue = new int[nvertex];
   std::vector<int>* false_edges = new std::vector<int>[nvertex];
+  const int max_iter = 500;
 
   for(i=0; i<nvertex; ++i) {
     false_edges[i].reserve(100);
   }
 
-  std::cout.precision(4);
-  std::cout.width(6);
-
   for(i=0; i<nvertex; ++i) {
     ntrue[i] = logic->bit_count(i);
   }
+
   do {
+    its++;
     nedge = 0;
     for(i=0; i<nvertex; ++i) {
       false_edges[i].clear();
@@ -96,9 +95,7 @@ void Logic_Graph::rationalize_topology()
       nfalse += false_edges[i].size();
     }
     nfalse /= 2;
-    percent_false = 100.0*double(nfalse)/double(nedge);
-    std::cout << iter << ": There are " << nfalse << " false edges of " << Graph::nedge << " or " << percent_false << "% of the total." << std::endl;
-    if (nfalse == 0) break;
+    if (nfalse == 0 || its == max_iter) break;
     for(i=0; i<nvertex; ++i) {
       if (false_edges[i].empty()) continue;
       tt = false_edges[i].size();
@@ -124,9 +121,8 @@ void Logic_Graph::rationalize_topology()
         } while(flag);
       }
     }
-    iter++;
     if (!connected()) {
-      std::cout << "Error message" << std::endl;
+      std::cerr << "Logic_Graph instance disconnected in topology rationalization!" << std::endl;
       std::exit(1);
     }
   } while(true);
@@ -134,5 +130,58 @@ void Logic_Graph::rationalize_topology()
   // Free the memory
   delete[] false_edges;
   delete[] ntrue;
+
+  return nfalse;
+}
+
+bool Logic_Graph::amputation(int v)
+{
+  if (Graph::amputation(v)) {
+    logic->theorems.erase(logic->theorems.begin() + v);
+    logic->truth.erase(logic->truth.begin() + v);
+    return true;
+  }
+  return false;
+}
+
+bool Logic_Graph::foliation_m(int v,int u)
+{
+  return Graph::foliation_m(v,u);
+}
+
+bool Logic_Graph::foliation_x(int v,int u)
+{
+  return Graph::foliation_x(v,u);
+}
+
+bool Logic_Graph::add_edge(int v,int u)
+{
+  return Graph::add_edge(v,u);
+}
+
+bool Logic_Graph::fusion(int v,int u)
+{
+  if (Graph::fusion(v,u)) {
+    logic->theorems.erase(logic->theorems.begin() + u);
+    logic->truth.erase(logic->truth.begin() + u);
+    return true;
+  }
+  return false;
+}
+
+int Logic_Graph::fission_x(int v)
+{
+  int n = Graph::fission_x(v);
+  logic->theorems.push_back(Proposition(logic->natom));
+  logic->truth.push_back(boost::dynamic_bitset<>(logic->nuniverse));
+  return n;
+}
+
+int Logic_Graph::fission_m(int v)
+{
+  int n = Graph::fission_m(v);
+  logic->theorems.push_back(Proposition(logic->natom));
+  logic->truth.push_back(boost::dynamic_bitset<>(logic->nuniverse));
+  return n;
 }
 

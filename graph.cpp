@@ -106,6 +106,7 @@ bool Graph::amputation(int v)
 
 bool Graph::fusion(int v,int u)
 {
+  if (u == v) return false;
   if (u == -1) {
     if (neighbours[v].empty()) return false;
     u = RND.irandom(neighbours[v]);

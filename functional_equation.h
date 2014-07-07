@@ -39,9 +39,9 @@ std::ostream& operator <<(std::ostream& s,const Functional_Equation<kind>& sourc
   boost::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int> trio;
   for(i=0; i<source.terms.size(); ++i) {
     trio = source.terms[i];
-    std::cout << "(" << boost::get<0>(trio) << ")*F(" << boost::get<1>(trio) << ")^" << boost::get<2>(trio) << " +" << std::endl; 
+    s << "(" << boost::get<0>(trio) << ")*F(" << boost::get<1>(trio) << ")^" << boost::get<2>(trio) << " +" << std::endl; 
   }
-  std::cout << source.remainder << " = 0";
+  s << source.remainder << " = 0";
   return s;
 }
 #endif

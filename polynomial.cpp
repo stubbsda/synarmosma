@@ -127,7 +127,7 @@ template<>
 unsigned int Polynomial<unsigned int>::evaluate(unsigned int x)
 {
   if (x > characteristic) {
-    std::cout << "Cannot evaluate this argument!" << std::endl;
+    std::cerr << "Cannot evaluate this argument!" << std::endl;
     std::exit(1);
   }
   int i;

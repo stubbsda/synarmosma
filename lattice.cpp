@@ -69,10 +69,7 @@ bool Lattice::consistent() const
         for(k=0; k<N; ++k) {
           if (k == j || k == i) continue;
           if (get_relation(j,k) == BEFORE) {
-            if (get_relation(i,k) != BEFORE) {
-              std::cout << "Transitive inconsistency with " << i << " <= " << j << " and " << j << " <= " << k << " but " << i << "isn't before " << k << std::endl;
-              return false;
-            }
+            if (get_relation(i,k) != BEFORE) return false;
           }
         }
       }

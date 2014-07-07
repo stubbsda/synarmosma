@@ -46,7 +46,7 @@ class Matrix {
   unsigned int nrow,ncolumn;
   bool normalized;
 
-  void display() const;
+  void display(std::ostream&) const;
   bool divisible(unsigned int,unsigned int*,unsigned int*,kind*) const;
   void transpose(const Matrix<kind>&);
   void clear();

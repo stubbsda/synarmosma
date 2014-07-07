@@ -55,17 +55,11 @@ unsigned int Word::size() const
 bool Word::legal() const
 {
   std::vector<std::pair<unsigned int,int> >::const_iterator it;
-  bool output = true;
-  unsigned int l;
 
   for(it=content.begin(); it!=content.end(); it++) {
-    l = it->first;
-    if (l >= NL) {
-      std::cout << "Bad term: " << l << "  " << NL << std::endl;
-      output = false;
-    }
+    if (it->first >= NL) return false;
   }
-  return output;
+  return true;
 }
 
 bool Word::trivial() const

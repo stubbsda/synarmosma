@@ -9,8 +9,8 @@ class Logic_Graph: public Graph {
   Propositional_System* logic;
   // This array measures the number of atomic propositions used in a given 
   // graph neighbourhood (a vertex and its neighbours)
-  int* logical_breadth;
-  void rationalize_topology();
+  std::vector<int> logical_breadth;
+  int rationalize_topology();
   void compute_logical_breadth();
 
   virtual bool amputation(int);

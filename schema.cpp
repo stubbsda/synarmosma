@@ -53,39 +53,27 @@ bool Schema::consistent() const
   // returns false.
   int i,in1;
   std::set<int>::const_iterator it;
-  // Assume all is well until proof of the contrary
-  bool good,output = true;
+
   // Loop through all vertices
   for(i=0; i<nvertex; ++i) {
     // Check if the valence is weird
-    if (neighbours[i].size() == 0) {
-      std::cout <<"Zero valence at " << i << std::endl;
-      output = false;
-    }
+    if (neighbours[i].size() == 0) return false;
     // Now loop through all the neighbours
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
       in1 = *it;
       // Check for self-bonding
-      if (in1 == i) {
-        std::cout << "Self bonding at " << in1 << std::endl;
-        output = false;
-      }
+      if (in1 == i) return false;
       // Check for neighbour values that are negative or too large
-      if (in1 >= nvertex) {
-        std::cout << "Neighbour value out of range" << std::endl;
-        output = false;
-      }
+      if (in1 >= nvertex) return false;
       // If this neighbour vertex is local, then check to see if it too lists
       // i as a neighbour
-      good = (neighbours[in1].count(i) == 1) ? true : false;
-      if (!good) {
-        std::cout << "Schema inconsistent at " << i << " and " << in1 << std::endl;
-        output = false;
+      if (neighbours[in1].count(i) != 1) {
+        std::cerr << "Schema inconsistent at " << i << " and " << in1 << std::endl;
         std::exit(1);
       }
     }
   }
-  return output;
+  return true;
 }
 
 void Schema::components(std::vector<int>& csize,std::vector<int>& celements) const

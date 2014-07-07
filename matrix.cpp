@@ -94,7 +94,7 @@ Matrix<kind>::~Matrix()
 }
 
 template<class kind>
-void Matrix<kind>::display() const
+void Matrix<kind>::display(std::ostream& s) const
 {
   unsigned int i,j,k;
   kind w;
@@ -112,15 +112,15 @@ void Matrix<kind>::display() const
         }
       }
       if (!found) {
-        std::cout << "%" << w << " ";
+        s << "%" << w << " ";
       }
       else {
-        std::cout << w << " ";
+        s << w << " ";
       }
     }
-    std::cout << std::endl;
+    s << std::endl;
   }
-  std::cout << std::endl;
+  s << std::endl;
 }
 
 template<>

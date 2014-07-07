@@ -15,12 +15,16 @@ class Graph : public Schema {
   virtual double compute_energy() const;
   virtual void clear();
   // Hyphantic operators
+  virtual bool add_edge(int,int);
   virtual bool amputation(int);
   virtual bool fusion(int,int);
   virtual bool foliation_x(int,int);
   virtual bool foliation_m(int,int);
   virtual int fission_x(int);
   virtual int fission_m(int);
+  // A method to minimize the graph topology according 
+  // to a fitness function using simulated annealing 
+  int minimize_topology(int,double,std::vector<double>&);
  public:
   // The usual public methods for a class
   Graph();
@@ -28,8 +32,6 @@ class Graph : public Schema {
   Graph(int);
   Graph(int,double);
   virtual ~Graph();
-  virtual bool add_edge(int,int);
-  int minimize_topology(int,double,std::vector<double>&);
   // A series of const methods to calculate various graph properties
   bool planar() const;
   bool biconnected() const;
@@ -58,5 +60,6 @@ class Graph : public Schema {
   void compute_laplacian(Matrix<double>*) const;
   void genus(int*) const;
   inline int size() const {return nedge;};
+  friend class Nexus;
 };
 #endif

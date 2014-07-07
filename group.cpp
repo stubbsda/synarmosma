@@ -221,7 +221,6 @@ Group::Group(const std::string& name,int n)
     solvable = (n < 5) ? true : false;
   }
   else {
-    std::cout << "Unknown group, creating a random group..." << std::endl;
     create_random();
   }
 }
@@ -306,20 +305,16 @@ bool Group::consistent() const
 {
   unsigned int i,j,n;
   Word w(ngenerator,0);
-  bool output = true;
 
   // Sanity check...
   for(i=0; i<relations.size(); ++i) {
     w = relations[i];
     for(j=0; j<w.content.size(); ++j) {
       n = w.content[j].first;
-      if (n >= ngenerator) {
-        std::cout << "Error in relation " << i << ": " << n << "  " << ngenerator << std::endl;
-        output = false;
-      }
+      if (n >= ngenerator) return false;
     }
   }
-  return output;
+  return true;
 }
 
 void Group::reduce()
@@ -765,28 +760,28 @@ std::string Group::compact_form() const
   return output;
 }
 
-std::ostream& operator <<(std::ostream& os,const Group& g)
+std::ostream& operator <<(std::ostream& s,const Group& g)
 {
   unsigned int i;
-  os << g.finite << "  " << g.abelian << "  " << g.cardinality << "  " << g.solvable << "  " << g.free << std::endl;
+  s << g.finite << "  " << g.abelian << "  " << g.cardinality << "  " << g.solvable << "  " << g.free << std::endl;
   if (g.ngenerator == 0) {
-    os << "< {e} | >";
-    return os;
+    s << "< {e} | >";
+    return s;
   }
-  os << "< {";
+  s << "< {";
   for(i=0; i<g.ngenerator-1; ++i) {
-    os << "x[" << i+1 << "],";
+    s << "x[" << i+1 << "],";
   }
-  os << "x[" << g.ngenerator << "]} | ";
+  s << "x[" << g.ngenerator << "]} | ";
   if (g.relations.empty()) {
-    os << ">";
-    return os;
+    s << ">";
+    return s;
   }
-  os << "{";
+  s << "{";
   for(i=0; i<g.relations.size()-1; ++i) {
-    std::cout << g.relations[i] << ",";
+    s << g.relations[i] << ",";
   }
-  os << g.relations[g.relations.size()-1] << "} >";
-  return os;
+  s << g.relations[g.relations.size()-1] << "} >";
+  return s;
 }
 
