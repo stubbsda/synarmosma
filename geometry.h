@@ -1,5 +1,8 @@
 #include "global.h"
 
+#ifndef _geometryh
+#define _geometryh
+
 class Geometry {
  private:
   int nvertex;
@@ -226,5 +229,6 @@ double Geometry::get_computed_distance(int v1,int v2,bool lorentzian) const
   }
   return l;
 }
+#endif
 
 

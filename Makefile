@@ -110,8 +110,33 @@ clean:
 	rm -f $(OBJECTS)
 	rm -f *~
 	rm -f libsynarmosma.so
-	rm -f $(SYNARMOSMA)/lib/*
-	rm -rf $(SYNARMOSMA)/include/*
+	rm -f $(SYNARMOSMA)/lib/libsynarmosma.so
+	rm -f $(SYNARMOSMA)/include/binary_matrix.h
+	rm -f $(SYNARMOSMA)/include/cell.h
+	rm -f $(SYNARMOSMA)/include/directed_graph.h
+	rm -f $(SYNARMOSMA)/include/edge.h
+	rm -f $(SYNARMOSMA)/include/event.h
+	rm -f $(SYNARMOSMA)/include/eventspace.h
+	rm -f $(SYNARMOSMA)/include/functional_equation.h
+	rm -f $(SYNARMOSMA)/include/geometry.h
+	rm -f $(SYNARMOSMA)/include/global.h
+	rm -f $(SYNARMOSMA)/include/graph.h
+	rm -f $(SYNARMOSMA)/include/group.h
+	rm -f $(SYNARMOSMA)/include/homology.h
+	rm -f $(SYNARMOSMA)/include/homotopy.h
+	rm -f $(SYNARMOSMA)/include/lattice.h
+	rm -f $(SYNARMOSMA)/include/logic_graph.h
+	rm -f $(SYNARMOSMA)/include/matrix.h
+	rm -f $(SYNARMOSMA)/include/multitime.h
+	rm -f $(SYNARMOSMA)/include/nexus.h
+	rm -f $(SYNARMOSMA)/include/polynomial.h
+	rm -f $(SYNARMOSMA)/include/proposition.h
+	rm -f $(SYNARMOSMA)/include/propositional_system.h
+	rm -f $(SYNARMOSMA)/include/rational.h
+	rm -f $(SYNARMOSMA)/include/schema.h
+	rm -f $(SYNARMOSMA)/include/variety.h
+	rm -f $(SYNARMOSMA)/include/word.h
+	rm -f $(SYNARMOSMA)/include/synarmosma.h
 
 
 
