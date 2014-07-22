@@ -16,14 +16,13 @@ class Geometry {
   // Whether the geometry is based on a relational or absolute model of space
   bool relational;
   // Whether the geometry is dimensionally uniform
-  bool uniform; 
+  bool uniform;
+  // The asymptotic "flat space" dimension
+  int background_dimension; 
 
  public:
-  // The asymptotic "flat space" dimension
-  static const int background_dimension = 2;
-
   Geometry();
-  Geometry(bool,bool,bool);
+  Geometry(bool,bool,bool,int);
   Geometry(const Geometry&);
   Geometry& operator =(const Geometry&);
   ~Geometry();
@@ -52,13 +51,11 @@ class Geometry {
   void rollback();
   void geometry_modification(int,double,double);
   void geometry_restoration();
-  inline void set_euclidean(bool t) {euclidean = t;};
   inline bool get_euclidean() const {return euclidean;};
-  inline void set_relational(bool t) {relational = t;};
   inline bool get_relational() const {return relational;};
-  inline void set_uniform(bool t) {uniform = t;};
   inline bool get_uniform() const {return uniform;};
   inline void add(int,double);
+  inline int dimension() const {return background_dimension;};
   inline void set_element(int,double);
   inline double get_argument(const std::vector<double>&,const std::vector<double>&) const;
   inline double get_element(int) const;

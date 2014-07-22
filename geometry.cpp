@@ -2,8 +2,6 @@
 
 extern Random RND;
 
-const int Geometry::background_dimension;
-
 Geometry::Geometry()
 {
   nvertex = 0;
@@ -11,15 +9,18 @@ Geometry::Geometry()
   relational = false;
   uniform = true;
   vperturb = -1;
+  // The usual hypothesis...
+  background_dimension = 3;
 }
 
-Geometry::Geometry(bool type,bool model,bool flat)
+Geometry::Geometry(bool type,bool model,bool flat,int D)
 {
   nvertex = 0;
   euclidean = type;
   relational = model;
   uniform = flat;
   vperturb = -1;
+  background_dimension = D;
 }
 
 Geometry::Geometry(const Geometry& source)
@@ -27,6 +28,7 @@ Geometry::Geometry(const Geometry& source)
   nvertex = source.nvertex;
   euclidean = source.euclidean;
   relational = source.relational;
+  background_dimension = source.background_dimension;
   uniform = source.uniform;
   vperturb = source.vperturb;
   original = source.original;
@@ -42,6 +44,7 @@ Geometry& Geometry::operator =(const Geometry& source)
   nvertex = source.nvertex;
   euclidean = source.euclidean;
   relational = source.relational;
+  background_dimension = source.background_dimension;
   uniform = source.uniform;
   vperturb = source.vperturb;
   original = source.original;
@@ -75,6 +78,7 @@ void Geometry::clear()
   euclidean = true;
   relational = false;
   uniform = true;
+  background_dimension = 3;
 }
 
 void Geometry::serialize(std::ofstream& s) const
@@ -83,6 +87,7 @@ void Geometry::serialize(std::ofstream& s) const
   double x;
 
   s.write((char*)(&nvertex),sizeof(int));
+  s.write((char*)(&background_dimension),sizeof(int));
   s.write((char*)(&euclidean),sizeof(bool));
   s.write((char*)(&relational),sizeof(bool));
   s.write((char*)(&uniform),sizeof(bool));
@@ -117,6 +122,7 @@ void Geometry::deserialize(std::ifstream& s)
   clear();
 
   s.read((char*)(&nvertex),sizeof(int));
+  s.read((char*)(&background_dimension),sizeof(int));
   s.read((char*)(&euclidean),sizeof(bool));
   s.read((char*)(&relational),sizeof(bool));
   s.read((char*)(&uniform),sizeof(bool));
@@ -150,7 +156,7 @@ double Geometry::dot_product(const std::vector<double>& vx,const std::vector<dou
 {
   double output = 0.0;
   if (uniform) {
-    for(int i=0; i<Geometry::background_dimension; ++i) {
+    for(int i=0; i<background_dimension; ++i) {
       output += vx[i]*vy[i];
     }
     return output;
@@ -215,6 +221,10 @@ void Geometry::load(const Geometry* source)
 {
   nvertex = source->nvertex;
   euclidean = source->euclidean;
+  relational = source->relational;
+  uniform = source->uniform;
+  vperturb = source->vperturb;
+  background_dimension = source->background_dimension;
   distances = source->distances;
   if (relational) {
     index = source->index;
@@ -228,6 +238,10 @@ void Geometry::store(Geometry* target) const
 {
   target->nvertex = nvertex;
   target->euclidean = euclidean;
+  target->relational = relational;
+  target->uniform = uniform;
+  target->vperturb = vperturb;
+  target->background_dimension = background_dimension;
   target->distances = distances;
   if (relational) {
     target->index = index;
@@ -242,7 +256,7 @@ int Geometry::vertex_order(int n,int m) const
   if (relational || euclidean) return -1;
 
   double sum = -(coordinates[n][0] - coordinates[m][0])*(coordinates[n][0] - coordinates[m][0]);
-  for(int i=1; i<Geometry::background_dimension; ++i) {
+  for(int i=1; i<background_dimension; ++i) {
     sum += (coordinates[n][i] - coordinates[m][i])*(coordinates[n][i] - coordinates[m][i]);
   }
   if (sum > 0.0) return -1;
@@ -266,10 +280,10 @@ void Geometry::initialize(int n,const std::string& type)
     double delta;
     std::vector<int> x,y;
 
-    nvertex = ipow(n,Geometry::background_dimension);
+    nvertex = ipow(n,background_dimension);
     for(i=0; i<nvertex; ++i) {
       s = i;
-      for(j=Geometry::background_dimension; j>=1; j--) {
+      for(j=background_dimension; j>=1; j--) {
         p = ipow(n,j-1);
         q = s/p;
         x.push_back(q);
@@ -278,7 +292,7 @@ void Geometry::initialize(int n,const std::string& type)
       x.push_back(s);
       for(j=1+i; j<nvertex; ++j) {
         s = j;
-        for(l=Geometry::background_dimension; l>=1; --l) {
+        for(l=background_dimension; l>=1; --l) {
           p = ipow(n,l-1);
           q = s/p;
           y.push_back(q);
@@ -287,7 +301,7 @@ void Geometry::initialize(int n,const std::string& type)
         y.push_back(s);
         delta = double((x[0] - y[0])*(x[0] - y[0]));
         if (!euclidean) delta = -delta;
-        for(l=1; l<Geometry::background_dimension; ++l) {
+        for(l=1; l<background_dimension; ++l) {
           alpha = (x[l] - y[l])*(x[l] - y[l]);
           delta += double(alpha);
         }
@@ -316,7 +330,7 @@ void Geometry::initialize(int n,const std::string& type)
       }
     }
     else {
-      double alpha,r = 1.0 + double(Geometry::background_dimension-1);
+      double alpha,r = 1.0 + double(background_dimension-1);
       for(i=0; i<nvertex; ++i) {
         for(j=1+i; j<nvertex; ++j) {
           alpha = -5.0 + 5.0*r*RND.drandom();
@@ -378,7 +392,7 @@ void Geometry::vertex_difference(int n,int m,std::vector<double>& delta) const
 
   delta.clear();
   if (uniform) {
-    for(i=0; i<Geometry::background_dimension; ++i) {
+    for(i=0; i<background_dimension; ++i) {
       delta.push_back(coordinates[n][i] - coordinates[m][i]);
     }
     return;
@@ -414,11 +428,11 @@ double Geometry::inner_product(const std::vector<double>* laplacian,const std::v
   if (relational) return 0.0;
 
   int i,j,k,l,nelements,column;
-  double value,result[nv][Geometry::background_dimension],sum[Geometry::background_dimension];
+  double value,result[nv][background_dimension],sum[background_dimension];
   double energy = 0.0;
 
   for(i=0; i<nv; ++i) {
-    for(j=0; j<Geometry::background_dimension; ++j) {
+    for(j=0; j<background_dimension; ++j) {
       sum[j] = 0.0;
     }
     l = 0;
@@ -426,17 +440,17 @@ double Geometry::inner_product(const std::vector<double>* laplacian,const std::v
     for(j=0; j<nelements; ++j) {
       value = laplacian[i][l];
       column = int(laplacian[i][l+1]);
-      for(k=0; k<Geometry::background_dimension; ++k) {
+      for(k=0; k<background_dimension; ++k) {
         sum[k] += coordinates[column][k]*value;
       }
       l += 2;
     }
-    for(j=0; j<Geometry::background_dimension; ++j) {
+    for(j=0; j<background_dimension; ++j) {
       result[i][j] = sum[j];
     }
   }
 
-  for(i=0; i<Geometry::background_dimension; ++i) {
+  for(i=0; i<background_dimension; ++i) {
     value = 0.0;
     for(j=0; j<nvertex; ++j) {
       if (offset[j] == -1) continue;
@@ -494,7 +508,7 @@ void Geometry::perturb_vertex(int v)
     }
   }
   else {
-    int k = RND.irandom(Geometry::background_dimension);
+    int k = RND.irandom(background_dimension);
     original = coordinates[v];
     coordinates[v][k] += RND.nrandom(0.0,0.1);
   }
@@ -532,19 +546,19 @@ void Geometry::add_vertex(const std::set<int>& antecedents)
       }
       else {
         std::vector<double> xc,avg_x;
-        for(i=0; i<Geometry::background_dimension; ++i) {
+        for(i=0; i<background_dimension; ++i) {
           avg_x.push_back(0.0);
         }
         for(it=antecedents.begin(); it!=antecedents.end(); it++) {
           j = *it;
-          for(i=0; i<Geometry::background_dimension; ++i) {
+          for(i=0; i<background_dimension; ++i) {
             avg_x[i] += coordinates[j][i];
           }
         }
-        for(i=0; i<Geometry::background_dimension; ++i) {
+        for(i=0; i<background_dimension; ++i) {
           avg_x[i] /= na;
         }
-        for(i=0; i<Geometry::background_dimension; ++i) {
+        for(i=0; i<background_dimension; ++i) {
           xc.push_back(RND.nrandom(avg_x[i],0.5));
         }
         add_vertex(xc);
@@ -575,7 +589,7 @@ void Geometry::add_vertex(int parent,double mutation)
         // Skew the random number generation so the inter-vertex
         // lengths are properly weighted between timelike and
         // spacelike...
-        double r = 1.0 + double(Geometry::background_dimension-1);
+        double r = 1.0 + double(background_dimension-1);
         for(i=0; i<nvertex; ++i) {
           alpha = -5.0 + 5.0*r*RND.drandom();
           distances.push_back(alpha);
@@ -585,7 +599,7 @@ void Geometry::add_vertex(int parent,double mutation)
       }
     }
     else {
-      for(i=0; i<Geometry::background_dimension; ++i) {
+      for(i=0; i<background_dimension; ++i) {
         alpha = -10.0 + 20.0*RND.drandom();
         x.push_back(alpha);
       }
@@ -610,12 +624,12 @@ void Geometry::add_vertex(int parent,double mutation)
       index[make_key(parent,nvertex)] = j;
     }
     else {
-      int q,p = RND.irandom(Geometry::background_dimension);
+      int q,p = RND.irandom(background_dimension);
       double r = RND.drandom(0.1+0.5*mutation,0.2+mutation);
       x = coordinates[parent];
       alpha = RND.drandom(0.0,2.0*M_PI);
       do {
-        q = RND.irandom(Geometry::background_dimension);
+        q = RND.irandom(background_dimension);
         if (q != p) break;
       } while(true);
       x[p] += r*std::cos(alpha);
@@ -743,12 +757,12 @@ bool Geometry::adjust_dimension(const std::vector<int>& vdimension)
     // First check to see if the dimension has changed...
     m = vdimension[i];
     n = (signed) coordinates[i].size();
-    if (m <= Geometry::background_dimension) {
-      if (n != Geometry::background_dimension) {
+    if (m <= background_dimension) {
+      if (n != background_dimension) {
         vmodified.insert(i);
         x = coordinates[i];
         coordinates[i].clear();
-        for(j=0; j<Geometry::background_dimension; ++j) {
+        for(j=0; j<background_dimension; ++j) {
           coordinates[i].push_back(x[j]);
         }
       }
@@ -794,7 +808,7 @@ void Geometry::compute_distances(const std::set<int>& vmodified)
       for(j=0; j<i; ++j) {
         in1 = j*nvertex - j*(j+1)/2;
         delta = 0.0;
-        for(k=0; k<Geometry::background_dimension; ++k) {
+        for(k=0; k<background_dimension; ++k) {
           delta += (coordinates[i][k] - coordinates[j][k])*(coordinates[i][k] - coordinates[j][k]);
         }
         distances[in1+i-(1+j)] = delta;
@@ -802,7 +816,7 @@ void Geometry::compute_distances(const std::set<int>& vmodified)
       in1 = i*nvertex - i*(i+1)/2;
       for(j=1+i; j<nvertex; ++j) {
         delta = 0.0;
-        for(k=0; k<Geometry::background_dimension; ++k) {
+        for(k=0; k<background_dimension; ++k) {
           delta += (coordinates[i][k] - coordinates[j][k])*(coordinates[i][k] - coordinates[j][k]);
         }
         distances[in1+j-(1+i)] = delta;
@@ -815,7 +829,7 @@ void Geometry::compute_distances(const std::set<int>& vmodified)
       for(j=0; j<i; ++j) {
         in1 = j*nvertex - j*(j+1)/2;
         delta = -(coordinates[i][0] - coordinates[j][0])*(coordinates[i][0] - coordinates[j][0]);
-        for(k=1; k<Geometry::background_dimension; ++k) {
+        for(k=1; k<background_dimension; ++k) {
           delta += (coordinates[i][k] - coordinates[j][k])*(coordinates[i][k] - coordinates[j][k]);
         }
         distances[in1+i-(1+j)] = delta;
@@ -823,7 +837,7 @@ void Geometry::compute_distances(const std::set<int>& vmodified)
       in1 = i*nvertex - i*(i+1)/2;
       for(j=1+i; j<nvertex; ++j) {
         delta = -(coordinates[i][0] - coordinates[j][0])*(coordinates[i][0] - coordinates[j][0]);
-        for(k=1; k<Geometry::background_dimension; ++k) {
+        for(k=1; k<background_dimension; ++k) {
           delta += (coordinates[i][k] - coordinates[j][k])*(coordinates[i][k] - coordinates[j][k]);
         }
         distances[in1+j-(1+i)] = delta;
@@ -851,7 +865,7 @@ void Geometry::compute_distances()
       in1 = i*nvertex - i*(i+1)/2;
       for(j=1+i; j<nvertex; ++j) {
         delta = 0.0;
-        for(k=0; k<Geometry::background_dimension; ++k) {
+        for(k=0; k<background_dimension; ++k) {
           delta += (coordinates[i][k] - coordinates[j][k])*(coordinates[i][k] - coordinates[j][k]);
         }
         distances[in1+j-(1+i)] = delta;
@@ -866,7 +880,7 @@ void Geometry::compute_distances()
       in1 = i*nvertex - i*(i+1)/2;
       for(j=1+i; j<nvertex; ++j) {
         delta = -(coordinates[i][0] - coordinates[j][0])*(coordinates[i][0] - coordinates[j][0]);
-        for(k=1; k<Geometry::background_dimension; ++k) {
+        for(k=1; k<background_dimension; ++k) {
           delta += (coordinates[i][k] - coordinates[j][k])*(coordinates[i][k] - coordinates[j][k]);
         }
         distances[in1+j-(1+i)] = delta;
@@ -914,7 +928,7 @@ int Geometry::compute_coordinates(std::vector<double>& x) const
     for(j=0; j<nvertex; ++j) {
       BZ.push_back(0.0);
     }
-    for(j=0; j<Geometry::background_dimension; ++j) {
+    for(j=0; j<background_dimension; ++j) {
       x.push_back(-10.0 + 20.0*RND.drandom());
       xnew.push_back(0.0);
     }
@@ -929,8 +943,8 @@ int Geometry::compute_coordinates(std::vector<double>& x) const
     in1 = nvertex*i - i*(i+1)/2;
     for(j=1+i; j<nvertex; ++j) {
       sum = 0.0;
-      for(k=0; k<Geometry::background_dimension; ++k) {
-        sum += (x[i*Geometry::background_dimension+k]-x[j*Geometry::background_dimension+k])*(x[i*Geometry::background_dimension+k]-x[j*Geometry::background_dimension+k]);
+      for(k=0; k<background_dimension; ++k) {
+        sum += (x[i*background_dimension+k]-x[j*background_dimension+k])*(x[i*background_dimension+k]-x[j*background_dimension+k]);
       }
       sum = std::sqrt(sum);
       cdistance[in1+j-(i+1)] = sum;
@@ -958,12 +972,12 @@ int Geometry::compute_coordinates(std::vector<double>& x) const
       BZ[nvertex*i+i] = -sum;
     }
     for(i=0; i<nvertex; ++i) {
-      for(j=0; j<Geometry::background_dimension; ++j) {
+      for(j=0; j<background_dimension; ++j) {
         sum = 0.0;
         for(k=0; k<nvertex; ++k) {
-          sum += BZ[i*nvertex+k]*x[Geometry::background_dimension*k+j];
+          sum += BZ[i*nvertex+k]*x[background_dimension*k+j];
         }
-        xnew[Geometry::background_dimension*i+j] = pfactor*sum;
+        xnew[background_dimension*i+j] = pfactor*sum;
       }
     }
     err = 0.0;
@@ -971,8 +985,8 @@ int Geometry::compute_coordinates(std::vector<double>& x) const
       in1 = nvertex*i - i*(i+1)/2;
       for(j=1+i; j<nvertex; ++j) {
         sum = 0.0;
-        for(k=0; k<Geometry::background_dimension; ++k) {
-          sum += (xnew[i*Geometry::background_dimension+k]-xnew[j*Geometry::background_dimension+k])*(xnew[i*Geometry::background_dimension+k]-xnew[j*Geometry::background_dimension+k]);
+        for(k=0; k<background_dimension; ++k) {
+          sum += (xnew[i*background_dimension+k]-xnew[j*background_dimension+k])*(xnew[i*background_dimension+k]-xnew[j*background_dimension+k]);
         }
         sum = std::sqrt(sum);
         cdistance[in1+j-(i+1)] = sum;
