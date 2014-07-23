@@ -60,11 +60,12 @@ void Event::allocate()
 
 void Event::initialize()
 {
-  local_dimension = 0;
+  // The obvious answer for the dimension of space
+  local_dimension = 3;
   timestep = 0;
   colour = 2;
   proper_time.initialize(RND.nrandom(1.5));
-  for(int i=0; i<Geometry::background_dimension; ++i) {
+  for(int i=0; i<local_dimension; ++i) {
     space.push_back(-5.0 + RND.nrandom(10.0));
   }
 }
@@ -73,7 +74,7 @@ double Event::norm() const
 {
   double output = 0.0;
   double rl = 0.0;
-  for(int i=0; i<Geometry::background_dimension; ++i) {
+  for(int i=0; i<local_dimension; ++i) {
     rl += std::abs(space[i])*std::abs(space[i]);
   }
   rl = std::sqrt(rl);

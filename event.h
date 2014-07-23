@@ -1,6 +1,5 @@
 #include "proposition.h"
 #include "multitime.h"
-#include "geometry.h"
 
 #ifndef _eventh
 #define _eventh

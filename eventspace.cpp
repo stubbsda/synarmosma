@@ -47,7 +47,7 @@ Eventspace::~Eventspace()
 void Eventspace::build_tessellation(Nexus* output) const
 {
   int i,j;
-  double* t = new double[tdimension];
+  double t[tdimension];
   std::vector<double> coordinates;
 
   for(i=0; i<nevent; ++i) {
@@ -55,17 +55,18 @@ void Eventspace::build_tessellation(Nexus* output) const
     for(j=0; j<tdimension; ++j) {
       coordinates.push_back(t[j]);
     }
-    for(j=0; j<Geometry::background_dimension; ++j) {
+    for(j=0; j<events[i].local_dimension; ++j) {
       coordinates.push_back(events[i].space[j]);
     }
   }
-  //output(tdimension+dimension,coordinates);
-  delete[] t;
+  output->clear();
+  // What now to build the Nexus instance?
+
 }
 
 void Eventspace::compute_distances(std::vector<double>& distances) const
 {
-  int i,j,k;
+  int i,j,k,l;
   double delta;
   double* t1 = new double[tdimension];
   double* t2 = new double[tdimension];
@@ -78,8 +79,9 @@ void Eventspace::compute_distances(std::vector<double>& distances) const
       for(k=0; k<tdimension; ++k) {
         delta += (t1[k]-t2[k])*(t1[k]-t2[k]);
       }
-      for(k=0; k<Geometry::background_dimension; ++k) {
-        delta += (events[i].space[k]-events[j].space[k])*(events[i].space[k]-events[j].space[k]);
+      l = (events[i].local_dimension < events[j].local_dimension) ? events[i].local_dimension : events[j].local_dimension;
+      for(k=0; k<l; ++k) {
+        delta += (events[i].space[k] - events[j].space[k])*(events[i].space[k] - events[j].space[k]);
       }
       delta = std::sqrt(delta);
       distances.push_back(delta);
@@ -98,7 +100,7 @@ void Eventspace::write(const std::vector<double>& distances,double delta,const c
   s.write((char*)(&nevent),sizeof(int));
   for(i=0; i<nevent; ++i) {
     // What should be done if the the number of spatial coordinates isn't equal to three?
-    for(j=0; j<Geometry::background_dimension; ++j) {
+    for(j=0; j<events[i].local_dimension; ++j) {
       x = float(events[i].space[j]);
       s.write((char*)(&x),sizeof(float));
     }
@@ -126,7 +128,6 @@ double Eventspace::perceptual_divergence(const double* raxis,double theta,const 
   // a) raxis is a unit vector 
   // b) 0 <= theta < 2*pi
   // c) dimension = 3
-  assert(Geometry::background_dimension == 3);
   int i,j;
   double ct,st,d1,d2,xt,q0,temp[3],delta,sum = 0.0;
   const double l2 = 2.0*L;
