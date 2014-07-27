@@ -44,6 +44,7 @@ class Graph : public Schema {
   double cyclicity() const;
   double connectivity() const;
   int omega() const;
+  void katz_centrality(std::vector<double>&) const;
   void degree_distribution(bool,std::vector<double>&) const;
   double percolation(bool) const;
   double cyclic_resistance() const;

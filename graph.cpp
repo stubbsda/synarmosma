@@ -168,6 +168,76 @@ int Graph::fission_m(int v)
   return u;
 }
 
+void Graph::katz_centrality(std::vector<double>& output) const
+{
+  // A method to compute the Katz centrality of the vertices in the 
+  // graph - we first need to compute the adjacency matrix and its 
+  // largest eigenvalue, then we use a recursive process in order to 
+  // compute the vector of centrality values.
+  int i,info,nv = nvertex,nwork = 3*nvertex - 1;
+  unsigned int j;
+  char jtype = 'N';
+  char uplo = 'U';
+  double alpha,sum;
+  double* AD = new double[nvertex*nvertex];
+  double* w = new double[nvertex];
+  double* work = new double[nwork];
+  std::vector<double> x,xnew;
+  std::vector<unsigned int>::const_iterator it;
+  Binary_Matrix* A = new Binary_Matrix;
+  const double beta = 1.0;
+
+  compute_adjacency_matrix(A);
+  for(int i=0; i<nvertex*nvertex; ++i) {
+    AD[i] = 0.0;
+  }
+
+  for(i=0; i<nvertex; ++i) {
+    for(it=A->elements[i].begin(); it!=A->elements[i].end(); it++) {
+      j = *it;
+      AD[nvertex*i+j] = 1.0;
+    }
+  }
+
+  // If info is zero after this LAPACK call, then w will contain
+  // the eigenvalues of A (which are real since A is symmetric and
+  // real) in ascending order, thus w[nv-1] will be the largest
+  dsyev_(&jtype,&uplo,&nv,AD,&nv,w,work,&nwork,&info);
+  assert(info == 0);  
+
+  for(i=0; i<nvertex; ++i) {
+    x.push_back(1.0);
+    xnew.push_back(0.0);
+  }
+
+  // We want alpha to be just under the threshold for convergence
+  alpha = 0.9*(1.0/w[nvertex-1]);
+
+  delete AD;
+  delete w;
+  delete work;
+
+  do {
+    for(i=0; i<nvertex; ++i) {
+      sum = 0.0;
+      for(it=A->elements[i].begin(); it!=A->elements[i].end(); it++) {
+        sum += x[*it];
+      }
+      xnew[i] = alpha*sum + beta;
+    }
+    // Test for convergence...
+    sum = 0.0;
+    for(i=0; i<nvertex; ++i) {
+      sum += (xnew[i] - x[i])*(xnew[i] - x[i]);
+    }
+    if (sum < 0.0001) break;
+    x = xnew;
+  } while(true);
+
+  delete A;  
+  output = xnew;
+}
+
 double Graph::clustering_coefficient(int v) const
 {
   // This method calculates the percentage of distinct pairs (u,w) 
@@ -394,14 +464,18 @@ double Graph::cosine_similarity(int u,int v) const
   // The value for this is the (u,v) element of the square of the 
   // adjacency matrix divided by the square root of the product of 
   // degree(u) and degree(v)
+  if (u == v) return 1.0;
+  if (neighbours[u].empty() || neighbours[v].empty()) return 0.0;
+
   int i,sum = 0;
-  Binary_Matrix A(nvertex,nvertex);
+  Binary_Matrix* A = new Binary_Matrix;
   const double denominator = std::sqrt(double(neighbours[u].size()*neighbours[v].size()));
-  compute_adjacency_matrix(&A);
+  compute_adjacency_matrix(A);
   // Now we need to square this binary matrix A...
   for(i=0; i<nvertex; ++i) {
-    if (A.get(u,i) && A.get(i,v)) sum += 1;
+    if (A->get(u,i) && A->get(i,v)) sum += 1;
   }
+  delete A;
   return double(sum)/denominator;
 }
 
