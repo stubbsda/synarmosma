@@ -359,7 +359,6 @@ void Graph::degree_distribution(bool logarithmic,std::vector<double>& histogram)
   assert(connected());
   int i;
   const int max = max_degree();
-  const double nv = double(nvertex);
   int counter[1+max];
 
   for(i=0; i<=max; ++i) {
@@ -371,7 +370,7 @@ void Graph::degree_distribution(bool logarithmic,std::vector<double>& histogram)
   }
 
   histogram.clear();
-  histogram.push_back(double(counter[1])/nv);
+  histogram.push_back(double(counter[1]));
   if (logarithmic) {
     // Use logarithmic binning, so intervals of size {1,2,4,8,16...}
     int lbound = 1,ubound = 2,sum,its = 1;
@@ -380,20 +379,20 @@ void Graph::degree_distribution(bool logarithmic,std::vector<double>& histogram)
       lbound *= 2;
       ubound *= 2;
       if (lbound > max) break;
-      if (ubound > (1+max)) ubound = 1+max;
+      if (ubound > (1+max)) ubound = 1 + max;
       sum = 0;
       for(i=lbound; i<ubound; ++i) {
         sum += counter[i];
       }
       alpha = double(sum)/double(ubound - lbound);
-      histogram.push_back(alpha/nv);
+      histogram.push_back(alpha);
       its++;
     } while(true);
   }
   else {
     // Use a uniform bin width of unity...
     for(i=2; i<=max; ++i) {
-      histogram.push_back(double(counter[i])/nv);
+      histogram.push_back(double(counter[i]));
     }
   }
 }
