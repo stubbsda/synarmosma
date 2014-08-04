@@ -21,8 +21,10 @@ class Graph : public Schema {
  public:
   // The usual public methods for a class
   Graph();
+  Graph(const Graph&);
   Graph(const char*);
   Graph(int);
+  Graph(int,int);
   Graph(int,double);
   virtual ~Graph();
   virtual void clear();
@@ -34,6 +36,7 @@ class Graph : public Schema {
   virtual int fission_x(int);
   virtual int fission_m(int);
   // A series of const methods to calculate various graph properties
+  void core(Graph*,int) const;
   bool planar() const;
   bool biconnected() const;
   double cosine_similarity(int,int) const;
@@ -62,6 +65,7 @@ class Graph : public Schema {
   void compute_laplacian(Matrix<double>*) const;
   void genus(int*) const;
   inline int size() const {return nedge;};
+  inline int order() const {return nvertex;};
   friend class Nexus;
 };
 #endif

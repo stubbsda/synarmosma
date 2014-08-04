@@ -21,6 +21,40 @@ Graph::Graph(int n) : Schema(n)
   }
 }
 
+Graph::Graph(int n,int c) : Schema(n)
+{
+  // Construct a scale-free graph with n vertices where 
+  // the minimum degree is c
+  int i,j,k,sum;
+  double rho;
+
+  assert(c >= 1);
+ 
+  nedge = 0;
+  for(i=0; i<c+1; ++i) {
+    for(j=(signed) neighbours[i].size(); j<c; ++j) {
+      do {
+        k = RND.irandom(c+1);
+        if (k == i) continue;
+        if (neighbours[i].count(k) == 0) break;
+      } while(true);
+      add_edge(i,k);
+    }
+  }
+
+  for(i=c+1; i<n; ++i) {
+    for(j=0; j<c; ++j) {
+      rho = RND.drandom();
+      sum = 0;
+      for(k=0; k<i; ++k) {
+        sum += neighbours[k].size();
+        if (rho < double(sum)/double(2*nedge)) break;
+      }
+      add_edge(i,k);
+    }
+  }
+}
+
 Graph::Graph(int n,double p) : Schema(n)
 {
   // We will use the Erdős–Rényi random graph model (the G(n,p) variant) to
@@ -39,9 +73,61 @@ Graph::Graph(int n,double p) : Schema(n)
   }
 }
 
+Graph::Graph(const Graph& source)
+{
+  clear();
+  nvertex = source.nvertex;
+  neighbours = source.neighbours;
+  nedge = source.nedge;
+}
+
 Graph::~Graph()
 {
 
+}
+
+void Graph::core(Graph* G,int k) const
+{
+  // A method to compute the k-core of the current graph
+  // The 1-core is just the graph itself...
+  assert(k > 1);
+
+  if (k > max_degree()) {
+    // The k-core in this case is null
+    G->clear();
+    return;
+  }
+  else if (k < min_degree()) {
+    // The k-core is just the graph as a whole in this case...
+    G->nvertex = nvertex; 
+    G->nedge = nedge;
+    G->neighbours = neighbours;
+    return;
+  }
+
+  int i;
+  bool found;
+
+  G->nvertex = nvertex; 
+  G->nedge = nedge;
+  G->neighbours = neighbours;
+
+  do {
+    if (G->max_degree() < k) {
+      // The k-core will necessarily be null in this case, so we can exit
+      G->clear();
+      break;
+    }   
+    found = false;
+    for(i=0; i<G->nvertex; ++i) {
+      if (G->neighbours[i].size() < k) {
+        G->amputation(i);
+        found = true;
+        break;
+      }
+    }
+    if (!found) break;
+  } while(true);
 }
 
 bool Graph::planar() const
