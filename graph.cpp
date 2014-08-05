@@ -120,7 +120,7 @@ void Graph::core(Graph* G,int k) const
     }   
     found = false;
     for(i=0; i<G->nvertex; ++i) {
-      if (G->neighbours[i].size() < k) {
+      if ((signed) G->neighbours[i].size() < k) {
         G->amputation(i);
         found = true;
         break;
