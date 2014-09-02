@@ -918,10 +918,10 @@ void Geometry::compute_distances()
     }
   }
   else {
-#ifdef PARALLEL
-    #pragma omp parallel for default(shared) private(i,j,k,in1,delta) schedule(dynamic,1)
-#endif
     int n1,n2;
+#ifdef PARALLEL
+    #pragma omp parallel for default(shared) private(i,j,k,n1,n2,in1,delta) schedule(dynamic,1)
+#endif
     for(i=0; i<nvertex; ++i) {
       n1 = (signed) coordinates[i].size();
       in1 = i*nvertex - i*(i+1)/2;
