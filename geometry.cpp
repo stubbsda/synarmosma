@@ -81,6 +81,46 @@ void Geometry::clear()
   background_dimension = 3;
 }
 
+bool Geometry::consistent() const
+{
+  assert(nvertex == (signed) coordinates.size());
+
+  int i,j;
+
+  if (!relational) {
+    for(i=0; i<nvertex; ++i) {
+      for(j=0; j<(signed) coordinates[i].size(); ++j) {
+        if (std::isnan(coordinates[i][j])) {
+          std::cout << "Nan at " << i << " and " << j << std::endl;
+          return false;
+        }
+      }
+    }
+  }
+
+  if ((nvertex*(nvertex-1))/2 != (signed) distances.size()) {
+    std::cout << distances.size() << "  " << nvertex << "  " << (nvertex*(nvertex-1))/2 << std::endl;
+    return false;
+  }
+
+  for(i=0; i<nvertex; ++i) {
+    for(j=1+i; j<nvertex; ++j) {
+      if (std::isnan(get_distance(i,j,false))) {
+        std::cout << i << "  " << j << std::endl;
+        std::cout << coordinates[i].size() << "  " << coordinates[j].size() << std::endl;
+        return false;
+      }
+    }
+  }
+  for(i=0; i<(signed) distances.size(); ++i) {
+    if (std::isnan(distances[i])) {
+      std::cout << i << "  " << distances[i] << std::endl;
+      return false;
+    }
+  }
+  return true;
+}
+
 void Geometry::serialize(std::ofstream& s) const
 {
   int i,j;
@@ -491,7 +531,7 @@ void Geometry::rollback()
   }
 }
 
-void Geometry::perturb_vertex(int v)
+void Geometry::vertex_perturbation(int v)
 {
   vperturb = v;
   if (relational) {
@@ -514,14 +554,14 @@ void Geometry::perturb_vertex(int v)
   }
 }
 
-void Geometry::add_vertex(const std::set<int>& antecedents)
+void Geometry::vertex_addition(const std::set<int>& antecedents)
 {
   if (antecedents.empty()) {
-    add_vertex(-1);
+    vertex_addition(-1);
   }
   else {
     if (RND.drandom() < 0.25) {
-      add_vertex(RND.irandom(antecedents));
+      vertex_addition(RND.irandom(antecedents));
     }
     else {
       int i,j;
@@ -561,13 +601,13 @@ void Geometry::add_vertex(const std::set<int>& antecedents)
         for(i=0; i<background_dimension; ++i) {
           xc.push_back(RND.nrandom(avg_x[i],0.5));
         }
-        add_vertex(xc);
+        vertex_addition(xc);
       }
     }
   }
 }
 
-void Geometry::add_vertex(int parent,double mutation)
+void Geometry::vertex_addition(int parent,double mutation)
 {
   int i,j;
   double alpha;
@@ -746,7 +786,7 @@ void Geometry::additive_modification(int v,bool total,double mu,double sigma)
 
 bool Geometry::adjust_dimension(const std::vector<int>& vdimension)
 {
-  if (relational) return false;
+  if (relational || uniform) return false;
   
   int i,j,n,m;
   std::set<int> vmodified;
@@ -768,20 +808,18 @@ bool Geometry::adjust_dimension(const std::vector<int>& vdimension)
       }
     }
     else {
-      if (!uniform) {
-        if (n != m) {
-          vmodified.insert(i);
-          if (n > m) {
-            x = coordinates[i];
-            coordinates[i].clear();
-            for(j=0; j<m; ++j) {
-              coordinates[i].push_back(x[j]);
-            }
+      if (n != m) {
+        vmodified.insert(i);
+        if (n > m) {
+          x = coordinates[i];
+          coordinates[i].clear();
+          for(j=0; j<m; ++j) {
+            coordinates[i].push_back(x[j]);
           }
-          else {
-            for(j=n; j<m; ++j) {
-              coordinates[i].push_back(RND.nrandom(0.0,1.0));
-            }
+        }
+        else {
+          for(j=n; j<m; ++j) {
+            coordinates[i].push_back(RND.nrandom(0.0,1.0));
           }
         }
       }
@@ -867,6 +905,13 @@ void Geometry::compute_distances()
         delta = 0.0;
         for(k=0; k<background_dimension; ++k) {
           delta += (coordinates[i][k] - coordinates[j][k])*(coordinates[i][k] - coordinates[j][k]);
+        }
+        if (std::isnan(delta)) {
+          std::cout << i << "  " << j << std::endl;
+          for(k=0; k<background_dimension; ++k) {
+            std::cout << coordinates[i][k] << "  " << coordinates[j][k] << std::endl;;
+          }
+          std::exit(1);          
         }
         distances[in1+j-(1+i)] = delta;
       }

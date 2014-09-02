@@ -32,10 +32,11 @@ class Geometry {
   void deserialize(std::ifstream&);
   void load(const Geometry*);
   void store(Geometry*) const;
+  bool consistent() const;
   void initialize(int,const std::string&);
-  void add_vertex(int,double mutation=1.0);
-  void add_vertex(const std::set<int>&);
-  inline void add_vertex(const std::vector<double>&);
+  void vertex_addition(int,double mutation=1.0);
+  void vertex_addition(const std::set<int>&);
+  inline void vertex_addition(const std::vector<double>&);
   void get_implied_vertices(int,std::set<int>&) const;
   bool adjust_dimension(const std::vector<int>&);
   void compute_distances();
@@ -47,7 +48,7 @@ class Geometry {
   void vertex_difference(int,int,std::vector<double>&) const;
   void additive_modification(int,bool,double,double);
   void multiplicative_modification(int,bool,double,double);
-  void perturb_vertex(int);
+  void vertex_perturbation(int);
   void rollback();
   void geometry_modification(int,double,double);
   void geometry_restoration();
@@ -131,13 +132,23 @@ void Geometry::add(int n,double alpha)
   }
 }
 
-void Geometry::add_vertex(const std::vector<double>& x)
+void Geometry::vertex_addition(const std::vector<double>& x)
 {
   if (relational) {
     std::cerr << "Illegal geometric method call for relational model!" << std::endl;
     std::exit(1);
   }
-  coordinates.push_back(x);
+  assert((signed) x.size() >= background_dimension);
+  if (uniform) {
+    std::vector<double> xt;
+    for(int i=0; i<background_dimension; ++i) {
+      xt.push_back(x[i]);
+    }
+    coordinates.push_back(xt);
+  }
+  else {
+    coordinates.push_back(x);
+  }
   nvertex++;
 }
 
@@ -156,7 +167,17 @@ void Geometry::set_coordinates(int v,const std::vector<double>& x)
     std::cerr << "Illegal geometric method call for relational model!" << std::endl;
     std::exit(1);
   }
-  coordinates[v] = x;
+  assert((signed) x.size() >= background_dimension);
+  if (uniform) {
+    std::vector<double> xt;
+    for(int i=0; i<background_dimension; ++i) {
+      xt.push_back(x[i]);
+    }
+    coordinates[v] = xt;
+  }
+  else {
+    coordinates[v] = x;
+  }
 }
 
 double Geometry::get_distance(int v,const std::vector<double>& x,bool causal) const 
