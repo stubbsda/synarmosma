@@ -836,25 +836,26 @@ void Geometry::compute_distances(const std::set<int>& vmodified)
 {
   if (relational) return;
 
-  int i,j,k,in1;
+  int i,j,k,n1,n2,in1;
   double delta;
   std::set<int>::const_iterator it;
+  const double pfactor = (euclidean) ? 1.0 : -1.0;
 
-  if (euclidean) {
+  if (uniform) {
     for(it=vmodified.begin(); it!=vmodified.end(); it++) {
       i = *it;
       for(j=0; j<i; ++j) {
         in1 = j*nvertex - j*(j+1)/2;
-        delta = 0.0;
-        for(k=0; k<background_dimension; ++k) {
+        delta = pfactor*(coordinates[i][0] - coordinates[j][0])*(coordinates[i][0] - coordinates[j][0]);
+        for(k=1; k<background_dimension; ++k) {
           delta += (coordinates[i][k] - coordinates[j][k])*(coordinates[i][k] - coordinates[j][k]);
         }
         distances[in1+i-(1+j)] = delta;
       }
       in1 = i*nvertex - i*(i+1)/2;
       for(j=1+i; j<nvertex; ++j) {
-        delta = 0.0;
-        for(k=0; k<background_dimension; ++k) {
+        delta = pfactor*(coordinates[i][0] - coordinates[j][0])*(coordinates[i][0] - coordinates[j][0]);
+        for(k=1; k<background_dimension; ++k) {
           delta += (coordinates[i][k] - coordinates[j][k])*(coordinates[i][k] - coordinates[j][k]);
         }
         distances[in1+j-(1+i)] = delta;
@@ -864,18 +865,23 @@ void Geometry::compute_distances(const std::set<int>& vmodified)
   else {
     for(it=vmodified.begin(); it!=vmodified.end(); it++) {
       i = *it;
+      n1 = (signed) coordinates[i].size();
       for(j=0; j<i; ++j) {
         in1 = j*nvertex - j*(j+1)/2;
-        delta = -(coordinates[i][0] - coordinates[j][0])*(coordinates[i][0] - coordinates[j][0]);
-        for(k=1; k<background_dimension; ++k) {
+        delta = pfactor*(coordinates[i][0] - coordinates[j][0])*(coordinates[i][0] - coordinates[j][0]);
+        n2 = (signed) coordinates[j].size();
+        n2 = (n1 <= n2) ? n1 : n2;
+        for(k=1; k<n2; ++k) {
           delta += (coordinates[i][k] - coordinates[j][k])*(coordinates[i][k] - coordinates[j][k]);
         }
         distances[in1+i-(1+j)] = delta;
       }
       in1 = i*nvertex - i*(i+1)/2;
       for(j=1+i; j<nvertex; ++j) {
-        delta = -(coordinates[i][0] - coordinates[j][0])*(coordinates[i][0] - coordinates[j][0]);
-        for(k=1; k<background_dimension; ++k) {
+        n2 = (signed) coordinates[j].size();
+        n2 = (n1 <= n2) ? n1 : n2;
+        delta = pfactor*(coordinates[i][0] - coordinates[j][0])*(coordinates[i][0] - coordinates[j][0]);
+        for(k=1; k<n2; ++k) {
           delta += (coordinates[i][k] - coordinates[j][k])*(coordinates[i][k] - coordinates[j][k]);
         }
         distances[in1+j-(1+i)] = delta;
@@ -890,28 +896,22 @@ void Geometry::compute_distances()
 
   int i,j,k,in1;
   double delta;
+  const double pfactor = (euclidean) ? 1.0 : -1.0;
 
   distances.clear();
   for(i=0; i<nvertex*(nvertex-1)/2; ++i) {
     distances.push_back(0.0);
   }
-  if (euclidean) {
+  if (uniform) {
 #ifdef PARALLEL
     #pragma omp parallel for default(shared) private(i,j,k,in1,delta) schedule(dynamic,1)
 #endif
     for(i=0; i<nvertex; ++i) {
       in1 = i*nvertex - i*(i+1)/2;
       for(j=1+i; j<nvertex; ++j) {
-        delta = 0.0;
-        for(k=0; k<background_dimension; ++k) {
+        delta = pfactor*(coordinates[i][0] - coordinates[j][0])*(coordinates[i][0] - coordinates[j][0]);
+        for(k=1; k<background_dimension; ++k) {
           delta += (coordinates[i][k] - coordinates[j][k])*(coordinates[i][k] - coordinates[j][k]);
-        }
-        if (std::isnan(delta)) {
-          std::cout << i << "  " << j << std::endl;
-          for(k=0; k<background_dimension; ++k) {
-            std::cout << coordinates[i][k] << "  " << coordinates[j][k] << std::endl;;
-          }
-          std::exit(1);          
         }
         distances[in1+j-(1+i)] = delta;
       }
@@ -921,11 +921,15 @@ void Geometry::compute_distances()
 #ifdef PARALLEL
     #pragma omp parallel for default(shared) private(i,j,k,in1,delta) schedule(dynamic,1)
 #endif
+    int n1,n2;
     for(i=0; i<nvertex; ++i) {
+      n1 = (signed) coordinates[i].size();
       in1 = i*nvertex - i*(i+1)/2;
       for(j=1+i; j<nvertex; ++j) {
-        delta = -(coordinates[i][0] - coordinates[j][0])*(coordinates[i][0] - coordinates[j][0]);
-        for(k=1; k<background_dimension; ++k) {
+        delta = pfactor*(coordinates[i][0] - coordinates[j][0])*(coordinates[i][0] - coordinates[j][0]);
+        n2 = (signed) coordinates[j].size();
+        n2 = (n1 <= n2) ? n1 : n2;
+        for(k=1; k<n2; ++k) {
           delta += (coordinates[i][k] - coordinates[j][k])*(coordinates[i][k] - coordinates[j][k]);
         }
         distances[in1+j-(1+i)] = delta;

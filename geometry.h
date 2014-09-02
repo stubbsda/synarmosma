@@ -90,7 +90,6 @@ double Geometry::get_element(int n) const
 
   int i,j,kt = 0;
   for(i=0; i<nvertex; ++i) {
-    assert(coordinates[i].size() == 2);
     for(j=0; j<(signed) coordinates[i].size(); ++j) {
       if (kt == n) return coordinates[i][j];
       kt++;
@@ -180,22 +179,27 @@ void Geometry::set_coordinates(int v,const std::vector<double>& x)
   }
 }
 
-double Geometry::get_distance(int v,const std::vector<double>& x,bool causal) const 
+double Geometry::get_distance(int v,const std::vector<double>& x,bool lorentzian) const 
 {
   if (relational) {
     std::cerr << "Illegal geometric method call for relational model!" << std::endl;
     std::exit(1);
   }
-  double delta = 0.0;
+  assert((signed) x.size() >= background_dimension);
 
-  if (causal) {
-    delta = -(coordinates[v][0] - x[0])*(coordinates[v][0] - x[0]);
+  double delta = (coordinates[v][0] - x[0])*(coordinates[v][0] - x[0]);
+  if (lorentzian) delta = -delta;
+
+  if (uniform) {
     for(int i=1; i<background_dimension; ++i) {
       delta += (coordinates[v][i] - x[i])*(coordinates[v][i] - x[i]);
     }
   }
   else {
-    for(int i=0; i<background_dimension; ++i) {
+    int n1 = (signed) coordinates[v].size();
+    int n2 = (signed) x.size();
+    n1 = (n1 <= n2) ? n1 : n2;
+    for(int i=1; i<n1; ++i) {
       delta += (coordinates[v][i] - x[i])*(coordinates[v][i] - x[i]);
     }
   }
@@ -239,9 +243,18 @@ double Geometry::get_computed_distance(int v1,int v2,bool lorentzian) const
     if (!lorentzian && l < 0.0) l = -l;
   }
   else {
+    int m;
     l = (coordinates[v1][0] - coordinates[v2][0])*(coordinates[v1][0] - coordinates[v2][0]);
     if (lorentzian) l = -l;
-    for(n=1; n<background_dimension; ++n) {
+    if (uniform) {
+      m = background_dimension;
+    }
+    else {
+      m = (signed) coordinates[v1].size();
+      n = (signed) coordinates[v2].size();
+      m = (m <= n) ? m : n;
+    }
+    for(n=1; n<m; ++n) {
       l += (coordinates[v1][n] - coordinates[v2][n])*(coordinates[v1][n] - coordinates[v2][n]);
     }
   }
