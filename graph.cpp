@@ -279,7 +279,7 @@ void Graph::katz_centrality(std::vector<double>& output) const
   }
 
   for(i=0; i<nvertex; ++i) {
-    for(it=A->elements[i].begin(); it!=A->elements[i].end(); it++) {
+    for(it=A->elements[i].begin(); it!=A->elements[i].end(); ++it) {
       j = *it;
       AD[nvertex*i+j] = 1.0;
     }
@@ -306,7 +306,7 @@ void Graph::katz_centrality(std::vector<double>& output) const
   do {
     for(i=0; i<nvertex; ++i) {
       sum = 0.0;
-      for(it=A->elements[i].begin(); it!=A->elements[i].end(); it++) {
+      for(it=A->elements[i].begin(); it!=A->elements[i].end(); ++it) {
         sum += x[*it];
       }
       xnew[i] = alpha*sum + beta;
@@ -367,7 +367,7 @@ bool Graph::biconnected() const
     }
     for(j=0; j<nvertex; ++j) {
       if (i == j) continue;
-      for(it=neighbours[j].begin(); it!=neighbours[j].end(); it++) {
+      for(it=neighbours[j].begin(); it!=neighbours[j].end(); ++it) {
         k = *it;
         if (k == i) continue;
         G.add_edge(offset[j],offset[k]);
@@ -579,10 +579,10 @@ double Graph::inverse_girth() const
       done[j] = 0;
     }
     do {
-      for(it=current.begin(); it!=current.end(); it++) {
+      for(it=current.begin(); it!=current.end(); ++it) {
         p = *it;
         done[p] = 1;
-        for(jt=neighbours[p].begin(); jt!=neighbours[p].end(); jt++) {
+        for(jt=neighbours[p].begin(); jt!=neighbours[p].end(); ++jt) {
           q = *jt;
           if (q == parent[p]) continue;
           if (done[q] == 1) {
@@ -693,7 +693,7 @@ double Graph::entwinement() const
   }
 
   for(i=0; i<nvertex; ++i) {
-    for(it=A->elements[i].begin(); it!=A->elements[i].end(); it++) {
+    for(it=A->elements[i].begin(); it!=A->elements[i].end(); ++it) {
       j = *it;
       AD[nvertex*i+j] = 1.0;
     }
@@ -746,7 +746,7 @@ double Graph::cyclic_resistance() const
     }
   }
   for(i=0; i<nvertex; ++i) {
-    for(it=neighbours[i].begin(); it!=neighbours[i].end(); it++) {
+    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
       j = *it;
       if (j < i) continue;
       L[nvertex*i+j] = -1.0;

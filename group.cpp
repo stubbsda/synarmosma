@@ -292,7 +292,7 @@ unsigned int Group::implied_generators() const
   std::vector<std::pair<unsigned int,int> >::const_iterator it;
 
   for(i=0; i<relations.size(); ++i) {
-    for(it=relations[i].content.begin(); it!=relations[i].content.end(); it++) {
+    for(it=relations[i].content.begin(); it!=relations[i].content.end(); ++it) {
       n = it->first;
       glabels.insert(n);
     }

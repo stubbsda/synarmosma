@@ -43,7 +43,7 @@ int combinations(const std::set<int>& S,int r,std::vector<int>& C)
   }
   do {
     i = 0;
-    for (it=S.begin(); it!=S.end(); it++) {
+    for (it=S.begin(); it!=S.end(); ++it) {
       if (v[i] == 1) C.push_back(*it);
       ++i;
     }
@@ -197,7 +197,7 @@ int element(const std::set<int>& vx)
   if (vx.size() > 1) return -1;
   int out = -1;
   std::set<int>::const_iterator it;
-  for(it=vx.begin(); it!=vx.end(); it++) {
+  for(it=vx.begin(); it!=vx.end(); ++it) {
     out = *it;
   }
   return out;
@@ -238,7 +238,7 @@ double norm(const std::vector<double>& x)
 {
   double alpha,output = 0.0;
   std::vector<double>::const_iterator vit;
-  for(vit=x.begin(); vit!=x.end(); vit++) {
+  for(vit=x.begin(); vit!=x.end(); ++vit) {
     alpha = *vit;
     output += alpha*alpha;
   }
@@ -387,7 +387,7 @@ int coincidence(const std::set<int>& v1,const std::set<int>& v2)
 
   assert((1+v1.size()) == v2.size());
 
-  for(it=v1.begin(); it!=v1.end(); it++) {
+  for(it=v1.begin(); it!=v1.end(); ++it) {
     in1 = *it;
     jt = std::find(v2.begin(),v2.end(),in1);
     if (jt == v2.end()) {
@@ -398,7 +398,7 @@ int coincidence(const std::set<int>& v1,const std::set<int>& v2)
   if (!found) return 0;
 
   i = 1;
-  for(it=v2.begin(); it!=v2.end(); it++) {
+  for(it=v2.begin(); it!=v2.end(); ++it) {
     in1 = *it;
     jt = std::find(v1.begin(),v1.end(),in1);
     if (jt == v1.end()) {

@@ -22,18 +22,19 @@ class Geometry {
 
  public:
   Geometry();
-  Geometry(bool,bool,bool,int);
   Geometry(const Geometry&);
   Geometry& operator =(const Geometry&);
   ~Geometry();
   void reciprocate();
   void clear();
+  void set_default_values();
+  void initialize(bool,bool,bool,int);
   void serialize(std::ofstream&) const;
   void deserialize(std::ifstream&);
   void load(const Geometry*);
   void store(Geometry*) const;
   bool consistent() const;
-  void initialize(int,const std::string&);
+  void create(int,const std::string&);
   void vertex_addition(int,double mutation=1.0);
   void vertex_addition(const std::set<int>&);
   inline void vertex_addition(const std::vector<double>&);
@@ -225,6 +226,7 @@ double Geometry::get_distance(int v1,int v2,bool lorentzian) const
       n += (v1 - (1+v2));
     }
   }
+  assert(n >= 0 && n < (signed) distances.size());
   l = distances[n];
   if (!lorentzian && l < 0.0) l = -l;
   return l;

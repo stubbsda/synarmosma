@@ -110,7 +110,7 @@ int Random::irandom(const std::set<int>& S)
   int k = 0;
   std::set<int>::const_iterator it;
 
-  for(it=S.begin(); it!=S.end(); it++) {
+  for(it=S.begin(); it!=S.end(); ++it) {
     if (k == n) {
       output = *it;
       break;

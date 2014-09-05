@@ -51,7 +51,7 @@ inline void Cell::get_vertices(std::vector<int>& v) const
   std::set<int>::const_iterator it;
 
   v.clear();
-  for(it=vertices.begin(); it!=vertices.end(); it++) {
+  for(it=vertices.begin(); it!=vertices.end(); ++it) {
     v.push_back(*it);
   }
 }
@@ -61,7 +61,7 @@ inline void Cell::get_vertices(int* v) const
   int n = 0;
   std::set<int>::const_iterator it;
 
-  for(it=vertices.begin(); it!=vertices.end(); it++) {
+  for(it=vertices.begin(); it!=vertices.end(); ++it) {
     v[n] = *it; n++;
   }
 } 
@@ -87,9 +87,9 @@ inline int affinity(const Cell& s1,const Cell& s2)
   std::set<int>::const_iterator it,jt;
   int i,j,nc = 0;
 
-  for(it=s1.vertices.begin(); it!=s1.vertices.end(); it++) {
+  for(it=s1.vertices.begin(); it!=s1.vertices.end(); ++it) {
     i = *it;
-    for(jt=s2.vertices.begin(); jt!=s2.vertices.end(); jt++) {
+    for(jt=s2.vertices.begin(); jt!=s2.vertices.end(); ++jt) {
       j = *jt;
       if (i == j) nc++;
     }

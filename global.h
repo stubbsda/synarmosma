@@ -163,7 +163,7 @@ inline std::string make_key(const std::set<int>& S)
   std::stringstream s;
   std::set<int>::const_iterator it;
   i = 0;
-  for(it=S.begin(); it!=S.end(); it++) {
+  for(it=S.begin(); it!=S.end(); ++it) {
     if (i < (n-1)) {
       s << *it << ":";
     }

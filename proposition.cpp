@@ -73,7 +73,7 @@ void Proposition::initialize(int nc,const std::set<int>& atoms)
     for(j=1; j<NP; ++j) {
       alpha = double(j)/double(2*NP);
       if (RND.drandom() < alpha || (signed) used.size() == na) {
-        for(k=j; k<NP; k++) {
+        for(k=j; k<NP; ++k) {
           clause.push_back(-1); clause.push_back(0);
         }
         break;
@@ -99,7 +99,7 @@ bool Proposition::satisfiable() const
   std::set<int>::const_iterator it;
 
   atoms(A);
-  for(it=A.begin(); it!=A.end(); it++) {
+  for(it=A.begin(); it!=A.end(); ++it) {
     bvalues.push_back(*it);
     bvalues.push_back(RND.irandom(2));
   }

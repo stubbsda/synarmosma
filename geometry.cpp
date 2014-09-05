@@ -4,23 +4,7 @@ extern Random RND;
 
 Geometry::Geometry()
 {
-  nvertex = 0;
-  euclidean = true;
-  relational = false;
-  uniform = true;
-  vperturb = -1;
-  // The usual hypothesis...
-  background_dimension = 3;
-}
-
-Geometry::Geometry(bool type,bool model,bool flat,int D)
-{
-  nvertex = 0;
-  euclidean = type;
-  relational = model;
-  uniform = flat;
-  vperturb = -1;
-  background_dimension = D;
+  set_default_values();
 }
 
 Geometry::Geometry(const Geometry& source)
@@ -60,6 +44,25 @@ Geometry::~Geometry()
   clear();
 }
 
+void Geometry::set_default_values()
+{
+  vperturb = -1;
+  nvertex = 0;
+  euclidean = true;
+  relational = false;
+  uniform = true;
+  background_dimension = 3;
+}
+
+void Geometry::initialize(bool type,bool model,bool flat,int D)
+{
+  clear();
+  euclidean = type;
+  relational = model;
+  uniform = flat;
+  background_dimension = D;
+}
+
 void Geometry::clear()
 {
   if (relational) {
@@ -73,12 +76,8 @@ void Geometry::clear()
   }
   distances.clear();
   original.clear();
-  vperturb = -1;
-  nvertex = 0;
-  euclidean = true;
-  relational = false;
-  uniform = true;
-  background_dimension = 3;
+
+  set_default_values();
 }
 
 bool Geometry::consistent() const
@@ -142,13 +141,23 @@ void Geometry::serialize(std::ofstream& s) const
     }
   }
   else {
-    int n;
-    for(i=0; i<nvertex; ++i) {
-      n = (signed) coordinates[i].size();
-      s.write((char*)(&n),sizeof(int));
-      for(j=0; j<n; ++j) {
-        x = coordinates[i][j];
-        s.write((char*)(&x),sizeof(double));
+    if (uniform) {
+      for(i=0; i<nvertex; ++i) {
+        for(j=0; j<background_dimension; ++j) {
+          x = coordinates[i][j];
+          s.write((char*)(&x),sizeof(double));
+        }
+      }
+    }
+    else {
+      int n;
+      for(i=0; i<nvertex; ++i) {
+        n = (signed) coordinates[i].size();
+        s.write((char*)(&n),sizeof(int));
+        for(j=0; j<n; ++j) {
+          x = coordinates[i][j];
+          s.write((char*)(&x),sizeof(double));
+        }
       }
     }
   }
@@ -179,14 +188,26 @@ void Geometry::deserialize(std::ifstream& s)
   }
   else {
     std::vector<double> xc;
-    for(i=0; i<nvertex; ++i) {
-      s.read((char*)(&n),sizeof(int));
-      for(j=0; j<n; ++j) {
-        s.read((char*)(&x),sizeof(double));
-        xc.push_back(x);
+    if (uniform) {
+      for(i=0; i<nvertex; ++i) {
+        for(j=0; j<background_dimension; ++j) {
+          s.read((char*)(&x),sizeof(double));
+          xc.push_back(x);
+        }
+        coordinates.push_back(xc);
+        xc.clear();
       }
-      coordinates.push_back(xc);
-      xc.clear();
+    }
+    else {
+      for(i=0; i<nvertex; ++i) {
+        s.read((char*)(&n),sizeof(int));
+        for(j=0; j<n; ++j) {
+          s.read((char*)(&x),sizeof(double));
+          xc.push_back(x);
+        }
+        coordinates.push_back(xc);
+        xc.clear();
+      }
     }
   }
   compute_distances();
@@ -304,7 +325,7 @@ int Geometry::vertex_order(int n,int m) const
   return output;
 }
 
-void Geometry::initialize(int n,const std::string& type)
+void Geometry::create(int n,const std::string& type)
 {
   if (!relational) {
     std::cerr << "Illegal geometric method call (initialize) for absolute model!" << std::endl;
@@ -573,7 +594,7 @@ void Geometry::vertex_addition(const std::set<int>& antecedents)
         j = (signed) distances.size();
         for(i=0; i<nvertex; ++i) {
           l = 0.0;
-          for(it=antecedents.begin(); it!=antecedents.end(); it++) {
+          for(it=antecedents.begin(); it!=antecedents.end(); ++it) {
             qt = index.find(make_key(i,*it));
             l += distances[qt->second];
           }
@@ -589,7 +610,7 @@ void Geometry::vertex_addition(const std::set<int>& antecedents)
         for(i=0; i<background_dimension; ++i) {
           avg_x.push_back(0.0);
         }
-        for(it=antecedents.begin(); it!=antecedents.end(); it++) {
+        for(it=antecedents.begin(); it!=antecedents.end(); ++it) {
           j = *it;
           for(i=0; i<background_dimension; ++i) {
             avg_x[i] += coordinates[j][i];
@@ -842,7 +863,7 @@ void Geometry::compute_distances(const std::set<int>& vmodified)
   const double pfactor = (euclidean) ? 1.0 : -1.0;
 
   if (uniform) {
-    for(it=vmodified.begin(); it!=vmodified.end(); it++) {
+    for(it=vmodified.begin(); it!=vmodified.end(); ++it) {
       i = *it;
       for(j=0; j<i; ++j) {
         in1 = j*nvertex - j*(j+1)/2;
@@ -863,7 +884,7 @@ void Geometry::compute_distances(const std::set<int>& vmodified)
     }
   }
   else {
-    for(it=vmodified.begin(); it!=vmodified.end(); it++) {
+    for(it=vmodified.begin(); it!=vmodified.end(); ++it) {
       i = *it;
       n1 = (signed) coordinates[i].size();
       for(j=0; j<i; ++j) {
@@ -902,6 +923,7 @@ void Geometry::compute_distances()
   for(i=0; i<nvertex*(nvertex-1)/2; ++i) {
     distances.push_back(0.0);
   }
+
   if (uniform) {
 #ifdef PARALLEL
     #pragma omp parallel for default(shared) private(i,j,k,in1,delta) schedule(dynamic,1)

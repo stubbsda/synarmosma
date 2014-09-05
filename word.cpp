@@ -56,7 +56,7 @@ bool Word::legal() const
 {
   std::vector<std::pair<unsigned int,int> >::const_iterator it;
 
-  for(it=content.begin(); it!=content.end(); it++) {
+  for(it=content.begin(); it!=content.end(); ++it) {
     if (it->first >= NL) return false;
   }
   return true;
@@ -265,7 +265,7 @@ Word Word::reduce(int M,const std::set<unsigned int>& trivial_generators,const u
   std::pair<unsigned int,int> doublet;
   std::vector<std::pair<unsigned int,int> >::const_iterator it;
 
-  for(it=content.begin(); it!=content.end(); it++) {
+  for(it=content.begin(); it!=content.end(); ++it) {
     if (trivial_generators.count(it->first) == 1) continue;
     doublet.first = offset[it->first];
     doublet.second = it->second;

@@ -169,7 +169,7 @@ void Nexus::closure(const std::set<std::string>& S,Nexus* NX,int* offset) const
     if (cell_array[i].empty()) continue;
     m = i;
     for(j=0; j<cell_array[i].size(); ++j) {
-      for(it=cell_array[i][j].vertices.begin(); it!=cell_array[i][j].vertices.end(); it++) {
+      for(it=cell_array[i][j].vertices.begin(); it!=cell_array[i][j].vertices.end(); ++it) {
         if (offset[*it] == -1) {
           offset[*it] = n;
           n++;
@@ -177,7 +177,7 @@ void Nexus::closure(const std::set<std::string>& S,Nexus* NX,int* offset) const
       }
     }
   }
-  for(it=vx.begin(); it!=vx.end(); it++) {
+  for(it=vx.begin(); it!=vx.end(); ++it) {
     if (offset[*it] == -1) {
       offset[*it] = n;
       n++;
@@ -189,7 +189,7 @@ void Nexus::closure(const std::set<std::string>& S,Nexus* NX,int* offset) const
   for(i=1; i<=m; ++i) {
     if (cell_array[i].empty()) continue;
     for(j=0; j<cell_array[i].size(); ++j) {
-      for(it=cell_array[i][j].vertices.begin(); it!=cell_array[i][j].vertices.end(); it++) {
+      for(it=cell_array[i][j].vertices.begin(); it!=cell_array[i][j].vertices.end(); ++it) {
         vx.insert(offset[*it]);
       }
       NX->paste(vx);
@@ -275,7 +275,7 @@ void Nexus::star(const std::set<std::string>& S,std::vector<Cell>* output) const
   hash_map::const_iterator qt;
   std::set<std::string>::const_iterator it;
 
-  for(it=S.begin(); it!=S.end(); it++) {
+  for(it=S.begin(); it!=S.end(); ++it) {
     key = *it;
     n = std::count(key.begin(),key.end(),':');
     if (n > 0) {
@@ -314,7 +314,7 @@ void Nexus::ascend(int d,int in1,std::vector<Cell>& out) const
   std::set<int>::const_iterator it;
   std::set<int> S = elements[d][in1].entourage;
 
-  for(it=S.begin(); it!=S.end(); it++) {
+  for(it=S.begin(); it!=S.end(); ++it) {
     i = *it;
     out.push_back(elements[d+1][i]);
     ascend(1+d,i,out);
@@ -472,7 +472,7 @@ bool Nexus::orientable() const
     in1 = proc[0];
     current = facets[in1];
     nproc.clear();
-    for(vit=proc.begin()+1; vit!=proc.end(); vit++) {
+    for(vit=proc.begin()+1; vit!=proc.end(); ++vit) {
       nproc.push_back(*vit);
     }
     proc = nproc;
@@ -507,7 +507,7 @@ bool Nexus::orientable() const
       if (!failed) {
         orient[in1] = o;
         get_neighbours(ns,facets,in1,nproc);
-        for(vit=nproc.begin(); vit!=nproc.end(); vit++) {
+        for(vit=nproc.begin(); vit!=nproc.end(); ++vit) {
           proc.push_back(*vit);
         }
         break;

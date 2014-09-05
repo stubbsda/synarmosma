@@ -136,16 +136,16 @@ bool Schema::connected() const
   change.insert(0);
 
   do {
-    for(it=change.begin(); it!=change.end(); it++) {
+    for(it=change.begin(); it!=change.end(); ++it) {
       i = *it;
-      for(jt=neighbours[i].begin(); jt!=neighbours[i].end(); jt++) {
+      for(jt=neighbours[i].begin(); jt!=neighbours[i].end(); ++jt) {
         n = *jt;
         if (ubiquity[n] == 1) continue;
         nchange.insert(n);
       }
     }
     if (nchange.empty()) break;
-    for(it=nchange.begin(); it!=nchange.end(); it++) {
+    for(it=nchange.begin(); it!=nchange.end(); ++it) {
       n = *it;
       ubiquity[n] = 1;
     }
@@ -181,13 +181,13 @@ int Schema::component_analysis(std::vector<int>& component) const
     if (start == -1) break;
     change.insert(start);
     do {
-      for(it=change.begin(); it!=change.end(); it++) {
+      for(it=change.begin(); it!=change.end(); ++it) {
         n = *it;
         component[n] = nc;
       }
-      for(it=change.begin(); it!=change.end(); it++) {
+      for(it=change.begin(); it!=change.end(); ++it) {
         n = *it;
-        for(jt=neighbours[n].begin(); jt!=neighbours[n].end(); jt++) {
+        for(jt=neighbours[n].begin(); jt!=neighbours[n].end(); ++jt) {
           m = *jt;
           if (component[m] < 0) nchange.insert(m);
         }
@@ -215,12 +215,12 @@ int Schema::spanning_tree(std::vector<int>& tree_edges) const
   current.insert(0);
 
   do {
-    for(it=current.begin(); it!=current.end(); it++) {
+    for(it=current.begin(); it!=current.end(); ++it) {
       vertices.insert(*it);
     }
-    for(it=current.begin(); it!=current.end(); it++) {
+    for(it=current.begin(); it!=current.end(); ++it) {
       n = *it;
-      for(jt=neighbours[n].begin(); jt!=neighbours[n].end(); jt++) {
+      for(jt=neighbours[n].begin(); jt!=neighbours[n].end(); ++jt) {
         m = *jt;
         kt = std::find(vertices.begin(),vertices.end(),m);
         if (kt != vertices.end()) continue;

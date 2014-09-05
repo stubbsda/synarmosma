@@ -102,7 +102,7 @@ void Homology::compute_integral_native(const Nexus* NX)
     Matrix<int>* A = new Matrix<int>(d1,d2);
 
     for(i=0; i<nvertex; ++i) {
-      for(it=NX->neighbours[i].begin(); it!=NX->neighbours[i].end(); it++) {
+      for(it=NX->neighbours[i].begin(); it!=NX->neighbours[i].end(); ++it) {
         p = *it;
         qt = NX->index_table[1].find(make_key(i,p));
         j = qt->second;
@@ -143,7 +143,7 @@ void Homology::compute_integral_native(const Nexus* NX)
       A->initialize(d1,d2);
       for(k=0; k<d1; ++k) {
         vx = NX->elements[d-1][k].vertices;
-        for(it=NX->elements[d-1][k].entourage.begin(); it!=NX->elements[d-1][k].entourage.end(); it++) {
+        for(it=NX->elements[d-1][k].entourage.begin(); it!=NX->elements[d-1][k].entourage.end(); ++it) {
           j = *it;
           alpha = coincidence(vx,NX->elements[d][j].vertices);
           if (alpha != 0) A->set(k,j,alpha); 
@@ -178,7 +178,7 @@ void Homology::compute_integral_native(const Nexus* NX)
     Matrix<NTL::ZZ>* A = new Matrix<NTL::ZZ>(d1,d2);
 
     for(i=0; i<nvertex; ++i) {
-      for(it=NX->neighbours[i].begin(); it!=NX->neighbours[i].end(); it++) {
+      for(it=NX->neighbours[i].begin(); it!=NX->neighbours[i].end(); ++it) {
         p = *it;
         qt = NX->index_table[1].find(make_key(i,p));
         j = qt->second;
@@ -219,7 +219,7 @@ void Homology::compute_integral_native(const Nexus* NX)
       A->initialize(d1,d2);
       for(k=0; k<d1; ++k) {
         vx = NX->elements[d-1][k].vertices;
-        for(it=NX->elements[d-1][k].entourage.begin(); it!=NX->elements[d-1][k].entourage.end(); it++) {
+        for(it=NX->elements[d-1][k].entourage.begin(); it!=NX->elements[d-1][k].entourage.end(); ++it) {
           j = *it;
           alpha = NTL::to_ZZ(coincidence(vx,NX->elements[d][j].vertices));
           if (alpha != 0) A->set(k,j,alpha); 
@@ -289,7 +289,7 @@ void Homology::compute_native(const Nexus* NX)
     kernel.push_back(0);
 
     for(i=0; i<NX->nvertex; ++i) {
-      for(it=NX->neighbours[i].begin(); it!=NX->neighbours[i].end(); it++) {
+      for(it=NX->neighbours[i].begin(); it!=NX->neighbours[i].end(); ++it) {
         p = *it;
         qt = NX->index_table[1].find(make_key(i,p));
         j = qt->second;
@@ -306,7 +306,7 @@ void Homology::compute_native(const Nexus* NX)
       A->initialize(d1,d2);
       for(k=0; k<d1; ++k) {
         vx = NX->elements[d-1][k].vertices;
-        for(it=NX->elements[d-1][k].entourage.begin(); it!=NX->elements[d-1][k].entourage.end(); it++) {
+        for(it=NX->elements[d-1][k].entourage.begin(); it!=NX->elements[d-1][k].entourage.end(); ++it) {
           j = *it;
           alpha = coincidence(vx,NX->elements[d][j].vertices);
           if (alpha != 0) A->set(k,j);   
@@ -369,7 +369,7 @@ void Homology::compute_gap(const Nexus* NX)
           rvector.push_back(0);
         }
         vx = NX->elements[d-1][i].vertices;
-        for(it=NX->elements[d-1][i].entourage.begin(); it!=NX->elements[d-1][i].entourage.end(); it++) {
+        for(it=NX->elements[d-1][i].entourage.begin(); it!=NX->elements[d-1][i].entourage.end(); ++it) {
           j = *it;
           alpha = coincidence(vx,NX->elements[d][j].vertices);
           if (alpha != 0) rvector[j] = 1;
@@ -465,7 +465,7 @@ void Homology::compute_gap(const Nexus* NX)
         s << ",[";
       }
       k = 0;
-      for(it=NX->elements[i][j].vertices.begin(); it!=NX->elements[i][j].vertices.end(); it++) {
+      for(it=NX->elements[i][j].vertices.begin(); it!=NX->elements[i][j].vertices.end(); ++it) {
         if (k < i) {
           s << *it << ",";
         }

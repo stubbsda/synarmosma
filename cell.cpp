@@ -128,7 +128,7 @@ void Cell::string_assembly()
   std::stringstream s;
   std::stringstream* sf = new std::stringstream[n];
 
-  for(it=vertices.begin(); it!=vertices.end(); it++) {
+  for(it=vertices.begin(); it!=vertices.end(); ++it) {
     if (i < (n-1)) {
       s << *it << ":";
     }
@@ -142,7 +142,7 @@ void Cell::string_assembly()
   faces.clear();
   for(i=0; i<n; ++i) {
     j = -1;
-    for(it=vertices.begin(); it!=vertices.end(); it++) {
+    for(it=vertices.begin(); it!=vertices.end(); ++it) {
       ++j;
       if (j == i) continue;
       if (j == (n-1) || (i == (n-1) && j == (n-2))) {
@@ -164,7 +164,7 @@ void Cell::serialize(std::ofstream& s) const
 
   n = (signed) vertices.size();
   s.write((char*)(&n),sizeof(int));
-  for(it=vertices.begin(); it!=vertices.end(); it++) {
+  for(it=vertices.begin(); it!=vertices.end(); ++it) {
     n = *it;
     s.write((char*)(&n),sizeof(int));
   }
@@ -198,7 +198,7 @@ bool Cell::exchange(int p,int q)
   std::set<int>::const_iterator it;
   bool found = false;
 
-  for(it=vertices.begin(); it!=vertices.end(); it++) {
+  for(it=vertices.begin(); it!=vertices.end(); ++it) {
     if (*it == q) {
       found = true;
       continue;
