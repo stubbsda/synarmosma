@@ -17,8 +17,12 @@ Geometry::Geometry(const Geometry& source)
   vperturb = source.vperturb;
   original = source.original;
   distances = source.distances;
-  index = source.index;
-  coordinates = source.coordinates;
+  if (relational) {
+    coordinates.clear();
+  }
+  else {
+    coordinates = source.coordinates;
+  }
 }
 
 Geometry& Geometry::operator =(const Geometry& source)
@@ -33,8 +37,12 @@ Geometry& Geometry::operator =(const Geometry& source)
   vperturb = source.vperturb;
   original = source.original;
   distances = source.distances;
-  index = source.index;
-  coordinates = source.coordinates;
+  if (relational) {
+    coordinates.clear();
+  }
+  else {
+    coordinates = source.coordinates;
+  }
 
   return *this;
 }
@@ -66,7 +74,7 @@ void Geometry::initialize(bool type,bool model,bool flat,int D)
 void Geometry::clear()
 {
   if (relational) {
-    index.clear();
+
   }
   else {
     for(int i=0; i<nvertex; ++i) {
@@ -122,7 +130,7 @@ bool Geometry::consistent() const
 
 void Geometry::serialize(std::ofstream& s) const
 {
-  int i,j;
+  int i,j,n = 0;
   double x;
 
   s.write((char*)(&nvertex),sizeof(int));
@@ -130,15 +138,17 @@ void Geometry::serialize(std::ofstream& s) const
   s.write((char*)(&euclidean),sizeof(bool));
   s.write((char*)(&relational),sizeof(bool));
   s.write((char*)(&uniform),sizeof(bool));
-  if (relational) {
-    hash_map::const_iterator qt;
-    for(i=0; i<nvertex; ++i) {
-      for(j=1+i; j<nvertex; ++j) {
-        qt = index.find(make_key(i,j));
-        x = distances[qt->second];
-        s.write((char*)(&x),sizeof(double));
-      }
+
+  for(i=0; i<nvertex; ++i) {
+    for(j=1+i; j<nvertex; ++j) {
+      x = distances[n];
+      s.write((char*)(&x),sizeof(double));
+      n++;
     }
+  }
+
+  if (relational) {
+
   }
   else {
     if (uniform) {
@@ -175,16 +185,15 @@ void Geometry::deserialize(std::ifstream& s)
   s.read((char*)(&euclidean),sizeof(bool));
   s.read((char*)(&relational),sizeof(bool));
   s.read((char*)(&uniform),sizeof(bool));
-  if (relational) {
-    n = 0;
-    for(i=0; i<nvertex; ++i) {
-      for(j=1+i; j<nvertex; ++j) {
-        s.read((char*)(&x),sizeof(double));
-        index[make_key(i,j)] = n;
-        distances.push_back(x);
-        n++;
-      }
+
+  for(i=0; i<nvertex; ++i) {
+    for(j=1+i; j<nvertex; ++j) {
+      s.read((char*)(&x),sizeof(double));
+      distances.push_back(x);
     }
+  }
+  if (relational) {
+
   }
   else {
     std::vector<double> xc;
@@ -210,7 +219,6 @@ void Geometry::deserialize(std::ifstream& s)
       }
     }
   }
-  compute_distances();
 }
 
 double Geometry::dot_product(const std::vector<double>& vx,const std::vector<double>& vy) const
@@ -249,14 +257,13 @@ double Geometry::dot_product(const std::vector<double>& vx,const std::vector<dou
 void Geometry::get_implied_vertices(int n,std::set<int>& vx) const
 {
   int i,j;
+  vx.clear();
   if (relational) {
     // Loop over all vertex pairs and find the one that corresponds to index
     // "n"
-    hash_map::const_iterator qt;
     for(i=0; i<nvertex; ++i) {
       for(j=1+i; j<nvertex; ++j) {
-        qt = index.find(make_key(i,j));
-        if (qt->second == n) {
+        if (compute_index(i,j) == n) {
           vx.insert(i);
           vx.insert(j);
           return;
@@ -265,14 +272,19 @@ void Geometry::get_implied_vertices(int n,std::set<int>& vx) const
     }
   }
   else {
-    int kt = 0;
-    for(i=0; i<nvertex; ++i) {
-      for(j=0; j<(signed) coordinates[i].size(); ++j) {
-        if (kt == n) {
-          vx.insert(i);
-          return;
+    if (uniform) {
+      vx.insert(n/background_dimension);
+    }
+    else {
+      int kt = 0;
+      for(i=0; i<nvertex; ++i) {
+        for(j=0; j<(signed) coordinates[i].size(); ++j) {
+          if (kt == n) {
+            vx.insert(i);
+            return;
+          }
+          kt++;
         }
-        kt++;
       }
     }
   }
@@ -288,7 +300,7 @@ void Geometry::load(const Geometry* source)
   background_dimension = source->background_dimension;
   distances = source->distances;
   if (relational) {
-    index = source->index;
+
   }
   else {
     coordinates = source->coordinates;
@@ -305,7 +317,7 @@ void Geometry::store(Geometry* target) const
   target->background_dimension = background_dimension;
   target->distances = distances;
   if (relational) {
-    target->index = index;
+
   }
   else {
     target->coordinates = coordinates;
@@ -333,9 +345,8 @@ void Geometry::create(int n,const std::string& type)
   }
 
   distances.clear();
-  index.clear();
 
-  int i,j,k = 0;
+  int i,j;
   if (type == "CARTESIAN") {
     int l,p,q,s,alpha;
     double delta;
@@ -367,8 +378,6 @@ void Geometry::create(int n,const std::string& type)
           delta += double(alpha);
         }
         distances.push_back(delta);
-        index[make_key(i,j)] = k;
-        k++;
         y.clear();
       }
       x.clear();
@@ -385,8 +394,6 @@ void Geometry::create(int n,const std::string& type)
       for(i=0; i<nvertex; ++i) {
         for(j=1+i; j<nvertex; ++j) {
           distances.push_back(0.25 + 10.0*RND.drandom());
-          index[make_key(i,j)] = k;
-          k++;
         }
       }
     }
@@ -396,8 +403,6 @@ void Geometry::create(int n,const std::string& type)
         for(j=1+i; j<nvertex; ++j) {
           alpha = -5.0 + 5.0*r*RND.drandom();
           distances.push_back(alpha);
-          index[make_key(i,j)] = k;
-          k++;
         }
       }
     }
@@ -407,32 +412,31 @@ void Geometry::create(int n,const std::string& type)
     // is 1+n
     nvertex = 1 + n;
     if (euclidean) {
-      for(i=1; i<nvertex; ++i) {
+      // The distance from vertex 0 to the other vertices is unity...
+      for(i=0; i<nvertex-1; ++i) {
         distances.push_back(1.0);
-        index[make_key(0,i)] = k;
-        k++;
+      }
+      // All the other distances are equal to 2.0
+      for(i=1; i<nvertex; ++i) {
         for(j=1+i; j<nvertex; ++j) {
           distances.push_back(2.0);
-          index[make_key(i,j)] = k;
-          k++;
         }
       }
     }
     else {
+      // Distances between v_0 and the other n-1 vertices
       distances.push_back(-1.0);
-      index["0:1"] = k;
-      k++;
-      for(i=2; i<nvertex; ++i) {
+      for(i=0; i<nvertex-2; ++i) {
         distances.push_back(1.0);
-        index[make_key(0,i)] = k;
-        k++;
+      }
+      // Distances between v_1 and the other n-2 vertices
+      for(i=0; i<nvertex-2; ++i) {
         distances.push_back(0.0);
-        index[make_key(1,i)] = k;
-        k++;
+      }
+      // All the other distances...
+      for(i=2; i<nvertex; ++i) {
         for(j=1+i; j<nvertex; ++j) {
           distances.push_back(2.0);
-          index[make_key(i,j)] = k;
-          k++;
         }
       }
     }
@@ -539,11 +543,9 @@ void Geometry::rollback()
 {
   if (relational) {
     int i,j = 0;
-    hash_map::const_iterator qt;
     for(i=0; i<nvertex; ++i) {
       if (i == vperturb) continue;
-      qt = index.find(make_key(i,vperturb));
-      distances[qt->second] = original[j];
+      distances[compute_index(i,vperturb)] = original[j];
       j++;
     }
   }
@@ -557,13 +559,11 @@ void Geometry::vertex_perturbation(int v)
   vperturb = v;
   if (relational) {
     int i,j;
-    hash_map::const_iterator qt;
 
     original.clear();
     for(i=0; i<nvertex; ++i) {
       if (i == v) continue;
-      qt = index.find(make_key(i,v));
-      j = qt->second;
+      j = compute_index(i,v);
       original.push_back(distances[j]);
       distances[j] += RND.nrandom(0.0,0.5);
     }
@@ -586,23 +586,27 @@ void Geometry::vertex_addition(const std::set<int>& antecedents)
     }
     else {
       int i,j;
-      double l,na = double(antecedents.size());
       std::set<int>::const_iterator it;
-      if (relational) {
-        hash_map::const_iterator qt;
+      const double na = double(antecedents.size());
 
-        j = (signed) distances.size();
+      if (relational) {
+        int k = 0;
+        double l;
+        std::vector<double> ndistances;
+
         for(i=0; i<nvertex; ++i) {
+          for(j=1+i; j<nvertex; ++j) {
+            ndistances.push_back(distances[k]);
+            k++;
+          }
           l = 0.0;
           for(it=antecedents.begin(); it!=antecedents.end(); ++it) {
-            qt = index.find(make_key(i,*it));
-            l += distances[qt->second];
+            l += distances[compute_index(i,*it)];
           }
           l = l/na;
-          index[make_key(i,nvertex)] = j;
-          distances.push_back(l);
-          j++;
+          ndistances.push_back(l);
         }
+        distances = ndistances;
         nvertex++;
       }
       else {
@@ -630,20 +634,23 @@ void Geometry::vertex_addition(const std::set<int>& antecedents)
 
 void Geometry::vertex_addition(int parent,double mutation)
 {
-  int i,j;
+  int i,j,k = 0;
   double alpha;
   std::vector<double> x;
 
   if (parent == -1) {
     // No antecedent, so place the vertex randomly...
     if (relational) {
-      j = (signed) distances.size();
+      std::vector<double> ndistances;
+
       if (euclidean) {
         for(i=0; i<nvertex; ++i) {
+          for(j=1+i; j<nvertex; ++j) {
+            ndistances.push_back(distances[k]);
+            k++;
+          }
           alpha = 1.0 + 15.0*RND.drandom();
-          distances.push_back(alpha);
-          index[make_key(i,nvertex)] = j;
-          j++;
+          ndistances.push_back(alpha);
         }
       }
       else {
@@ -652,37 +659,48 @@ void Geometry::vertex_addition(int parent,double mutation)
         // spacelike...
         double r = 1.0 + double(background_dimension-1);
         for(i=0; i<nvertex; ++i) {
+          for(j=1+i; j<nvertex; ++j) {
+            ndistances.push_back(distances[k]);
+            k++;
+          }
           alpha = -5.0 + 5.0*r*RND.drandom();
-          distances.push_back(alpha);
-          index[make_key(i,nvertex)] = j;
-          j++;
+          ndistances.push_back(alpha);
         }
       }
+      distances = ndistances;
+      nvertex++;
     }
     else {
       for(i=0; i<background_dimension; ++i) {
         alpha = -10.0 + 20.0*RND.drandom();
         x.push_back(alpha);
       }
-      coordinates.push_back(x);
+      vertex_addition(x);
     }
   }
   else {
     // Should be close to its parent vertex...
     if (relational) {
-      hash_map::const_iterator qt;
-      j = (signed) distances.size();
+      double mu,sigma;
+      std::vector<double> ndistances;
+
       for(i=0; i<nvertex; ++i) {
-        if (i == parent) continue;
-        qt = index.find(make_key(i,parent));
-        alpha = RND.nrandom(distances[qt->second],mutation/10.0);
-        distances.push_back(alpha);
-        index[make_key(i,nvertex)] = j;
-        j++;
+        for(j=1+i; j<nvertex; ++j) {
+          ndistances.push_back(distances[k]);
+          k++;
+        }
+        if (i == parent) {
+          mu = 0.0; 
+          sigma = 0.1;
+        }
+        else {
+          mu = distances[compute_index(i,parent)];
+          sigma = mutation/10.0;
+        }
+        ndistances.push_back(RND.nrandom(mu,sigma));
       }
-      alpha = RND.nrandom(0.0,0.1);
-      distances.push_back(alpha);
-      index[make_key(parent,nvertex)] = j;
+      distances = ndistances;
+      nvertex++;
     }
     else {
       int q,p = RND.irandom(background_dimension);
@@ -695,10 +713,9 @@ void Geometry::vertex_addition(int parent,double mutation)
       } while(true);
       x[p] += r*std::cos(alpha);
       x[q] += r*std::sin(alpha);
-      coordinates.push_back(x);
+      vertex_addition(x);
     }
   }
-  nvertex++;
 }
 
 void Geometry::geometry_modification(int n,double mu,double sigma)
@@ -748,13 +765,11 @@ void Geometry::multiplicative_modification(int v,bool total,double mu,double sig
   vperturb = v;
   if (relational) {
     int j;
-    hash_map::const_iterator qt;
 
     original.clear();
     for(i=0; i<nvertex; ++i) {
       if (i == v) continue;
-      qt = index.find(make_key(v,i));
-      j = qt->second;
+      j = compute_index(v,i);
       original.push_back(distances[j]);
       distances[j] *= RND.nrandom(mu,sigma);
     }
@@ -780,13 +795,11 @@ void Geometry::additive_modification(int v,bool total,double mu,double sigma)
   vperturb = v;
   if (relational) {
     int j;
-    hash_map::const_iterator qt;
 
     original.clear();
     for(i=0; i<nvertex; ++i) {
       if (i == v) continue;
-      qt = index.find(make_key(v,i));
-      j = qt->second;
+      j = compute_index(v,i);
       original.push_back(distances[j]);
       distances[j] += RND.nrandom(mu,sigma);
     }
@@ -988,7 +1001,6 @@ int Geometry::compute_coordinates(std::vector<double>& x) const
   /*
   int k,in1,its = 0;
   double b,lambda,err,err_old = 0.0,delta,sum;
-  hash_map::const_iterator qt;
   std::vector<double> xnew,cdistance,BZ,Delta;
   const int M = 150;
   const double cutoff = 0.00001;
@@ -1004,8 +1016,7 @@ int Geometry::compute_coordinates(std::vector<double>& x) const
       xnew.push_back(0.0);
     }
     for(j=1+i; j<nvertex; ++j) {
-      qt = index.find(make_key(i,j));
-      Delta[in1+j-(1+i)] = std::sqrt(distances[qt->second]);
+      Delta[in1+j-(1+i)] = std::sqrt(distances[compute_index(i,j)]);
       cdistance.push_back(0.0);
     }
   }
@@ -1075,7 +1086,6 @@ int Geometry::compute_coordinates(std::vector<double>& x) const
   char jtype='V',tsp='N',uplo='U';
   double zero = 0.0,alpha = 1.0;
   std::vector<int> usable;
-  hash_map::const_iterator qt;
   const double pfactor = 1.0/double(nvertex);
   double* J = new double[nvertex*nvertex];
   double* A = new double[nvertex*nvertex];
@@ -1089,8 +1099,7 @@ int Geometry::compute_coordinates(std::vector<double>& x) const
     for(j=0; j<nvertex; ++j) {
       alpha = (j == i) ? 1.0-pfactor : -pfactor;
       J[nvertex*i+j] = alpha;
-      qt = index.find(make_key(i,j));
-      D[nvertex*i+j] = distances[qt->second];
+      D[nvertex*i+j] = distances[compute_index(i,j)];
     }
   }
   // Now form the matrix B = -0.5*J*D2*J
@@ -1167,39 +1176,32 @@ double geometry_change(const Geometry* g1,const Geometry* g2)
   }
   if (g1->relational) {
     double d1,d2;
-    hash_map::const_iterator qt;
 
     for(i=0; i<nva; ++i) {
       for(j=1+i; j<nva; ++j) {
-        qt = g1->index.find(make_key(i,j));
-        d1 = g1->distances[qt->second];
+        d1 = g1->distances[g1->compute_index(i,j)];
 
-        qt = g2->index.find(make_key(i,j));
-        d2 = g2->distances[qt->second];
+        d2 = g2->distances[g2->compute_index(i,j)];
         gdelta += std::abs(d1 - d2);
       }
     }
     if (arg1) {
       for(i=nva; i<g1->nvertex; ++i) {
         for(j=0; j<nva; ++j) {
-          qt = g1->index.find(make_key(i,j));
-          gdelta += std::abs(g1->distances[qt->second]);
+          gdelta += std::abs(g1->distances[g1->compute_index(i,j)]);
         }
         for(j=1+i; j<g1->nvertex; ++j) {
-          qt = g1->index.find(make_key(i,j));
-          gdelta += std::abs(g1->distances[qt->second]);
+          gdelta += std::abs(g1->distances[g1->compute_index(i,j)]);
         }
       }
     }
     else {
       for(i=nva; i<g2->nvertex; ++i) {
         for(j=0; j<nva; ++j) {
-          qt = g2->index.find(make_key(i,j));
-          gdelta += std::abs(g2->distances[qt->second]);
+          gdelta += std::abs(g2->distances[g2->compute_index(i,j)]);
         }
         for(j=1+i; j<g2->nvertex; ++j) {
-          qt = g2->index.find(make_key(i,j));
-          gdelta += std::abs(g2->distances[qt->second]);
+          gdelta += std::abs(g2->distances[g2->compute_index(i,j)]);
         }
       }
     }

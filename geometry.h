@@ -9,7 +9,6 @@ class Geometry {
   int vperturb;
   std::vector<double> original;
   std::vector<double> distances;
-  hash_map index;
   std::vector<std::vector<double> > coordinates;
   // Whether the geometry is Euclidean or Lorentzian
   bool euclidean;
@@ -20,14 +19,15 @@ class Geometry {
   // The asymptotic "flat space" dimension
   int background_dimension; 
 
+  void clear();
+  void set_default_values();
+  inline int compute_index(int,int) const;
  public:
   Geometry();
   Geometry(const Geometry&);
   Geometry& operator =(const Geometry&);
   ~Geometry();
   void reciprocate();
-  void clear();
-  void set_default_values();
   void initialize(bool,bool,bool,int);
   void serialize(std::ofstream&) const;
   void deserialize(std::ifstream&);
@@ -68,6 +68,21 @@ class Geometry {
   inline void set_coordinates(int,const std::vector<double>&);
   friend double geometry_change(const Geometry*,const Geometry*);
 };
+
+inline int Geometry::compute_index(int v1,int v2) const
+{
+  assert(v1 != v2);
+  int n;
+  if (v1 < v2) {
+    n = nvertex*v1 - v1*(1+v1)/2;
+    n += (v2 - (1+v1));
+  }
+  else {
+    n = nvertex*v2 - v2*(1+v2)/2;
+    n += (v1 - (1+v2));
+  }
+  return n;
+}
 
 double Geometry::get_argument(const std::vector<double>& vx,const std::vector<double>& vy) const
 {
@@ -139,9 +154,15 @@ void Geometry::vertex_addition(const std::vector<double>& x)
     std::exit(1);
   }
   assert((signed) x.size() >= background_dimension);
+
+  int i,j,k = 0;
+  double delta;
+  std::vector<double> ndistances;
+  const double pfactor = (euclidean) ? 1.0 : -1.0;
+
   if (uniform) {
     std::vector<double> xt;
-    for(int i=0; i<background_dimension; ++i) {
+    for(i=0; i<background_dimension; ++i) {
       xt.push_back(x[i]);
     }
     coordinates.push_back(xt);
@@ -149,6 +170,37 @@ void Geometry::vertex_addition(const std::vector<double>& x)
   else {
     coordinates.push_back(x);
   }
+
+  if (uniform) {
+    for(i=0; i<nvertex; ++i) {
+      for(j=1+i; j<nvertex; ++j) {
+        ndistances.push_back(distances[k]);
+        k++;
+      }
+      delta = pfactor*(coordinates[i][0] - coordinates[nvertex][0])*(coordinates[i][0] - coordinates[nvertex][0]);
+      for(j=1; j<background_dimension; ++j) {
+        delta += (coordinates[i][j] - coordinates[nvertex][j])*(coordinates[i][j] - coordinates[nvertex][j]);
+      }
+      ndistances.push_back(delta);
+    }
+  }
+  else {
+    int n2,n1 = (signed) x.size();
+    for(i=0; i<nvertex; ++i) {
+      for(j=1+i; j<nvertex; ++j) {
+        ndistances.push_back(distances[k]);
+        k++;
+      }
+      delta = pfactor*(coordinates[i][0] - coordinates[nvertex][0])*(coordinates[i][0] - coordinates[nvertex][0]);
+      n2 = (signed) coordinates[i].size();
+      n2 = (n2 > n1) ? n1 : n2;
+      for(j=1; j<n2; ++j) {
+        delta += (coordinates[i][j] - coordinates[nvertex][j])*(coordinates[i][j] - coordinates[nvertex][j]);
+      }
+      ndistances.push_back(delta);
+    }
+  }
+  distances = ndistances;
   nvertex++;
 }
 
@@ -210,24 +262,11 @@ double Geometry::get_distance(int v,const std::vector<double>& x,bool lorentzian
 double Geometry::get_distance(int v1,int v2,bool lorentzian) const
 {
   assert(v1 != v2);
-  int n;
-  double l;
-  if (relational) {
-    hash_map::const_iterator qt = index.find(make_key(v1,v2));
-    n = qt->second;
-  }
-  else {
-    if (v1 < v2) {
-      n = nvertex*v1 - v1*(1+v1)/2;
-      n += (v2 - (1+v1));
-    }
-    else {
-      n = nvertex*v2 - v2*(1+v2)/2;
-      n += (v1 - (1+v2));
-    }
-  }
+
+  int n = compute_index(v1,v2);
+  
   assert(n >= 0 && n < (signed) distances.size());
-  l = distances[n];
+  double l = distances[n];
   if (!lorentzian && l < 0.0) l = -l;
   return l;
 }
@@ -238,10 +277,7 @@ double Geometry::get_computed_distance(int v1,int v2,bool lorentzian) const
   double l;
   int n;
   if (relational) {
-    hash_map::const_iterator qt = index.find(make_key(v1,v2));
-    assert(qt != index.end());
-    n = qt->second;
-    l = distances[n];
+    l = distances[compute_index(v1,v2)];
     if (!lorentzian && l < 0.0) l = -l;
   }
   else {
