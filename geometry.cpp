@@ -160,7 +160,6 @@ void Geometry::serialize(std::ofstream& s) const
       }
     }
     else {
-      int n;
       for(i=0; i<nvertex; ++i) {
         n = (signed) coordinates[i].size();
         s.write((char*)(&n),sizeof(int));

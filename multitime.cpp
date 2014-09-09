@@ -70,17 +70,13 @@ double Multitime::norm() const
   return sum;
 }
 
-void Multitime::extract(double* t) const
+void Multitime::extract(std::vector<double>& t) const
 {
-  if (tdimension == 1) {
-    double x = std::abs(v2[0] - v1[0]) + 0.5*(std::abs(v1[0]) + std::abs(v2[0]));
-    t = &x;
-    return;
-  }  
+  t.clear();
 
   for(int i=0; i<tdimension; ++i) {
     if (!active[i]) continue;
-    t[i] = std::abs(v2[i] - v1[i]) + 0.5*(std::abs(v1[i]) + std::abs(v2[i]));
+    t.push_back(std::abs(v2[i] - v1[i]) + 0.5*(std::abs(v1[i]) + std::abs(v2[i])));
   }
 }
 

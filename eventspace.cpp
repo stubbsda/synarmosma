@@ -47,14 +47,10 @@ Eventspace::~Eventspace()
 void Eventspace::build_tessellation(Nexus* output) const
 {
   int i,j;
-  double t[tdimension];
   std::vector<double> coordinates;
 
   for(i=0; i<nevent; ++i) {
-    events[i].proper_time.extract(t);
-    for(j=0; j<tdimension; ++j) {
-      coordinates.push_back(t[j]);
-    }
+    events[i].proper_time.extract(coordinates);
     for(j=0; j<events[i].local_dimension; ++j) {
       coordinates.push_back(events[i].space[j]);
     }
@@ -68,8 +64,7 @@ void Eventspace::compute_distances(std::vector<double>& distances) const
 {
   int i,j,k,l;
   double delta;
-  double* t1 = new double[tdimension];
-  double* t2 = new double[tdimension];
+  std::vector<double> t1,t2;
 
   for(i=0; i<nevent; ++i) {
     events[i].proper_time.extract(t1);
@@ -87,8 +82,6 @@ void Eventspace::compute_distances(std::vector<double>& distances) const
       distances.push_back(delta);
     }
   }
-  delete[] t1;
-  delete[] t2;
 }
 
 void Eventspace::write(const std::vector<double>& distances,double delta,const char* filename) const

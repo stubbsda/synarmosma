@@ -17,7 +17,7 @@ class Multitime {
   Multitime& operator =(const Multitime&);
   void initialize(double);
   double norm() const;
-  void extract(double*) const;
+  void extract(std::vector<double>&) const;
   friend Multitime operator +(const Multitime&,const Multitime&);
   friend Multitime operator -(const Multitime&,const Multitime&);
   friend Multitime operator *(const Multitime&,const Multitime&);

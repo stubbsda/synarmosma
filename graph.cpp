@@ -274,7 +274,7 @@ void Graph::katz_centrality(std::vector<double>& output) const
   const double beta = 1.0;
 
   compute_adjacency_matrix(A);
-  for(int i=0; i<nvertex*nvertex; ++i) {
+  for(i=0; i<nvertex*nvertex; ++i) {
     AD[i] = 0.0;
   }
 
@@ -688,7 +688,7 @@ double Graph::entwinement() const
   Binary_Matrix* A = new Binary_Matrix;
   compute_adjacency_matrix(A);
 
-  for(int i=0; i<nvertex*nvertex; ++i) {
+  for(i=0; i<nvertex*nvertex; ++i) {
     AD[i] = 0.0;
   }
 

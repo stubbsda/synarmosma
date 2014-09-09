@@ -3,7 +3,7 @@ variety_wrapper.o polynomial_wrapper.o proposition.o propositional_system.o logi
 event.o eventspace.o multitime.o binary_matrix.o matrix_wrapper.o functional_equation_wrapper.o\
 homology.o homotopy.o directed_graph.o lattice.o
 
-CXX_FLAGS += -Wall -fPIC
+CXX_FLAGS += -fPIC
 
 DEBUG    = -g
 
@@ -15,7 +15,7 @@ CXX_FLAGS += $(DEBUG)
 #LD_FLAGS += $(OPT)
 LD_FLAGS += $(DEBUG)
 
-LD_FLAGS += -Wall -shared
+LD_FLAGS += -shared
 
 LIBS = $(LAPACK) -lboost_system -lpugixml -lntl -lm 
 
