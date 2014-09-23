@@ -75,8 +75,6 @@ class Monomial {
   std::vector<std::pair<unsigned int,unsigned int> > exponents; 
 };
 
-// Maximum combinatorial dimension of the spacetime
-const int ND = 10;
 // The number of atomic propositions in a clause
 const int NP = 5;
 // Not too Aristotelian, perhaps?

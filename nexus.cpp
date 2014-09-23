@@ -308,7 +308,7 @@ void Nexus::star(const std::set<std::string>& S,std::vector<Cell>* output) const
 
 void Nexus::ascend(int d,int in1,std::vector<Cell>& out) const
 {
-  if (d == 1+ND) return;
+  if (d == 1+dimension) return;
 
   int i;
   std::set<int>::const_iterator it;
