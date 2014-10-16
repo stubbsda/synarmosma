@@ -87,7 +87,7 @@ void Homology::compute_integral_native(const Nexus* NX)
   std::stringstream ss;
   std::vector<unsigned int> image,kernel,tgenerators;
   std::vector<unsigned int>* torsion = new std::vector<unsigned int>[1+dimension];
-  std::set<int> vx;
+  std::set<int> vx,S;
   std::set<int>::const_iterator it;
   hash_map::const_iterator qt;
 
@@ -104,8 +104,10 @@ void Homology::compute_integral_native(const Nexus* NX)
     for(i=0; i<nvertex; ++i) {
       for(it=NX->neighbours[i].begin(); it!=NX->neighbours[i].end(); ++it) {
         p = *it;
-        qt = NX->index_table[1].find(make_key(i,p));
+        S.insert(i); S.insert(p);
+        qt = NX->index_table[1].find(S);
         j = qt->second;
+        S.clear();
         NX->elements[1][j].get_vertices(v2);
         if (i == v2[0]) {
           A->set(i,j,-1); 
@@ -180,9 +182,12 @@ void Homology::compute_integral_native(const Nexus* NX)
     for(i=0; i<nvertex; ++i) {
       for(it=NX->neighbours[i].begin(); it!=NX->neighbours[i].end(); ++it) {
         p = *it;
-        qt = NX->index_table[1].find(make_key(i,p));
+        S.insert(i);
+        S.insert(p);
+        qt = NX->index_table[1].find(S);
         j = qt->second;
         NX->elements[1][j].get_vertices(v2);
+        S.clear();
         if (i == v2[0]) {
           A->set(i,j,Matrix<NTL::ZZ>::neg1); 
         }
@@ -280,7 +285,7 @@ void Homology::compute_native(const Nexus* NX)
     int i,j,p,alpha;
     unsigned int r,k,d1 = NX->nvertex,d2 = NX->elements[1].size();
     std::vector<unsigned int> image,kernel;
-    std::set<int> vx;
+    std::set<int> vx,S;
     std::set<int>::const_iterator it;
     hash_map::const_iterator qt;
     Binary_Matrix* A = new Binary_Matrix(d1,d2);
@@ -291,8 +296,11 @@ void Homology::compute_native(const Nexus* NX)
     for(i=0; i<NX->nvertex; ++i) {
       for(it=NX->neighbours[i].begin(); it!=NX->neighbours[i].end(); ++it) {
         p = *it;
-        qt = NX->index_table[1].find(make_key(i,p));
+        S.insert(i);
+        S.insert(p);
+        qt = NX->index_table[1].find(S);
         j = qt->second;
+        S.clear();
         A->set(i,j);
       }
     }

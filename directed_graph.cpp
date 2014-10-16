@@ -25,7 +25,7 @@ bool Directed_Graph::foliation_x(int v1,int v2)
   neighbours[v1].erase(v2);
   neighbours[v2].erase(v1);
   std::string clef = make_key(v1,v2);
-  hash_map::const_iterator qt = index_table.find(clef + ":-1");
+  string_hash::const_iterator qt = index_table.find(clef + ":-1");
   if (qt != index_table.end()) {
     edges[qt->second].active = false;
     return true;
@@ -72,7 +72,7 @@ bool Directed_Graph::add_edge(int v1,int v2)
   if (v1 == v2) return false;
   bool frwd,bkwd;
   std::string name,base = make_key(v1,v2);
-  hash_map::const_iterator qt;
+  string_hash::const_iterator qt;
 
   name = base + ":1";
   qt = index_table.find(name);
@@ -114,7 +114,7 @@ bool Directed_Graph::add_edge(int v1,int v2)
 bool Directed_Graph::add_edge(int v1,int v2,DIRECTION d)
 {
   if (v1 == v2) return false;
-  hash_map::const_iterator qt;
+  string_hash::const_iterator qt;
   std::string name = make_key(v1,v2) + ":";
   if (v1 < v2) {
     name += (d == FORWARD) ? "1" : "-1";
@@ -138,7 +138,7 @@ bool Directed_Graph::path_connected(int u,int v) const
   bool output = false;
   std::set<int> current,next;
   std::set<int>::const_iterator it,jt;
-  hash_map::const_iterator qt;
+  string_hash::const_iterator qt;
 
   current.insert(u);
   do {
@@ -169,7 +169,7 @@ int Directed_Graph::two_cycles() const
   int i,j,t_cycle = 0;
   std::string key;
   std::set<int>::const_iterator it;
-  hash_map::const_iterator qt;
+  string_hash::const_iterator qt;
 
   for(i=0; i<nvertex; ++i) {
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {

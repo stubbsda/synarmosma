@@ -7,12 +7,10 @@ class Cell {
  protected:
   std::set<int> vertices;
   std::set<int> entourage;
-  std::string key;
-  std::vector<std::string> faces;
+  std::vector<std::set<int> > faces;
 
  public:
   Cell();
-  Cell(const std::string&);
   Cell(const Cell&);
   Cell(int);
   Cell(int,int);
@@ -20,12 +18,12 @@ class Cell {
   virtual ~Cell();
   Cell& operator =(const Cell&);
   void initialize(int,int);
-  void string_assembly();
+  void initialize(const std::set<int>&);
+  void calculate_faces();
   virtual void clear();
   inline int dimension() const {return (vertices.size() - 1);};
-  inline std::string get_key() const {return key;};
   bool exchange(int,int);
-  bool face(const std::string&) const;
+  bool face(const std::set<int>&) const;
   double dimensional_stress(int) const;
   void get_vertices(int*) const;
   void get_vertices(std::vector<int>&) const;

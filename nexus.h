@@ -24,9 +24,9 @@ class Nexus : public Schema {
   void regularization();
   int size() const;
   void ascend(int,int,std::vector<Cell>&) const;
-  void star(const std::set<std::string>&,std::vector<Cell>*) const;
-  void link(const std::set<std::string>&,std::vector<Cell>*) const;
-  void closure(const std::set<std::string>&,Nexus*,int*) const;
+  void star(const std::set<std::set<int> >&,std::vector<Cell>*) const;
+  void link(const std::set<std::set<int> >&,std::vector<Cell>*) const;
+  void closure(const std::set<std::set<int> >&,Nexus*,int*) const;
   void compute_entourages();
   void compute_neighbours();
   inline int get_dimension() const {return dimension;};

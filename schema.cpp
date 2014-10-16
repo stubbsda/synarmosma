@@ -124,7 +124,6 @@ void Schema::components(std::vector<int>& csize,std::vector<int>& celements) con
 bool Schema::connected() const
 {
   int i,n;
-  hash_map::const_iterator qt;
   std::vector<int> ubiquity;
   std::set<int> change,nchange;
   std::set<int>::const_iterator it,jt;
@@ -163,7 +162,6 @@ int Schema::component_analysis(std::vector<int>& component) const
   int i,n,m,start,nc = 0;
   std::set<int> change,nchange;
   std::set<int>::const_iterator it,jt;
-  hash_map::const_iterator qt;
 
   component.clear();
   for(i=0; i<nvertex; ++i) {
@@ -207,7 +205,6 @@ int Schema::spanning_tree(std::vector<int>& tree_edges) const
   int ntree,n,m;
   std::set<int> current,vertices,next;
   std::set<int>::const_iterator it,jt,kt,lt;
-  hash_map::const_iterator qt;
 
   // A sanity check...
   assert(connected());

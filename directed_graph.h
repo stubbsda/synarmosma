@@ -7,7 +7,7 @@
 class Directed_Graph : public Schema {
  private:
   std::vector<Edge> edges;
-  hash_map index_table;
+  string_hash index_table;
 
   // Hyphantic operators
   bool foliation_x(int,int);

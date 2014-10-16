@@ -141,7 +141,7 @@ void induced_orientation(int nf,const std::vector<int>& S,int parity,const hash_
   // Break out the D+1 faces of the D-simplex S along with their parity, 
   int i,j,p,n,D = (signed) S.size();
   hash_map::const_iterator qt;
-  std::vector<int> vx;
+  std::set<int> vx;
 
   for(i=0; i<nf; ++i) {
     output[i] = 0;
@@ -149,11 +149,11 @@ void induced_orientation(int nf,const std::vector<int>& S,int parity,const hash_
   for(i=0; i<D; ++i) {
     for(j=0; j<D; ++j) {
       if (j == i) continue;
-      vx.push_back(S[j]);
+      vx.insert(S[j]);
     }
     p = ipow(-1,i+1);
     // n is the index of vx in the array of faces...
-    qt = face_index.find(make_key(vx));
+    qt = face_index.find(vx);
     assert(qt != face_index.end());
     n = qt->second;
     output[n] = parity*p;

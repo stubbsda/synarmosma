@@ -60,8 +60,11 @@ void Nexus::paste(const std::set<int>& vx)
 {
   Cell c(vx);
   int m = c.dimension();
-  elements[m].push_back(c);
-  index_table[m][c.key] = elements[m].size() - 1;
+  hash_map::const_iterator qt = index_table[m].find(vx);
+  if (qt == index_table[m].end()) {
+    elements[m].push_back(c);
+    index_table[m][vx] = elements[m].size() - 1;
+  }
 }
 
 int Nexus::size() const
@@ -88,17 +91,15 @@ void Nexus::compute_entourages()
   int i,j,k,ns;
   std::set<int> s;
   std::set<int>::const_iterator it;
-  std::string fx;
   hash_map::const_iterator qt;
 
   for(i=dimension; i>=1; i--) {
     ns = (signed) elements[i].size();
     for(j=0; j<ns; ++j) {
       for(k=0; k<1+i; ++k) {
-        fx = elements[i][j].faces[k];
-        qt = index_table[i-1].find(fx);
+        qt = index_table[i-1].find(elements[i][j].faces[k]);
         if (qt == index_table[i-1].end()) {
-          std::cerr << "Entourage error: " << i << "  " << j << "  " << elements[i][j].key << "  "<< fx << std::endl;
+          std::cerr << "Entourage error: " << i << "  " << j << "  " << make_key(elements[i][j].vertices) << "  "<< make_key(elements[i][j].faces[k]) << std::endl;
           std::exit(1);
         }
         elements[i-1][qt->second].entourage.insert(j);
@@ -124,7 +125,7 @@ void Nexus::regularization()
         if (qt == index_table[i-1].end()) {
           S = Cell(elements[i][j].faces[k]);
           elements[i-1].push_back(S);
-          index_table[i-1][S.key] = m;
+          index_table[i-1][S.vertices] = m;
           m++;
         }
       }
@@ -134,27 +135,26 @@ void Nexus::regularization()
   compute_neighbours();
 }
 
-void Nexus::closure(const std::set<std::string>& S,Nexus* NX,int* offset) const
+void Nexus::closure(const std::set<std::set<int> >& S,Nexus* NX,int* offset) const
 {
   int i,n,m;
   unsigned int j;
-  std::string key;
-  std::set<int> vx;
+  std::set<int> vx,s;
   std::vector<Cell>* cell_array = new std::vector<Cell>[1+dimension];
   hash_map::const_iterator qt;
-  std::set<std::string>::const_iterator st;
+  std::set<std::set<int> >::const_iterator st;
   std::set<int>::const_iterator it;
 
   for(st=S.begin(); st!=S.end(); st++) {
-    key = *st;
-    n = std::count(key.begin(),key.end(),':');
+    s = *st;
+    n = s.size() - 1;
     if (n > 0) {
-      qt = index_table[n].find(key);
+      qt = index_table[n].find(s);
       m = qt->second;
       cell_array[n].push_back(elements[n][m]);
     }
     else {
-      vx.insert(boost::lexical_cast<int>(key));
+      vx.insert(*(s.begin()));
     }
   }
 
@@ -200,16 +200,15 @@ void Nexus::closure(const std::set<std::string>& S,Nexus* NX,int* offset) const
   delete[] cell_array;
 }
 
-void Nexus::link(const std::set<std::string>& S,std::vector<Cell>* cell_array) const
+void Nexus::link(const std::set<std::set<int> >& S,std::vector<Cell>* cell_array) const
 {
   int i,offset1[nvertex],offset2[nvertex];
   unsigned int j,k;
   bool found;
-  std::string key;
   std::vector<Cell>* cell_array1 = new std::vector<Cell>[1+dimension];
   std::vector<Cell>* cell_array2 = new std::vector<Cell>[1+dimension];
   std::set<int> vx;
-  std::set<std::string> string_set;
+  std::set<std::set<int> > sset;
   std::set<int>::const_iterator it;
   Nexus* N1 = new Nexus;
   Nexus* N2 = new Nexus;
@@ -220,24 +219,24 @@ void Nexus::link(const std::set<std::string>& S,std::vector<Cell>* cell_array) c
   // Now we need to convert cell_array to a set of strings...
   for(i=0; i<=dimension; ++i) {
     for(j=0; j<cell_array1[i].size(); ++j) {
-      string_set.insert(cell_array1[i][j].key);
+      sset.insert(cell_array1[i][j].vertices);
     }
   }  
-  closure(string_set,N1,offset1);
+  closure(sset,N1,offset1);
 
   // Now the second term...
   closure(S,N2,offset2);
-  string_set.clear();
+  sset.clear();
   for(i=0; i<=N2->dimension; ++i) {
     for(j=0; j<N2->elements[i].size(); ++j) {
       for(it=N2->elements[i][j].vertices.begin(); it!=N2->elements[i][j].vertices.end(); ++it) {
         vx.insert(offset2[*it]);
       }
-      string_set.insert(make_key(vx));
+      sset.insert(vx);
       vx.clear();
     }
   }
-  star(string_set,cell_array2);
+  star(sset,cell_array2);
 
   // Finally, construct the output by taking every cell that exists in N1 and, if it doesn't also 
   // exist in cell_array2, adding it to cell_array
@@ -246,11 +245,10 @@ void Nexus::link(const std::set<std::string>& S,std::vector<Cell>* cell_array) c
       for(it=N1->elements[i][j].vertices.begin(); it!=N1->elements[i][j].vertices.end(); ++it) {
         vx.insert(offset1[*it]);
       }
-      key = make_key(vx);
       // Does this element exist somewhere in cell_array2?
       found = false;
       for(k=0; k<cell_array2[i].size(); ++k) {
-        if (key == cell_array2[i][k].key) {
+        if (vx == cell_array2[i][k].vertices) {
           found = true;
           break;
         }
@@ -266,24 +264,24 @@ void Nexus::link(const std::set<std::string>& S,std::vector<Cell>* cell_array) c
   delete N1; delete N2;
 }
 
-void Nexus::star(const std::set<std::string>& S,std::vector<Cell>* output) const
+void Nexus::star(const std::set<std::set<int> >& S,std::vector<Cell>* output) const
 {
   int n,m,d,nc;
-  std::string key;
+  std::set<int> vx;
   hash_map ckey;
   std::vector<Cell> clist;
   hash_map::const_iterator qt;
-  std::set<std::string>::const_iterator it;
+  std::set<std::set<int> >::const_iterator it;
 
   for(it=S.begin(); it!=S.end(); ++it) {
-    key = *it;
-    n = std::count(key.begin(),key.end(),':');
+    vx = *it;
+    n = vx.size() - 1; 
     if (n > 0) {
-      qt = index_table[n].find(key);
+      qt = index_table[n-1].find(vx);
       m = qt->second;
     }
     else {
-      m = boost::lexical_cast<int>(key);
+      m = *(vx.begin());
     }
     ascend(n,m,clist);
   }
@@ -291,16 +289,16 @@ void Nexus::star(const std::set<std::string>& S,std::vector<Cell>* output) const
     output[n].clear();
   }
   nc = (signed) clist.size();
-  d = std::count(clist[0].key.begin(),clist[0].key.end(),':');
+  d = clist[0].dimension();
   output[d].push_back(clist[0]);
-  ckey[clist[0].key] = 0;
+  ckey[clist[0].vertices] = 0;
   m = 1;
   for(n=1; n<nc; ++n) {
-    qt = ckey.find(clist[n].key);
+    qt = ckey.find(clist[n].vertices);
     if (qt == ckey.end()) {
-      d = std::count(clist[n].key.begin(),clist[n].key.end(),':');
+      d = clist[n].dimension();
       output[d].push_back(clist[n]);
-      ckey[clist[n].key] = m;
+      ckey[clist[n].vertices] = m;
       m++;
     }
   }
@@ -441,6 +439,7 @@ bool Nexus::orientable() const
   hash_map face_index;
   std::vector<int>::const_iterator vit;
   std::stringstream s;
+  std::set<int> S;
   std::vector<int> proc,nproc,vfacet,current;
   std::vector<int>* facets = new std::vector<int>[ns];
 
@@ -454,13 +453,13 @@ bool Nexus::orientable() const
   }
 
   for(i=0; i<nf; ++i) {
-    elements[dimension-1][i].get_vertices(vx);
-    for(j=0; j<dimension-1; ++j) {
-      s << vx[j] << ":";
-    }
-    s << vx[dimension-1];
-    face_index[s.str()] = i;
-    s.str("");
+    elements[dimension-1][i].get_vertices(S);
+    //for(j=0; j<dimension-1; ++j) {
+    //  s << vx[j] << ":";
+    //}
+    //s << vx[dimension-1];
+    face_index[S] = i;
+    //s.str("");
   }
   
   for(i=0; i<ns; ++i) {
