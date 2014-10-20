@@ -37,8 +37,12 @@ void Homology::clear()
 
 std::string Homology::write() const
 {
-  int i,n = (signed) sequence.size() - 1;
   std::string output = "[";
+  if (sequence.empty()) {
+    output += "]";
+    return output;
+  }
+  int i,n = (signed) sequence.size() - 1;
   
   for(i=0; i<n; ++i) {
     output += sequence[i].compact_form() + "],[";
