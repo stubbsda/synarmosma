@@ -17,7 +17,7 @@ LD_FLAGS += $(DEBUG)
 
 LD_FLAGS += -shared
 
-LIBS = $(LAPACK) -lboost_system -lpugixml -lntl -lm 
+LIBS = $(LAPACK) -lboost_system -lntl -lm 
 
 install: synarmosma
 	mkdir -p $(SYNARMOSMA)/lib

@@ -15,8 +15,6 @@
 #include <limits>
 #include <sys/time.h>
 
-// For XML processing...
-#include <pugixml.hpp>
 // Number theory functionality...
 #include <NTL/ZZ.h>
 #include <NTL/ZZ_p.h>
