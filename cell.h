@@ -45,52 +45,52 @@ namespace SYNARMOSMA {
     friend class Homology;
   };
 
-inline void Cell::get_vertices(std::vector<int>& v) const
-{
-  std::set<int>::const_iterator it;
+  inline void Cell::get_vertices(std::vector<int>& v) const
+  {
+    std::set<int>::const_iterator it;
 
-  v.clear();
-  for(it=vertices.begin(); it!=vertices.end(); ++it) {
-    v.push_back(*it);
-  }
-}
-
-inline void Cell::get_vertices(int* v) const 
-{
-  int n = 0;
-  std::set<int>::const_iterator it;
-
-  for(it=vertices.begin(); it!=vertices.end(); ++it) {
-    v[n] = *it; n++;
-  }
-} 
-
-inline bool Cell::contains(int v) const
-{
-  std::set<int>::const_iterator it = std::find(vertices.begin(),vertices.end(),v);
-  bool output = (it == vertices.end()) ? false : true;
-  return output;
-}
-
-inline int SYNARMOSMA::affinity(const Cell& s1,const Cell& s2)
-{
-  int d = s1.dimension();
-
-  if (d != s2.dimension()) return 0;
-
-  std::set<int>::const_iterator it,jt;
-  int i,j,nc = 0;
-
-  for(it=s1.vertices.begin(); it!=s1.vertices.end(); ++it) {
-    i = *it;
-    for(jt=s2.vertices.begin(); jt!=s2.vertices.end(); ++jt) {
-      j = *jt;
-      if (i == j) nc++;
+    v.clear();
+    for(it=vertices.begin(); it!=vertices.end(); ++it) {
+      v.push_back(*it);
     }
   }
 
-  return nc;
-}
+  inline void Cell::get_vertices(int* v) const 
+  {
+    int n = 0;
+    std::set<int>::const_iterator it;
+
+    for(it=vertices.begin(); it!=vertices.end(); ++it) {
+      v[n] = *it; n++;
+    }
+  }  
+
+  inline bool Cell::contains(int v) const
+  {
+    std::set<int>::const_iterator it = std::find(vertices.begin(),vertices.end(),v);
+    bool output = (it == vertices.end()) ? false : true;
+    return output;
+  }
+
+  inline int affinity(const Cell& s1,const Cell& s2)
+  {
+    int d = s1.dimension();
+
+    if (d != s2.dimension()) return 0;
+
+    std::set<int>::const_iterator it,jt;
+    int i,j,nc = 0;
+
+    for(it=s1.vertices.begin(); it!=s1.vertices.end(); ++it) {
+      i = *it;
+      for(jt=s2.vertices.begin(); jt!=s2.vertices.end(); ++jt) {
+        j = *jt;
+        if (i == j) nc++;
+      }
+    }
+
+    return nc;
+  }
 }
 #endif
 

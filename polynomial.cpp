@@ -125,20 +125,22 @@ void Polynomial<kind>::set_value(kind x,unsigned int i)
   }
 }
 
-template<>
-unsigned int Polynomial<unsigned int>::evaluate(unsigned int x)
-{
-  if (x > characteristic) {
-    std::cerr << "Cannot evaluate this argument!" << std::endl;
-    std::exit(1);
+namespace SYNARMOSMA {
+  template<>
+  unsigned int Polynomial<unsigned int>::evaluate(unsigned int x)
+  {
+    if (x > characteristic) {
+      std::cerr << "Cannot evaluate this argument!" << std::endl;
+      std::exit(1);
+    }
+    int i;
+    unsigned int y = 0;
+    for(i=degree; i>=0; --i) {
+      y = y*x + terms[i];
+    }
+    y = y % characteristic;
+    return y;
   }
-  int i;
-  unsigned int y = 0;
-  for(i=degree; i>=0; --i) {
-    y = y*x + terms[i];
-  }
-  y = y % characteristic;
-  return y;
 }
 
 template<class kind>
@@ -164,18 +166,20 @@ Polynomial<kind> Polynomial<kind>::derivative() const
   return output;
 }
 
-template <>
-Polynomial<unsigned int> Polynomial<std::complex<double> >::reduce(unsigned int p)
-{
-  Polynomial<unsigned int> output(degree);
-  return output;
-}
+namespace SYNARMOSMA {
+  template <>
+  Polynomial<unsigned int> Polynomial<std::complex<double> >::reduce(unsigned int p)
+  {
+    Polynomial<unsigned int> output(degree);
+    return output;
+  }
 
-template<>
-Polynomial<unsigned int> Polynomial<double>::reduce(unsigned int p)
-{
-  Polynomial<unsigned int> output(degree);
-  return output;
+  template<>
+  Polynomial<unsigned int> Polynomial<double>::reduce(unsigned int p)
+  {
+    Polynomial<unsigned int> output(degree);
+    return output;
+  }
 }
 
 template<class kind>

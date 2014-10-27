@@ -172,10 +172,12 @@ void Variety<kind>::make_projective()
   homogeneous = true;
 }
 
-template<>
-int Variety<Rational>::compute_zeros()
-{
-  return 0;
+namespace SYNARMOSMA {
+  template<>
+  int Variety<Rational>::compute_zeros()
+  {
+    return 0;
+  }
 }
 
 template<class kind>
@@ -298,10 +300,12 @@ int Variety<kind>::compute_dependencies(int* belongs) const
   return family;
 }
 
-template<>
-void Variety<Rational>::zeta_function(int k,int* output)
-{
+namespace SYNARMOSMA {
+  template<>
+  void Variety<Rational>::zeta_function(int k,int* output)
+  {
 
+  }
 }
 
 template<class kind>
@@ -380,15 +384,17 @@ void Variety<kind>::zeta_function(int k,int* output)
   } while(n <= k);
 }
 
-template<>
-void Variety<int>::normalize(int n)
-{
-  if (characteristic == 0) return;
-  int i,in1;
-  for(i=0; i<(signed) equations[n].size(); ++i) {
-    in1 = equations[n][i].coefficient;
-    in1 = in1 % characteristic;
-    equations[n][i].coefficient = in1;
+namespace SYNARMOSMA {
+  template<>
+  void Variety<int>::normalize(int n)
+  {
+    if (characteristic == 0) return;
+    int i,in1;
+    for(i=0; i<(signed) equations[n].size(); ++i) {
+      in1 = equations[n][i].coefficient;
+      in1 = in1 % characteristic;
+      equations[n][i].coefficient = in1;
+    }
   }
 }
 

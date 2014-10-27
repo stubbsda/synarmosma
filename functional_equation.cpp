@@ -76,6 +76,7 @@ Functional_Equation<kind>::Functional_Equation(const char* filename)
   analyze_file(alpha,beta,exponents);
 }
 
+namespace SYNARMOSMA {
 template<>
 void Functional_Equation<Rational>::analyze_file(std::vector<std::string>& alpha,std::vector<std::string>& beta,std::vector<std::string>& exponents)
 {
@@ -150,6 +151,7 @@ void Functional_Equation<Rational>::analyze_file(std::vector<std::string>& alpha
     s1.clear();
     s2.clear();
   }
+}
 }
 
 template<class kind>

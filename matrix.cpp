@@ -2,26 +2,28 @@
 
 using namespace SYNARMOSMA;
 
-template<>
-const int Matrix<int>::zero = 0;
-template<>
-const int Matrix<int>::neg1 = -1;
-template<>
-const int Matrix<int>::unity = 1; 
+namespace SYNARMOSMA {
+  template<>
+  const int Matrix<int>::zero = 0;
+  template<>
+  const int Matrix<int>::neg1 = -1;
+  template<>
+  const int Matrix<int>::unity = 1; 
 
-template<>
-const NTL::ZZ Matrix<NTL::ZZ>::zero = NTL::to_ZZ(0);
-template<>
-const NTL::ZZ Matrix<NTL::ZZ>::neg1 = NTL::to_ZZ(-1);
-template<>
-const NTL::ZZ Matrix<NTL::ZZ>::unity = NTL::to_ZZ(1); 
+  template<>
+  const NTL::ZZ Matrix<NTL::ZZ>::zero = NTL::to_ZZ(0);
+  template<>
+  const NTL::ZZ Matrix<NTL::ZZ>::neg1 = NTL::to_ZZ(-1);
+  template<>
+  const NTL::ZZ Matrix<NTL::ZZ>::unity = NTL::to_ZZ(1); 
 
-template<>
-const double Matrix<double>::zero = 0.0;
-template<>
-const double Matrix<double>::neg1 = -1.0;
-template<>
-const double Matrix<double>::unity = 1.0; 
+  template<>
+  const double Matrix<double>::zero = 0.0;
+  template<>
+  const double Matrix<double>::neg1 = -1.0;
+  template<>
+  const double Matrix<double>::unity = 1.0; 
+}
 
 template<class kind>
 Matrix<kind>::Matrix()
@@ -125,13 +127,14 @@ void Matrix<kind>::display(std::ostream& s) const
   s << std::endl;
 }
 
-template<>
-bool Matrix<double>::divisible(unsigned int n,unsigned int* out1,unsigned int* out2,double* f) const
-{
-  // A meaningless operation for this kind of matrix...
-  return true;
+namespace SYNARMOSMA {
+  template<>
+  bool Matrix<double>::divisible(unsigned int n,unsigned int* out1,unsigned int* out2,double* f) const
+  {
+    // A meaningless operation for this kind of matrix...
+    return true;
+  }
 }
-
 
 template<class kind>
 bool Matrix<kind>::divisible(unsigned int n,unsigned int* out1,unsigned int* out2,kind* f) const
