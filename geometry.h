@@ -4,6 +4,9 @@
 #define _geometryh
 
 namespace SYNARMOSMA {
+  class Geometry;
+  double geometry_change(const Geometry*,const Geometry*);
+
   class Geometry {
    private:
     int nvertex;
