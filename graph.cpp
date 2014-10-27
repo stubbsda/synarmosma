@@ -1,5 +1,7 @@
 #include "graph.h"
 
+using namespace SYNARMOSMA;
+
 extern Random RND;
 
 Graph::Graph() : Schema()

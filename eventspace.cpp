@@ -1,5 +1,7 @@
 #include "eventspace.h"
 
+using namespace SYNARMOSMA;
+
 Eventspace::Eventspace()
 {
   nevent = 20;
@@ -71,7 +73,7 @@ void Eventspace::compute_distances(std::vector<double>& distances) const
     for(j=1+i; j<nevent; ++j) {
       events[j].proper_time.extract(t2);
       delta = 0.0;
-      for(k=0; k<tdimension; ++k) {
+      for(k=0; k<Multitime::tdimension; ++k) {
         delta += (t1[k]-t2[k])*(t1[k]-t2[k]);
       }
       l = (events[i].local_dimension < events[j].local_dimension) ? events[i].local_dimension : events[j].local_dimension;
@@ -153,6 +155,28 @@ double Eventspace::perceptual_divergence(const double* raxis,double theta,const 
     sum += std::sqrt(delta);
   }
   return (sum/double(nevent));
+}
+
+double Eventspace::compute_distance(int u,int v) const
+{
+  double output = 0.0;
+
+  int i,n = (events[u].space.size() <= events[v].space.size()) ? events[u].space.size() : events[v].space.size();
+  double rl = 0.0;
+  std::vector<double> t1,t2;
+  events[u].proper_time.extract(t1);
+  events[v].proper_time.extract(t2);
+  for(i=0; i<n; ++i) {
+    rl += std::abs(events[u].space[i] - events[v].space[i])*std::abs(events[u].space[i] - events[v].space[i]);
+  }
+
+  for(i=0; i<Multitime::tdimension; ++i) {
+    output += (t1[i] - t2[i])*(t1[i] - t2[i]);
+  }
+  output += rl;
+  output = std::sqrt(output);
+
+  return output;
 }
 
 void Eventspace::initiate_events()

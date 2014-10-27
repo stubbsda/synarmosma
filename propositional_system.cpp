@@ -1,5 +1,7 @@
 #include "propositional_system.h"
 
+using namespace SYNARMOSMA;
+
 Propositional_System::Propositional_System()
 {
   set_default_values();

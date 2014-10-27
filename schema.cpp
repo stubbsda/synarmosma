@@ -1,5 +1,7 @@
 #include "schema.h"
 
+using namespace SYNARMOSMA;
+
 Schema::Schema()
 {
   nvertex = 0;

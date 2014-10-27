@@ -1,5 +1,7 @@
 #include "event.h"
 
+using namespace SYNARMOSMA;
+
 extern Random RND;
 
 Event::Event()
@@ -82,27 +84,6 @@ double Event::norm() const
   return output;
 }
 
-double compute_distance(const Event& e1,const Event& e2)
-{
-  double output = 0.0;
-
-  int i,n = (e1.space.size() <= e2.space.size()) ? e1.space.size() : e2.space.size();
-  double rl = 0.0;
-  std::vector<double> t1,t2;
-  e1.proper_time.extract(t1);
-  e2.proper_time.extract(t2);
-  for(i=0; i<n; ++i) {
-    rl += std::abs(e1.space[i] - e2.space[i])*std::abs(e1.space[i] - e2.space[i]);
-  }
-  
-  for(i=0; i<tdimension; ++i) {
-    output += (t1[i] - t2[i])*(t1[i] - t2[i]);
-  }
-  output += rl;
-  output = std::sqrt(output);
-
-  return output;
-}
 
 
 

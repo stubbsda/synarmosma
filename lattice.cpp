@@ -1,5 +1,7 @@
 #include "lattice.h"
 
+using namespace SYNARMOSMA;
+
 Lattice::Lattice()
 {
   N = 0;

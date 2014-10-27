@@ -1,5 +1,7 @@
 #include "logic_graph.h"
 
+using namespace SYNARMOSMA;
+
 extern Random RND;
 
 Logic_Graph::Logic_Graph() : Graph()

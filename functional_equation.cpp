@@ -1,5 +1,7 @@
 #include "functional_equation.h"
 
+using namespace SYNARMOSMA;
+
 extern Random RND;
 
 template<class kind>

@@ -39,26 +39,6 @@
 #include <boost/random/bernoulli_distribution.hpp>
 #include <boost/math/distributions/beta.hpp>
 
-typedef boost::mt19937 base_generator_type;
-typedef boost::unordered_map<std::set<int>,int> hash_map;
-typedef boost::unordered_map<std::string,int> string_hash;
-
-#ifdef __LP64__
-typedef unsigned long UINT64;
-#else
-typedef unsigned long long UINT64;
-#endif
-
-template<unsigned int N>
-struct power_of_two {
-  static unsigned int const value = 2*power_of_two<N-1>::value;
-};
-
-template<>
-struct power_of_two<0> {
-  static unsigned int const value = 1;
-};
-
 extern "C" {
   void dgemm_(char*,char*,int*,int*,int*,double*,double*,int*,double*,int*,double*,double*,int*);
   void dsyev_(char*,char*,int*,double*,int*,double*,double*,int*,int*);
@@ -67,161 +47,178 @@ extern "C" {
   void dgetrf_(int*,int*,double*,int*,int*,int*);
 }
 
-template<class kind>
-class Monomial {
- public:
-  kind coefficient;
-  std::vector<std::pair<unsigned int,unsigned int> > exponents; 
-};
+namespace SYNARMOSMA {
+  typedef boost::mt19937 base_generator_type;
+  typedef boost::unordered_map<std::set<int>,int> hash_map;
+  typedef boost::unordered_map<std::string,int> string_hash;
 
-// The number of atomic propositions in a clause
-const int NP = 5;
-// Not too Aristotelian, perhaps?
-const int tdimension = 1;
+#ifdef __LP64__
+  typedef unsigned long UINT64;
+#else
+  typedef unsigned long long UINT64;
+#endif
 
-UINT64 ipow(int,int);
-UINT64 factorial(int);
-int combinations(const std::set<int>&,int,std::vector<int>&);
-void get_neighbours(int,const std::vector<int>*,int,std::vector<int>&);
-void induced_orientation(int,const std::vector<int>&,int,const hash_map&,int*);
-void factorize(long,std::vector<std::pair<long,int> >&);
-int parity(const std::vector<int>&,const std::vector<int>&);
-void invert(const double*,double*,int);
-double determinant(const double*,int);
-void convert(unsigned char*,int);
-void convert(unsigned char*,float);
-void compute_smith_normal_form(std::vector<std::pair<int,int> >*,int,int);
-void vertex_difference(int,int,std::vector<double>&);
-double binomial(int,int);
-double arithmetic_mean(const std::vector<double>&);
-void split(const std::string&,char,std::vector<std::string>&);
-void split(const std::vector<int>&,std::vector<int>&);
-double dmap(double,double);
-double norm(const double*,int);
-double norm(const std::vector<double>&);
-void cross_product(const std::vector<double>&,const std::vector<double>&,std::vector<double>&);
-bool tuple_predicate(const boost::tuple<int,int,double>&,const boost::tuple<int,int,double>&);
-bool pair_predicate_dbl(const std::pair<int,double>&,const std::pair<int,double>&);
-bool pair_predicate_int(const std::pair<int,int>&,const std::pair<int,int>&);
-int element(const std::set<int>&);
-bool next_combination(std::vector<int>&,int);
-void complement(const std::set<int>&,std::set<int>&,int,int);
-int coincidence(const std::set<int>&,const std::set<int>&);
-bool double_equality(double,double);
-void trim(std::string&);
-void set_wcomponent_values(int,bool);
+  template<unsigned int N>
+  struct power_of_two {
+    static unsigned int const value = 2*power_of_two<N-1>::value;
+  };
 
-inline void RGB_intensity(double rho,unsigned char* output)
-{
-  // This assumes that $\rho \in [0,\pi/2]$
-  double x = std::sin(rho);
-  double y = std::cos(rho);
-  double z = std::sin(2.0*rho);
-  // Red
-  output[0] = (unsigned char) (255.0*x*x);
-  // Green
-  output[1] = (unsigned char) (255.0*z);
-  // Blue
-  output[2] = (unsigned char) (255.0*y*y);
-}
+  template<>
+  struct power_of_two<0> {
+    static unsigned int const value = 1;
+  };
 
-inline std::string make_key(int x)
-{
-  std::stringstream s;
-  s << x;
-  return s.str();
-}
+  template<class kind>
+  class Monomial {
+   public:
+    kind coefficient;
+    std::vector<std::pair<unsigned int,unsigned int> > exponents; 
+  };
 
-inline std::string make_key(int x,int y)
-{
-  assert(x != y);
-  std::stringstream s;
-  if (x < y) {
-    s << x << ":" << y;
+  UINT64 ipow(int,int);
+  UINT64 factorial(int);
+  int combinations(const std::set<int>&,int,std::vector<int>&);
+  void get_neighbours(int,const std::vector<int>*,int,std::vector<int>&);
+  void induced_orientation(int,const std::vector<int>&,int,const hash_map&,int*);
+  void factorize(long,std::vector<std::pair<long,int> >&);
+  int parity(const std::vector<int>&,const std::vector<int>&);
+  void invert(const double*,double*,int);
+  double determinant(const double*,int);
+  void convert(unsigned char*,int);
+  void convert(unsigned char*,float);
+  void compute_smith_normal_form(std::vector<std::pair<int,int> >*,int,int);
+  void vertex_difference(int,int,std::vector<double>&);
+  double binomial(int,int);
+  double arithmetic_mean(const std::vector<double>&);
+  void split(const std::string&,char,std::vector<std::string>&);
+  void split(const std::vector<int>&,std::vector<int>&);
+  double dmap(double,double);
+  double norm(const double*,int);
+  double norm(const std::vector<double>&);
+  void cross_product(const std::vector<double>&,const std::vector<double>&,std::vector<double>&);
+  bool tuple_predicate(const boost::tuple<int,int,double>&,const boost::tuple<int,int,double>&);
+  bool pair_predicate_dbl(const std::pair<int,double>&,const std::pair<int,double>&);
+  bool pair_predicate_int(const std::pair<int,int>&,const std::pair<int,int>&);
+  int element(const std::set<int>&);
+  bool next_combination(std::vector<int>&,int);
+  void complement(const std::set<int>&,std::set<int>&,int,int);
+  int coincidence(const std::set<int>&,const std::set<int>&);
+  bool double_equality(double,double);
+  void trim(std::string&);
+  void set_wcomponent_values(int,bool);
+
+  inline void RGB_intensity(double rho,unsigned char* output)  
+  {
+    // This assumes that $\rho \in [0,\pi/2]$
+    double x = std::sin(rho);
+    double y = std::cos(rho);
+    double z = std::sin(2.0*rho);
+    // Red
+    output[0] = (unsigned char) (255.0*x*x);
+    // Green
+    output[1] = (unsigned char) (255.0*z);
+    // Blue
+    output[2] = (unsigned char) (255.0*y*y);
   }
-  else {
-    s << y << ":" << x;
+
+  inline std::string make_key(int x)
+  {
+    std::stringstream s;
+    s << x;
+    return s.str();
   }
-  return s.str();
-}
 
-inline std::string make_key(const std::vector<int>& v) 
-{
-  assert(!v.empty());
-  unsigned int i,n = v.size();
-  std::stringstream s;
-
-  for(i=0; i<n-1; ++i) {
-    s << v[i] << ":";
-  }
-  s << v[n-1];
-  return s.str();
-}
-
-inline std::string make_key(const std::set<int>& S)
-{
-  assert(!S.empty());
-  unsigned int i,n = S.size();
-  std::stringstream s;
-  std::set<int>::const_iterator it;
-  i = 0;
-  for(it=S.begin(); it!=S.end(); ++it) {
-    if (i < (n-1)) {
-      s << *it << ":";
+  inline std::string make_key(int x,int y)
+  {
+    assert(x != y);
+    std::stringstream s;
+    if (x < y) {
+      s << x << ":" << y;
     }
     else {
-      s << *it;
+      s << y << ":" << x;
     }
-    ++i;
+    return s.str();
   }
-  return s.str();
+
+  inline std::string make_key(const std::vector<int>& v) 
+  {
+    assert(!v.empty());
+    unsigned int i,n = v.size();
+    std::stringstream s;
+
+    for(i=0; i<n-1; ++i) {
+      s << v[i] << ":";
+    }
+    s << v[n-1];
+    return s.str();
+  }
+
+  inline std::string make_key(const std::set<int>& S)
+  {
+    assert(!S.empty());
+    unsigned int i,n = S.size();
+    std::stringstream s;
+    std::set<int>::const_iterator it;
+    i = 0;
+    for(it=S.begin(); it!=S.end(); ++it) {
+      if (i < (n-1)) {
+        s << *it << ":";
+      }
+      else {
+        s << *it;
+      }
+      ++i;
+    }
+    return s.str();
+  }
+
+  class Random {
+   private:
+    unsigned int s;
+    base_generator_type BGT;
+
+    boost::math::beta_distribution<>* root_beta;
+
+    boost::bernoulli_distribution<>* brn;
+    boost::variate_generator<base_generator_type&,boost::bernoulli_distribution<> >* vbrn;
+
+    boost::poisson_distribution<>* poisson;
+    boost::variate_generator<base_generator_type&,boost::poisson_distribution<> >* vpoisson;
+
+    boost::uniform_real<>* uniform;
+    boost::variate_generator<base_generator_type&,boost::uniform_real<> >* VRG;
+
+    boost::normal_distribution<>* gaussian;
+    boost::variate_generator<base_generator_type&,boost::normal_distribution<> >* NRG;
+
+    bool brn_allocated;
+    bool beta_allocated;
+   public:
+    Random();
+    ~Random();
+    inline void set_seed(unsigned int x) {s = x; BGT.seed(s);};
+    inline void increment_seed() {s++; BGT.seed(s);};
+    inline void decrement_seed() {s--; BGT.seed(s);};
+    inline unsigned int get_seed() const {return s;};
+    void initialize_beta(double,double);
+    void initialize_bernoulli(double);
+    void initialize_poisson(double);
+    double drandom();
+    double drandom(double,double);
+    double beta_variate();
+    bool bernoulli_variate();
+    bool poisson_variate();
+    double nrandom();
+    double nrandom(double);
+    double nrandom(double,double);
+    int irandom(int);
+    int irandom(int,int);
+    int irandom(const std::set<int>&);
+    int irandom(const std::set<int>&,const std::set<int>&);
+    int irandom(const std::vector<int>&);
+    int irandom(int,const std::vector<int>&);
+    void shuffle(std::vector<int>&,int);
+  };
 }
-
-class Random {
- private:
-  unsigned int s;
-  base_generator_type BGT;
-
-  boost::math::beta_distribution<>* root_beta;
-
-  boost::bernoulli_distribution<>* brn;
-  boost::variate_generator<base_generator_type&,boost::bernoulli_distribution<> >* vbrn;
-
-  boost::poisson_distribution<>* poisson;
-  boost::variate_generator<base_generator_type&,boost::poisson_distribution<> >* vpoisson;
-
-  boost::uniform_real<>* uniform;
-  boost::variate_generator<base_generator_type&,boost::uniform_real<> >* VRG;
-
-  boost::normal_distribution<>* gaussian;
-  boost::variate_generator<base_generator_type&,boost::normal_distribution<> >* NRG;
-
-  bool brn_allocated;
-  bool beta_allocated;
- public:
-  Random();
-  ~Random();
-  inline void set_seed(unsigned int x) {s = x; BGT.seed(s);};
-  inline void increment_seed() {s++; BGT.seed(s);};
-  inline void decrement_seed() {s--; BGT.seed(s);};
-  inline unsigned int get_seed() const {return s;};
-  void initialize_beta(double,double);
-  void initialize_bernoulli(double);
-  void initialize_poisson(double);
-  double drandom();
-  double drandom(double,double);
-  double beta_variate();
-  bool bernoulli_variate();
-  bool poisson_variate();
-  double nrandom();
-  double nrandom(double);
-  double nrandom(double,double);
-  int irandom(int);
-  int irandom(int,int);
-  int irandom(const std::set<int>&);
-  int irandom(const std::set<int>&,const std::set<int>&);
-  int irandom(const std::vector<int>&);
-  int irandom(int,const std::vector<int>&);
-  void shuffle(std::vector<int>&,int);
-};
 #endif

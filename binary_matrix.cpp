@@ -1,5 +1,7 @@
 #include "binary_matrix.h"
 
+using namespace SYNARMOSMA;
+
 Binary_Matrix::Binary_Matrix()
 {
   nrow = 10;
@@ -143,36 +145,38 @@ unsigned int Binary_Matrix::rank() const
   return r;
 }
 
-std::ostream& operator <<(std::ostream& s,const Binary_Matrix& A)
-{
-  unsigned int i,j;
-  std::vector<unsigned int>::const_iterator it;
+namespace SYNARMOSMA {
+  std::ostream& operator <<(std::ostream& s,const Binary_Matrix& A)
+  {
+    unsigned int i,j;
+    std::vector<unsigned int>::const_iterator it;
 
-  for(i=0; i<A.nrow; ++i) {
-    s << "[ ";
-    for(j=0; j<A.ncolumn-1; ++j) {
-      it = std::find(A.elements[i].begin(),A.elements[i].end(),j);
+    for(i=0; i<A.nrow; ++i) {
+      s << "[ ";
+      for(j=0; j<A.ncolumn-1; ++j) {
+        it = std::find(A.elements[i].begin(),A.elements[i].end(),j);
+        if (it == A.elements[i].end()) {
+          s << "0, ";
+        }
+        else {
+          s << "1, ";
+        }
+      }
+      it = std::find(A.elements[i].begin(),A.elements[i].end(),A.ncolumn-1);
       if (it == A.elements[i].end()) {
-        s << "0, ";
+        s << "0 ";
       }
       else {
-        s << "1, ";
+        s << "1 ";
+      }
+      if (i == A.nrow-1) {
+        s << "]";
+      }
+      else {
+        s << "]" << std::endl;
       }
     }
-    it = std::find(A.elements[i].begin(),A.elements[i].end(),A.ncolumn-1);
-    if (it == A.elements[i].end()) {
-      s << "0 ";
-    }
-    else {
-      s << "1 ";
-    }
-    if (i == A.nrow-1) {
-      s << "]";
-    }
-    else {
-      s << "]" << std::endl;
-    }
+    return s;
   }
-  return s;
 }
 

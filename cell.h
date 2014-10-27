@@ -3,46 +3,47 @@
 #ifndef _cellh
 #define _cellh
 
-class Cell {
- protected:
-  std::set<int> vertices;
-  std::set<int> entourage;
-  std::vector<std::set<int> > faces;
+namespace SYNARMOSMA {
+  class Cell {
+   protected:
+    std::set<int> vertices;
+    std::set<int> entourage;
+    std::vector<std::set<int> > faces;
 
- public:
-  Cell();
-  Cell(const Cell&);
-  Cell(int);
-  Cell(int,int);
-  Cell(const std::set<int>&);
-  virtual ~Cell();
-  Cell& operator =(const Cell&);
-  void initialize(int,int);
-  void initialize(const std::set<int>&);
-  void calculate_faces();
-  virtual void clear();
-  inline int dimension() const {return (vertices.size() - 1);};
-  bool exchange(int,int);
-  bool face(const std::set<int>&) const;
-  double dimensional_stress(int) const;
-  void get_vertices(int*) const;
-  void get_vertices(std::vector<int>&) const;
-  void get_vertices(std::set<int>&) const;
-  void get_faces(std::vector<Cell>&) const;
-  void serialize(std::ofstream&) const;
-  virtual void deserialize(std::ifstream&);
-  bool contains(int) const;
-  inline bool empty() const {return vertices.empty();};
-  friend int affinity(const Cell&,const Cell&);
-  friend bool operator ==(const Cell&,const Cell&);
-  friend bool operator !=(const Cell&,const Cell&);
-  friend bool operator <=(const Cell&,const Cell&);
-  friend bool operator <(const Cell&,const Cell&);
-  friend Cell operator ^(const Cell&,const Cell&);
-  friend std::ostream& operator<< (std::ostream&,const Cell&);
-  friend class Nexus;
-  friend class Homology;
-};
+   public:
+    Cell();
+    Cell(const Cell&);
+    Cell(int);
+    Cell(int,int);
+    Cell(const std::set<int>&);
+    virtual ~Cell();
+    Cell& operator =(const Cell&);
+    void initialize(int,int);
+    void initialize(const std::set<int>&);
+    void calculate_faces();
+    virtual void clear();
+    inline int dimension() const {return (vertices.size() - 1);};
+    bool exchange(int,int);
+    bool face(const std::set<int>&) const;
+    double dimensional_stress(int) const;
+    void get_vertices(int*) const;
+    void get_vertices(std::vector<int>&) const;
+    void get_vertices(std::set<int>& v) const {v = vertices;};
+    void get_faces(std::vector<Cell>&) const;
+    void serialize(std::ofstream&) const;
+    virtual void deserialize(std::ifstream&);
+    bool contains(int) const;
+    inline bool empty() const {return vertices.empty();};
+    friend int affinity(const Cell&,const Cell&);
+    friend bool operator ==(const Cell&,const Cell&);
+    friend bool operator !=(const Cell&,const Cell&);
+    friend bool operator <=(const Cell&,const Cell&);
+    friend bool operator <(const Cell&,const Cell&);
+    friend Cell operator ^(const Cell&,const Cell&);
+    friend std::ostream& operator<< (std::ostream&,const Cell&);
+    friend class Nexus;
+    friend class Homology;
+  };
 
 inline void Cell::get_vertices(std::vector<int>& v) const
 {
@@ -71,12 +72,7 @@ inline bool Cell::contains(int v) const
   return output;
 }
 
-inline void Cell::get_vertices(std::set<int>& v) const
-{
-  v = vertices;
-}
-
-inline int affinity(const Cell& s1,const Cell& s2)
+inline int SYNARMOSMA::affinity(const Cell& s1,const Cell& s2)
 {
   int d = s1.dimension();
 
@@ -94,6 +90,7 @@ inline int affinity(const Cell& s1,const Cell& s2)
   }
 
   return nc;
+}
 }
 #endif
 

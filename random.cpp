@@ -1,5 +1,7 @@
 #include "global.h"
 
+using namespace SYNARMOSMA;
+
 Random::Random()
 {
   brn_allocated = false;

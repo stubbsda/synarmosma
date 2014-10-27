@@ -1,5 +1,7 @@
 #include "nexus.h"
 
+using namespace SYNARMOSMA;
+
 Nexus::Nexus() : Schema()
 {
   dimension = -1;

@@ -1,5 +1,7 @@
 #include "directed_graph.h"
 
+using namespace SYNARMOSMA;
+
 extern Random RND;
 
 Directed_Graph::Directed_Graph() : Schema() 

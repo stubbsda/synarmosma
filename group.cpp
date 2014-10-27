@@ -1,5 +1,7 @@
 #include "group.h"
 
+using namespace SYNARMOSMA;
+
 extern Random RND;
 
 Group::Group()
@@ -760,28 +762,30 @@ std::string Group::compact_form() const
   return output;
 }
 
-std::ostream& operator <<(std::ostream& s,const Group& g)
-{
-  unsigned int i;
-  s << g.finite << "  " << g.abelian << "  " << g.cardinality << "  " << g.solvable << "  " << g.free << std::endl;
-  if (g.ngenerator == 0) {
-    s << "< {e} | >";
+namespace SYNARMOSMA {
+  std::ostream& operator <<(std::ostream& s,const Group& g)
+  {
+    unsigned int i;
+    s << g.finite << "  " << g.abelian << "  " << g.cardinality << "  " << g.solvable << "  " << g.free << std::endl;
+    if (g.ngenerator == 0) {
+      s << "< {e} | >";
+      return s;
+    }
+    s << "< {";
+    for(i=0; i<g.ngenerator-1; ++i) {
+      s << "x[" << i+1 << "],";
+    }
+    s << "x[" << g.ngenerator << "]} | ";
+    if (g.relations.empty()) {
+      s << ">";
+      return s;
+    }
+    s << "{";
+    for(i=0; i<g.relations.size()-1; ++i) {
+      s << g.relations[i] << ",";
+    }
+    s << g.relations[g.relations.size()-1] << "} >";
     return s;
   }
-  s << "< {";
-  for(i=0; i<g.ngenerator-1; ++i) {
-    s << "x[" << i+1 << "],";
-  }
-  s << "x[" << g.ngenerator << "]} | ";
-  if (g.relations.empty()) {
-    s << ">";
-    return s;
-  }
-  s << "{";
-  for(i=0; i<g.relations.size()-1; ++i) {
-    s << g.relations[i] << ",";
-  }
-  s << g.relations[g.relations.size()-1] << "} >";
-  return s;
 }
 

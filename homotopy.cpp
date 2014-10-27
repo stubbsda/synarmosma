@@ -1,5 +1,7 @@
 #include "homotopy.h"
 
+using namespace SYNARMOSMA;
+
 extern Random RND;
 
 Homotopy::Homotopy()
@@ -101,25 +103,6 @@ Homotopy& Homotopy::operator =(const Homotopy& source)
   fitness = source.fitness;
 
   return *this;
-}
-
-Homotopy operator +(const Homotopy& h1,const Homotopy& h2)
-{
-  if (h1.sequence.size() != h2.sequence.size()) {
-    std::cerr << "These two homotopy sequences cannot be added: they don't have the same length!" << std::endl;
-    std::exit(1);
-  }
-  unsigned int i,bisection = 1 + RND.irandom(h1.sequence.size()-1);
-  Homotopy output;
-
-  for(i=0; i<bisection; ++i) {
-    output.sequence.push_back(h1.sequence[i]);
-  }
-  for(i=bisection; i<h1.sequence.size(); ++i) {
-    output.sequence.push_back(h2.sequence[i]);
-  }
-
-  return output;
 }
 
 void Homotopy::compute(const Nexus* NX)
@@ -261,3 +244,23 @@ void Homotopy::compute(const Nexus* NX)
   sequence.push_back(Group(ngen,relations));
 }
 
+namespace SYNARMOSMA {
+  Homotopy operator +(const Homotopy& h1,const Homotopy& h2)
+  {
+    if (h1.sequence.size() != h2.sequence.size()) {
+      std::cerr << "These two homotopy sequences cannot be added: they don't have the same length!" << std::endl;
+      std::exit(1);
+    }
+    unsigned int i,bisection = 1 + RND.irandom(h1.sequence.size()-1);
+    Homotopy output;
+
+    for(i=0; i<bisection; ++i) {
+      output.sequence.push_back(h1.sequence[i]);
+    }
+    for(i=bisection; i<h1.sequence.size(); ++i) {
+      output.sequence.push_back(h2.sequence[i]);
+    }
+
+    return output;
+  }
+}

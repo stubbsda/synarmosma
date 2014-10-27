@@ -1,5 +1,7 @@
 #include "rational.h"
 
+using namespace SYNARMOSMA;
+
 Rational::Rational()
 {
   n = 0;
@@ -78,145 +80,146 @@ void Rational::normalize()
   height = (abs(n) > abs(d)) ? log(n) : log(d);
 }
 
-Rational abs(Rational source)
-{
-  Rational output;
-  output.n = abs(source.n);
-  output.d = abs(source.d);
-  return output;
-}
+namespace SYNARMOSMA {
+  Rational abs(Rational source)
+  {
+    Rational output;
+    output.n = abs(source.n);
+    output.d = abs(source.d);
+    return output;
+  }
 
-Rational operator +(const Rational& r1,const Rational& r2)
-{
-  Rational output(0);
-  if (r1.d == r2.d) {
-    output.d = r1.d;
-    output.n = r1.n + r2.n;
+  Rational operator +(const Rational& r1,const Rational& r2)
+  {
+    Rational output(0);
+    if (r1.d == r2.d) {
+      output.d = r1.d;
+      output.n = r1.n + r2.n;
+      output.normalize();
+      return output;
+    }
+    output.d = r1.d*r2.d;
+    output.n = (r1.n*r2.d + r2.n*r1.d);
     output.normalize();
     return output;
   }
-  output.d = r1.d*r2.d;
-  output.n = (r1.n*r2.d + r2.n*r1.d);
-  output.normalize();
-  return output;
-}
 
-Rational operator -(const Rational& r1,const Rational& r2)
-{
-  Rational output(0);
-  if (r1.d == r2.d) {
-    output.d = r1.d;
-    output.n = r1.n - r2.n;
+  Rational operator -(const Rational& r1,const Rational& r2)
+  {
+    Rational output(0);
+    if (r1.d == r2.d) {
+      output.d = r1.d;
+      output.n = r1.n - r2.n;
+      output.normalize();
+      return output;
+    }
+    output.d = r1.d*r2.d;
+    output.n = (r1.n*r2.d - r2.n*r1.d);
     output.normalize();
     return output;
   }
-  output.d = r1.d*r2.d;
-  output.n = (r1.n*r2.d - r2.n*r1.d);
-  output.normalize();
-  return output;
-}
 
-Rational operator *(const Rational& r1,const Rational& r2)
-{
-  Rational output(0);
-  output.n = r1.n*r2.n;
-  output.d = r1.d*r2.d;
-  output.normalize();
-  return output;
-}
-
-Rational operator /(const Rational& r1,const Rational& r2)
-{
-  Rational output(0);
-  output.n = r1.n*r2.d;
-  output.d = r1.d*r2.n;
-  output.normalize();
-  return output;
-}
-
-std::ostream& operator <<(std::ostream& s,const Rational& source)
-{
-  s << "(" << source.n << ")/(" << source.d << ")";
-  return s;
-}
-
-bool operator >=(const Rational& r1,const Rational& r2)
-{
-  if (r1.d == r2.d) {
-    return (r1.n >= r2.n);
+  Rational operator *(const Rational& r1,const Rational& r2)
+  {
+    Rational output(0);
+    output.n = r1.n*r2.n;
+    output.d = r1.d*r2.d;
+    output.normalize();
+    return output;
   }
-  return ((r1.n*r2.d) >= (r2.n*r1.d));
-}
 
-bool operator >(const Rational& r1,const Rational& r2)
-{
-  if (r1.d == r2.d) {
-    return (r1.n > r2.n);
+  Rational operator /(const Rational& r1,const Rational& r2)
+  {
+    Rational output(0);
+    output.n = r1.n*r2.d;
+    output.d = r1.d*r2.n;
+    output.normalize();
+    return output;
   }
-  return ((r1.n*r2.d) > (r2.n*r1.d));
-}
 
-bool operator <(const Rational& r1,const Rational& r2)
-{
-  if (r1.d == r2.d) {
-    return (r1.n < r2.n);
+  std::ostream& operator <<(std::ostream& s,const Rational& source)
+  {
+    s << "(" << source.n << ")/(" << source.d << ")";
+    return s;
   }
-  return ((r1.n*r2.d) < (r2.n*r1.d));
-}
 
-bool operator <=(const Rational& r1,const Rational& r2)
-{
-  if (r1.d == r2.d) {
-    return (r1.n <= r2.n);
+  bool operator >=(const Rational& r1,const Rational& r2)
+  {
+    if (r1.d == r2.d) {
+      return (r1.n >= r2.n);
+    }
+    return ((r1.n*r2.d) >= (r2.n*r1.d));
   }
-  return ((r1.n*r2.d) <= (r2.n*r1.d));
-}
 
-bool operator !=(const Rational& r1,const Rational& r2)
-{
-  if (r1.n != r2.n || r1.d != r2.d) return true;
-  return false;
-}
+  bool operator >(const Rational& r1,const Rational& r2)
+  {
+    if (r1.d == r2.d) {
+      return (r1.n > r2.n);
+    }
+    return ((r1.n*r2.d) > (r2.n*r1.d));
+  }
 
-bool operator ==(const Rational& r1,const Rational& r2)
-{
-  if (r1.n == r2.n && r1.d == r2.d) return true;
-  return false;
-}
+  bool operator <(const Rational& r1,const Rational& r2)
+  {
+    if (r1.d == r2.d) {
+      return (r1.n < r2.n);
+    }
+    return ((r1.n*r2.d) < (r2.n*r1.d));
+  }
 
-Rational qdiv(const Rational& a,const Rational& b)
-{
-  return a;
-}
+  bool operator <=(const Rational& r1,const Rational& r2)
+  {
+    if (r1.d == r2.d) {
+      return (r1.n <= r2.n);
+    }
+    return ((r1.n*r2.d) <= (r2.n*r1.d));
+  }
 
-unsigned int convert(const Rational& q,unsigned int p)
-{
-  // Here we have to use the relation q = r/s => s*q = r, i.e. 
-  // we would like to find out which element q of GF(p) satisfies 
-  // this equation.
-  // First we will convert r and s from Z to Z/p...
-  unsigned int i,output = 0;
-  NTL::ZZ r,s,in1;
+  bool operator !=(const Rational& r1,const Rational& r2)
+  {
+    if (r1.n != r2.n || r1.d != r2.d) return true;
+    return false;
+  }
 
-  r = q.numerator() % p;
-  if (q.denominator() == 1) {
+  bool operator ==(const Rational& r1,const Rational& r2)
+  {
+    if (r1.n == r2.n && r1.d == r2.d) return true;
+    return false;
+  }
+
+  Rational qdiv(const Rational& a,const Rational& b)
+  {
+    return a;
+  }
+
+  unsigned int convert(const Rational& q,unsigned int p)
+  {
+    // Here we have to use the relation q = r/s => s*q = r, i.e. 
+    // we would like to find out which element q of GF(p) satisfies 
+    // this equation.
+    // First we will convert r and s from Z to Z/p...
+    unsigned int i,output = 0;
+    NTL::ZZ r,s,in1;
+
+    r = q.numerator() % p;
+    if (q.denominator() == 1) {
+      for(i=0; i<p; ++i) {
+        if (r == i) {
+          output = i;
+          break;
+        }
+      }
+      return output;
+    }
+    s = q.denominator() % p;
+    // This method isn't very efficient but it works.
     for(i=0; i<p; ++i) {
-      if (r == i) {
+      in1 = s*i;
+      if ((in1 % p) == r) {
         output = i;
         break;
       }
     }
     return output;
   }
-  s = q.denominator() % p;
-  // This method isn't very efficient but it works.
-  for(i=0; i<p; ++i) {
-    in1 = s*i;
-    if ((in1 % p) == r) {
-      output = i;
-      break;
-    }
-  }
-  return output;
 }
-

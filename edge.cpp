@@ -1,5 +1,7 @@
 #include "edge.h"
 
+using namespace SYNARMOSMA;
+
 Edge::Edge()
 {
   clear();

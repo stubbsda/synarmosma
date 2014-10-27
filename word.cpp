@@ -1,5 +1,7 @@
 #include "word.h"
 
+using namespace SYNARMOSMA;
+
 extern Random RND;
 
 Word::Word()
@@ -197,29 +199,6 @@ Word Word::mutate() const
   return output;
 }
 
-bool operator ==(const Word& w1,const Word& w2)
-{
-  unsigned int i;
-
-  if (w1.content.size() == w2.content.size()) {
-    bool good = true;
-    for(i=0; i<w1.content.size(); ++i) {
-      if (w1.content[i] != w2.content[i]) {
-        good = false;
-        break;
-      }
-    }
-    if (good) return true;
-  }
-  return false;
-}
-
-bool operator !=(const Word& w1,const Word& w2)
-{
-  if (w1 == w2) return false;
-  return true;
-}
-
 void Word::clear()
 {
   content.clear();
@@ -308,33 +287,58 @@ Word Word::normalize() const
   return output;
 }
 
-Word operator *(const Word& w1,const Word& w2)
-{
-  unsigned int i;
-  Word output(0);
+namespace SYNARMOSMA {
+  bool operator ==(const Word& w1,const Word& w2)
+  {
+    unsigned int i;
+
+    if (w1.content.size() == w2.content.size()) {
+      bool good = true;
+      for(i=0; i<w1.content.size(); ++i) {
+        if (w1.content[i] != w2.content[i]) {
+          good = false;
+          break;
+        }
+      }
+      if (good) return true;
+    }
+    return false;
+  }
+
+  bool operator !=(const Word& w1,const Word& w2)
+  {
+    if (w1 == w2) return false;
+    return true;
+  }
+
+  Word operator *(const Word& w1,const Word& w2)
+  {
+    unsigned int i;
+    Word output(0);
  
-  for(i=0; i<w1.content.size(); ++i) {
-    output.content.push_back(w1.content[i]);
+    for(i=0; i<w1.content.size(); ++i) {
+      output.content.push_back(w1.content[i]);
+    }
+    for(i=0; i<w2.content.size(); ++i) {
+      output.content.push_back(w2.content[i]);
+    }
+    return output;
   }
-  for(i=0; i<w2.content.size(); ++i) {
-    output.content.push_back(w2.content[i]);
+
+  std::ostream& operator <<(std::ostream& os,const Word& source)
+  {
+    unsigned int i;
+    std::pair<unsigned int,int> doublet;
+
+    if (source.content.empty()) return os;
+
+    for(i=0; i<source.content.size()-1; ++i) {
+      doublet = source.content[i];
+      os << "x[" << 1 + doublet.first << "]^(" << doublet.second << ")*";
+    }
+    doublet = source.content[source.content.size()-1];
+    os << "x[" << 1 + doublet.first << "]^(" << doublet.second << ")";
+    return os;
   }
-  return output;
-}
-
-std::ostream& operator <<(std::ostream& os,const Word& source)
-{
-  unsigned int i;
-  std::pair<unsigned int,int> doublet;
-
-  if (source.content.empty()) return os;
-
-  for(i=0; i<source.content.size()-1; ++i) {
-    doublet = source.content[i];
-    os << "x[" << 1 + doublet.first << "]^(" << doublet.second << ")*";
-  }
-  doublet = source.content[source.content.size()-1];
-  os << "x[" << 1 + doublet.first << "]^(" << doublet.second << ")";
-  return os;
 }
 

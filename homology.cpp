@@ -1,5 +1,7 @@
 #include "homology.h"
 
+using namespace SYNARMOSMA;
+
 Homology::Homology()
 {
 

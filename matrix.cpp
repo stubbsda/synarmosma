@@ -1,5 +1,7 @@
 #include "matrix.h"
 
+using namespace SYNARMOSMA;
+
 template<>
 const int Matrix<int>::zero = 0;
 template<>
@@ -323,6 +325,7 @@ kind Matrix<kind>::get_first_nonzero(unsigned int n) const
   return elements[n][0].first;
 }
 
+namespace SYNARMOSMA {
 template<class kind>
 void permute(Matrix<kind>& A,unsigned int n,unsigned int m,char type)
 {
@@ -627,4 +630,5 @@ unsigned int normalize(Matrix<kind>& A)
   } while(true);
   A.normalized = true;
   return q;
+}
 }

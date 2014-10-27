@@ -1,5 +1,7 @@
 #include "geometry.h"
 
+using namespace SYNARMOSMA;
+
 extern Random RND;
 
 Geometry::Geometry()
@@ -1157,7 +1159,7 @@ int Geometry::compute_coordinates(std::vector<double>& x) const
   return edim;
 }
 
-double geometry_change(const Geometry* g1,const Geometry* g2)
+double SYNARMOSMA::geometry_change(const Geometry* g1,const Geometry* g2)
 {
   int i,j,nva;
   bool arg1 = true;

@@ -1,5 +1,7 @@
 #include "variety.h"
 
+using namespace SYNARMOSMA;
+
 extern Random RND;
 
 template<class kind>
