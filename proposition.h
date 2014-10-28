@@ -27,6 +27,7 @@ namespace SYNARMOSMA {
     inline void clear() {clause.clear();};
     void serialize(std::ofstream&) const;
     void deserialize(std::ifstream&); 
+    inline static int get_clause_size() {return NP;};
     friend std::ostream& operator <<(std::ostream&,const Proposition&);
     friend class Logic_Graph;  
     friend class Propositional_System;
