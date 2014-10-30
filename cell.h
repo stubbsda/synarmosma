@@ -25,22 +25,19 @@ namespace SYNARMOSMA {
     inline int dimension() const {return (vertices.size() - 1);};
     bool exchange(int,int);
     bool face(const std::set<int>&) const;
-    double dimensional_stress(int) const;
-    void get_vertices(int*) const;
-    void get_vertices(std::vector<int>&) const;
-    void get_vertices(std::set<int>& v) const {v = vertices;};
+    void inline get_vertices(int*) const;
+    void inline get_vertices(std::vector<int>&) const;
+    void inline get_vertices(std::set<int>& v) const {v = vertices;};
     void get_faces(std::vector<Cell>&) const;
     void serialize(std::ofstream&) const;
     virtual void deserialize(std::ifstream&);
-    bool contains(int) const;
+    inline bool contains(int) const;
     inline bool empty() const {return vertices.empty();};
-    friend int affinity(const Cell&,const Cell&);
-    friend bool operator ==(const Cell&,const Cell&);
-    friend bool operator !=(const Cell&,const Cell&);
-    friend bool operator <=(const Cell&,const Cell&);
-    friend bool operator <(const Cell&,const Cell&);
-    friend Cell operator ^(const Cell&,const Cell&);
-    friend std::ostream& operator<< (std::ostream&,const Cell&);
+    friend inline int affinity(const Cell&,const Cell&);
+    friend inline bool operator ==(const Cell&,const Cell&);
+    friend inline bool operator !=(const Cell&,const Cell&);
+    friend inline bool operator <=(const Cell&,const Cell&);
+    friend inline bool operator <(const Cell&,const Cell&);
     friend class Nexus;
     friend class Homology;
   };
@@ -72,24 +69,52 @@ namespace SYNARMOSMA {
     return output;
   }
 
-  inline int affinity(const Cell& s1,const Cell& s2)
+  inline int affinity(const Cell& c1,const Cell& c2)
   {
-    int d = s1.dimension();
+    int d = c1.dimension();
 
-    if (d != s2.dimension()) return 0;
+    if (d != c2.dimension()) return 0;
 
     std::set<int>::const_iterator it,jt;
     int i,j,nc = 0;
 
-    for(it=s1.vertices.begin(); it!=s1.vertices.end(); ++it) {
+    for(it=c1.vertices.begin(); it!=c1.vertices.end(); ++it) {
       i = *it;
-      for(jt=s2.vertices.begin(); jt!=s2.vertices.end(); ++jt) {
+      for(jt=c2.vertices.begin(); jt!=c2.vertices.end(); ++jt) {
         j = *jt;
         if (i == j) nc++;
       }
     }
 
     return nc;
+  }
+
+  inline bool operator ==(const Cell& c1,const Cell& c2)
+  {
+    if (c1.vertices == c2.vertices) return true;
+    return false;
+  }
+
+  inline bool operator !=(const Cell& c1,const Cell& c2)
+  {
+    if (c1 == c2) return false;
+    return true;
+  }
+
+  inline bool operator <=(const Cell& c1,const Cell& c2)
+  {
+    if (c2.dimension() < c1.dimension()) return false;
+    if (c1 == c2) return true;
+    bool output = (c1 < c2) ? true : false;
+    return output;
+  }
+
+  inline bool operator <(const Cell& c1,const Cell& c2)
+  {
+    if (c2.dimension() <= c1.dimension()) return false;
+    // So c2 is bigger than c1, let's see if c1 is contained
+    // in c2
+    return std::includes(c2.vertices.begin(),c2.vertices.end(),c1.vertices.begin(),c1.vertices.end());
   }
 }
 #endif
