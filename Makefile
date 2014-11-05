@@ -21,9 +21,9 @@ LIBS = $(LAPACK) -lboost_system -lntl -lm
 
 install: synarmosma
 	mkdir -p $(SYNARMOSMA)/lib
-	cp libsynarmosma.so $(SYNARMOSMA)/lib/
+	install -p libsynarmosma.so $(SYNARMOSMA)/lib/
 	mkdir -p $(SYNARMOSMA)/include
-	cp *.h $(SYNARMOSMA)/include/
+	install -p *.h $(SYNARMOSMA)/include/
 
 synarmosma: $(OBJECTS) 
 	$(CXX) $(LD_FLAGS) -o libsynarmosma.so $(OBJECTS) $(LIBS)   
