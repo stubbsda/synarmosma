@@ -23,7 +23,7 @@ install: synarmosma
 	mkdir -p $(SYNARMOSMA)/lib
 	install -p libsynarmosma.so $(SYNARMOSMA)/lib/
 	mkdir -p $(SYNARMOSMA)/include
-	install -p *.h $(SYNARMOSMA)/include/
+	install -p -m 444 *.h $(SYNARMOSMA)/include/
 
 synarmosma: $(OBJECTS) 
 	$(CXX) $(LD_FLAGS) -o libsynarmosma.so $(OBJECTS) $(LIBS)   
