@@ -68,6 +68,7 @@ namespace SYNARMOSMA {
     double dot_product(const std::vector<double>&,const std::vector<double>&) const;
     double inner_product(const std::vector<double>*,const std::vector<int>&,int) const;
     int compute_coordinates(std::vector<double>&) const;
+    void compute_relational_matrices(std::vector<double>&,std::vector<std::vector<double> >&) const;
     int vertex_order(int,int) const;
     void vertex_difference(int,int,std::vector<double>&) const;
     void additive_modification(int,bool,double,double);

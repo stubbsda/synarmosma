@@ -886,6 +886,105 @@ bool Geometry::adjust_dimension(const std::vector<int>& vdimension)
   return false;
 }
 
+void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<std::vector<double> >& angles) const
+{
+  R.clear();
+  angles.clear();
+  // This method supposes that we are working in Euclidean n-space with a 
+  // uniform, absolute geometry
+  assert(background_dimension > 1 && euclidean && uniform && !relational);
+  int i,j,k;
+  double r,v[background_dimension],base[background_dimension];
+
+  // For the angles matrices, the last one is always the one that covers the range [0,2\pi), so 
+  // all the others range over [0,\pi]
+  if (background_dimension == 2) {
+    for(i=0; i<nvertex*nvertex; ++i) {
+      R.push_back(0.0);
+    }
+    angles.push_back(R);
+#ifdef PARALLEL
+#pragma omp parallel for default(shared) private(i,j,base,v,r)
+#endif
+    for(i=0; i<nvertex; ++i) {
+      base[0] = coordinates[i][0];
+      base[1] = coordinates[i][1];
+      for(j=0; j<nvertex; ++j) {
+        if (i == j) continue;
+        v[0] = coordinates[j][0] - base[0];
+        v[1] = coordinates[j][1] - base[1];
+        r = std::sqrt(v[0]*v[0] + v[1]*v[1]);
+        R[j+nvertex*i] = r;
+        angles[0][j+nvertex*i] = M_PI + std::atan2(v[1],v[0]);
+      }
+    }
+  }
+  else if (background_dimension == 3) {
+    for(i=0; i<nvertex*nvertex; ++i) {
+      R.push_back(0.0);
+    }
+    angles.push_back(R);
+    angles.push_back(R);
+#ifdef PARALLEL
+#pragma omp parallel for default(shared) private(i,j,base,v,r)
+#endif
+    for(i=0; i<nvertex; ++i) {
+      base[0] = coordinates[i][0];
+      base[1] = coordinates[i][1];
+      base[2] = coordinates[i][2];
+      for(j=0; j<nvertex; ++j) {
+        if (i == j) continue;
+        v[0] = coordinates[j][0] - base[0];
+        v[1] = coordinates[j][1] - base[1];
+        v[2] = coordinates[j][2] - base[2];
+        r = std::sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+        R[j+nvertex*i] = r;
+        angles[0][j+nvertex*i] = std::acos(v[2]/r);
+        angles[1][j+nvertex*i] = M_PI + std::atan2(v[1],v[0]); 
+      }
+    }
+  }
+  else {
+    double sum;
+    const int nm1 = background_dimension - 1;
+    const int nm2 = background_dimension - 2;
+    for(i=0; i<nvertex*nvertex; ++i) {
+      R.push_back(0.0);
+    }
+    for(i=0; i<nm1; ++i) {
+      angles.push_back(R);
+    }
+#ifdef PARALLEL
+#pragma omp parallel for default(shared) private(i,j,k,base,v,r,sum)
+#endif
+    for(i=0; i<nvertex; ++i) {
+      for(j=0; j<background_dimension; ++j) {
+        base[j] = coordinates[i][j];
+      }
+      for(j=0; j<nvertex; ++j) {
+        if (i == j) continue;
+        for(k=0; k<background_dimension; ++k) {
+          v[k] = coordinates[j][k] - base[k];
+        }
+        r = norm(v,background_dimension);
+        R[j+nvertex*i] = r;
+        sum = 0.0;
+        for(k=0; k<nm2; ++k) {
+          angles[k][j+nvertex*i] = std::acos(v[k]/std::sqrt(r*r - sum));
+          sum += v[k]*v[k];
+        }
+        r = std::sqrt(v[nm1]*v[nm1] + v[nm2]*v[nm2]);
+        if (v[nm1] < 0.0) {
+          angles[nm2][j+nvertex*i] = 2.0*M_PI - std::acos(v[nm2]/r);
+        }
+        else {
+          angles[nm2][j+nvertex*i] = std::acos(v[nm2]/r);
+        }
+      }
+    }
+  }
+}
+
 void Geometry::compute_distances(const std::set<int>& vmodified)
 {
   if (relational) return;
