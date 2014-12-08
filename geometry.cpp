@@ -94,10 +94,7 @@ void Geometry::initialize(bool type,bool model,bool flat,int D)
 
 void Geometry::clear()
 {
-  if (relational) {
-
-  }
-  else {
+  if (!relational) {
     for(int i=0; i<nvertex; ++i) {
       coordinates[i].clear();
     }
@@ -105,8 +102,7 @@ void Geometry::clear()
   }
   distances.clear();
   original.clear();
-
-  set_default_values();
+  nvertex = 0;
 }
 
 bool Geometry::consistent() const
@@ -237,6 +233,98 @@ void Geometry::deserialize(std::ifstream& s)
         coordinates.push_back(xc);
         xc.clear();
       }
+    }
+  }
+}
+
+void Geometry::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<double>& x)
+{
+  int i,j,k;
+  double delta;
+  std::vector<double> xc;
+  const int npair = N*(N+1)/2;
+  const int vsize = (signed) x.size();
+  const double pfactor = (euclidean) ? 1.0 : -1.0;
+
+  clear();
+
+  for(i=0; i<background_dimension; ++i) {
+    xc.push_back(0.0);
+  }
+
+  if (unf_rnd) {
+    assert(2*background_dimension == vsize);
+    for(i=0; i<N; ++i) {
+      for(j=0; j<background_dimension; ++j) {
+        xc[j] = x[2*j] + (x[2*j+1] - x[2*j])*RND.drandom();
+      }
+      coordinates.push_back(xc);
+    }    
+  }
+  else {
+    assert(background_dimension*N == vsize);
+    for(i=0; i<N; ++i) {
+      for(j=0; j<background_dimension; ++j) {
+        xc[j] = x[background_dimension*i + j];
+      }
+      coordinates.push_back(xc);
+    }
+  }
+  for(i=0; i<npair; ++i) {
+    distances.push_back(0.0);
+  }
+  nvertex = N;
+#ifdef PARALLEL
+#pragma omp parallel for default(shared) private(i,j,k,delta) schedule(dynamic,1)
+#endif
+  for(i=0; i<N; ++i) {
+    for(j=1+i; j<N; ++j) {
+      delta = pfactor*(coordinates[i][0] - coordinates[j][0])*(coordinates[i][0] - coordinates[j][0]);
+      for(k=1; k<background_dimension; ++k) {
+        delta += (coordinates[i][k] - coordinates[j][k])*(coordinates[i][k] - coordinates[j][k]);
+      }
+      distances[compute_index(i,j)] = delta;
+    }
+  }
+}
+
+void Geometry::multiple_vertex_addition(int N,double mu,double sigma)
+{
+  // Should this method operate on the assumption that we're starting from an empty geometry?
+  // For the moment (December 6, 2014), we will suppose so...
+  int i,j,k;
+  double delta;
+  std::vector<double> xc;
+  const int npair = N*(N+1)/2;
+  const double pfactor = (euclidean) ? 1.0 : -1.0;
+
+  clear();
+
+  for(i=0; i<background_dimension; ++i) {
+    xc.push_back(0.0);
+  }
+  for(i=0; i<npair; ++i) {
+    distances.push_back(0.0);
+  }
+  for(i=0; i<N; ++i) {
+    for(j=0; j<background_dimension; ++j) {
+      xc[j] = RND.nrandom(mu,sigma);
+    }
+    coordinates.push_back(xc);
+  }
+  // We need to set nvertex here before we start calling the compute_index
+  // method
+  nvertex = N;
+#ifdef PARALLEL
+#pragma omp parallel for default(shared) private(i,j,k,delta) schedule(dynamic,1)
+#endif
+  for(i=0; i<N; ++i) {
+    for(j=1+i; j<N; ++j) {
+      delta = pfactor*(coordinates[i][0] - coordinates[j][0])*(coordinates[i][0] - coordinates[j][0]);
+      for(k=1; k<background_dimension; ++k) {
+        delta += (coordinates[i][k] - coordinates[j][k])*(coordinates[i][k] - coordinates[j][k]);
+      }
+      distances[compute_index(i,j)] = delta;
     }
   }
 }
@@ -913,8 +1001,8 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
         if (i == j) continue;
         v[0] = coordinates[j][0] - base[0];
         v[1] = coordinates[j][1] - base[1];
-        r = std::sqrt(v[0]*v[0] + v[1]*v[1]);
-        R[j+nvertex*i] = r;
+        //r = std::sqrt(v[0]*v[0] + v[1]*v[1]);
+        R[j+nvertex*i] = std::sqrt(distances[compute_index(i,j)]);
         angles[0][j+nvertex*i] = M_PI + std::atan2(v[1],v[0]);
       }
     }
@@ -937,7 +1025,7 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
         v[0] = coordinates[j][0] - base[0];
         v[1] = coordinates[j][1] - base[1];
         v[2] = coordinates[j][2] - base[2];
-        r = std::sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+        r = std::sqrt(distances[compute_index(i,j)]);
         R[j+nvertex*i] = r;
         angles[0][j+nvertex*i] = std::acos(v[2]/r);
         angles[1][j+nvertex*i] = M_PI + std::atan2(v[1],v[0]); 
@@ -966,11 +1054,12 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
         for(k=0; k<background_dimension; ++k) {
           v[k] = coordinates[j][k] - base[k];
         }
-        r = norm(v,background_dimension);
-        R[j+nvertex*i] = r;
+        //r = norm(v,background_dimension);
+        r = distances[compute_index(i,j)];
+        R[j+nvertex*i] = std::sqrt(r);
         sum = 0.0;
         for(k=0; k<nm2; ++k) {
-          angles[k][j+nvertex*i] = std::acos(v[k]/std::sqrt(r*r - sum));
+          angles[k][j+nvertex*i] = std::acos(v[k]/std::sqrt(r - sum));
           sum += v[k]*v[k];
         }
         r = std::sqrt(v[nm1]*v[nm1] + v[nm2]*v[nm2]);

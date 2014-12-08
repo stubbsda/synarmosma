@@ -61,6 +61,8 @@ namespace SYNARMOSMA {
     void vertex_addition(int,double mutation=1.0);
     void vertex_addition(const std::set<int>&);
     inline void vertex_addition(const std::vector<double>&);
+    void multiple_vertex_addition(int,double,double);
+    void multiple_vertex_addition(int,bool,const std::vector<double>&);
     void get_implied_vertices(int,std::set<int>&) const;
     bool adjust_dimension(const std::vector<int>&);
     void compute_distances();
