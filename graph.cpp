@@ -857,16 +857,20 @@ double Graph::cyclicity() const
   return output;
 }
 
-void Graph::genus(int* chi) const
+int Graph::genus(std::vector<int>& gamma) const
 {
-  // Method to compute a collection of topological indices associated with the graph
-  // This includes the maximum, minimum and average number of valences, the number of
-  // edges, whether the graph is connected, and the maximum and minimum genus. If this
-  // is a serial/SMP simulation, we can also easily compute the connectivity and the
-  // minimum omega.
+  // A method to compute the genus of a connected graph, assumed simple as well, or to 
+  // calculate at least the minimum and maximum genus of this graph.  
+  gamma.clear();
   assert(connected());
-  chi[0] = int(double(nedge)/6.0 - 0.5*double(nvertex-2));
-  chi[1] = int(double((nvertex-3)*(nvertex-4))/12.0);
+  if (planar()) return 0;
+  int ll = std::ceil(double(nedge)/6.0 - 0.5*double(nvertex) + 1.0);
+  int ul = std::floor(0.5*double(nedge - nvertex + 1));
+  // If the lower and upper limits are identical, then we have the genus of the graph
+  if (ll == ul) return ll;
+  gamma.push_back(ll);
+  gamma.push_back(ul);
+  return -1;
 }
 
 double Graph::connectivity() const 

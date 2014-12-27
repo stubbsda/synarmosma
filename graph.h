@@ -83,7 +83,7 @@ namespace SYNARMOSMA {
     void random_walk(double*,double*,int) const;
     void compute_adjacency_matrix(Binary_Matrix*) const;
     void compute_laplacian(Matrix<double>*) const;
-    void genus(int*) const;
+    int genus(std::vector<int>&) const;
     inline int size() const {return nedge;};
     inline int order() const {return nvertex;};
     friend class Nexus;
