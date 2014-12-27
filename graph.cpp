@@ -1011,9 +1011,14 @@ double Graph::compute_energy() const
   // To compute the topological energy, first determine if the graph is 
   // connected
   if (!connected()) return 1000000.0;
-  int chi[2];
-  genus(chi);
-  return (double(chi[0])/double(chi[1]));
+  std::vector<int> gamma;
+  int g = genus(gamma);
+  if (g == -1) {
+    return double(gamma[0])/(1.0 + double(gamma[1]));
+  }
+  else {
+    return g;
+  }
 }
 
 int Graph::minimize_topology(int nsteps,double temperature,std::vector<double>& energy_history)
