@@ -37,6 +37,7 @@ namespace SYNARMOSMA {
     bool orientable() const;
     bool pseudomanifold(bool*) const;
     void assemble();
+    void surface_construction(int);
     virtual void clear();
     void initialize(int);
     void initialize(int,int);

@@ -93,6 +93,191 @@ int Nexus::size() const
   return nvertex;
 }
 
+void Nexus::surface_construction(int stype)
+{
+  // A method to construct certain standard surfaces for testing the correctness 
+  // of the pseudomanifold and orientability routines...
+  std::set<int> vx;
+  
+  if (stype == 0) {
+    // The 2-sphere $S^2$, which is an orientable pseudomanifold without boundary
+    initialize(2,4);
+
+    vx.insert(0); vx.insert(1); vx.insert(2);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(0); vx.insert(1); vx.insert(3);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(0); vx.insert(2); vx.insert(3);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(1); vx.insert(2); vx.insert(3);
+    paste(vx);
+    vx.clear();
+  }
+  else if (stype == 1) {
+    // The real projective plane, a non-orientable pseudomanifold without boundary
+    initialize(2,6);
+
+    vx.insert(0); vx.insert(2); vx.insert(4);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(1); vx.insert(2); vx.insert(4);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(1); vx.insert(3); vx.insert(4);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(3); vx.insert(4); vx.insert(5);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(0); vx.insert(4); vx.insert(5);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(0); vx.insert(1); vx.insert(3);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(0); vx.insert(1); vx.insert(5);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(0); vx.insert(2); vx.insert(3);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(2); vx.insert(3); vx.insert(5);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(1); vx.insert(2); vx.insert(5);
+    paste(vx);
+    vx.clear();
+  }
+  else if (stype == 2) {
+    // The torus $S^1 \times S^1$, an orientable pseudomanifold without boundary
+    initialize(2,9);
+
+    vx.insert(0); vx.insert(1); vx.insert(3);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(1); vx.insert(3); vx.insert(4);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(1); vx.insert(2); vx.insert(4);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(2); vx.insert(4); vx.insert(5);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(0); vx.insert(2); vx.insert(5);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(0); vx.insert(3); vx.insert(5);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(3); vx.insert(4); vx.insert(6);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(4); vx.insert(6); vx.insert(7);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(4); vx.insert(5); vx.insert(7);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(5); vx.insert(7); vx.insert(8);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(3); vx.insert(5); vx.insert(8);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(3); vx.insert(6); vx.insert(8);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(0); vx.insert(6); vx.insert(7);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(0); vx.insert(1); vx.insert(7);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(1); vx.insert(7); vx.insert(8);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(1); vx.insert(2); vx.insert(8);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(2); vx.insert(6); vx.insert(8);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(0); vx.insert(2); vx.insert(6);
+    paste(vx);
+    vx.clear();
+  }
+  else {
+    // The Möbius strip, a non-orientable pseudomanifold with boundary
+    initialize(2,8);
+
+    vx.insert(0); vx.insert(1); vx.insert(2);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(1); vx.insert(2); vx.insert(3);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(2); vx.insert(3); vx.insert(4);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(3); vx.insert(4); vx.insert(5);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(4); vx.insert(5); vx.insert(6);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(5); vx.insert(6); vx.insert(7);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(6); vx.insert(7); vx.insert(1);
+    paste(vx);
+    vx.clear();
+
+    vx.insert(0); vx.insert(1); vx.insert(7);
+    paste(vx);
+    vx.clear();
+  }
+  regularization();
+}
+
 void Nexus::compute_neighbours()
 {
   int i,vx[2];
