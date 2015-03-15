@@ -20,6 +20,7 @@
 #ifndef _globalh
 #define _globalh
 
+// STL headers
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -33,31 +34,30 @@
 #include <string>
 #include <limits>
 #include <sys/time.h>
-
-// Number theory functionality...
+// NTL headers for number theory functionality...
 #include <NTL/ZZ.h>
 #include <NTL/ZZ_p.h>
 #include <NTL/GF2.h>
-// The Boost libraries...
-#include <boost/lexical_cast.hpp>
-#include <boost/tuple/tuple.hpp>
+// The Boost library headers...
 #include <boost/tokenizer.hpp>
-#include <boost/unordered_map.hpp>
 #include <boost/date_time.hpp>
-#include <boost/format.hpp>
+#include <boost/timer/timer.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/unordered_map.hpp>
+#include <boost/dynamic_bitset.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/dijkstra_shortest_paths.hpp>
-#include <boost/dynamic_bitset.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
-#include <boost/random/normal_distribution.hpp>
+#include <boost/random/mersenne_twister.hpp>
 #include <boost/random/variate_generator.hpp>
+#include <boost/random/normal_distribution.hpp>
 #include <boost/random/poisson_distribution.hpp>
 #include <boost/random/bernoulli_distribution.hpp>
 #include <boost/math/distributions/beta.hpp>
-
+// Finally the LAPACK declarations
 extern "C" {
   void dgemm_(char*,char*,int*,int*,int*,double*,double*,int*,double*,int*,double*,double*,int*);
   void dsyev_(char*,char*,int*,double*,int*,double*,double*,int*,int*);

@@ -213,9 +213,26 @@ Group::Group(const std::string& name,int n)
   }
   else if (name == "Braid") {
     // Braid group
+    // B_1 = {e}, B_2 = (Z,+)
+    int i,j;
     ngenerator = n - 1;
-    finite = true;
-
+    finite = (n > 1) ? false : true;
+    abelian = (n > 2) ? false : true;
+    free = (n > 2) ? false : true;
+    if (n == 2) solvable = true;
+    for(i=0; i<ngenerator; ++i) {
+      Word w1(ngenerator,i,1),w2(ngenerator,i,-1);
+      for(j=i+2; j<ngenerator; ++j) {
+        Word w3(ngenerator,j,1),w4(ngenerator,j,-1);
+        relations.push_back(w2*w4*w1*w3);
+      }
+    }
+    // The cubic relations
+    for(i=0; i<ngenerator-1; ++i) {
+      Word w1(ngenerator,i,1),w2(ngenerator,i,-1);
+      Word w3(ngenerator,i+1,1),w4(ngenerator,i+1,-1);
+      relations.push_back(w4*w2*w4*w1*w3*w1);
+    }
   }
   else if (name == "Cyclic") {
     // Cyclic group
