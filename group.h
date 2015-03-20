@@ -32,6 +32,7 @@ namespace SYNARMOSMA {
     bool finite;
     bool solvable;
     bool free;
+    bool braid;
     unsigned int cardinality;
     unsigned int rank;
     std::vector<unsigned int> torsion;
@@ -53,6 +54,7 @@ namespace SYNARMOSMA {
     unsigned int implied_generators() const;
     void initialize(unsigned int,const std::vector<Word>&);
     void initialize(unsigned int,const std::vector<unsigned int>&);
+    bool equivalent(const Word&,const Word&) const;
     void reduce();
     void clear();
     void create_random();

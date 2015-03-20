@@ -214,7 +214,8 @@ Group::Group(const std::string& name,int n)
   else if (name == "Braid") {
     // Braid group
     // B_1 = {e}, B_2 = (Z,+)
-    int i,j;
+    unsigned int i,j;
+    braid = true;
     ngenerator = n - 1;
     finite = (n > 1) ? false : true;
     abelian = (n > 2) ? false : true;
@@ -353,6 +354,19 @@ bool Group::consistent() const
     }
   }
   return true;
+}
+
+bool Group::equivalent(const Word& w1,const Word& w2) const
+{
+  // Make sure these are in fact words in this group...
+
+  // We only know how to solve the word problem in the braid group...
+  if (!braid) return false;
+  Word cword = w1*w2.invert();
+
+
+  if (cword.empty()) return true;
+  return false;
 }
 
 void Group::reduce()
@@ -559,6 +573,7 @@ void Group::clear()
   finite = false;
   solvable = false;
   free = false;
+  braid = false;
   rank = 0;
   torsion.clear();
 }
@@ -682,6 +697,7 @@ Group::Group(const Group& source)
   finite = source.finite;
   solvable = source.solvable;
   free = source.free;
+  braid = source.braid;
   cardinality = source.cardinality;
   rank = source.rank;
   torsion = source.torsion;
@@ -697,6 +713,7 @@ Group& Group::operator =(const Group& source)
   finite = source.finite;
   solvable = source.solvable;
   free = source.free;
+  braid = source.braid;
   cardinality = source.cardinality;
   rank = source.rank;
   torsion = source.torsion;
