@@ -359,12 +359,96 @@ bool Group::consistent() const
 bool Group::equivalent(const Word& w1,const Word& w2) const
 {
   // Make sure these are in fact words in this group...
-
+  assert(w1.legal() && w2.legal());
   // We only know how to solve the word problem in the braid group...
   if (!braid) return false;
-  Word cword = w1*w2.invert();
-
-
+  Word nword(ngenerator,0),cword = w1*w2.invert();
+  cword.free_reduce();
+  if (cword.empty()) return true;
+  if (cword.homogeneous()) return false;
+  int e1,e2,stype,dtype;
+  unsigned int i,j,n,m,b1,b2,spoint,base;
+  bool hfound,candidate,permissible,ppow,npow;
+  std::vector<unsigned int> handle;
+  do {
+    n = cword.length();
+    hfound = false;
+    for(i=0; i<n; ++i) {
+      spoint = i;
+      b1 = cword.content[i].first;
+      e1 = cword.content[i].second;
+      handle.clear();
+      candidate = false;
+      for(j=1+i; j<n; ++j) {
+        b2 = cword.content[j].first;
+        e2 = cword.content[j].second;
+        if (b2 == b1 && e1*e2 < 0 && !handle.empty()) {
+          candidate = true;
+          break;
+        }
+        handle.push_back(j); 
+      }
+      // See if this is a genuine handle...
+      if (!candidate) continue;
+      permissible = true;
+      m = handle.size();
+      for(j=0; j<m; ++j) {
+        b2 = cword.content[handle[j]].first;
+        if (b2 == b1) permissible = false;
+        if (b1 > 0) {
+          if (b2 == (b1-1)) permissible = false;
+        }
+      }
+      ppow = false; npow = false;
+      for(j=0; j<m; ++j) {
+        b2 = cword.content[handle[j]].first;
+        e2 = cword.content[handle[j]].second;
+        if (b2 == (b1+1)) {
+          if (e2 > 0) {
+            ppow = true;
+          }
+          else if (e2 < 0) {
+            npow = true;
+          }
+        }
+      }
+      if (ppow && npow) permissible = false; 
+      if (permissible) {
+        hfound = true;
+        break;
+      }
+    }
+    if (!hfound) break;
+    // Do the handle reduction...
+    base = cword.content[spoint].first;
+    stype = (cword.content[spoint].second < 0) ? -1 : 1;
+    m = handle.size();
+    nword.clear();
+    for(i=0; i<spoint; ++i) {
+      nword.content.push_back(cword.content[i]);
+    }
+    for(i=0; i<m; ++i) {
+      b1 = cword.content[handle[i]].first;
+      if (b1 == (1+base)) {
+        dtype = (cword.content[handle[i]].second < 0) ? -1 : 1;
+        nword.content.push_back(std::pair<unsigned int,int>(1+base,-stype));
+        nword.content.push_back(std::pair<unsigned int,int>(base,dtype));
+        nword.content.push_back(std::pair<unsigned int,int>(1+base,stype));
+      }
+      else if (b1 == base) {
+        continue;
+      }
+      else {
+        nword.content.push_back(cword.content[handle[i]]);
+      }
+    }
+    for(i=spoint+m+2; i<n; ++i) {
+      nword.content.push_back(cword.content[i]);
+    }
+    nword.free_reduce();
+    cword = nword;
+    if (cword.homogeneous()) break;
+  } while(true);
   if (cword.empty()) return true;
   return false;
 }
@@ -676,7 +760,7 @@ void Group::allocate(unsigned int m)
     // of one of the others!
     good = true;
     for(j=0; j<i; ++j) {
-      for(k=1; k<relations[j].size(); ++k) {
+      for(k=1; k<relations[j].length(); ++k) {
         relations[j].permute(k,w);
         if (w == relations[i]) {
           good = false;

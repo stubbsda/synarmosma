@@ -31,10 +31,11 @@ namespace SYNARMOSMA {
 
     void initialize(unsigned int);
     void initialize(const std::vector<unsigned int>&,const std::vector<int>&);
-    void clear();
+    inline void clear() {content.clear();};
    public:
     Word();
     Word(unsigned int);
+    Word(unsigned int,const std::string&);
     Word(unsigned int,unsigned int);
     Word(unsigned int,unsigned int,int);
     Word(const Word&);
@@ -45,16 +46,19 @@ namespace SYNARMOSMA {
     Word mutate() const;
     Word normalize() const;
     Word swap(unsigned int,unsigned int,bool) const;
+    void free_reduce();
     Word reduce(int,const std::set<unsigned int>&,const unsigned int*) const;
-    unsigned int size() const;
+    inline unsigned int length() const {return content.size();};
+    inline bool empty() const {return content.empty();};
     void permute(unsigned int,Word&) const;
     bool trivial() const;
     bool alias() const;
     bool legal() const;
-    bool empty() const;
+    bool homogeneous() const;
     void serialize(std::ofstream&) const;
     void deserialize(std::ifstream&);
     void initialize(unsigned int,unsigned int,int);
+    void write2screen() const;
     friend bool operator ==(const Word&,const Word&);
     friend bool operator !=(const Word&,const Word&);
     friend Word operator *(const Word&,const Word&);

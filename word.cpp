@@ -41,6 +41,25 @@ Word::Word(unsigned int p,unsigned int n)
   initialize(n);
 }
 
+Word::Word(unsigned int p,const std::string& w)
+{
+  unsigned int i,j,n;
+  int e;
+  char alphabet[] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
+
+  NL = p;
+  for(i=0; i<w.length(); ++i) {
+    for(j=0; j<26; ++j) {
+      if (tolower(w[i]) == alphabet[j]) {
+        n = j;
+        break;
+      }
+    }
+    e = (isupper(w[i])) ? -1 : 1;
+    content.push_back(std::pair<unsigned int,int>(n,e));
+  }
+}
+
 Word::Word(unsigned int p,unsigned int n,int m)
 {
   NL = p;
@@ -66,11 +85,6 @@ Word& Word::operator =(const Word& source)
 Word::~Word()
 {
 
-}
-
-unsigned int Word::size() const
-{
-  return content.size();
 }
 
 bool Word::legal() const
@@ -99,9 +113,29 @@ bool Word::alias() const
   return false;
 }
 
-bool Word::empty() const
+bool Word::homogeneous() const
 {
-  return content.empty();
+  // This is needed for the algorithm to test words in a braid group for their 
+  // equivalence
+  unsigned int prime = 10000;
+  bool ppow = false,npow = false;
+  std::vector<std::pair<unsigned int,int> >::const_iterator it;
+
+  for(it=content.begin(); it!=content.end(); ++it) {
+    if (it->first < prime) prime = it->first;
+  }
+  for(it=content.begin(); it!=content.end(); ++it) {
+    if (it->first == prime) {
+      if (it->second > 0) {
+        ppow = true;
+      }
+      else if (it->second < 0) {
+        npow = true;
+      }
+    }
+  }
+  if (ppow && npow) return false;
+  return true;
 }
 
 void Word::permute(unsigned int n,Word& w) const
@@ -168,14 +202,14 @@ Word Word::operator !() const
 }
 
 Word Word::invert() const
-{
-  unsigned int i,n = content.size();
-  Word output(0);
+{  
+  int i,n = (signed) content.size();
+  Word output(NL,0);
   std::pair<unsigned int,int> doublet;
 
-  for(i=0; i<n; ++i) {
-    doublet.first = content[n-(i-1)].first;
-    doublet.second = -content[n-(i-1)].second;
+  for(i=n-1; i>=0; --i) {
+    doublet.first = content[i].first;
+    doublet.second = -content[i].second;
     output.content.push_back(doublet);
   }
   return output;
@@ -218,11 +252,6 @@ Word Word::mutate() const
   return output;
 }
 
-void Word::clear()
-{
-  content.clear();
-}
-
 void Word::serialize(std::ofstream& s) const
 {
   unsigned int i,j,n = content.size();
@@ -255,6 +284,35 @@ void Word::deserialize(std::ifstream& s)
     doublet.second = exponent;
     content.push_back(doublet);
   }
+}
+
+void Word::free_reduce() 
+{
+  int i,rpoint = -1,L = (signed) content.size();
+  unsigned int n,m;
+  std::vector<std::pair<unsigned int,int> > vx;
+
+  do {
+    rpoint = -1;
+    L = (signed) content.size();
+    for(i=0; i<L-1; ++i) {
+      n = content[i].first;
+      m = content[i+1].first;
+      if (n == m) {
+        if (content[i].second == -content[i+1].second) {
+          rpoint = i;
+          break;
+        }
+      }
+    }
+    if (rpoint == -1) break;
+    vx.clear();
+    for(i=0; i<L; ++i) {
+      if (i == rpoint || i == (rpoint+1)) continue;
+      vx.push_back(content[i]);
+    }
+    content = vx;
+  } while(true);
 }
 
 Word Word::reduce(int M,const std::set<unsigned int>& trivial_generators,const unsigned int* offset) const
@@ -333,7 +391,8 @@ namespace SYNARMOSMA {
   Word operator *(const Word& w1,const Word& w2)
   {
     unsigned int i;
-    Word output(0);
+    unsigned int n = (w1.NL > w2.NL) ? w1.NL : w2.NL;
+    Word output(n,0);
  
     for(i=0; i<w1.content.size(); ++i) {
       output.content.push_back(w1.content[i]);
@@ -342,6 +401,20 @@ namespace SYNARMOSMA {
       output.content.push_back(w2.content[i]);
     }
     return output;
+  }
+
+  void Word::write2screen() const
+  {
+    unsigned int i;
+    char l,alphabet[] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
+    std::string output;
+    
+    for(i=0; i<content.size(); ++i) {
+      l = alphabet[content[i].first];
+      if (content[i].second < 0) l = toupper(l);
+      output += l;
+    }
+    std::cout << output << std::endl;
   }
 
   std::ostream& operator <<(std::ostream& os,const Word& source)
