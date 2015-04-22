@@ -17,32 +17,25 @@
   along with Synarmosma.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "global.h"
+#include "poset.h"
 
 #ifndef _latticeh
 #define _latticeh
 
 namespace SYNARMOSMA {
-  enum RELATION
-  {
-      BEFORE,
-      AFTER,
-      INCOMPARABLE
-  };
-
   class Lattice {
    private:
-    int N;
-    boost::unordered_map<std::string,RELATION> order;
+    Poset* base;
  
    public:
     Lattice();
     Lattice(int);
     Lattice(const Lattice&);
     ~Lattice();
+    int meet(int,int) const;
+    int join(int,int) const;
     void clear();
     void add_vertex();
-    RELATION get_relation(int,int) const;
     bool consistent() const;
   };
 }

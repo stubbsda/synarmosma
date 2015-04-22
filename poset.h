@@ -17,42 +17,34 @@
   along with Synarmosma.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "lattice.h"
+#include "global.h"
 
-using namespace SYNARMOSMA;
+#ifndef _poseth
+#define _poseth
 
-Lattice::Lattice()
-{
-  base = new Poset(10);
+namespace SYNARMOSMA {
+  enum RELATION
+  {
+      BEFORE,
+      AFTER,
+      INCOMPARABLE
+  };
+
+  class Poset {
+   private:
+    int N;
+    boost::unordered_map<std::string,RELATION> order;
+ 
+   public:
+    Poset();
+    Poset(int);
+    Poset(const Poset&);
+    ~Poset();
+    void clear();
+    void add_vertex();
+    RELATION get_relation(int,int) const;
+    bool consistent() const;
+  };
 }
-
-Lattice::Lattice(int n)
-{
-  base = new Poset(n);
-}
-
-Lattice::~Lattice()
-{
-  delete base;
-}
-
-void Lattice::clear()
-{
-  base->clear();
-}
-
-void Lattice::add_vertex()
-{
-  base->add_vertex();
-}
-
-int Lattice::meet(int x,int y) const
-{
-  return 0;
-}
-
-int Lattice::join(int x,int y) const
-{
-  return 0;
-}
+#endif
 

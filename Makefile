@@ -1,7 +1,7 @@
 OBJECTS = global.o random.o cell.o nexus.o schema.o group.o graph.o geometry.o word.o rational.o\
 variety_wrapper.o polynomial_wrapper.o proposition.o propositional_system.o logic_graph.o edge.o\
 event.o eventspace.o multitime.o binary_matrix.o matrix_wrapper.o functional_equation_wrapper.o\
-homology.o homotopy.o directed_graph.o lattice.o
+homology.o homotopy.o directed_graph.o poset.o lattice.o
 
 CXX_FLAGS += -fPIC
 
@@ -31,8 +31,11 @@ synarmosma: $(OBJECTS)
 schema.o: schema.cpp schema.h global.h
 	$(CXX) $(CXX_FLAGS) -c schema.cpp
 
-lattice.o: lattice.cpp lattice.h global.h
+lattice.o: lattice.cpp lattice.h poset.h global.h
 	$(CXX) $(CXX_FLAGS) -c lattice.cpp
+
+poset.o: poset.cpp poset.h global.h
+	$(CXX) $(CXX_FLAGS) -c poset.cpp
 
 directed_graph.o: directed_graph.cpp directed_graph.h schema.h edge.h global.h
 	$(CXX) $(CXX_FLAGS) -c directed_graph.cpp
