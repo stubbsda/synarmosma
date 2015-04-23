@@ -33,7 +33,7 @@ namespace SYNARMOSMA {
   class Poset {
    private:
     int N;
-    boost::unordered_map<std::string,RELATION> order;
+    boost::unordered_map<<int,int,bool> order;
  
    public:
     Poset();
@@ -41,7 +41,11 @@ namespace SYNARMOSMA {
     Poset(const Poset&);
     ~Poset();
     void clear();
+    void set_order(int,int);
     void add_vertex();
+    bool covered(int,int) const;
+    int chain_number(int) const;
+    int width(int,int) const;
     RELATION get_relation(int,int) const;
     bool consistent() const;
   };
