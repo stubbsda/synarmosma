@@ -21,29 +21,29 @@
 
 using namespace SYNARMOSMA;
 
-Lattice::Lattice()
+Lattice::Lattice() : Poset()
 {
-  base = new Poset(10);
+
 }
 
-Lattice::Lattice(int n)
+Lattice::Lattice(int n) : Poset(n)
 {
-  base = new Poset(n);
+
 }
 
 Lattice::~Lattice()
 {
-  delete base;
+
 }
 
 void Lattice::clear()
 {
-  base->clear();
+  Poset::clear();
 }
 
 void Lattice::add_vertex()
 {
-  base->add_vertex();
+  Poset::add_vertex();
 }
 
 int Lattice::meet(int x,int y) const

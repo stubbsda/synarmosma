@@ -34,20 +34,21 @@ namespace SYNARMOSMA {
    protected:
     int N;
     boost::unordered_map<std::pair<int,int>,bool> order;
- 
+
+    bool set_order(int,int); 
+    void add_vertex();
+    bool consistent() const;
    public:
     Poset();
     Poset(int);
     Poset(const Poset&);
     ~Poset();
     void clear();
-    void set_order(int,int);
-    void add_vertex();
+    void construct_order(double);
     bool covered(int,int) const;
     int chain_number(int) const;
     int width(int,int) const;
     RELATION get_relation(int,int) const;
-    bool consistent() const;
   };
 }
 #endif

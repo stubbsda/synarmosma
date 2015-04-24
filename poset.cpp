@@ -21,6 +21,8 @@
 
 using namespace SYNARMOSMA;
 
+extern Random RND;
+
 Poset::Poset()
 {
   N = 0;
@@ -49,9 +51,25 @@ void Poset::add_vertex()
   N += 1;
 }
 
-void Poset::set_order(int u,int v)
+bool Poset::set_order(int u,int v)
 {
-  order[std::pair<int,int>(u,v)] = true;
+  if (u == v) return false;
+  // Check to make sure that we don't already have v < u in this poset
+  boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt = order.find(std::pair<int,int>(v,u));
+  if (qt != order.end()) return false;
+  std::pair<int,int> pr(u,v);
+  qt = order.find(pr);
+  if (qt == order.end()) {
+    order[pr] = true;
+    // Keep the ordering transitive!
+    for(int i=0; i<N; ++i) {
+      if (i == u || i == v) continue;
+      if (get_relation(v,i) == BEFORE) set_order(u,i);
+      if (get_relation(i,u) == BEFORE) set_order(i,v);
+    }
+    return true;
+  }
+  return false;
 }
 
 int Poset::chain_number(int length) const
@@ -65,7 +83,8 @@ int Poset::chain_number(int length) const
     // The easiest case
     for(i=0; i<N; ++i) {
       pr.first = i;
-      for(j=1+i; j<N; ++j) {
+      for(j=0; j<N; ++j) {
+        if (i == j) continue;
         pr.second = j;
         qt = order.find(pr);
         if (qt != order.end()) nchain++;
@@ -76,7 +95,8 @@ int Poset::chain_number(int length) const
     // Fairly easy as well
     for(i=0; i<N; ++i) {
       pr.first = i;
-      for(j=1+i; j<N; ++j) {
+      for(j=0; j<N; ++j) {
+        if (i == j) continue;
         pr.second = j;
         qt = order.find(pr);
         if (qt == order.end()) continue;
@@ -89,7 +109,8 @@ int Poset::chain_number(int length) const
     int k,l;
     for(i=0; i<N; ++i) {
       pr.first = i;
-      for(j=1+i; j<N; ++j) {
+      for(j=0; j<N; ++j) {
+        if (i == j) continue;
         pr.second = j;
         qt = order.find(pr);
         if (qt == order.end()) continue;
@@ -137,7 +158,6 @@ RELATION Poset::get_relation(int u,int v) const
 {
   if (u == v) return BEFORE;
   boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt;
-
   qt = order.find(std::pair<int,int>(u,v));
   if (qt != order.end()) return BEFORE;
   qt = order.find(std::pair<int,int>(v,u));
@@ -148,17 +168,20 @@ RELATION Poset::get_relation(int u,int v) const
 bool Poset::consistent() const
 {
   // We need to make sure the order relation satisfies the axioms of a 
-  // partial order, i.e. reflexive, anti-symmetric and transitive. The 
-  // first two we obtain automatically, let's check the last one
+  // partial order, i.e. reflexive, anti-symmetric and transitive. 
   int i,j,k;
   boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt;
 
   for(i=0; i<N; ++i) {
     // Find every vertex that is after this one and make sure that all the 
     // vertices after them are also after "i"
-    for(j=1+i; j<N; ++j) {
+    for(j=0; j<N; ++j) {
+      if (i == j) continue;
       qt = order.find(std::pair<int,int>(i,j));
       if (qt == order.end()) continue;
+      // If i < j, then we cannot have that j < i
+      qt = order.find(std::pair<int,int>(j,i));
+      if (qt != order.end()) return false;
       for(k=0; k<N; ++k) {
         if (k == j || k == i) continue;
         if (get_relation(j,k) == BEFORE) {
@@ -168,4 +191,23 @@ bool Poset::consistent() const
     }
   }
   return true;   
+}
+
+void Poset::construct_order(double lambda)
+{
+  // A method to impose a random order on the poset 
+  int u,v,n = 0;
+  double percent;
+  boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt;
+  const int M = (N*(N-1))/2;
+
+  do {
+    u = RND.irandom(N);
+    v = RND.irandom(N);
+    if (set_order(u,v)) {
+      assert(consistent());
+      n++;
+      percent = double(order.size())/double(M);
+    }
+  } while(percent < lambda);
 }
