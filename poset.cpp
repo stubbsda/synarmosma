@@ -51,20 +51,23 @@ void Poset::add_vertex()
 
 void Poset::set_order(int u,int v)
 {
-  order[u,v] = true;
+  order[std::pair<int,int>(u,v)] = true;
 }
 
 int Poset::chain_number(int length) const
 {
   // Compute the number of chains of a given length in this poset 
   int i,j,nchain = 0;
-  boost::unordered_map<int,int,bool>::const_iterator qt;
+  std::pair<int,int> pr;
+  boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt;
 
   if (length == 2) {
     // The easiest case
     for(i=0; i<N; ++i) {
+      pr.first = i;
       for(j=1+i; j<N; ++j) {
-        qt = order.find(i,j);
+        pr.second = j;
+        qt = order.find(pr);
         if (qt != order.end()) nchain++;
       }
     }
@@ -72,8 +75,10 @@ int Poset::chain_number(int length) const
   else if (length == 3) {
     // Fairly easy as well
     for(i=0; i<N; ++i) {
+      pr.first = i;
       for(j=1+i; j<N; ++j) {
-        qt = order.find(i,j);
+        pr.second = j;
+        qt = order.find(pr);
         if (qt == order.end()) continue;
         nchain += width(i,j);
       }
@@ -83,8 +88,10 @@ int Poset::chain_number(int length) const
     // The general case, rather complicated
     int k,l;
     for(i=0; i<N; ++i) {
+      pr.first = i;
       for(j=1+i; j<N; ++j) {
-        qt = order.find(i,j);
+        pr.second = j;
+        qt = order.find(pr);
         if (qt == order.end()) continue;
         // See how many chains of length l between the elements i and j
         // can be built
@@ -102,12 +109,15 @@ int Poset::width(int u,int v) const
 {
   assert(u != v);
   int i,w = 0;
-  boost::unordered_map<int,int,bool>::const_iterator qt;
+  std::pair<int,int> pr;
+  boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt;
   for(i=0; i<N; ++i) {
     if (i == u || i == v) continue;
-    qt = order.find(u,i);
+    pr.first = u; pr.second = i;
+    qt = order.find(pr);
     if (qt == order.end()) continue;
-    qt = order.find(i,v);
+    pr.first = i; pr.second = v;
+    qt = order.find(pr);
     if (qt == order.end()) continue;
     w++;
   }
@@ -118,7 +128,7 @@ bool Poset::covered(int u,int v) const
 {
   // A method to determine if u is covered by v
   if (u == v) return false;
-  boost::unordered_map<int,int,bool>::const_iterator qt = order.find(u,v);
+  boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt = order.find(std::pair<int,int>(u,v));
   if (qt == order.end()) return false;    
   return (width(u,v) == 0) ? true : false;
 }
@@ -126,11 +136,11 @@ bool Poset::covered(int u,int v) const
 RELATION Poset::get_relation(int u,int v) const
 {
   if (u == v) return BEFORE;
-  boost::unordered_map<int,int,bool>::const_iterator qt;
+  boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt;
 
-  qt = order.find(u,v);
+  qt = order.find(std::pair<int,int>(u,v));
   if (qt != order.end()) return BEFORE;
-  qt = order.find(v,u);
+  qt = order.find(std::pair<int,int>(v,u));
   if (qt == order.end()) return INCOMPARABLE;
   return AFTER;
 }
@@ -141,13 +151,13 @@ bool Poset::consistent() const
   // partial order, i.e. reflexive, anti-symmetric and transitive. The 
   // first two we obtain automatically, let's check the last one
   int i,j,k;
-  boost::unordered_map<int,int,bool>::const_iterator qt;
+  boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt;
 
   for(i=0; i<N; ++i) {
     // Find every vertex that is after this one and make sure that all the 
     // vertices after them are also after "i"
     for(j=1+i; j<N; ++j) {
-      qt = order.find(i,j);
+      qt = order.find(std::pair<int,int>(i,j));
       if (qt == order.end()) continue;
       for(k=0; k<N; ++k) {
         if (k == j || k == i) continue;

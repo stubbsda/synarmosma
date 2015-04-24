@@ -31,9 +31,9 @@ namespace SYNARMOSMA {
   };
 
   class Poset {
-   private:
+   protected:
     int N;
-    boost::unordered_map<<int,int,bool> order;
+    boost::unordered_map<std::pair<int,int>,bool> order;
  
    public:
     Poset();

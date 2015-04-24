@@ -23,10 +23,7 @@
 #define _latticeh
 
 namespace SYNARMOSMA {
-  class Lattice {
-   private:
-    Poset* base;
- 
+  class Lattice : public Poset {
    public:
     Lattice();
     Lattice(int);
