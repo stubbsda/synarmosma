@@ -35,15 +35,15 @@ namespace SYNARMOSMA {
     int N;
     boost::unordered_map<std::pair<int,int>,bool> order;
 
-    bool set_order(int,int); 
-    void add_vertex();
-    bool consistent() const;
    public:
     Poset();
     Poset(int);
     Poset(const Poset&);
     ~Poset();
     void clear();
+    bool consistent() const;
+    void add_vertex();
+    bool set_order(int,int); 
     void construct_order(double);
     bool covered(int,int) const;
     int chain_number(int) const;
