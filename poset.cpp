@@ -193,6 +193,30 @@ bool Poset::consistent() const
   return true;   
 }
 
+void Poset::write_incastrature(const std::string& filename) const
+{
+  // A method that generates the Hasse diagram corresponding to the
+  // complex's simplicial structure, with the diagram stored in the
+  // PDF "hasse.pdf"; the method assumes that the Graphviz library
+  // has been installed on the system.
+  int i,j;
+
+  std::ofstream s(filename.c_str(),std::ios::trunc);
+
+  s << "digraph G {" << std::endl;
+
+  for(i=0; i<N; ++i) {
+    for(j=0; j<N; ++j) {
+      if (i == j) continue;
+      if (get_relation(i,j) == AFTER) {
+        s << "  \"" << 1+i << "\" -> \"" << 1+j << "\";" << std::endl;
+      }
+    }
+  }
+  s << "}" << std::endl;
+  s.close();
+}
+
 void Poset::construct_order(double lambda)
 {
   // A method to impose a random order on the poset 

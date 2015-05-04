@@ -48,6 +48,7 @@ namespace SYNARMOSMA {
     bool covered(int,int) const;
     int chain_number(int) const;
     int width(int,int) const;
+    void write_incastrature(const std::string&) const;
     RELATION get_relation(int,int) const;
   };
 }
