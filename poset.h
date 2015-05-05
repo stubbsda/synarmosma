@@ -43,13 +43,15 @@ namespace SYNARMOSMA {
     void clear();
     bool consistent() const;
     void add_vertex();
+    RELATION get_order(int,int) const;
     bool set_order(int,int); 
+    bool invert_order(int,int);
+    bool remove_order(int,int); 
     void construct_order(double);
     bool covered(int,int) const;
     int chain_number(int) const;
     int width(int,int) const;
     void write_incastrature(const std::string&) const;
-    RELATION get_relation(int,int) const;
   };
 }
 #endif

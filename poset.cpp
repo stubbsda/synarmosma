@@ -51,6 +51,29 @@ void Poset::add_vertex()
   N += 1;
 }
 
+bool Poset::remove_order(int u,int v)
+{
+  boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt = order.find(std::pair<int,int>(v,u));
+  if (qt == order.end()) return false;
+}
+
+bool Poset::invert_order(int u,int v)
+{
+  boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt = order.find(std::pair<int,int>(v,u));
+  if (qt == order.end()) return false;
+}
+
+RELATION Poset::get_order(int u,int v) const
+{
+  if (u == v) return BEFORE;
+  boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt;
+  qt = order.find(std::pair<int,int>(u,v));
+  if (qt != order.end()) return BEFORE;
+  qt = order.find(std::pair<int,int>(v,u));
+  if (qt == order.end()) return INCOMPARABLE;
+  return AFTER;
+}
+
 bool Poset::set_order(int u,int v)
 {
   if (u == v) return false;
@@ -64,8 +87,8 @@ bool Poset::set_order(int u,int v)
     // Keep the ordering transitive!
     for(int i=0; i<N; ++i) {
       if (i == u || i == v) continue;
-      if (get_relation(v,i) == BEFORE) set_order(u,i);
-      if (get_relation(i,u) == BEFORE) set_order(i,v);
+      if (get_order(v,i) == BEFORE) set_order(u,i);
+      if (get_order(i,u) == BEFORE) set_order(i,v);
     }
     return true;
   }
@@ -154,17 +177,6 @@ bool Poset::covered(int u,int v) const
   return (width(u,v) == 0) ? true : false;
 }
 
-RELATION Poset::get_relation(int u,int v) const
-{
-  if (u == v) return BEFORE;
-  boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt;
-  qt = order.find(std::pair<int,int>(u,v));
-  if (qt != order.end()) return BEFORE;
-  qt = order.find(std::pair<int,int>(v,u));
-  if (qt == order.end()) return INCOMPARABLE;
-  return AFTER;
-}
-
 bool Poset::consistent() const
 {
   // We need to make sure the order relation satisfies the axioms of a 
@@ -184,8 +196,8 @@ bool Poset::consistent() const
       if (qt != order.end()) return false;
       for(k=0; k<N; ++k) {
         if (k == j || k == i) continue;
-        if (get_relation(j,k) == BEFORE) {
-          if (get_relation(i,k) != BEFORE) return false;
+        if (get_order(j,k) == BEFORE) {
+          if (get_order(i,k) != BEFORE) return false;
         }
       }
     }
@@ -208,7 +220,7 @@ void Poset::write_incastrature(const std::string& filename) const
   for(i=0; i<N; ++i) {
     for(j=0; j<N; ++j) {
       if (i == j) continue;
-      if (get_relation(i,j) == AFTER) {
+      if (get_order(i,j) == AFTER) {
         s << "  \"" << 1+i << "\" -> \"" << 1+j << "\";" << std::endl;
       }
     }
@@ -235,3 +247,4 @@ void Poset::construct_order(double lambda)
     }
   } while(percent < lambda);
 }
+
