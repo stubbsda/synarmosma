@@ -55,12 +55,16 @@ bool Poset::remove_order(int u,int v)
 {
   boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt = order.find(std::pair<int,int>(v,u));
   if (qt == order.end()) return false;
+
+  return true;
 }
 
 bool Poset::invert_order(int u,int v)
 {
   boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt = order.find(std::pair<int,int>(v,u));
   if (qt == order.end()) return false;
+
+  return true;
 }
 
 RELATION Poset::get_order(int u,int v) const
