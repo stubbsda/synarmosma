@@ -51,19 +51,60 @@ void Poset::add_vertex()
   N += 1;
 }
 
-bool Poset::remove_order(int u,int v)
+bool Poset::invert_order(int u,int v)
 {
-  boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt = order.find(std::pair<int,int>(v,u));
-  if (qt == order.end()) return false;
-
+  if (u == v) return false;
+  RELATION rho = get_order(u,v);
+  if (rho == INCOMPARABLE) return false;
+  if (rho == BEFORE) {
+    // Inverting order of u < v
+    set_order(v,u);
+  }
+  else {
+    // Inverting order of v < u
+    set_order(u,v);
+  }
   return true;
 }
 
-bool Poset::invert_order(int u,int v)
+bool Poset::unset_order(int u,int v)
 {
-  boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt = order.find(std::pair<int,int>(v,u));
-  if (qt == order.end()) return false;
+  if (u == v) return false;
+  RELATION rho = get_order(u,v);
+  if (rho == INCOMPARABLE) return false;
+  if (rho == BEFORE) {
+    // Removing order of u < v
+    order.erase(std::pair<int,int>(u,v));
+    for(int i=0; i<N; ++i) {
+      if (i == u || i == v) continue;
+      if (get_order(u,i) == BEFORE && get_order(i,v) == BEFORE) unset_order(i,v);
+    }
+  }
+  else {
+    // Removing order of v < u
+    order.erase(std::pair<int,int>(v,u));
+    for(int i=0; i<N; ++i) {
+      if (i == u || i == v) continue;
+      if (get_order(v,i) == BEFORE && get_order(i,u) == BEFORE) unset_order(i,u);
+    }
+  }
+  return true;
+}
 
+bool Poset::set_order(int u,int v)
+{
+  if (u == v) return false;
+  // Check to see if we already have u < v or v < u in this poset
+  RELATION rho = get_order(u,v);
+  if (rho == BEFORE) return false;
+  if (rho == AFTER) order.erase(std::pair<int,int>(v,u));
+  order[std::pair<int,int>(u,v)] = true;
+  // Keep the ordering transitive!
+  for(int i=0; i<N; ++i) {
+    if (i == u || i == v) continue;
+    if (get_order(v,i) == BEFORE) set_order(u,i);
+    if (get_order(i,u) == BEFORE) set_order(i,v);
+  }
   return true;
 }
 
@@ -78,107 +119,76 @@ RELATION Poset::get_order(int u,int v) const
   return AFTER;
 }
 
-bool Poset::set_order(int u,int v)
-{
-  if (u == v) return false;
-  // Check to make sure that we don't already have v < u in this poset
-  boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt = order.find(std::pair<int,int>(v,u));
-  if (qt != order.end()) return false;
-  std::pair<int,int> pr(u,v);
-  qt = order.find(pr);
-  if (qt == order.end()) {
-    order[pr] = true;
-    // Keep the ordering transitive!
-    for(int i=0; i<N; ++i) {
-      if (i == u || i == v) continue;
-      if (get_order(v,i) == BEFORE) set_order(u,i);
-      if (get_order(i,u) == BEFORE) set_order(i,v);
-    }
-    return true;
-  }
-  return false;
-}
-
 int Poset::chain_number(int length) const
 {
   // Compute the number of chains of a given length in this poset 
-  int i,j,nchain = 0;
-  std::pair<int,int> pr;
-  boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt;
+  int i,j,k,nchain = 0;
+  std::set<int> sigma;
 
   if (length == 2) {
     // The easiest case
     for(i=0; i<N; ++i) {
-      pr.first = i;
       for(j=0; j<N; ++j) {
         if (i == j) continue;
-        pr.second = j;
-        qt = order.find(pr);
-        if (qt != order.end()) nchain++;
+        if (get_order(i,j) == BEFORE) nchain++;
       }
     }
   }
   else if (length == 3) {
     // Fairly easy as well
     for(i=0; i<N; ++i) {
-      pr.first = i;
       for(j=0; j<N; ++j) {
         if (i == j) continue;
-        pr.second = j;
-        qt = order.find(pr);
-        if (qt == order.end()) continue;
-        nchain += width(i,j);
+        if (get_order(i,j) != BEFORE) continue;
+        compute_width(i,j,sigma);
+        nchain += (signed) sigma.size();
       }
     }
   }
   else {
     // The general case, rather complicated
-    int k,l;
+    std::vector<int> chain;
+
     for(i=0; i<N; ++i) {
-      pr.first = i;
       for(j=0; j<N; ++j) {
         if (i == j) continue;
-        pr.second = j;
-        qt = order.find(pr);
-        if (qt == order.end()) continue;
+        if (get_order(i,j) != BEFORE) continue;
         // See how many chains of length l between the elements i and j
         // can be built
-        l = width(i,j);
+        compute_width(i,j,sigma);
+        chain.push_back(i);
         for(k=0; k<length-2; ++k) {
-
+          
         }
+        chain.push_back(j);
       }
     }
   }
   return nchain;
 }
 
-int Poset::width(int u,int v) const
+void Poset::compute_width(int u,int v,std::set<int>& slice) const
 {
   assert(u != v);
-  int i,w = 0;
-  std::pair<int,int> pr;
-  boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt;
-  for(i=0; i<N; ++i) {
+
+  slice.clear();
+
+  for(int i=0; i<N; ++i) {
     if (i == u || i == v) continue;
-    pr.first = u; pr.second = i;
-    qt = order.find(pr);
-    if (qt == order.end()) continue;
-    pr.first = i; pr.second = v;
-    qt = order.find(pr);
-    if (qt == order.end()) continue;
-    w++;
+    if (get_order(u,i) != BEFORE) continue;
+    if (get_order(i,v) != BEFORE) continue;
+    slice.insert(i);
   }
-  return w;
 }
 
 bool Poset::covered(int u,int v) const
 {
   // A method to determine if u is covered by v
   if (u == v) return false;
-  boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt = order.find(std::pair<int,int>(u,v));
-  if (qt == order.end()) return false;    
-  return (width(u,v) == 0) ? true : false;
+  if (get_order(u,v) != BEFORE) return false;
+  std::set<int> sigma;
+  compute_width(u,v,sigma);
+  return sigma.empty(); 
 }
 
 bool Poset::consistent() const
@@ -193,13 +203,11 @@ bool Poset::consistent() const
     // vertices after them are also after "i"
     for(j=0; j<N; ++j) {
       if (i == j) continue;
-      qt = order.find(std::pair<int,int>(i,j));
-      if (qt == order.end()) continue;
-      // If i < j, then we cannot have that j < i
-      qt = order.find(std::pair<int,int>(j,i));
-      if (qt != order.end()) return false;
+      if (get_order(i,j) != BEFORE) continue;
+      if (get_order(j,i) != AFTER) return false;
       for(k=0; k<N; ++k) {
         if (k == j || k == i) continue;
+        // So if i < j and j < k, then it must be that i < k
         if (get_order(j,k) == BEFORE) {
           if (get_order(i,k) != BEFORE) return false;
         }
@@ -233,12 +241,11 @@ void Poset::write_incastrature(const std::string& filename) const
   s.close();
 }
 
-void Poset::construct_order(double lambda)
+void Poset::construct_ordering(double lambda)
 {
   // A method to impose a random order on the poset 
   int u,v,n = 0;
   double percent;
-  boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt;
   const int M = (N*(N-1))/2;
 
   do {

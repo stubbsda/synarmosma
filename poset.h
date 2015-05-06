@@ -35,6 +35,8 @@ namespace SYNARMOSMA {
     int N;
     boost::unordered_map<std::pair<int,int>,bool> order;
 
+    void compute_width(int,int,std::set<int>&) const;
+    RELATION get_order(int,int) const;
    public:
     Poset();
     Poset(int);
@@ -43,14 +45,12 @@ namespace SYNARMOSMA {
     void clear();
     bool consistent() const;
     void add_vertex();
-    RELATION get_order(int,int) const;
     bool set_order(int,int); 
+    bool unset_order(int,int); 
     bool invert_order(int,int);
-    bool remove_order(int,int); 
-    void construct_order(double);
+    void construct_ordering(double);
     bool covered(int,int) const;
     int chain_number(int) const;
-    int width(int,int) const;
     void write_incastrature(const std::string&) const;
   };
 }
