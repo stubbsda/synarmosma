@@ -45,6 +45,10 @@ namespace SYNARMOSMA {
     void clear();
     bool consistent() const;
     void add_vertex();
+    bool sink(int) const;
+    bool source(int) const;
+    void compute_anteriority(int,std::set<int>&) const;
+    void compute_posteriority(int,std::set<int>&) const;
     bool set_order(int,int); 
     bool unset_order(int,int); 
     bool invert_order(int,int);

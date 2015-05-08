@@ -191,6 +191,40 @@ bool Poset::covered(int u,int v) const
   return sigma.empty(); 
 }
 
+bool Poset::sink(int n) const
+{
+  // This is an element whose posteriority is null
+  std::set<int> S;
+  compute_posteriority(n,S);
+  return S.empty();
+}
+
+bool Poset::source(int n) const
+{
+  // This is an element whose anteriority is null
+  std::set<int> S;
+  compute_anteriority(n,S);
+  return S.empty();
+}
+
+void Poset::compute_anteriority(int n,std::set<int>& output) const
+{
+  output.clear();
+  for(int i=0; i<N; ++i) {
+    if (i == n) continue;
+    if (get_order(i,n) == BEFORE) output.insert(i);
+  }
+}
+
+void Poset::compute_posteriority(int n,std::set<int>& output) const
+{
+  output.clear();
+  for(int i=0; i<N; ++i) {
+    if (i == n) continue;
+    if (get_order(n,i) == BEFORE) output.insert(i);
+  }
+}
+
 bool Poset::consistent() const
 {
   // We need to make sure the order relation satisfies the axioms of a 
