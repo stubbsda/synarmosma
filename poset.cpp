@@ -262,7 +262,11 @@ void Poset::write_incastrature(const std::string& filename) const
   std::ofstream s(filename.c_str(),std::ios::trunc);
 
   s << "digraph G {" << std::endl;
-
+  // First all the elements in the poset...
+  for(i=0; i<N; ++i) {
+    s << "  \"" << 1+i << "\";" << std::endl;
+  }
+  // Now the directed edges induced by the poset's ordering...
   for(i=0; i<N; ++i) {
     for(j=0; j<N; ++j) {
       if (i == j) continue;
