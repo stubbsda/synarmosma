@@ -49,7 +49,6 @@ namespace SYNARMOSMA {
     void write(const char*);
     unsigned int bit_count(unsigned int) const;
     unsigned int consistency(unsigned int,unsigned int,const std::string&) const;
-    bool implication(const Proposition&) const;
     bool implication(unsigned int,const std::vector<unsigned int>&) const;
     void compute_pairs(unsigned int*,std::set<unsigned int>&,std::set<unsigned int>&) const;
     friend class Logic_Graph;

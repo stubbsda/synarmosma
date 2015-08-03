@@ -204,11 +204,6 @@ unsigned int Propositional_System::consistency(unsigned int i,unsigned int j,con
   return temp.count();
 }
 
-bool Propositional_System::implication(const Proposition& test) const
-{
-  return true;
-}
-
 bool Propositional_System::implication(unsigned int in1,const std::vector<unsigned int>& axioms) const
 {
   unsigned int i;
