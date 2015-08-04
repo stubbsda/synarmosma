@@ -26,71 +26,56 @@ const int Multitime::tdimension;
 Multitime::Multitime()
 {
   allocate();
-  for(int i=0; i<Multitime::tdimension; ++i) {
-    active[i] = false;
-  }
 }
 
 Multitime::Multitime(double t)
 {
   allocate();
-  v1[0] = t; v2[0] = t;
-  active[0] = true;
+  chronos[0].first = t;
+  chronos[0].second = true;
   for(int i=1; i<Multitime::tdimension; ++i) {
-    active[i] = false;
+    chronos[i].second = false;
   }
 }
 
 Multitime::Multitime(const Multitime& source)
 {
-  allocate();
-  for(int i=0; i<Multitime::tdimension; ++i) {
-    v1[i] = source.v1[i];
-    v2[i] = source.v2[i];
-    active[i] = source.active[i];
-  }
+  chronos = source.chronos;
 }
 
 Multitime& Multitime::operator=(const Multitime& source)
 {
-  if (this != &source) {
-    for(int i=0; i<Multitime::tdimension; ++i) {
-      v1[i] = source.v1[i];
-      v2[i] = source.v2[i];
-      active[i] = source.active[i];
-    }
-  }
+  if (this != &source) chronos = source.chronos;
+
   return *this;
 }
 
 Multitime::~Multitime()
 {
-  delete[] v1;
-  delete[] v2;
-  delete[] active;
+  chronos.clear();
 }
 
 void Multitime::clear()
 {
   for(int i=0; i<Multitime::tdimension; ++i) {
-    active[i] = false;
+    chronos[i].first = 0.0;
+    chronos[i].second = true;
   }
 }
 
 void Multitime::allocate()
 {
-  v1 = new double[Multitime::tdimension];
-  v2 = new double[Multitime::tdimension];
-  active = new bool[Multitime::tdimension];
+  for(int i=0; i<Multitime::tdimension; ++i) {
+    chronos.push_back(std::pair<double,bool>(0.0,true));
+  }
 }
 
 void Multitime::initialize(double alpha)
 {
-  v1[0] = alpha;
-  v2[0] = alpha;
-  active[0] = true;
+  chronos[0].first = alpha;
+  chronos[1].second = true;
   for(int i=1; i<Multitime::tdimension; ++i) {
-    active[i] = false;
+    chronos[i].second = false;
   }
 }
 
@@ -99,47 +84,120 @@ double Multitime::norm() const
   double sum = 0.0;
   
   for(int i=0; i<Multitime::tdimension; ++i) {
-    if (!active[i]) continue;
-    sum += std::abs(v2[i] - v1[i]) + 0.5*(std::abs(v1[i]) + std::abs(v2[i]));
+    if (!chronos[i].second) continue;
+    sum += chronos[i].first*chronos[i].first;
   }
   return sum;
 }
 
-void Multitime::extract(std::vector<double>& t) const
+void Multitime::extract(std::vector<double>& tau) const
 {
-  t.clear();
+  tau.clear();
 
   for(int i=0; i<Multitime::tdimension; ++i) {
-    if (!active[i]) continue;
-    t.push_back(std::abs(v2[i] - v1[i]) + 0.5*(std::abs(v1[i]) + std::abs(v2[i])));
+    if (!chronos[i].second) continue;
+    tau.push_back(chronos[i].first);
   }
 }
 
 namespace SYNARMOSMA {
   bool operator <(const Multitime& t1,const Multitime& t2)
   {
-    // A difficult problem - how can we compare two \emph{multi-dimensional} times? 
-    return true;
+    // A difficult problem - how can we compare two \emph{multi-dimensional} times?
+    return (t1.norm() < t2.norm());
+  }
+
+  bool operator >(const Multitime& t1,const Multitime& t2)
+  {
+    return (t1.norm() > t2.norm());
+  }
+
+  bool operator ==(const Multitime& t1,const Multitime& t2)
+  {
+    double alpha = std::abs(t1.norm() - t2.norm());
+    if (alpha < std::numeric_limits<double>::epsilon()) return true;
+    return false;
+  }
+
+  bool operator !=(const Multitime& t1,const Multitime& t2) 
+  {
+    return !(t1 == t2);
+  }
+
+  bool operator >=(const Multitime& t1,const Multitime& t2)
+  {
+    if ((t1 > t2) || (t1 == t2)) return true;
+    return false;
+  }
+
+  bool operator <=(const Multitime& t1,const Multitime& t2)
+  {
+    if ((t1 < t2) || (t1 == t2)) return true;
+    return false;
   }
 
   Multitime operator +(const Multitime& t1,const Multitime& t2)
   {
-    int i;
     Multitime output;
 
-    output.clear();
-    for(i=0; i<Multitime::tdimension; ++i) {
-      if (!t1.active[i] && !t2.active[i]) continue;
-      output.active[i] = true;
-      if (t1.active[i] && t2.active[i]) {
-        output.v1[i] = t1.v1[i] + t2.v1[i];
-        output.v2[i] = t1.v2[i] + t2.v2[i];
+    for(int i=0; i<Multitime::tdimension; ++i) {
+      output.chronos[i].second = false;
+      if (!t1.chronos[i].second && !t2.chronos[i].second) continue;
+      output.chronos[i].second = true;
+      if (t1.chronos[i].second && t2.chronos[i].second) {
+        output.chronos[i].first = t1.chronos[i].first + t2.chronos[i].first;
       }
-      else if (t1.active[i] && !t2.active[i]) {
-        output.v1[i] = t1.v1[i]; output.v2[i] = t1.v2[i];
+      else if (t1.chronos[i].second && !t2.chronos[i].second) {
+        output.chronos[i].first = t1.chronos[i].first;
       }
-      else if (!t1.active[i] && t2.active[i]) {
-        output.v1[i] = t2.v1[i]; output.v2[i] = t2.v2[i];
+      else if (!t1.chronos[i].second && t2.chronos[i].second) {
+        output.chronos[i].first = t2.chronos[i].first;
+      }
+    }
+    return output;
+  }
+
+  Multitime operator -(const Multitime& t1,const Multitime& t2)
+  {
+    Multitime output;
+
+    for(int i=0; i<Multitime::tdimension; ++i) {
+      output.chronos[i].second = false;
+      if (!t1.chronos[i].second && !t2.chronos[i].second) continue;
+      output.chronos[i].second = true;
+      if (t1.chronos[i].second && t2.chronos[i].second) {
+        output.chronos[i].first = t1.chronos[i].first - t2.chronos[i].first;
+      }
+      else if (t1.chronos[i].second && !t2.chronos[i].second) {
+        output.chronos[i].first = t1.chronos[i].first;
+      }
+      else if (!t1.chronos[i].second && t2.chronos[i].second) {
+        output.chronos[i].first = -t2.chronos[i].first;
+      }
+    }
+    return output;
+  }
+
+  Multitime operator *(double alpha,const Multitime& tau)
+  {
+    Multitime output = tau;
+
+    for(int i=0; i<Multitime::tdimension; ++i) {
+      if (output.chronos[i].second) output.chronos[i].first *= alpha;
+    }
+    return output;
+  }
+
+  Multitime operator *(const Multitime& t1,const Multitime& t2)
+  {
+    Multitime output;
+
+    for(int i=0; i<Multitime::tdimension; ++i) {
+      if (t1.chronos[i].second && t2.chronos[i].second) {
+        output.chronos[i].first = t1.chronos[i].first * t2.chronos[i].first;
+      }
+      else {
+        output.chronos[i].second = false;
       }
     }
     return output;

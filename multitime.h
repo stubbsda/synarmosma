@@ -25,9 +25,7 @@
 namespace SYNARMOSMA {
   class Multitime {
    private:
-    double* v1; 
-    double* v2; 
-    bool* active;
+    std::vector<std::pair<double,bool> > chronos; 
     // Not too Aristotelian, perhaps?
     static const int tdimension = 1;
 
