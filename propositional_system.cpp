@@ -239,62 +239,24 @@ void Propositional_System::compute_internal_logic()
   }
 }
 
-void Propositional_System::compute_pairs(unsigned int* edges,std::set<unsigned int>& sink,std::set<unsigned int>& source) const 
+void Propositional_System::compute_implication_graph(Directed_Graph* G) const 
 {
   // This method must determine which propositions imply other propositions among
   // our collection, "theorems".
-  // The output scheme for the edges is as follows:
-  // edges[i] = 0 => null edge
-  // edges[i] = 1 or 2 => directed edge
-  // edges[i] = 3 => multi-edge
-  unsigned int i,j,kt;
-  std::vector<unsigned int> vsink,vsource;
+  unsigned int i,j;
   boost::dynamic_bitset<> temp(nuniverse),p1(nuniverse);
   const unsigned int nnode = theorems.size();
-  const unsigned int nedge = (nnode*(nnode-1))/2;
 
-  for(i=0; i<nedge; ++i) {
-    edges[i] = 0;
-  }
-  for(i=0; i<nnode; ++i) {
-    vsink.push_back(1);
-    vsource.push_back(1);
-  }
+  G->clear();
+
   for(i=0; i<nnode; ++i) {
     p1 = truth[i];
     for(j=0; j<nnode; ++j) {
       if (i == j) continue;
       // p(i) implies p(j)? That means that (!p(j) v p(i)) is always true
       temp = ~truth[j] | p1;
-      if (temp.count() == nuniverse) {
-        // How to compute the edge index?
-        if (j > i) {
-          kt = (j-i-1) + nedge - ((nnode-i)*(nnode-i-1))/2;
-          edges[kt] = (edges[kt] == 0) ? 1 : 3;
-        }
-        else {
-          // We have already seen this edge!
-          kt = (i-j-1) + nedge - ((nnode-j)*(nnode-j-1))/2;
-          edges[kt] = (edges[kt] == 0) ? 2 : 3;
-        }
-        vsource[j] = 0;
-        vsink[i] = 0;
-      }
+      if (temp.count() == nuniverse) G->add_edge(i,j,FORWARD);
     }
-  }
-
-  // What is a logical sink? A proposition which doesn't imply any other propositions
-  sink.clear();
-  for(i=0; i<nnode; ++i) {
-    // A proposition that never implies any other but is implied by at least one other...
-    if (vsink[i] == 1 && vsource[i] == 0) sink.insert(i);
-  }
-
-  // What is a logical source? A proposition is never implied by other propositions
-  source.clear();
-  for(i=0; i<nnode; ++i) {
-    // A proposition that is never implied by any other but implies at least one other...
-    if (vsource[i] == 1 && vsink[i] == 0) source.insert(i);
   }
 }
 

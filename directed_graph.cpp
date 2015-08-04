@@ -38,6 +38,14 @@ Directed_Graph::~Directed_Graph()
 
 }
 
+void Directed_Graph::clear()
+{
+  nvertex = 0;
+  neighbours.clear();
+  edges.clear();
+  index_table.clear();
+}
+
 bool Directed_Graph::foliation_x(int v1,int v2)
 {
   if (v1 == v2) return false;
@@ -210,3 +218,58 @@ int Directed_Graph::two_cycles() const
   return t_cycle;
 }
 
+void Directed_Graph::compute_sinks(std::set<int>& output) const
+{
+  int i,j;
+  bool sink;
+  std::string key;
+  std::set<int>::const_iterator it;
+  string_hash::const_iterator qt;
+
+  output.clear();
+  // A sink is a vertex all of whose edges are incoming...
+  for(i=0; i<nvertex; ++i) {
+    if (neighbours[i].empty()) continue;
+    sink = true;
+    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+      j = *it;
+      if (j < i) continue;
+      key = make_key(i,j);
+      qt = index_table.find(key + ":1");
+      if (qt != index_table.end()) {
+        // If this vertex has an outgoing edge, it isn't a sink...
+        sink = false;
+        break;
+      }
+    }
+    if (sink) output.insert(i);
+  }
+}
+
+void Directed_Graph::compute_sources(std::set<int>& output) const
+{
+  int i,j;
+  bool source;
+  std::string key;
+  std::set<int>::const_iterator it;
+  string_hash::const_iterator qt;
+
+  output.clear();
+  // A source is a vertex all of whose edges are outgoing...
+  for(i=0; i<nvertex; ++i) {
+    if (neighbours[i].empty()) continue;
+    source = true;
+    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+      j = *it;
+      if (j < i) continue;
+      key = make_key(i,j);
+      qt = index_table.find(key + ":-1");
+      if (qt != index_table.end()) {
+        // If this vertex has an incoming edge, it isn't a source...
+        source = false;
+        break;
+      }
+    }
+    if (source) output.insert(i);
+  }
+}

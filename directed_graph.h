@@ -38,10 +38,13 @@ namespace SYNARMOSMA {
     Directed_Graph();
     Directed_Graph(int);
     virtual ~Directed_Graph();
+    void clear();
     bool add_edge(int,int);
     bool add_edge(int,int,DIRECTION);
     int two_cycles() const;
     bool path_connected(int,int) const;
+    void compute_sinks(std::set<int>&) const;
+    void compute_sources(std::set<int>&) const;
   };
 }
 #endif
