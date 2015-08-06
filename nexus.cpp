@@ -80,7 +80,15 @@ void Nexus::clear()
 void Nexus::paste(const std::set<int>& vx)
 {
   Cell c(vx);
+  paste(c);
+}
+
+void Nexus::paste(const Cell& c)
+{
+  std::set<int> vx; 
   int m = c.dimension();
+
+  c.get_vertices(vx);
   hash_map::const_iterator qt = index_table[m].find(vx);
   if (qt == index_table[m].end()) {
     elements[m].push_back(c);
@@ -730,3 +738,4 @@ bool Nexus::orientable() const
   delete[] facets;
   return !failed;
 }
+

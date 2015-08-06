@@ -69,6 +69,7 @@ namespace SYNARMOSMA {
   typedef boost::mt19937 base_generator_type;
   typedef boost::unordered_map<std::set<int>,int> hash_map;
   typedef boost::unordered_map<std::string,int> string_hash;
+  typedef boost::adjacency_list<boost::vecS,boost::vecS,boost::bidirectionalS> network;
 
 #ifdef __LP64__
   typedef unsigned long UINT64;

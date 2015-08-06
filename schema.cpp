@@ -53,6 +53,22 @@ int Schema::add_vertex()
   return nvertex-1;
 }
 
+bool Schema::add_edge(int n,int m)
+{
+  assert(n >= 0 && n < nvertex);
+  assert(m >= 0 && m < nvertex);
+  std::set<int>::const_iterator it;
+
+  it = neighbours[n].find(m);
+  if (it == neighbours[n].end()) {
+    // This edge doesn't already exist, so add it...
+    neighbours[n].insert(m);
+    neighbours[m].insert(n);
+    return true;
+  }
+  return false;
+}
+
 bool Schema::positive_valence() const
 {
   // This method just checks if there are any vertices with no connections,

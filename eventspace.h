@@ -24,13 +24,11 @@
 #define __eventspaceh
 
 namespace SYNARMOSMA {
-  typedef boost::adjacency_list<boost::vecS,boost::vecS,boost::bidirectionalS> Network;
-  
   class Eventspace {
    private:
     Event* events;  
     int nevent;
-    Network* causal_network;
+    network* causal_network;
     double L;
 
     void initiate_events();

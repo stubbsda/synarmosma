@@ -36,12 +36,12 @@ namespace SYNARMOSMA {
     virtual ~Nexus();
     bool orientable() const;
     bool pseudomanifold(bool*) const;
-    void assemble();
     void surface_construction(int);
     virtual void clear();
     void initialize(int);
     void initialize(int,int);
     void paste(const std::set<int>&);
+    void paste(const Cell&);
     void regularization();
     int size() const;
     void ascend(int,int,std::vector<Cell>&) const;
