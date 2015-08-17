@@ -26,19 +26,18 @@
 namespace SYNARMOSMA {
   class Event {
    private:
-    int timestep;
+    int incept;
     int colour;
-    int local_dimension;
+    int topological_dimension;
     double energy;
     Proposition observation;
     std::set<int> future,past;  
     std::set<int> neighbours;
     std::vector<std::string> entourage;
-    std::vector<double> space;  
     Multitime proper_time;
 
     double norm() const;
-    void allocate();
+    void clear();
     void initialize();
    public:
     Event();
@@ -48,27 +47,6 @@ namespace SYNARMOSMA {
     Event& operator=(const Event&);
     friend class Eventspace;
   };
-
-// A class which implements a Leibnizian concept of spacetime 
-/*
-class Event_Graph: public Graph {
- private:    
-  std::vector<unsigned int> events;     
-
-  void perceptual_consistency();
-  kind perceptual_divergence(double*,double,double*,double**) const; 
-  void allocate();
-  void initialize();
-  
- public:
-  Event_Graph();
-  Event_Graph(const char*);
-  Event_Graph(const Event_Graph&);
-  Event_Graph & operator=(const Event_Graph&);
-  ~Event_Graph();
-  void initiate_events();
-};
-*/
 }
 #endif 
 

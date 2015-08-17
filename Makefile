@@ -1,7 +1,7 @@
 OBJECTS = global.o random.o cell.o nexus.o schema.o group.o graph.o geometry.o word.o rational.o\
 variety_wrapper.o polynomial_wrapper.o proposition.o propositional_system.o logic_graph.o edge.o\
-event.o eventspace.o multitime.o binary_matrix.o matrix_wrapper.o functional_equation_wrapper.o\
-homology.o homotopy.o directed_graph.o poset.o lattice.o
+event.o multitime.o binary_matrix.o matrix_wrapper.o functional_equation_wrapper.o directed_graph.o\
+homology.o homotopy.o poset.o lattice.o
 
 CXX_FLAGS += -fPIC
 
@@ -63,9 +63,6 @@ binary_matrix.o: binary_matrix.cpp binary_matrix.h global.h
 
 edge.o: global.h edge.h edge.cpp
 	$(CXX) $(CXX_FLAGS) -c edge.cpp
-
-eventspace.o: global.h multitime.h event.h proposition.h nexus.h eventspace.h eventspace.cpp
-	$(CXX) $(CXX_FLAGS) -c eventspace.cpp
 
 logic_graph.o: global.h graph.h logic_graph.h logic_graph.cpp
 	$(CXX) $(CXX_FLAGS) -c logic_graph.cpp

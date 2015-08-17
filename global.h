@@ -47,9 +47,6 @@
 #include <boost/unordered_map.hpp>
 #include <boost/dynamic_bitset.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/graph/graph_traits.hpp>
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/dijkstra_shortest_paths.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/variate_generator.hpp>
@@ -69,7 +66,6 @@ namespace SYNARMOSMA {
   typedef boost::mt19937 base_generator_type;
   typedef boost::unordered_map<std::set<int>,int> hash_map;
   typedef boost::unordered_map<std::string,int> string_hash;
-  typedef boost::adjacency_list<boost::vecS,boost::vecS,boost::bidirectionalS> network;
 
 #ifdef __LP64__
   typedef unsigned long UINT64;

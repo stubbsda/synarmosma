@@ -237,6 +237,42 @@ void Geometry::deserialize(std::ifstream& s)
   }
 }
 
+double Geometry::perceptual_divergence(const double* raxis,double theta,const double* translation,const double* observed) const
+{
+  // The method assumes that
+  // a) raxis is a unit vector 
+  // b) 0 <= theta < 2*pi
+  // c) dimension = 3
+  assert(uniform && !relational && background_dimension == 3);  
+  int i,j;
+  double ct,st,d1,xt,q0,temp[3],delta,sum = 0.0;
+
+  ct = std::cos(theta);
+  st = std::sin(theta);
+#ifndef USE_MPI
+#ifdef PARALLEL
+#pragma omp parallel for default(shared) private(i,j,xt,temp,delta,d1,q0) reduction(+:sum)
+#endif
+#endif
+  for(i=0; i<nvertex; ++i) {
+    // The angular motion:
+    // We calculate the cross product...
+    temp[0] = coordinates[i][1]*raxis[2] - coordinates[i][2]*raxis[1];
+    temp[1] = coordinates[i][2]*raxis[0] - coordinates[i][0]*raxis[0];
+    temp[2] = coordinates[i][0]*raxis[1] - coordinates[i][1]*raxis[0];
+    // And now the scalar product
+    q0 = coordinates[i][0]*raxis[0] + coordinates[i][1]*raxis[1] + coordinates[i][2]*raxis[2];
+    delta = 0.0;
+    for(j=0; j<3; ++j) {
+      xt = q0*raxis[j] + st*temp[j] + ct*(coordinates[i][j] - q0*raxis[j]) + translation[j];
+      d1 = xt - observed[3*i+j];
+      delta += d1*d1;
+    }
+    sum += std::sqrt(delta);
+  }
+  return (sum/double(nvertex));
+}
+
 void Geometry::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<double>& x)
 {
   int i,j,k;

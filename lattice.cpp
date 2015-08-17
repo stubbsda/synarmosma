@@ -41,6 +41,11 @@ void Lattice::clear()
   Poset::clear();
 }
 
+bool Lattice::consistent() const
+{
+  return true;
+}
+
 void Lattice::add_vertex()
 {
   Poset::add_vertex();
@@ -48,11 +53,73 @@ void Lattice::add_vertex()
 
 int Lattice::meet(int x,int y) const
 {
-  return 0;
+  // Find the element w in L such that w <= x and w <= y, while any other 
+  // z in L satisfying these relations is such that z <= w.
+  int i,j;
+  bool max;
+  std::set<int> candidates;
+  std::set<int>::const_iterator it,jt;
+  RELATION rho;
+  
+  for(i=0; i<N; ++i) {
+    if (i == x || i == y) continue;
+    rho = get_order(i,x);
+    if (rho != BEFORE) continue;
+    rho = get_order(i,y);
+    if (rho != BEFORE) continue;
+    candidates.insert(i); 
+  }
+  // Find which among the candidates is the largest
+  for(it=candidates.begin(); it!=candidates.end(); ++it) {
+    i = *it;
+    max = true;
+    for(jt=candidates.begin(); jt!=candidates.end(); ++jt) {
+      j = *jt;
+      if (i == j) continue;
+      rho = get_order(i,j);
+      if (rho != AFTER) {
+        max = false;
+        break;
+      }
+    }
+    if (max) return i;
+  }
+  return -1;
 }
 
 int Lattice::join(int x,int y) const
 {
-  return 0;
+  // Find the element w in L such that x <= w and y <= w, while any other 
+  // z in L satisfying these relations is such that w <= z.
+  int i,j;
+  bool max;
+  std::set<int> candidates;
+  std::set<int>::const_iterator it,jt;
+  RELATION rho;
+  
+  for(i=0; i<N; ++i) {
+    if (i == x || i == y) continue;
+    rho = get_order(i,x);
+    if (rho != AFTER) continue;
+    rho = get_order(i,y);
+    if (rho != AFTER) continue;
+    candidates.insert(i); 
+  }
+  // Find which among the candidates is the largest
+  for(it=candidates.begin(); it!=candidates.end(); ++it) {
+    i = *it;
+    max = true;
+    for(jt=candidates.begin(); jt!=candidates.end(); ++jt) {
+      j = *jt;
+      if (i == j) continue;
+      rho = get_order(i,j);
+      if (rho != BEFORE) {
+        max = false;
+        break;
+      }
+    }
+    if (max) return i;
+  }
+  return -1;
 }
 

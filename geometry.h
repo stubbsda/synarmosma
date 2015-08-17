@@ -44,6 +44,7 @@ namespace SYNARMOSMA {
 
     void clear();
     void set_default_values();
+    double perceptual_divergence(const double*,double,const double*,const double*) const;
     inline int compute_index(int,int) const;
    public:
     Geometry();
