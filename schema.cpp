@@ -53,14 +53,47 @@ int Schema::add_vertex()
   return nvertex-1;
 }
 
-bool Schema::add_edge(int n,int m)
+bool Schema::connected(int n,int m) const
+{
+  // A method to check if the vertices n and m share a direct 
+  // connection
+  assert(n >= 0 && n < nvertex);
+  assert(m >= 0 && m < nvertex);
+  if (n == m) return false;
+
+  if (neighbours[n].count(m) == 0) {
+    // This edge doesn't exist...
+    return false;
+  }
+  return true;
+}
+
+bool Schema::drop_edge(int n,int m)
 {
   assert(n >= 0 && n < nvertex);
   assert(m >= 0 && m < nvertex);
+  if (n == m) return false;
+
   std::set<int>::const_iterator it;
 
   it = neighbours[n].find(m);
   if (it == neighbours[n].end()) {
+    // This edge doesn't exist...
+    return false;
+  }
+  neighbours[n].erase(*it);
+  it = neighbours[m].find(n);
+  neighbours[m].erase(*it);
+  return true;
+}
+
+bool Schema::add_edge(int n,int m)
+{
+  assert(n >= 0 && n < nvertex);
+  assert(m >= 0 && m < nvertex);
+  if (n == m) return false;
+
+  if (neighbours[n].count(m) == 0) {
     // This edge doesn't already exist, so add it...
     neighbours[n].insert(m);
     neighbours[m].insert(n);

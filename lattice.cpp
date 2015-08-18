@@ -43,6 +43,16 @@ void Lattice::clear()
 
 bool Lattice::consistent() const
 {
+  // In a lattice every pair of elements must have a meet and join, so...
+  int i,j;
+
+  for(i=0; i<N; ++i) {
+    for(j=0; j<N; ++j) {
+      if (i == j) continue;
+      if (meet(i,j) == -1) return false;
+      if (join(i,j) == -1) return false;
+    }
+  }
   return true;
 }
 

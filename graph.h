@@ -35,9 +35,13 @@ namespace SYNARMOSMA {
     virtual double compute_energy() const;
     // A basic operator for adding an edge
     virtual bool add_edge(int,int);
+    // A basic operator for undoing the above edge addition
+    virtual bool drop_edge(int,int);
     // A method to minimize the graph topology according 
     // to a fitness function using simulated annealing 
     int minimize_topology(int,double,std::vector<double>&);
+    // A method to render the graph topology complete
+    int make_complete();
    public:
     // The usual public methods for a class
     Graph();

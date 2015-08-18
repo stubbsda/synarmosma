@@ -72,91 +72,40 @@ double Logic_Graph::rationalize_topology()
   // obviously connected. At each iteration, we examine the causal
   // edges to verify that the proposition of the antecedent vertex
   // implies the propositions of its descendent vertex neighbours
-  double output = 0.0;
-  /*
-  int i,j,k,tt,test,in1,in2,nfalse,its = 0;
-  bool flag,good;
-  std::set<int> S;
+  int i,p,q,n,rsum,its = 0;
+  std::vector<int> bcount;
   std::set<int>::const_iterator it;
-  int* ntrue = new int[nvertex];
-  std::vector<int>* false_edges = new std::vector<int>[nvertex];
-  const int max_iter = 500;
+
+  make_complete();
 
   for(i=0; i<nvertex; ++i) {
-    false_edges[i].reserve(100);
-  }
-
-  for(i=0; i<nvertex; ++i) {
-    ntrue[i] = logic->bit_count(i);
+    bcount.push_back(logic->bit_count(i));
   }
 
   do {
+    p = RND.irandom(nvertex);
+    q = RND.irandom(nvertex);
+    if (p == q) continue;
     its++;
-    nedge = 0;
-    for(i=0; i<nvertex; ++i) {
-      false_edges[i].clear();
-    }
-    for(i=0; i<nvertex; ++i) {
-      for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
-        in1 = *it;
-        if (in1 > i) continue;
-        nedge += 1;
-        in2 = logic->consistency(i,in1,"and");
-        if (in2 < ntrue[i]) {
-          false_edges[i].push_back(j);
-          for(it=neighbours[in1].begin(); it!=neighbours[in1].end(); ++it) {
-            if (*it == i) {
-              false_edges[in1].push_back(k);
-              break;
-            }
-          }
-        }
-      }
-    }
-    nfalse = 0;
-    for(i=0; i<nvertex; ++i) {
-      nfalse += false_edges[i].size();
-    }
-    nfalse /= 2;
-    if (nfalse == 0 || its == max_iter) break;
-    for(i=0; i<nvertex; ++i) {
-      if (false_edges[i].empty()) continue;
-      tt = false_edges[i].size();
-      for(j=0; j<tt; ++j) {
-        in1 = false_edges[i][j];
-        for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
-          if (*it == in1) continue;
-          S.insert(*it);
-        }
-        neighbours[i] = S;
-        S.clear();
-      }
-      for(j=0; j<tt/2; ++j) {
-        flag = true;
-        do {
-          test = RND.irandom(nvertex);
-          if (test == i) continue;
-          good = (neighbours[i].count(test) == 1) ? false : true;
-          if (!good) continue;
-          neighbours[i].insert(test);
-          neighbours[test].insert(i);
-          flag = false;
-        } while(flag);
-      }
-    }
-    if (!connected()) {
-      std::cerr << "Logic_Graph instance disconnected in topology rationalization!" << std::endl;
-      std::exit(1);
-    }
-  } while(true);
+    if (!connected(p,q)) continue;
+    n = logic->consistency(p,q,"and");
+    // Keep this edge if the bit count is complete...
+    if (n == bcount[p]) continue;
+    // If not, drop it
+    drop_edge(p,q);
+    // Unless this would disconnect the graph...
+    if (!connected()) add_edge(p,q);
+  } while(its < nvertex*nvertex);
 
-  // Free the memory
-  delete[] false_edges;
-  delete[] ntrue;
-
-  return nfalse;
-  */
-  return output;
+  rsum = 0;
+  for(i=0; i<nvertex; ++i) {
+    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+      p = *it;
+      n = logic->consistency(i,p,"and");
+      rsum += (bcount[i] - n);
+    }
+  }
+  return double(rsum)/double(nvertex);
 }
 
 bool Logic_Graph::amputation(int v)

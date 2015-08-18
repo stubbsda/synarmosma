@@ -174,11 +174,43 @@ bool Graph::add_edge(int v,int u)
   return false;
 }
 
+bool Graph::drop_edge(int v,int u)
+{
+  if (u == v) return false;
+  std::set<int>::const_iterator it;
+
+  it = neighbours[v].find(u);
+  if (it == neighbours[v].end()) {
+    // Edge doesn't exist...
+    return false;
+  }
+  neighbours[v].erase(*it);
+  it = neighbours[u].find(u);
+  neighbours[u].erase(*it);
+  nedge--;
+  return true;
+}
+
 void Graph::clear()
 {
   nedge = 0;
   nvertex = 0;
   neighbours.clear();
+}
+
+int Graph::make_complete()
+{
+  // A method that outfits the graph with the complete topology, so that 
+  // every vertex is connected to every other. It returns the number of edges 
+  // that had to be added...
+  int i,j,sum = 0;
+
+  for(i=0; i<nvertex; ++i) {
+    for(j=1+i; j<nvertex; ++j) {
+      if (add_edge(i,j)) sum++;
+    }
+  }
+  return sum;
 }
 
 bool Graph::amputation(int v)
