@@ -66,12 +66,14 @@ void Logic_Graph::compute_logical_breadth()
   }
 }
 
-int Logic_Graph::rationalize_topology()
+double Logic_Graph::rationalize_topology()
 {
-  // We begin this method with a random graph topology, which is
-  // however connected. At each iteration, we examine the causal
+  // We begin this method with a complete graph topology, which is
+  // obviously connected. At each iteration, we examine the causal
   // edges to verify that the proposition of the antecedent vertex
   // implies the propositions of its descendent vertex neighbours
+  double output = 0.0;
+  /*
   int i,j,k,tt,test,in1,in2,nfalse,its = 0;
   bool flag,good;
   std::set<int> S;
@@ -153,6 +155,8 @@ int Logic_Graph::rationalize_topology()
   delete[] ntrue;
 
   return nfalse;
+  */
+  return output;
 }
 
 bool Logic_Graph::amputation(int v)
