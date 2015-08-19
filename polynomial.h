@@ -60,7 +60,6 @@ namespace SYNARMOSMA {
     Polynomial(const Polynomial&);
     Polynomial<unsigned int> reduce(unsigned int);
     kind evaluate(kind);
-    void factorize(std::vector<Polynomial>&);
     kind get_value(unsigned int) const;
     void set_value(kind,unsigned int);
     Polynomial<kind> derivative() const;

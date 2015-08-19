@@ -37,6 +37,7 @@ namespace SYNARMOSMA {
 
     void compute_width(int,int,std::set<int>&) const;
     RELATION get_order(int,int) const;
+    int build_chain(std::vector<int>&,int) const;
    public:
     Poset();
     Poset(int);

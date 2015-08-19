@@ -119,10 +119,33 @@ RELATION Poset::get_order(int u,int v) const
   return AFTER;
 }
 
+int Poset::build_chain(std::vector<int>& chain,int length) const
+{
+  int l = (signed) chain.size(),output = 0;
+  if (l == length) {
+    output = 1;
+  }
+  else {
+    std::vector<int> nchain = chain;
+
+    for(int i=0; i<N; ++i) {
+      if (i == chain[l]) continue;
+      if (get_order(chain[l],i) == BEFORE) {
+        nchain.push_back(i);
+        output += build_chain(nchain,length);
+        nchain = chain;
+      }
+    }
+  }
+  return output;
+}
+
 int Poset::chain_number(int length) const
 {
   // Compute the number of chains of a given length in this poset 
-  int i,j,k,nchain = 0;
+  assert(length >= 0);
+  if (length == 0 || length == 1) return 0;
+  int i,j,nchain = 0;
   std::set<int> sigma;
 
   if (length == 2) {
@@ -146,23 +169,14 @@ int Poset::chain_number(int length) const
     }
   }
   else {
-    // The general case, rather complicated
+    // The general case, rather complicated so we use recursion to do it
     std::vector<int> chain;
-
+   
     for(i=0; i<N; ++i) {
-      for(j=0; j<N; ++j) {
-        if (i == j) continue;
-        if (get_order(i,j) != BEFORE) continue;
-        // See how many chains of length l between the elements i and j
-        // can be built
-        compute_width(i,j,sigma);
-        chain.push_back(i);
-        for(k=0; k<length-2; ++k) {
-          
-        }
-        chain.push_back(j);
-      }
-    }
+      chain.push_back(i);
+      nchain += build_chain(chain,length);
+      chain.clear();
+    }   
   }
   return nchain;
 }

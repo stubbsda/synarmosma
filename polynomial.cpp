@@ -215,12 +215,6 @@ Polynomial<unsigned int> Polynomial<kind>::reduce(unsigned int p)
 }
 
 template<class kind>
-void Polynomial<kind>::factorize(std::vector<Polynomial>& output)
-{
-
-}
-
-template<class kind>
 Polynomial<kind> operator -(const Polynomial<kind>& p1,const Polynomial<kind>& p2)
 {
   std::vector<kind> new_terms;
