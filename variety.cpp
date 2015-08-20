@@ -32,16 +32,18 @@ Variety<kind>::Variety()
 }
 
 template<class kind>
-Variety<kind>::Variety(int p)
+Variety<kind>::Variety(unsigned int p)
 {
+  assert(p > 0);
   nequation = p;
   characteristic = 0;
   allocate();
 }
 
 template<class kind>
-Variety<kind>::Variety(int n,int p)
+Variety<kind>::Variety(unsigned int n,unsigned int p)
 {
+  assert(n > 0 && p > 0);
   nequation = n;
   nvariable = p;
   characteristic = p;
@@ -51,18 +53,50 @@ Variety<kind>::Variety(int n,int p)
 template<class kind>
 Variety<kind>::Variety(const Variety<kind>& source)
 {
+  unsigned int i;
+  remainder = source.remainder;
+  nequation = source.nequation;
+  nvariable = source.nvariable;
+  characteristic = source.characteristic;
+  linear = source.linear;
+  homogeneous = source.homogeneous;
+  projective = source.projective;
+  equations = new std::vector<Monomial<kind> >[nequation];
+  for(i=0; i<nequation; ++i) {
+    equations[i] = source.equations[i];
+  }
+}
 
+template<class kind>
+Variety<kind>& Variety<kind>::operator =(const Variety<kind>& source)
+{
+  if (this == &source) return *this;
+  if (nequation > 0) delete[] equations;
+  unsigned int i;
+  remainder = source.remainder;
+  nequation = source.nequation;
+  nvariable = source.nvariable;
+  characteristic = source.characteristic;
+  linear = source.linear;
+  homogeneous = source.homogeneous;
+  projective = source.projective;
+  equations = new std::vector<Monomial<kind> >[nequation];
+  for(i=0; i<nequation; ++i) {
+    equations[i] = source.equations[i];
+  }
+  return *this;
 }
 
 template<class kind>
 Variety<kind>::~Variety()
 {
-  delete[] equations;
+  if (nequation > 0) delete[] equations;
 }
 
 template<class kind>
 void Variety<kind>::allocate()
 {
+  assert(nequation > 0);
   equations = new std::vector<Monomial<kind> >[nequation];
   initialize();
 }
@@ -70,8 +104,7 @@ void Variety<kind>::allocate()
 template<class kind>
 void Variety<kind>::initialize()
 {
-  int i,j,k,l,alpha,beta;
-  unsigned int test;
+  unsigned int i,j,k,l,alpha,beta,test;
   Monomial<kind> term;
   std::set<int> atoms;
   std::pair<int,int> duo;
@@ -122,18 +155,16 @@ void Variety<kind>::clear()
   // same finite field. The method's job is to build up the contents of the vector of
   // sets containing the variable dependency information for each equation in this
   // algebraic variety over GF(p).
-  int i;
   dependencies.clear();
-  for(i=0; i<nequation; ++i) {
-    equations[i].clear();
-    remainder[i] = 0;
-  }
+  remainder.clear();
+  delete[] equations;
+  nequation = 0;
 }
 
 template<class kind>
 void Variety<kind>::elaborate()
 {
-  int i,j,k;
+  unsigned int i,j,k;
   std::set<int> atoms;
 
   for(i=0; i<nequation; ++i) {
@@ -147,23 +178,76 @@ void Variety<kind>::elaborate()
   }
 }
 
+namespace SYNARMOSMA {
+  template<>
+  void Variety<NTL::ZZ>::make_projective()
+  {
+    if (projective) return;
+    unsigned int i,j,k,in1,sum;
+    Monomial<NTL::ZZ> term;
+    bool equal;
+    std::vector<int> exponents;
+    std::pair<int,int> duo;
+    const NTL::ZZ zero = NTL::to_ZZ(0);
+
+    duo.first = nvariable + 1;
+    for(i=0; i<nequation; ++i) {
+      for(j=0; j<(signed) equations[i].size(); ++j) {
+        term = equations[i][j];
+        sum = 0;
+        for(k=0; k<(signed) term.exponents.size(); ++k) {
+          sum += term.exponents[k].second;
+        }
+        exponents.push_back(sum);
+      }
+      // We need to know if all the values of "exponents" are equal
+      equal = true;
+      in1 = exponents[0];
+      for(j=1; j<(signed) exponents.size(); ++j) {
+        if (exponents[j] != in1) equal = false;
+        if (exponents[j] > in1) in1 = exponents[j];
+      }
+      if (!equal) {
+        for(j=0; j<(signed) equations[i].size(); ++j) {
+          if (exponents[j] < in1) {
+            duo.second = in1 - exponents[j];
+            equations[i][j].exponents.push_back(duo);
+          }
+        }
+      }
+      exponents.clear();
+      if (remainder[i] != zero) {
+        term.exponents.clear();
+        term.coefficient = remainder[i];
+        duo.second = in1;
+        term.exponents.push_back(duo);
+        equations[i].push_back(term);
+        remainder[i] = 0;
+      }
+    }
+    nvariable += 1;
+    projective = true;
+    homogeneous = true;
+  }
+}
+
 template<class kind>
 void Variety<kind>::make_projective()
 {
   if (projective) return;
-  int i,j,k,in1,sum;
+  unsigned int i,j,k,in1,sum;
   Monomial<kind> term;
   bool equal;
-  std::vector<int> exponents;
-  std::pair<int,int> duo;
+  std::vector<unsigned int> exponents;
+  std::pair<unsigned int,unsigned int> duo;
   const kind zero = 0;
 
   duo.first = nvariable + 1;
   for(i=0; i<nequation; ++i) {
-    for(j=0; j<(signed) equations[i].size(); ++j) {
+    for(j=0; j<equations[i].size(); ++j) {
       term = equations[i][j];
       sum = 0;
-      for(k=0; k<(signed) term.exponents.size(); ++k) {
+      for(k=0; k<term.exponents.size(); ++k) {
         sum += term.exponents[k].second;
       }
       exponents.push_back(sum);
@@ -171,12 +255,12 @@ void Variety<kind>::make_projective()
     // We need to know if all the values of "exponents" are equal
     equal = true;
     in1 = exponents[0];
-    for(j=1; j<(signed) exponents.size(); ++j) {
+    for(j=1; j<exponents.size(); ++j) {
       if (exponents[j] != in1) equal = false;
       if (exponents[j] > in1) in1 = exponents[j];
     }
     if (!equal) {
-      for(j=0; j<(signed) equations[i].size(); ++j) {
+      for(j=0; j<equations[i].size(); ++j) {
         if (exponents[j] < in1) {
           duo.second = in1 - exponents[j];
           equations[i][j].exponents.push_back(duo);
@@ -209,8 +293,8 @@ namespace SYNARMOSMA {
 template<class kind>
 int Variety<kind>::compute_zeros()
 {
-  int bdry,nsolution,i,j,k,l,f,in1;
-  std::vector<int> elements,vec;
+  unsigned int bdry,nsolution,i,j,k,l,f,in1;
+  std::vector<unsigned int> elements,vec;
   bool soln;
   kind wt,value;
   Monomial<kind> term;
@@ -232,10 +316,10 @@ int Variety<kind>::compute_zeros()
     soln = true;
     for(j=0; j<nequation; ++j) {
       value = 0;
-      for(k=0; k<(signed) equations[j].size(); ++k) {
+      for(k=0; k<equations[j].size(); ++k) {
         term = equations[j][k];
         wt = term.coefficient;
-        for(l=0; l<(signed) term.exponents.size(); ++l) {
+        for(l=0; l<term.exponents.size(); ++l) {
           wt *= ipow(vec[term.exponents[l].first],term.exponents[l].second);
         }
         value += wt;
@@ -253,9 +337,9 @@ int Variety<kind>::compute_zeros()
 }
 
 template<class kind>
-void Variety<kind>::find_partial(bool* connected,int first,const std::vector<int>* dual_system) const
+void Variety<kind>::find_partial(std::vector<unsigned int>& connected,int first,const std::vector<unsigned int>* dual_system) const
 {
-  int i,in1,in2;
+  unsigned int i,in1,in2;
   bool done = false;
   std::set<int>::const_iterator it,jt;
   std::set<int> current,next,handled;
@@ -265,20 +349,20 @@ void Variety<kind>::find_partial(bool* connected,int first,const std::vector<int
   do {
     for(it=current.begin(); it!=current.end(); ++it) {
       in1 = *it;
-      for(i=0; i<(signed) dual_system[in1].size(); ++i) {
+      for(i=0; i<dual_system[in1].size(); ++i) {
         in2 = dual_system[in1][i];
         if (!connected[in2]) {
           handled.insert(in2);
           for(jt=dependencies[in2].begin(); jt!=dependencies[in2].end(); ++jt) {
             next.insert(*jt);
-	  }
+	        }
         }
       }
     }
     current = next;
     next.clear();
     for(it=handled.begin(); it!=handled.end(); ++it) {
-      connected[*it] = true;
+      connected[*it] = 1;
     }
     handled.clear();
     if (current.empty()) done = true;
@@ -288,11 +372,14 @@ void Variety<kind>::find_partial(bool* connected,int first,const std::vector<int
 template<class kind>
 int Variety<kind>::compute_dependencies(int* belongs) const
 {
-  int i,j,first = 0,family = 0;
+  unsigned int i,j,first = 0,family = 0;
   bool done = false;
-  bool* connected = new bool[nequation];
-  std::vector<int>* dual_system = new std::vector<int>[nvariable];
+  std::vector<unsigned int> connected;
+  std::vector<unsigned int>* dual_system = new std::vector<unsigned int>[nvariable];
 
+  for(i=0; i<nequation; ++i) {
+    connected.push_back(0);
+  }
   for(i=0; i<nvariable; ++i) {
     // We must determine which variables this equation contains
     for(j=0; j<nequation; ++j) {
@@ -300,15 +387,12 @@ int Variety<kind>::compute_dependencies(int* belongs) const
     }
   }
 
-  for(i=0; i<nequation; ++i) {
-    connected[i] = false;
-  }
   do {
     done = true;
     connected[first] = true;
     find_partial(connected,first,dual_system);
     for(i=0; i<nequation; ++i) {
-      if (connected[i]) {
+      if (connected[i] == 1) {
         belongs[i] = family;
       }
       else {
@@ -318,18 +402,23 @@ int Variety<kind>::compute_dependencies(int* belongs) const
     }
     family += 1;
     for(i=0; i<nequation; ++i) {
-      connected[i] = false;
+      connected[i] = 0;
     }
   } while(!done);
 
   delete[] dual_system;
-  delete[] connected;
   return family;
 }
 
 namespace SYNARMOSMA {
   template<>
   void Variety<Rational>::zeta_function(int k,int* output)
+  {
+
+  }
+
+  template<>
+  void Variety<NTL::ZZ>::zeta_function(int k,int* output)
   {
 
   }
@@ -340,7 +429,7 @@ void Variety<kind>::zeta_function(int k,int* output)
 {
   assert(k >= 1);
   assert(characteristic > 0);
-  int i,j,m,n,l,bdry,in1,f,size,nsolution;
+  unsigned int i,j,m,n,l,bdry,in1,f,size,nsolution;
   bool soln,found;
   Monomial<kind> term;
 
@@ -390,10 +479,10 @@ void Variety<kind>::zeta_function(int k,int* output)
       soln = true;
       for(j=0; j<nequation; ++j) {
         value = NTL::ZZ_pE::zero();
-        for(m=0; m<(signed) equations[j].size(); ++m) {
+        for(m=0; m<equations[j].size(); ++m) {
           term = equations[j][m];
           wt = term.coefficient;
-          for(l=0; l<(signed) term.exponents.size(); ++l) {
+          for(l=0; l<term.exponents.size(); ++l) {
             wt *= power(vec[term.exponents[l].first],term.exponents[l].second);
           }
           value += wt;
@@ -415,8 +504,9 @@ namespace SYNARMOSMA {
   void Variety<int>::normalize(int n)
   {
     if (characteristic == 0) return;
-    int i,in1;
-    for(i=0; i<(signed) equations[n].size(); ++i) {
+    unsigned int i;
+    int in1;
+    for(i=0; i<equations[n].size(); ++i) {
       in1 = equations[n][i].coefficient;
       in1 = in1 % characteristic;
       equations[n][i].coefficient = in1;
@@ -442,10 +532,10 @@ void Variety<kind>::add_term(int n,const Monomial<kind>& t)
 {
   assert(n < nequation);
   // Have we already seen this term?
-  int i,in1;
+  unsigned int i,in1;
   bool found = false;
   std::vector<std::pair<unsigned int,unsigned int> > power,term = t.exponents;
-  for(i=0; i<(signed) equations[n].size(); ++i) {
+  for(i=0; i<equations[n].size(); ++i) {
     power = equations[n][i].exponents;
     if (power == term) {
       in1 = i;
@@ -466,11 +556,11 @@ template<class kind>
 void Variety<kind>::add_term(int n,kind alpha,const int* xp)
 {
   assert(n < nequation);
-  int i,j,in1,sum = 0;
+  unsigned int i,j,in1,sum = 0;
   Monomial<kind> term;
   bool equal;
-  std::pair<int,int> duo;
-  std::vector<int> exponents;
+  std::pair<unsigned int,unsigned int> duo;
+  std::vector<unsigned int> exponents;
 
   term.coefficient = alpha;
   for(i=0; i<nvariable; ++i) {
@@ -486,17 +576,17 @@ void Variety<kind>::add_term(int n,kind alpha,const int* xp)
 
   if (sum > 1) linear = false;
   if (sum == 0) homogeneous = false;
-  for(i=0; i<(signed) equations[n].size(); ++i) {
+  for(i=0; i<equations[n].size(); ++i) {
     term = equations[n][i];
     sum = 0;
-    for(j=0; j<(signed) term.exponents.size(); ++j) {
+    for(j=0; j<term.exponents.size(); ++j) {
       sum += term.exponents[j].second;
     }
     exponents.push_back(sum);
   }
   equal = true;
   in1 = exponents[0];
-  for(i=1; i<(signed) exponents.size(); ++i) {
+  for(i=1; i<exponents.size(); ++i) {
     if (exponents[i] != in1) {
       equal = false;
       break;

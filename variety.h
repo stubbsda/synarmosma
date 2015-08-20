@@ -36,9 +36,9 @@ namespace SYNARMOSMA {
    private:
     std::vector<Monomial<kind> >* equations;
     std::vector<kind> remainder;
-    int nequation;
-    int nvariable;
-    int characteristic;
+    unsigned int nequation;
+    unsigned int nvariable;
+    unsigned int characteristic;
     bool linear;
     bool homogeneous;
     bool projective;
@@ -49,12 +49,12 @@ namespace SYNARMOSMA {
     void allocate();
     void initialize();
     void normalize(int);
-    void find_partial(bool*,int,const std::vector<int>*) const;
+    void find_partial(std::vector<unsigned int>&,int,const std::vector<unsigned int>*) const;
     int compute_zeros();
    public:
     Variety();
-    Variety(int);
-    Variety(int,int);
+    Variety(unsigned int);
+    Variety(unsigned int,unsigned int);
     Variety(const Variety&);
     Variety& operator =(const Variety&);
     ~Variety();
