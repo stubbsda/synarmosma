@@ -62,11 +62,6 @@ void Homology::betti_numbers(std::vector<int>& bnumbers) const
   }
 }
 
-void Homology::append(const Group& g)
-{
-  sequence.push_back(g);
-}
-
 void Homology::clear()
 {
   sequence.clear();

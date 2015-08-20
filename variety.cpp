@@ -156,6 +156,7 @@ void Variety<kind>::make_projective()
   bool equal;
   std::vector<int> exponents;
   std::pair<int,int> duo;
+  const kind zero = 0;
 
   duo.first = nvariable + 1;
   for(i=0; i<nequation; ++i) {
@@ -183,7 +184,7 @@ void Variety<kind>::make_projective()
       }
     }
     exponents.clear();
-    if (remainder[i] != kind(0)) {
+    if (remainder[i] != zero) {
       term.exponents.clear();
       term.coefficient = remainder[i];
       duo.second = in1;
@@ -208,9 +209,10 @@ namespace SYNARMOSMA {
 template<class kind>
 int Variety<kind>::compute_zeros()
 {
-  int bdry,nsolution,i,j,k,l,f,in1,value,wt;
+  int bdry,nsolution,i,j,k,l,f,in1;
   std::vector<int> elements,vec;
   bool soln;
+  kind wt,value;
   Monomial<kind> term;
 
   assert(characteristic > 0);
@@ -343,7 +345,6 @@ void Variety<kind>::zeta_function(int k,int* output)
   Monomial<kind> term;
 
   NTL::ZZ_p::init(NTL::to_ZZ(characteristic));
-
 
   // First we calculate the case $k = 1$
   output[0] = compute_zeros(); 

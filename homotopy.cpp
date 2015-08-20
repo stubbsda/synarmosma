@@ -67,8 +67,9 @@ void Homotopy::compute_fitness()
 
 void Homotopy::mutate()
 {
-  unsigned int n = RND.irandom(sequence.size());
+  unsigned int n = RND.irandom(1,sequence.size());
   Group g;
+  if (n > 1) g = g.abelianize(); 
   sequence[n] = g;
   compute_fitness();
 }
