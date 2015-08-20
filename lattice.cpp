@@ -36,6 +36,20 @@ Lattice::~Lattice()
 
 }
 
+Lattice::Lattice(const Lattice& source)
+{
+  N = source.N;
+  order = source.order;
+}
+
+Lattice& Lattice::operator =(const Lattice& source) 
+{
+  if (this == &source) return *this;
+  N = source.N;
+  order = source.order;
+  return *this;
+}
+
 void Lattice::clear()
 {
   Poset::clear();

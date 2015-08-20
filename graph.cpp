@@ -96,10 +96,18 @@ Graph::Graph(int n,double p) : Schema(n)
 
 Graph::Graph(const Graph& source)
 {
-  clear();
   nvertex = source.nvertex;
   neighbours = source.neighbours;
   nedge = source.nedge;
+}
+
+Graph& Graph::operator =(const Graph& source) 
+{
+  if (this == &source) return *this;
+  nvertex = source.nvertex;
+  neighbours = source.neighbours;
+  nedge = source.nedge;
+  return *this;
 }
 
 Graph::~Graph()

@@ -42,6 +42,7 @@ namespace SYNARMOSMA {
     Poset();
     Poset(int);
     Poset(const Poset&);
+    Poset& operator =(const Poset&);
     ~Poset();
     void clear();
     bool consistent() const;

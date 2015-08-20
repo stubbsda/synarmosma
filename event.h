@@ -44,7 +44,7 @@ namespace SYNARMOSMA {
     Event(const Event&);
     Event(const char*);
     ~Event();  
-    Event& operator=(const Event&);
+    Event& operator =(const Event&);
     friend class Eventspace;
   };
 }

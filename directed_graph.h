@@ -37,6 +37,8 @@ namespace SYNARMOSMA {
    public:
     Directed_Graph();
     Directed_Graph(int);
+    Directed_Graph(const Directed_Graph&);
+    Directed_Graph& operator =(const Directed_Graph&);
     virtual ~Directed_Graph();
     void clear();
     bool add_edge(int,int);

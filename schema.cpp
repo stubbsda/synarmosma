@@ -34,6 +34,20 @@ Schema::Schema(int n)
   }
 }
 
+Schema::Schema(const Schema& source)
+{
+  nvertex = source.nvertex;
+  neighbours = source.neighbours;
+}
+
+Schema& Schema::operator =(const Schema& source)
+{
+  if (this == &source) return *this;
+  nvertex = source.nvertex;
+  neighbours = source.neighbours;
+  return *this;
+}
+
 Schema::~Schema()
 {
 

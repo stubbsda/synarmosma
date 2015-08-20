@@ -33,6 +33,38 @@ Nexus::Nexus(int n) : Schema()
   dimension = n;
 }
 
+Nexus::Nexus(const Nexus& source)
+{
+  nvertex = source.nvertex;
+  neighbours = source.neighbours;
+  dimension = source.dimension;
+  elements = new std::vector<Cell>[1+dimension];
+  index_table = new hash_map[1+dimension];
+  for(int i=0; i<1+dimension; ++i) {
+    elements[i] = source.elements[i];
+    index_table[i] = source.index_table[i];
+  }
+}
+
+Nexus& Nexus::operator =(const Nexus& source)
+{
+  if (this == &source) return *this;
+  if (dimension > -1) {
+    delete[] elements;
+    delete[] index_table;
+  }
+  nvertex = source.nvertex;
+  neighbours = source.neighbours;
+  dimension = source.dimension;
+  elements = new std::vector<Cell>[1+dimension];
+  index_table = new hash_map[1+dimension];
+  for(int i=0; i<1+dimension; ++i) {
+    elements[i] = source.elements[i];
+    index_table[i] = source.index_table[i];
+  }
+  return *this;
+}
+
 Nexus::~Nexus()
 {
   if (dimension > -1) {

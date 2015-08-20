@@ -42,20 +42,19 @@ Event::Event(const Event& source)
   future = source.future;
 }
 
-Event& Event::operator=(const Event& source)
+Event& Event::operator =(const Event& source)
 {
-  if (this != &source) {
-    proper_time = source.proper_time;
-    energy = source.energy;
-    neighbours = source.neighbours;
-    entourage = source.entourage;
-    observation = source.observation;
-    incept = source.incept;
-    topological_dimension = source.topological_dimension;
-    colour = source.colour;
-    past = source.past;
-    future = source.future;
-  }
+  if (this == &source)  return *this;
+  proper_time = source.proper_time;
+  energy = source.energy;
+  neighbours = source.neighbours;
+  entourage = source.entourage;
+  observation = source.observation;
+  incept = source.incept;
+  topological_dimension = source.topological_dimension;
+  colour = source.colour;
+  past = source.past;
+  future = source.future;
   return *this;
 }
 

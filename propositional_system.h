@@ -18,6 +18,7 @@
 */
 
 #include "proposition.h"
+#include "binary_matrix.h"
 #include "directed_graph.h"
 
 #ifndef _psystemh
@@ -29,11 +30,9 @@ namespace SYNARMOSMA {
     std::vector<Proposition> theorems;
     unsigned int natom;
     unsigned int nuniverse;
-    bool** logical_universe;
     std::vector<boost::dynamic_bitset<> > truth;
 
     void compute_internal_logic();
-    void build_logical_universe();
     void set_default_values();
     void initialize(unsigned int);
   
@@ -42,6 +41,8 @@ namespace SYNARMOSMA {
     Propositional_System(unsigned int);
     Propositional_System(unsigned int,unsigned int);
     Propositional_System(unsigned int,const char*);
+    Propositional_System(const Propositional_System&);
+    Propositional_System& operator =(const Propositional_System&);
     ~Propositional_System();
     void read(const char*,unsigned int);
     void read(const char*);

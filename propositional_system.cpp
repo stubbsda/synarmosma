@@ -86,6 +86,24 @@ Propositional_System::Propositional_System(unsigned int n,unsigned int m)
   initialize(n);
 }
 
+Propositional_System::Propositional_System(const Propositional_System& source)
+{
+  theorems = source.theorems;
+  natom = source.natom;
+  nuniverse = source.nuniverse;
+  truth = source.truth;
+}
+
+Propositional_System& Propositional_System::operator =(const Propositional_System& source)
+{
+  if (this == &source) return *this;
+  theorems = source.theorems;
+  natom = source.natom;
+  nuniverse = source.nuniverse;
+  truth = source.truth;
+  return *this;
+}
+
 Propositional_System::~Propositional_System()
 {
 
@@ -107,12 +125,7 @@ void Propositional_System::initialize(unsigned int n)
   for(i=0; i<theorems.size(); ++i) {
     truth.push_back(boost::dynamic_bitset<>(nuniverse));
   }
-  build_logical_universe();
   compute_internal_logic();
-  for(i=0; i<nuniverse; ++i) {
-    delete[] logical_universe[i];
-  }
-  delete[] logical_universe;
 }
 
 void Propositional_System::write(const char* filename,unsigned int pointer)
@@ -161,29 +174,6 @@ void Propositional_System::read(const char* filename)
   s.close();
 }
 
-void Propositional_System::build_logical_universe()
-{
-  // A method that carries out the recursion once and for all for
-  // creating a large matrix of all possible logical values for a
-  // system of natomic propositions
-  unsigned int i,j,p,idiv,in1;
-
-  logical_universe = new bool*[nuniverse];
-  for(i=0; i<nuniverse; ++i) {
-    logical_universe[i] = new bool[natom];
-  }
-
-  for(i=0; i<nuniverse; ++i) {
-    in1 = i;
-    for(j=0; j<natom; ++j) {
-      p = ipow(2,natom-(j-1));
-      idiv = in1/p;
-      logical_universe[i][j] = (idiv % 2) ? false: true;
-      in1 -= p*idiv;
-    }
-  }
-}
-
 unsigned int Propositional_System::bit_count(unsigned int i) const
 {
   return truth[i].count();
@@ -222,18 +212,30 @@ void Propositional_System::compute_internal_logic()
   // The same basic idea as above, fill up the array of edge weights
   // with values but based on propositional logic rather than number
   // theory
-  unsigned int i,j,n = theorems.size();
-  bool out;
-
+  unsigned int i,j,in1,p,idiv;
+  Binary_Matrix logical_universe(nuniverse,natom);
+  bool rvector[natom],out;
+  const unsigned int n = theorems.size();
   // Loop through all vertices, if the topology has been modified, then
   // compute its truth value (do the set of propositions of its neighbours,
   // taken as axioms, imply this vertex's proposition as a logical
   // conclusion), which will be used to compute the edge weights
 
+  for(i=0; i<nuniverse; ++i) {
+    in1 = i;
+    for(j=0; j<natom; ++j) {
+      p = ipow(2,natom-(j-1));
+      idiv = in1/p;
+      if (!(idiv % 2)) logical_universe.set(i,j);
+      in1 -= p*idiv;
+    }
+  }
+
   for(i=0; i<n; ++i) {
     truth[i].reset();
     for(j=0; j<nuniverse; ++j) {
-      out = theorems[i].evaluate(logical_universe[j]);
+      logical_universe.get_row(j,rvector);
+      out = theorems[i].evaluate(rvector);
       if (out) truth[i].set(j);
     }
   }

@@ -33,9 +33,36 @@ Logic_Graph::Logic_Graph(int n) : Graph(n)
   logic = new Propositional_System(nvertex);
 }
 
+Logic_Graph::Logic_Graph(const Logic_Graph& source)
+{
+  nvertex = source.nvertex;
+  neighbours = source.neighbours;
+  nedge = source.nedge;
+  logical_breadth = source.logical_breadth;
+  if (nvertex > 0) {
+    logic = new Propositional_System(nvertex);
+    logic = source.logic;
+  }
+}
+
+Logic_Graph& Logic_Graph::operator =(const Logic_Graph& source)
+{
+  if (this == &source) return *this;
+  if (nvertex > 0) delete logic;
+  nvertex = source.nvertex;
+  neighbours = source.neighbours;
+  nedge = source.nedge;
+  logical_breadth = source.logical_breadth;
+  if (nvertex > 0) {
+    logic = new Propositional_System(nvertex);
+    logic = source.logic;
+  }
+  return *this;
+}
+
 Logic_Graph::~Logic_Graph()
 {
-  delete logic;
+  if (nvertex > 0) delete logic;
 }
 
 void Logic_Graph::create()

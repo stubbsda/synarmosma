@@ -29,6 +29,7 @@ namespace SYNARMOSMA {
     Lattice(int);
     Lattice(const Lattice&);
     ~Lattice();
+    Lattice& operator =(const Lattice&);
     int meet(int,int) const;
     int join(int,int) const;
     void clear();

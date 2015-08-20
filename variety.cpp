@@ -49,6 +49,12 @@ Variety<kind>::Variety(int n,int p)
 }
 
 template<class kind>
+Variety<kind>::Variety(const Variety<kind>& source)
+{
+
+}
+
+template<class kind>
 Variety<kind>::~Variety()
 {
   delete[] equations;

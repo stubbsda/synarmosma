@@ -40,6 +40,20 @@ Poset::~Poset()
 
 }
 
+Poset::Poset(const Poset& source)
+{
+  N = source.N;
+  order = source.order;
+}
+
+Poset& Poset::operator =(const Poset& source) 
+{
+  if (this == &source) return *this;
+  N = source.N;
+  order = source.order;
+  return *this;
+}
+
 void Poset::clear()
 {
   N = 0;

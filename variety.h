@@ -56,7 +56,7 @@ namespace SYNARMOSMA {
     Variety(int);
     Variety(int,int);
     Variety(const Variety&);
-    Variety& operator = (const Variety&);
+    Variety& operator =(const Variety&);
     ~Variety();
     void elaborate();
     void add_term(int,kind,const int*);

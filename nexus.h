@@ -33,6 +33,8 @@ namespace SYNARMOSMA {
    public:
     Nexus();
     Nexus(int);
+    Nexus(const Nexus&);
+    Nexus& operator =(const Nexus&);
     virtual ~Nexus();
     bool orientable() const;
     bool pseudomanifold(bool*) const;

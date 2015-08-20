@@ -45,6 +45,8 @@ namespace SYNARMOSMA {
    public:
     Logic_Graph();
     Logic_Graph(int);
+    Logic_Graph(const Logic_Graph&);
+    Logic_Graph& operator =(const Logic_Graph&);
     virtual ~Logic_Graph();
     void create();
   };

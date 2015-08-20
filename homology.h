@@ -51,6 +51,8 @@ namespace SYNARMOSMA {
    public:
     Homology();
     Homology(FIELD,METHOD);
+    Homology(const Homology&);
+    Homology& operator =(const Homology&);
     ~Homology();
     std::string write() const;
     inline void set_method(METHOD m) {method = m;};

@@ -31,6 +31,8 @@ namespace SYNARMOSMA {
    public:
     Schema();
     Schema(int);
+    Schema(const Schema&);
+    Schema& operator =(const Schema&);
     virtual ~Schema();
     bool connected() const;
     bool connected(int,int) const;

@@ -82,6 +82,19 @@ void Binary_Matrix::initialize(unsigned int n,unsigned int m)
   elements = new std::vector<unsigned int>[nrow];
 }
 
+void Binary_Matrix::get_row(unsigned int n,bool* output) const
+{
+  unsigned int i;
+  std::vector<unsigned int>::const_iterator it;
+
+  for(i=0; i<ncolumn; ++i) {
+    output[i] = false;
+  }
+  for(it=elements[n].begin(); it!=elements[n].end(); ++it) {
+    output[*it] = true;
+  }
+}
+
 bool Binary_Matrix::get(unsigned int i,unsigned int j) const
 {
   std::vector<unsigned int>::const_iterator it = std::find(elements[i].begin(),elements[i].end(),j);

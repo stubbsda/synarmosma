@@ -38,6 +38,24 @@ Directed_Graph::~Directed_Graph()
 
 }
 
+Directed_Graph::Directed_Graph(const Directed_Graph& source)
+{
+  nvertex = source.nvertex;
+  neighbours = source.neighbours;
+  edges = source.edges;
+  index_table = source.index_table;
+}
+
+Directed_Graph& Directed_Graph::operator =(const Directed_Graph& source) 
+{
+  if (this == &source) return *this;
+  nvertex = source.nvertex;
+  neighbours = source.neighbours;
+  edges = source.edges;
+  index_table = source.index_table;
+  return *this;
+}
+
 void Directed_Graph::clear()
 {
   nvertex = 0;

@@ -258,4 +258,11 @@ Polynomial<kind> operator +(const Polynomial<kind>& p1,const Polynomial<kind>& p
   return output;
 }
 
+template<class kind>
+Polynomial<kind> operator *(const Polynomial<kind>& p1,const Polynomial<kind>& p2)
+{
+  Polynomial<kind> output;
+
+  return output;
+}
 

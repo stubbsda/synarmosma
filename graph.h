@@ -50,6 +50,7 @@ namespace SYNARMOSMA {
     Graph(int);
     Graph(int,int);
     Graph(int,double);
+    Graph& operator =(const Graph&);
     virtual ~Graph();
     virtual void clear();
     // Hyphantic operators

@@ -36,6 +36,7 @@ namespace SYNARMOSMA {
     Binary_Matrix& operator =(const Binary_Matrix&);
     ~Binary_Matrix();
     void initialize(unsigned int,unsigned int);
+    void get_row(unsigned int,bool*) const;
     bool get(unsigned int,unsigned int) const;
     void set(unsigned int,unsigned int);
     void unset(unsigned int,unsigned int);

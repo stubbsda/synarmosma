@@ -32,6 +32,22 @@ Homology::Homology(FIELD f,METHOD m)
   method = m;
 }
 
+Homology::Homology(const Homology& source)
+{
+  sequence = source.sequence;
+  field = source.field;
+  method = source.method;
+}
+
+Homology& Homology::operator =(const Homology& source)
+{
+  if (this == &source) return *this;
+  sequence = source.sequence;
+  field = source.field;
+  method = source.method;
+  return *this;
+}
+
 Homology::~Homology()
 {
 
