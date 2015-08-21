@@ -36,6 +36,9 @@ namespace SYNARMOSMA {
   Polynomial<kind> operator -(const Polynomial<kind>&,const Polynomial<kind>&);
 
   template<class kind>
+  Polynomial<kind> operator *(kind,const Polynomial<kind>&);
+
+  template<class kind>
   Polynomial<kind> operator *(const Polynomial<kind>&,const Polynomial<kind>&);
 
   template<class kind>
@@ -49,11 +52,13 @@ namespace SYNARMOSMA {
     unsigned int characteristic;
   
     void initialize();
+    void property_check();
    public:
     Polynomial();
     Polynomial(unsigned int);
     Polynomial(unsigned int,unsigned int);
     Polynomial(const std::vector<kind>&);
+    Polynomial(const std::vector<kind>&,unsigned int);
     ~Polynomial();
     Polynomial& operator =(const Polynomial&);
     Polynomial& operator -(const Polynomial&);
@@ -61,10 +66,12 @@ namespace SYNARMOSMA {
     Polynomial<unsigned int> reduce(unsigned int);
     kind evaluate(kind);
     kind get_value(unsigned int) const;
-    void set_value(kind,unsigned int);
+    bool set_value(kind,unsigned int);
+    void clear();
     Polynomial<kind> derivative() const;
     friend std::ostream& operator << <>(std::ostream&,const Polynomial<kind>&);
     friend Polynomial<kind> operator +<>(const Polynomial<kind>&,const Polynomial<kind>&);
+    friend Polynomial<kind> operator *<>(kind,const Polynomial<kind>&);
     friend Polynomial<kind> operator *<>(const Polynomial<kind>&,const Polynomial<kind>&);
   };
 
@@ -102,10 +109,10 @@ namespace SYNARMOSMA {
       }
       else {
         if (source.degree == 1) {
-          s << "-" << abs(source.terms[1]) << "*x ";
+          s << "-" << std::abs(source.terms[1]) << "*x ";
         }
         else {
-          s << "-" << abs(source.terms[source.degree]) << "*x^" << source.degree << " "; 	
+          s << "-" << std::abs(source.terms[source.degree]) << "*x^" << source.degree << " "; 	
         }
       }
     }
@@ -123,7 +130,7 @@ namespace SYNARMOSMA {
             s << "+ " << source.terms[i] << "*x^" << i << " ";
           }
           else {
-            s << "- " << abs(source.terms[i]) << "*x^" << i << " ";
+            s << "- " << std::abs(source.terms[i]) << "*x^" << i << " ";
           }	    	
         }
       }	
@@ -139,7 +146,7 @@ namespace SYNARMOSMA {
             s << "+ " << source.terms[i] << "*x ";
           }
           else {
-            s << "- " << abs(source.terms[i]) << "*x ";
+            s << "- " << std::abs(source.terms[i]) << "*x ";
           }	    	
         }  	
       }   	
@@ -149,10 +156,97 @@ namespace SYNARMOSMA {
         s << "+ " << source.terms[0];
       }
       else {
-        s << "- " << abs(source.terms[0]); 		
+        s << "- " << std::abs(source.terms[0]); 		
       }
     } 	
     return s;
+  }
+
+  template<class kind>
+  Polynomial<kind> operator -(const Polynomial<kind>& p1,const Polynomial<kind>& p2)
+  {
+    unsigned int i,mu = std::min(p1.degree,p2.degree);
+    std::vector<kind> new_terms;
+
+    for(i=0; i<=mu; ++i) {
+      new_terms.push_back(p1.terms[i] - p2.terms[i]);
+    }
+    if (p1.degree > p2.degree) {
+      for(i=1+mu; i<=p1.degree; ++i) {
+        new_terms.push_back(p1.terms[i]);
+      }
+    }
+    else if (p2.degree > p1.degree) {
+      for(i=1+mu; i<=p2.degree; ++i) {
+        new_terms.push_back(-p2.terms[i]);
+      }
+    }
+    Polynomial<kind> output(new_terms);
+    output.property_check();
+    return output;
+  }
+
+  template<class kind>
+  Polynomial<kind> operator +(const Polynomial<kind>& p1,const Polynomial<kind>& p2)
+  {
+    unsigned int i,mu = std::min(p1.degree,p2.degree);
+    std::vector<kind> new_terms;
+
+    for(i=0; i<=mu; ++i) {
+      new_terms.push_back(p1.terms[i] + p2.terms[i]);
+    }
+    if (p1.degree > p2.degree) {
+      for(i=1+mu; i<=p1.degree; ++i) {
+        new_terms.push_back(p1.terms[i]);
+      }
+    }
+    else if (p2.degree > p1.degree) {
+      for(i=1+mu; i<=p2.degree; ++i) {
+        new_terms.push_back(p2.terms[i]);
+      }
+    }
+    Polynomial<kind> output(new_terms);
+    output.property_check();
+    return output;
+  }
+
+  template<class kind>
+  Polynomial<kind> operator *(kind alpha,const Polynomial<kind>& p)
+  {
+    unsigned int i;
+    std::vector<kind> new_terms;
+
+    for(i=0; i<=p.degree; ++i) {
+      new_terms.push_back(alpha*p.terms[i]);
+    }
+    Polynomial<kind> output(new_terms);
+    output.property_check();
+    return output;
+  }
+
+  template<class kind>
+  Polynomial<kind> operator *(const Polynomial<kind>& p1,const Polynomial<kind>& p2)  
+  {
+    unsigned int i,j,k,mdegree = p1.degree + p2.degree;
+    kind sum;
+    std::vector<kind> new_terms;
+    const kind zero = kind(0);
+
+    new_terms.push_back(p1.terms[0]*p2.terms[0]);
+    for(i=0; i<mdegree-1; ++i) {
+      // Need all the two factor additive partitions of "i"
+      sum = zero;
+      for(j=0; j<=p1.degree; ++j) {
+        for(k=0; k<=p2.degree; ++k) {
+          if ((j+k) == i) sum += p1.terms[j]*p2.terms[k];
+        }
+      }
+      new_terms.push_back(sum);
+    }    
+    new_terms.push_back(p1.terms[p1.degree]*p2.terms[p2.degree]);        
+    Polynomial<kind> output(new_terms);
+    output.property_check();
+    return output;
   } 
 } 
 #endif
