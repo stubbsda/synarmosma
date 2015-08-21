@@ -224,19 +224,20 @@ void Functional_Equation<kind>::analyze_file(std::vector<std::string>& alpha,std
 template<class kind>
 Functional_Equation<kind>::Functional_Equation(const Functional_Equation& source)
 {
+  linear = source.linear;
+  homogeneous = source.homogeneous;
   terms = source.terms;
+  remainder = source.remainder;
 }
 
 template<class kind>
 Functional_Equation<kind>& Functional_Equation<kind>::operator =(const Functional_Equation<kind>& source)
 {
   if (this == &source) return *this;
-  unsigned int i;
   linear = source.linear;
   homogeneous = source.homogeneous;
-  for(i=0; i<source.terms.size(); ++i) {
-    terms.push_back(source.terms[i]);
-  }
+  terms = source.terms;
+  remainder = source.remainder;
   return *this;
 }
 
@@ -297,3 +298,4 @@ Variety<unsigned int> Functional_Equation<kind>::reduce(unsigned int p)
   output.elaborate();
   return output;
 }
+
