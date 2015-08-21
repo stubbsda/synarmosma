@@ -186,16 +186,16 @@ namespace SYNARMOSMA {
     unsigned int i,j,k,in1,sum;
     Monomial<NTL::ZZ> term;
     bool equal;
-    std::vector<int> exponents;
-    std::pair<int,int> duo;
+    std::vector<unsigned int> exponents;
+    std::pair<unsigned int,unsigned int> duo;
     const NTL::ZZ zero = NTL::to_ZZ(0);
 
     duo.first = nvariable + 1;
     for(i=0; i<nequation; ++i) {
-      for(j=0; j<(signed) equations[i].size(); ++j) {
+      for(j=0; j<equations[i].size(); ++j) {
         term = equations[i][j];
         sum = 0;
-        for(k=0; k<(signed) term.exponents.size(); ++k) {
+        for(k=0; k<term.exponents.size(); ++k) {
           sum += term.exponents[k].second;
         }
         exponents.push_back(sum);
@@ -203,12 +203,12 @@ namespace SYNARMOSMA {
       // We need to know if all the values of "exponents" are equal
       equal = true;
       in1 = exponents[0];
-      for(j=1; j<(signed) exponents.size(); ++j) {
+      for(j=1; j<exponents.size(); ++j) {
         if (exponents[j] != in1) equal = false;
         if (exponents[j] > in1) in1 = exponents[j];
       }
       if (!equal) {
-        for(j=0; j<(signed) equations[i].size(); ++j) {
+        for(j=0; j<equations[i].size(); ++j) {
           if (exponents[j] < in1) {
             duo.second = in1 - exponents[j];
             equations[i][j].exponents.push_back(duo);
