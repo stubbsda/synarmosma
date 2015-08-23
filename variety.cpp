@@ -106,8 +106,8 @@ void Variety<kind>::initialize()
 {
   unsigned int i,j,k,l,alpha,beta,test;
   Monomial<kind> term;
-  std::set<int> atoms;
-  std::pair<int,int> duo;
+  std::set<unsigned int> atoms;
+  std::pair<unsigned int,unsigned int> duo;
   bool good;
   kind in1;
 
@@ -165,7 +165,7 @@ template<class kind>
 void Variety<kind>::elaborate()
 {
   unsigned int i,j,k;
-  std::set<int> atoms;
+  std::set<unsigned int> atoms;
 
   for(i=0; i<nequation; ++i) {
     atoms.clear();
@@ -284,14 +284,14 @@ void Variety<kind>::make_projective()
 
 namespace SYNARMOSMA {
   template<>
-  int Variety<Rational>::compute_zeros()
+  int Variety<Rational>::compute_zeros() const
   {
     return 0;
   }
 }
 
 template<class kind>
-int Variety<kind>::compute_zeros()
+int Variety<kind>::compute_zeros() const
 {
   unsigned int bdry,nsolution,i,j,k,l,f,in1;
   std::vector<unsigned int> elements,vec;
@@ -337,12 +337,12 @@ int Variety<kind>::compute_zeros()
 }
 
 template<class kind>
-void Variety<kind>::find_partial(std::vector<unsigned int>& connected,int first,const std::vector<unsigned int>* dual_system) const
+void Variety<kind>::find_partial(std::vector<unsigned int>& connected,unsigned int first,const std::vector<unsigned int>* dual_system) const
 {
   unsigned int i,in1,in2;
   bool done = false;
-  std::set<int>::const_iterator it,jt;
-  std::set<int> current,next,handled;
+  std::set<unsigned int>::const_iterator it,jt;
+  std::set<unsigned int> current,next,handled;
 
   current = dependencies[first];
 
@@ -370,14 +370,16 @@ void Variety<kind>::find_partial(std::vector<unsigned int>& connected,int first,
 }
 
 template<class kind>
-int Variety<kind>::compute_dependencies(int* belongs) const
+int Variety<kind>::compute_dependencies(std::vector<unsigned int>& component) const
 {
   unsigned int i,j,first = 0,family = 0;
   bool done = false;
   std::vector<unsigned int> connected;
   std::vector<unsigned int>* dual_system = new std::vector<unsigned int>[nvariable];
 
+  component.clear();
   for(i=0; i<nequation; ++i) {
+    component.push_back(0);
     connected.push_back(0);
   }
   for(i=0; i<nvariable; ++i) {
@@ -389,11 +391,11 @@ int Variety<kind>::compute_dependencies(int* belongs) const
 
   do {
     done = true;
-    connected[first] = true;
+    connected[first] = 1;
     find_partial(connected,first,dual_system);
     for(i=0; i<nequation; ++i) {
       if (connected[i] == 1) {
-        belongs[i] = family;
+        component[i] = family;
       }
       else {
         first = i;
@@ -412,22 +414,22 @@ int Variety<kind>::compute_dependencies(int* belongs) const
 
 namespace SYNARMOSMA {
   template<>
-  void Variety<Rational>::zeta_function(int k,int* output)
+  void Variety<Rational>::zeta_function(unsigned int k,std::vector<unsigned int>& output) const
   {
 
   }
 
   template<>
-  void Variety<NTL::ZZ>::zeta_function(int k,int* output)
+  void Variety<NTL::ZZ>::zeta_function(unsigned int k,std::vector<unsigned int>& output) const
   {
 
   }
 }
 
 template<class kind>
-void Variety<kind>::zeta_function(int k,int* output)
+void Variety<kind>::zeta_function(unsigned int k,std::vector<unsigned int>& output) const
 {
-  assert(k >= 1);
+  assert(k > 0);
   assert(characteristic > 0);
   unsigned int i,j,m,n,l,bdry,in1,f,size,nsolution;
   bool soln,found;
@@ -436,12 +438,11 @@ void Variety<kind>::zeta_function(int k,int* output)
   NTL::ZZ_p::init(NTL::to_ZZ(characteristic));
 
   // First we calculate the case $k = 1$
-  output[0] = compute_zeros(); 
-  if (k == 1) return;
+  output.clear();
+  output.push_back(compute_zeros()); 
 
   // Now we need to calculate the case $k > 1$ 
-  n = 2;
-  do {
+  for(n=2; n<=k; ++n) {
     size = ipow(characteristic,n);
 
     NTL::ZZ_pX P;
@@ -455,7 +456,7 @@ void Variety<kind>::zeta_function(int k,int* output)
     do {
       wt = NTL::random_ZZ_pE();
       found = false;
-      for(i=0; i<(signed) elements.size(); ++i) {
+      for(i=0; i<elements.size(); ++i) {
         if (wt == elements[i]) {
           found = true;
           break;
@@ -495,8 +496,8 @@ void Variety<kind>::zeta_function(int k,int* output)
       if (soln) nsolution += 1;
       vec.clear();
     }
-    output[n-1] = nsolution;
-  } while(n <= k);
+    output.push_back(nsolution);
+  }
 }
 
 namespace SYNARMOSMA {
@@ -521,14 +522,14 @@ void Variety<kind>::normalize(int n)
 }
 
 template<class kind>
-void Variety<kind>::set_value(int n,kind r)
+void Variety<kind>::set_remainder_value(unsigned int n,kind r)
 {
+  assert(n < nequation);
   remainder[n] = r;
-
 }
 
 template<class kind>
-void Variety<kind>::add_term(int n,const Monomial<kind>& t)
+void Variety<kind>::add_term(unsigned int n,const Monomial<kind>& t)
 {
   assert(n < nequation);
   // Have we already seen this term?
@@ -549,18 +550,21 @@ void Variety<kind>::add_term(int n,const Monomial<kind>& t)
   }
   else {
     equations[n].push_back(t);
+    // Recompute the dependencies for this equation and check if the variety is 
+    // still homogeneous, projective and/or linear
   }
 }
 
 template<class kind>
-void Variety<kind>::add_term(int n,kind alpha,const int* xp)
+void Variety<kind>::add_term(unsigned int n,kind alpha,const std::vector<unsigned int>& xp)
 {
   assert(n < nequation);
-  unsigned int i,j,in1,sum = 0;
+  assert(xp.size() == nvariable);
+  unsigned int i;//j,in1,sum = 0;
   Monomial<kind> term;
-  bool equal;
+  //bool equal;
   std::pair<unsigned int,unsigned int> duo;
-  std::vector<unsigned int> exponents;
+  //std::vector<unsigned int> exponents;
 
   term.coefficient = alpha;
   for(i=0; i<nvariable; ++i) {
@@ -568,10 +572,11 @@ void Variety<kind>::add_term(int n,kind alpha,const int* xp)
       duo.first = i;
       duo.second = xp[i];
       term.exponents.push_back(duo);
-      sum += xp[i];
-      dependencies[n].insert(i);
+      //sum += xp[i];
     }
   }
+  add_term(n,term);
+  /*
   equations[n].push_back(term);
 
   if (sum > 1) linear = false;
@@ -597,5 +602,6 @@ void Variety<kind>::add_term(int n,kind alpha,const int* xp)
     // We need to know whether this equation was the only reason why the variety wasn't projective
 
   }
+  */
 }
 

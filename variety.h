@@ -44,13 +44,13 @@ namespace SYNARMOSMA {
     bool projective;
     // Each element of this list contains the independent variables upon 
     // which this equation in the (algebraic) variety depends
-    std::vector<std::set<int> > dependencies;
+    std::vector<std::set<unsigned int> > dependencies;
   
     void allocate();
     void initialize();
     void normalize(int);
-    void find_partial(std::vector<unsigned int>&,int,const std::vector<unsigned int>*) const;
-    int compute_zeros();
+    void find_partial(std::vector<unsigned int>&,unsigned int,const std::vector<unsigned int>*) const;
+    int compute_zeros() const;
    public:
     Variety();
     Variety(unsigned int);
@@ -59,13 +59,13 @@ namespace SYNARMOSMA {
     Variety& operator =(const Variety&);
     ~Variety();
     void elaborate();
-    void add_term(int,kind,const int*);
-    void add_term(int,const Monomial<kind>&);
-    void set_value(int,kind);
+    void add_term(unsigned int,kind,const std::vector<unsigned int>&);
+    void add_term(unsigned int,const Monomial<kind>&);
+    void set_remainder_value(unsigned int,kind);
     void make_projective();
     void clear();
-    void zeta_function(int,int*);
-    int compute_dependencies(int*) const;
+    void zeta_function(unsigned int,std::vector<unsigned int>&) const;
+    int compute_dependencies(std::vector<unsigned int>&) const;
   };
 
   template<class kind>
