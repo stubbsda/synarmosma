@@ -214,14 +214,6 @@ void Proposition::atoms(std::set<int>& A) const
   }
 }
 
-Proposition& Proposition::operator *(const Proposition& P)
-{
-  for(int i=0; i<(signed) P.clause.size(); ++i) {
-    clause.push_back(P.clause[i]);
-  }
-  return *this;
-}
-
 void Proposition::serialize(std::ofstream& s) const
 {
   int i,n = clause.size();
@@ -276,6 +268,16 @@ namespace SYNARMOSMA {
       }
     }
     return s;
+  }
+
+  Proposition operator *(const Proposition& P1,const Proposition& P2)
+  {
+    unsigned int i;
+    Proposition output = P1;
+    for(i=0; i<P2.clause.size(); ++i) {
+      output.clause.push_back(P2.clause[i]);
+    }
+    return output;
   }
 }
 

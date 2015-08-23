@@ -210,5 +210,65 @@ namespace SYNARMOSMA {
     }
     return s;
   }
+
+  Binary_Matrix operator +(const Binary_Matrix& A,const Binary_Matrix& B)
+  {
+    assert(A.nrow == B.nrow && A.ncolumn == B.ncolumn);
+
+    unsigned int i,j,k;
+    std::vector<unsigned int>::const_iterator it;
+    Binary_Matrix output(A.nrow,A.ncolumn);
+
+    output = A;
+
+    // Now the matrix addition itself...
+    for(i=0; i<B.nrow; ++i) {
+      for(j=0; j<B.elements[i].size(); ++j) {
+        k = B.elements[i][j];
+        it = std::find(output.elements[i].begin(),output.elements[i].end(),k);
+        if (it == output.elements[i].end()) {
+          output.elements[i].push_back(k);
+        }
+        else {
+          // 1 + 1 = 0 over GF(2), so delete this element
+          output.elements[i].erase(output.elements[i].begin() + *it);
+        }
+      }
+    }
+    return output;
+  }
+
+  Binary_Matrix operator *(const Binary_Matrix& A,const Binary_Matrix& B)
+  {
+    assert(A.ncolumn == B.nrow);
+
+    unsigned int i,j,k,l,in1,sum;
+    Binary_Matrix output(A.nrow,B.ncolumn);
+
+    // Convert the matrix B to a column-oriented format...
+    std::vector<unsigned int>* nonzero_row = new std::vector<unsigned int>[B.ncolumn];
+    for(l=0; l<B.ncolumn; ++l) {
+      for(i=0; i<B.nrow; ++i) {
+        for(j=0; j<B.elements[i].size(); ++j) {
+          if (B.elements[i][j] == l) nonzero_row[l].push_back(i);
+        }
+      }
+    }
+    // Now the matrix multiplication itself...
+    for(i=0; i<A.nrow; ++i) {
+      for(j=0; j<B.ncolumn; ++j) {
+        sum = 0;
+        for(k=0; k<A.elements[i].size(); ++k) {
+          in1 = A.elements[i][k];
+          for(l=0; l<nonzero_row[j].size(); ++l) {
+            if (nonzero_row[j][l] == in1) sum += 1;
+          }
+        }
+        if (sum % 2 == 1) output.elements[i].push_back(j);
+      }
+    }
+    delete[] nonzero_row;
+    return output;
+  }
 }
 

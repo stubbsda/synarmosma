@@ -36,7 +36,6 @@ namespace SYNARMOSMA {
     Proposition(int,const std::set<int>&);
     Proposition(const Proposition&);
     Proposition& operator =(const Proposition&);
-    Proposition& operator *(const Proposition&);
     ~Proposition();
     void initialize(int,const std::set<int>&);
     bool evaluate(const std::vector<int>&,std::vector<int>&) const;
@@ -48,6 +47,7 @@ namespace SYNARMOSMA {
     void deserialize(std::ifstream&); 
     inline static int get_clause_size() {return NP;};
     friend std::ostream& operator <<(std::ostream&,const Proposition&);
+    friend Proposition operator *(const Proposition&,const Proposition&);
     friend class Logic_Graph;  
     friend class Propositional_System;
   };

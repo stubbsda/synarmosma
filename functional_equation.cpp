@@ -67,7 +67,6 @@ Functional_Equation<kind>::Functional_Equation(const char* filename)
     if (first) {
       // We need to determine the field of this equation 
       trim(line);
-      //if (linie[0] == 'Q') koerper = 1;
       first = false;
       continue;
     }
@@ -96,81 +95,129 @@ Functional_Equation<kind>::Functional_Equation(const char* filename)
 }
 
 namespace SYNARMOSMA {
-template<>
-void Functional_Equation<Rational>::analyze_file(std::vector<std::string>& alpha,std::vector<std::string>& beta,std::vector<std::string>& exponents)
-{
-  Polynomial<Rational> p1,p2;
-  std::vector<Rational> vx;
-  Rational coefficient;
-  unsigned int i,j,degree;
-  char c;
-  std::string s1,s2;
-  bool numerator;
+  template<>
+  void Functional_Equation<Rational>::analyze_file(std::vector<std::string>& alpha,std::vector<std::string>& beta,std::vector<std::string>& exponents)
+  {
+    Polynomial<Rational> p1,p2;
+    std::vector<Rational> vx;
+    Rational coefficient;
+    unsigned int i,j,degree;
+    char c;
+    std::string s1,s2;
+    bool numerator;
 
-  for(i=0; i<alpha.size(); ++i) {
-    degree = boost::lexical_cast<unsigned int>(exponents[i]);
-    numerator = true;
-    for(j=0; j<alpha[i].length(); ++j) {
-      c = alpha[i][j];
-      if (c == '(') continue;
-      if (c == ',' || c == ')') {
-        coefficient = Rational(boost::lexical_cast<signed int>(s1),boost::lexical_cast<signed int>(s2));
-        vx.push_back(coefficient);
-        s1.clear();
-        s2.clear();
-        continue;
+    for(i=0; i<alpha.size(); ++i) {
+      degree = boost::lexical_cast<unsigned int>(exponents[i]);
+      numerator = true;
+      for(j=0; j<alpha[i].length(); ++j) {
+        c = alpha[i][j];
+        if (c == '(') continue;
+        if (c == ',' || c == ')') {
+          coefficient = Rational(boost::lexical_cast<signed int>(s1),boost::lexical_cast<signed int>(s2));
+          vx.push_back(coefficient);
+          s1.clear();
+          s2.clear();
+          continue;
+        }
+        if (c == '/') {
+          numerator = false;
+          continue;
+        }
+        if (numerator) {
+          s1.push_back(c);
+        }
+        else {
+          s2.push_back(c);
+        }
       }
-      if (c == '/') {
-        numerator = false;
-        continue;
-      }
-      if (numerator) {
-        s1.push_back(c);
-      }
-      else {
-        s2.push_back(c);
-      }
-    }
-    p1 = Polynomial<Rational>(vx);
+      p1 = Polynomial<Rational>(vx);
 
-    vx.clear();
-    s1.clear();
-    s2.clear();
-    if (degree == 0) {
-      remainder = p1;
-      continue;
-    }
-    numerator = true;
-    for(j=0; j<beta[i].length(); ++j) {
-      c = beta[i][j];
-      if (c == '(') continue;
-      if (c == ',' || c == ')') {
-        coefficient = Rational(boost::lexical_cast<signed int>(s1),boost::lexical_cast<signed int>(s2));
-        vx.push_back(coefficient);
-        s1.clear();
-        s2.clear();
+      vx.clear();
+      s1.clear();
+      s2.clear();
+      if (degree == 0) {
+        remainder = p1;
         continue;
       }
-      if (c == '/') {
-        numerator = false;
-        continue;
+      numerator = true;
+      for(j=0; j<beta[i].length(); ++j) {
+        c = beta[i][j];
+        if (c == '(') continue;
+        if (c == ',' || c == ')') {
+          coefficient = Rational(boost::lexical_cast<signed int>(s1),boost::lexical_cast<signed int>(s2));
+          vx.push_back(coefficient);
+          s1.clear();
+          s2.clear();
+          continue;
+        }
+        if (c == '/') {
+          numerator = false;
+          continue;
+        }
+        if (numerator) {
+          s1.push_back(c);
+        }
+        else {
+          s2.push_back(c);
+        }
       }
-      if (numerator) {
-        s1.push_back(c);
-      }
-      else {
-        s2.push_back(c);
-      }
-    }
-    p2 = Polynomial<Rational>(vx);
+      p2 = Polynomial<Rational>(vx);
 
-    boost::tuple<Polynomial<Rational>,Polynomial<Rational>,unsigned int> trio(p1,p2,degree);
-    terms.push_back(trio);
-    vx.clear();
-    s1.clear();
-    s2.clear();
+      boost::tuple<Polynomial<Rational>,Polynomial<Rational>,unsigned int> trio(p1,p2,degree);
+      terms.push_back(trio);
+      vx.clear();
+      s1.clear();
+      s2.clear();
+    }
   }
-}
+
+  template<>
+  void Functional_Equation<NTL::ZZ>::analyze_file(std::vector<std::string>& alpha,std::vector<std::string>& beta,std::vector<std::string>& exponents)
+  {
+    unsigned int i,j,degree;
+    char c;
+    std::string store;
+    Polynomial<NTL::ZZ> p1,p2;
+    std::vector<NTL::ZZ> vx;
+
+    for(i=0; i<alpha.size(); ++i) {
+      degree = boost::lexical_cast<unsigned int>(exponents[i]);
+      for(j=0; j<alpha[i].length(); ++j) {
+        c = alpha[i][j];
+        if (c == '(') continue;
+        if (c == ',' || c == ')') {
+          vx.push_back(NTL::to_ZZ(boost::lexical_cast<signed int>(store)));
+          store.clear();
+          continue;
+        }
+        store.push_back(c);
+      }
+      p1 = Polynomial<NTL::ZZ>(vx);
+
+      vx.clear();
+      store.clear();
+      if (degree == 0) {
+        remainder = p1;
+        continue;
+      }
+      for(j=0; j<beta[i].length(); ++j) {
+        c = beta[i][j];
+        if (c == '(') continue;
+        if (c == ',' || c == ')') {
+          vx.push_back(NTL::to_ZZ(boost::lexical_cast<signed int>(store)));
+          store.clear();
+          continue;
+        }
+        store.push_back(c);
+      }
+      p2 = Polynomial<NTL::ZZ>(vx);
+
+      vx.clear();
+      store.clear();
+      boost::tuple<Polynomial<NTL::ZZ>,Polynomial<NTL::ZZ>,unsigned int> trio(p1,p2,degree);
+      terms.push_back(trio);
+    }
+  }
 }
 
 template<class kind>
@@ -179,8 +226,8 @@ void Functional_Equation<kind>::analyze_file(std::vector<std::string>& alpha,std
   unsigned int i,j,degree;
   char c;
   std::string store;
-  Polynomial<signed int> p1,p2;
-  std::vector<signed int> vx;
+  Polynomial<kind> p1,p2;
+  std::vector<kind> vx;
 
   for(i=0; i<alpha.size(); ++i) {
     degree = boost::lexical_cast<unsigned int>(exponents[i]);
@@ -194,7 +241,7 @@ void Functional_Equation<kind>::analyze_file(std::vector<std::string>& alpha,std
       }
       store.push_back(c);
     }
-    p1 = Polynomial<signed int>(vx);
+    p1 = Polynomial<kind>(vx);
 
     vx.clear();
     store.clear();
@@ -212,11 +259,11 @@ void Functional_Equation<kind>::analyze_file(std::vector<std::string>& alpha,std
       }
       store.push_back(c);
     }
-    p2 = Polynomial<signed int>(vx);
+    p2 = Polynomial<kind>(vx);
 
     vx.clear();
     store.clear();
-    boost::tuple<Polynomial<signed int>,Polynomial<signed int>,unsigned int> trio(p1,p2,degree);
+    boost::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int> trio(p1,p2,degree);
     terms.push_back(trio);
   }
 }
@@ -263,6 +310,55 @@ void Functional_Equation<kind>::initialize(unsigned int n)
   }
 }
 
+namespace SYNARMOSMA
+{
+  template<>
+  Variety<unsigned int> Functional_Equation<NTL::ZZ>::reduce(unsigned int p)
+  {
+    unsigned int i,j,in1;
+    long q;
+    NTL::ZZ z;
+    std::pair<unsigned int,unsigned int> duo;
+    boost::tuple<Polynomial<NTL::ZZ>,Polynomial<NTL::ZZ>,unsigned int> trio;
+    Variety<unsigned int> output(p,p);
+    Polynomial<NTL::ZZ> py;
+    Monomial<unsigned int> term;
+
+    output.clear();
+
+    for(i=0; i<p; ++i) {
+      z = NTL::to_ZZ(long(i));
+      for(j=0; j<terms.size(); ++j) {
+        trio = terms[j];
+        // First convert alpha(p) to an element of GF(p)
+        py = boost::get<0>(trio);
+        NTL::conv(q,py.evaluate(z));
+        in1 = (unsigned int) q;
+        in1 = in1 % p;
+        if (in1 == 0) continue;
+        term.coefficient = in1;
+        // Next we need to convert beta(p) to an element of GF(p)
+        py = boost::get<1>(trio);
+        NTL::conv(q,py.evaluate(z));
+        in1 = (unsigned int) q;
+        in1 = in1 % p;
+        duo.first = in1;
+        // Finally we have to find out the exponent 
+        duo.second = boost::get<2>(trio);
+        term.exponents.push_back(duo);
+        output.add_term(i,term);
+        term.exponents.clear();
+      }
+      NTL::conv(q,remainder.evaluate(z));
+      in1 = (unsigned int) q;
+      in1 = in1 % p;
+      output.set_value(i,in1);
+    }
+    output.elaborate();
+    return output;
+  }
+}
+
 template<class kind>
 Variety<unsigned int> Functional_Equation<kind>::reduce(unsigned int p)
 {
@@ -298,4 +394,3 @@ Variety<unsigned int> Functional_Equation<kind>::reduce(unsigned int p)
   output.elaborate();
   return output;
 }
-

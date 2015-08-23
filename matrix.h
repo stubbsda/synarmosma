@@ -36,6 +36,9 @@ namespace SYNARMOSMA {
   Matrix<kind>& operator *(const Matrix<kind>&,const Matrix<kind>&);
 
   template<class kind>
+  Matrix<kind>& operator +(const Matrix<kind>&,const Matrix<kind>&);
+
+  template<class kind>
   void permute(Matrix<kind>&,unsigned int,unsigned int,char);
 
   template<class kind>

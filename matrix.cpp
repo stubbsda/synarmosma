@@ -258,6 +258,40 @@ std::vector<kind>& operator *(const Matrix<kind>& A,const std::vector<kind>& b)
 }
 
 template<class kind>
+Matrix<kind>& operator +(const Matrix<kind>& A,const Matrix<kind>& B)
+{
+  assert(A.nrow == B.nrow && A.ncolumn == B.ncolumn);
+
+  unsigned int i,j,k,in1,cvalue;
+  bool found;
+  Matrix<kind> output(A.nrow,A.ncolumn);
+
+  output = A;
+
+  // Now the matrix multiplication itself...
+  for(i=0; i<B.nrow; ++i) {
+    for(j=0; j<B.elements[i].size(); ++j) {
+      in1 = B.elements[i][j].second;
+      found = false;
+      for(k=0; k<output.elements[i].size(); ++k) {
+        if (output.elements[i][k].second == in1) {
+          cvalue = k;
+          found = true;
+          break;
+        }
+      }
+      if (found) {
+        output.elements[i][cvalue].first += B.elements[i][j].first;        
+      }
+      else {
+        output.elements[i].push_back(B.elements[i][j]);
+      }
+    }
+  }
+  return output;
+}
+
+template<class kind>
 Matrix<kind>& operator *(const Matrix<kind>& A,const Matrix<kind>& B)
 {
   assert(A.ncolumn == B.nrow);

@@ -41,7 +41,9 @@ namespace SYNARMOSMA {
     void set(unsigned int,unsigned int);
     void unset(unsigned int,unsigned int);
     unsigned int rank() const;
-    friend std::ostream& operator <<(std::ostream&,const Binary_Matrix&); 
+    friend std::ostream& operator <<(std::ostream&,const Binary_Matrix&);
+    friend Binary_Matrix operator *(const Binary_Matrix&,const Binary_Matrix&);
+    friend Binary_Matrix operator +(const Binary_Matrix&,const Binary_Matrix&);
     friend class Graph;
   };
 }

@@ -28,7 +28,7 @@ Group::Group()
   clear();
 }
 
-Group::Group(const std::string& name,int n)
+Group::Group(const std::string& name,unsigned int n)
 {
   assert(n > 0);
   if (name == "Order") {
@@ -269,7 +269,7 @@ Group::Group(unsigned int r,const std::vector<unsigned int>& torsion)
   initialize(r,torsion);
 } 
 
-Group::Group(int n)
+Group::Group(unsigned int n)
 {
   // The free group on n generators
   ngenerator = n;
@@ -290,12 +290,12 @@ Group::Group(int n)
   }
 } 
 
-Group::Group(int n,const std::vector<Word>& R)
+Group::Group(unsigned int n,const std::vector<Word>& R)
 {
   initialize(n,R);
 }
 
-Group::Group(int n,int m)
+Group::Group(unsigned int n,unsigned int m)
 {
   ngenerator = n;
   if (m > 0) {
