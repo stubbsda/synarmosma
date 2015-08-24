@@ -24,16 +24,24 @@
 
 namespace SYNARMOSMA {
   class Lattice : public Poset {
+   private:
+     std::set<unsigned int> atoms;
+     bool atomic;
+     unsigned int null;
+     unsigned int unity;
+     
+    void compute_atoms(); 
+    void compute_bounds();
    public:
     Lattice();
-    Lattice(int);
+    Lattice(unsigned int);
     Lattice(const Lattice&);
     ~Lattice();
     Lattice& operator =(const Lattice&);
-    int meet(int,int) const;
-    int join(int,int) const;
+    unsigned int meet(unsigned int,unsigned int) const;
+    unsigned int join(unsigned int,unsigned int) const;
     void clear();
-    void add_vertex();
+    inline void add_element() {N += 1;};
     bool consistent() const;
   };
 }

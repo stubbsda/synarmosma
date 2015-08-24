@@ -23,12 +23,18 @@ using namespace SYNARMOSMA;
 
 Lattice::Lattice() : Poset()
 {
-
+  atomic = false;
+  null = 0;
+  unity = 0;
 }
 
-Lattice::Lattice(int n) : Poset(n)
+Lattice::Lattice(unsigned int n) : Poset(n)
 {
-
+  atomic = false;
+  null = 0;
+  unity = 0;
+  compute_bounds();
+  compute_atoms();
 }
 
 Lattice::~Lattice()
@@ -40,6 +46,10 @@ Lattice::Lattice(const Lattice& source)
 {
   N = source.N;
   order = source.order;
+  atomic = source.atomic;
+  atoms = source.atoms;
+  null = source.null;
+  unity = source.unity;
 }
 
 Lattice& Lattice::operator =(const Lattice& source) 
@@ -47,42 +57,81 @@ Lattice& Lattice::operator =(const Lattice& source)
   if (this == &source) return *this;
   N = source.N;
   order = source.order;
+  atomic = source.atomic;
+  atoms = source.atoms;
+  null = source.null;
+  unity = source.unity;
   return *this;
 }
 
 void Lattice::clear()
 {
   Poset::clear();
+  atomic = false;
+  null = 0;
+  unity = 0;
+  atoms.clear();
 }
 
 bool Lattice::consistent() const
 {
   // In a lattice every pair of elements must have a meet and join, so...
-  int i,j;
+  unsigned int i,j,n;
 
   for(i=0; i<N; ++i) {
     for(j=0; j<N; ++j) {
       if (i == j) continue;
-      if (meet(i,j) == -1) return false;
-      if (join(i,j) == -1) return false;
+      n = meet(i,j);
+      n = join(i,j);
     }
   }
   return true;
 }
 
-void Lattice::add_vertex()
+void Lattice::compute_bounds()
 {
-  Poset::add_vertex();
+  // This method computes the null and identity elements for this lattice
 }
 
-int Lattice::meet(int x,int y) const
+void Lattice::compute_atoms()
+{
+  unsigned int i,j;
+  bool found;
+  std::set<unsigned int>::const_iterator it;
+
+  atoms.clear();
+  for(i=0; i<N; ++i) {
+    if (i == null) continue;
+    if (covered(null,i)) atoms.insert(i);
+  }
+  
+  atomic = true;
+  for(i=0; i<N; ++i) {
+    if (i == null) continue;
+    if (atoms.count(i) > 0) continue;
+    found = false;
+    for(it=atoms.begin(); it!=atoms.end(); ++it) {
+      j = *it;
+      if (get_order(j,i) == BEFORE) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      atomic = false;
+      break;
+    }
+  }
+}
+
+unsigned int Lattice::meet(unsigned int x,unsigned int y) const
 {
   // Find the element w in L such that w <= x and w <= y, while any other 
   // z in L satisfying these relations is such that z <= w.
-  int i,j;
+  unsigned int i,j;
   bool max;
-  std::set<int> candidates;
-  std::set<int>::const_iterator it,jt;
+  std::set<unsigned int> candidates;
+  std::set<unsigned int>::const_iterator it,jt;
   RELATION rho;
   
   for(i=0; i<N; ++i) {
@@ -108,17 +157,18 @@ int Lattice::meet(int x,int y) const
     }
     if (max) return i;
   }
-  return -1;
+  std::cerr << "Lattice pair which doesn't have a meet, exiting!" << std::endl;
+  std::exit(1);
 }
 
-int Lattice::join(int x,int y) const
+unsigned int Lattice::join(unsigned int x,unsigned int y) const
 {
   // Find the element w in L such that x <= w and y <= w, while any other 
   // z in L satisfying these relations is such that w <= z.
-  int i,j;
+  unsigned int i,j;
   bool max;
-  std::set<int> candidates;
-  std::set<int>::const_iterator it,jt;
+  std::set<unsigned int> candidates;
+  std::set<unsigned int>::const_iterator it,jt;
   RELATION rho;
   
   for(i=0; i<N; ++i) {
@@ -144,6 +194,7 @@ int Lattice::join(int x,int y) const
     }
     if (max) return i;
   }
-  return -1;
+  std::cerr << "Lattice pair which doesn't have a meet, exiting!" << std::endl;
+  std::exit(1);
 }
 

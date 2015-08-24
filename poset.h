@@ -32,31 +32,31 @@ namespace SYNARMOSMA {
 
   class Poset {
    protected:
-    int N;
-    boost::unordered_map<std::pair<int,int>,bool> order;
+    unsigned int N;
+    boost::unordered_map<std::pair<unsigned int,unsigned int>,bool> order;
 
-    void compute_width(int,int,std::set<int>&) const;
-    RELATION get_order(int,int) const;
-    int build_chain(std::vector<int>&,int) const;
+    void compute_width(unsigned int,unsigned int,std::set<unsigned int>&) const;
+    RELATION get_order(unsigned int,unsigned int) const;
+    unsigned int build_chain(std::vector<unsigned int>&,unsigned int) const;
    public:
     Poset();
-    Poset(int);
+    Poset(unsigned int);
     Poset(const Poset&);
     Poset& operator =(const Poset&);
     ~Poset();
     void clear();
     bool consistent() const;
-    void add_vertex();
-    bool sink(int) const;
-    bool source(int) const;
-    void compute_anteriority(int,std::set<int>&) const;
-    void compute_posteriority(int,std::set<int>&) const;
-    bool set_order(int,int); 
-    bool unset_order(int,int); 
-    bool invert_order(int,int);
+    inline void add_element() {N += 1;};
+    bool sink(unsigned int) const;
+    bool source(unsigned int) const;
+    void compute_anteriority(unsigned int,std::set<unsigned int>&) const;
+    void compute_posteriority(unsigned int,std::set<unsigned int>&) const;
+    bool set_order(unsigned int,unsigned int); 
+    bool unset_order(unsigned int,unsigned int); 
+    bool invert_order(unsigned int,unsigned int);
     void construct_ordering(double);
-    bool covered(int,int) const;
-    int chain_number(int) const;
+    bool covered(unsigned int,unsigned int) const;
+    unsigned int chain_number(unsigned int) const;
     void write_incastrature(const std::string&) const;
   };
 }
