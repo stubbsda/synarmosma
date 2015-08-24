@@ -48,7 +48,8 @@ namespace SYNARMOSMA {
   
     void allocate();
     void initialize();
-    void normalize(int);
+    void normalize(unsigned int);
+    void property_check();
     void find_partial(std::vector<unsigned int>&,unsigned int,const std::vector<unsigned int>*) const;
     int compute_zeros() const;
    public:
