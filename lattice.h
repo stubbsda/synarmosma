@@ -32,6 +32,7 @@ namespace SYNARMOSMA {
      
     void compute_atoms(); 
     void compute_bounds();
+    void initialize();
    public:
     Lattice();
     Lattice(unsigned int);

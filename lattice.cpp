@@ -21,11 +21,14 @@
 
 using namespace SYNARMOSMA;
 
+extern Random RND;
+
 Lattice::Lattice() : Poset()
 {
   atomic = false;
   null = 0;
   unity = 0;
+  initialize();
 }
 
 Lattice::Lattice(unsigned int n) : Poset(n)
@@ -33,8 +36,7 @@ Lattice::Lattice(unsigned int n) : Poset(n)
   atomic = false;
   null = 0;
   unity = 0;
-  compute_bounds();
-  compute_atoms();
+  initialize();
 }
 
 Lattice::~Lattice()
@@ -73,16 +75,47 @@ void Lattice::clear()
   atoms.clear();
 }
 
+void Lattice::initialize()
+{
+  if (N < 2) return; 
+  int i,j,n1,n2,delta = 2*N*(N-1),ndelta;
+
+  do {
+    n1 = RND.irandom(N);
+    n2 = RND.irandom(N);
+    if (n1 == n2) continue;
+    if (get_order(n1,n2) != INCOMPARABLE) continue;
+    set_order(n1,n2);
+    
+    ndelta = 0;
+    for(i=0; i<N; ++i) {
+      for(j=0; j<N; ++j) {
+        if (i == j) continue;
+        if (meet(i,j) == N) ndelta++;
+        if (join(i,j) == N) ndelta++;
+      }
+    }
+    if (ndelta > delta) {
+      unset_order(n1,n2);
+      continue;
+    }
+    delta = ndelta;
+  } while(delta > 0);
+  assert(consistent());
+  compute_bounds();
+  compute_atoms();
+}
+
 bool Lattice::consistent() const
 {
   // In a lattice every pair of elements must have a meet and join, so...
-  unsigned int i,j,n;
+  unsigned int i,j;
 
   for(i=0; i<N; ++i) {
     for(j=0; j<N; ++j) {
       if (i == j) continue;
-      n = meet(i,j);
-      n = join(i,j);
+      if (meet(i,j) == N) return false;
+      if (join(i,j) == N) return false;
     }
   }
   return true;
@@ -90,7 +123,60 @@ bool Lattice::consistent() const
 
 void Lattice::compute_bounds()
 {
-  // This method computes the null and identity elements for this lattice
+  // This method computes the null and identity elements for this lattice using a 
+  // brute force technique
+  unsigned int i,j;
+  bool found,nfound;
+  
+  // We begin by finding the 0 element, i.e. the element of the lattice such that 0 <= x for all x
+  nfound = false;
+  for(i=0; i<N; ++i) {
+    found = true;
+    for(j=0; j<N; ++j) {
+      if (i == j) continue;
+      if (get_order(i,j) != BEFORE) {
+        found = false;
+        break;
+      }
+    }
+    if (found) {
+      null = i;
+      nfound = true;
+      break;
+    }
+  }
+  if (!nfound) {    
+    null = join(0,1);
+    for(i=0; i<N-1; ++i) {
+      null = join(null,i+1);
+    }
+    N += 1;
+  }
+
+  // Now the 1 element, i.e. the element of the lattice such that x <= 1 for all x
+  nfound = false;
+  for(i=0; i<N; ++i) {
+    found = true;
+    for(j=0; j<N; ++j) {
+      if (i == j) continue;
+      if (get_order(i,j) != AFTER) {
+        found = false;
+        break;
+      }
+    }
+    if (found) {
+      unity = i;
+      nfound = true;
+      break;
+    }
+  }
+  if (!nfound) {
+    unity = meet(0,1);
+    for(i=0; i<N-1; ++i) {
+      unity = meet(unity,i+1);
+    }
+    N += 1;
+  }   
 }
 
 void Lattice::compute_atoms()
@@ -128,14 +214,13 @@ unsigned int Lattice::meet(unsigned int x,unsigned int y) const
 {
   // Find the element w in L such that w <= x and w <= y, while any other 
   // z in L satisfying these relations is such that z <= w.
-  unsigned int i,j;
+  unsigned int i,j,rvalue = N;
   bool max;
   std::set<unsigned int> candidates;
   std::set<unsigned int>::const_iterator it,jt;
   RELATION rho;
   
   for(i=0; i<N; ++i) {
-    if (i == x || i == y) continue;
     rho = get_order(i,x);
     if (rho != BEFORE) continue;
     rho = get_order(i,y);
@@ -150,35 +235,34 @@ unsigned int Lattice::meet(unsigned int x,unsigned int y) const
       j = *jt;
       if (i == j) continue;
       rho = get_order(i,j);
-      if (rho != AFTER) {
+      if (rho == BEFORE) {
         max = false;
         break;
       }
     }
     if (max) return i;
   }
-  std::cerr << "Lattice pair which doesn't have a meet, exiting!" << std::endl;
-  std::exit(1);
+  return rvalue;
 }
 
 unsigned int Lattice::join(unsigned int x,unsigned int y) const
 {
   // Find the element w in L such that x <= w and y <= w, while any other 
   // z in L satisfying these relations is such that w <= z.
-  unsigned int i,j;
+  unsigned int i,j,rvalue = N;
   bool max;
   std::set<unsigned int> candidates;
   std::set<unsigned int>::const_iterator it,jt;
   RELATION rho;
   
   for(i=0; i<N; ++i) {
-    if (i == x || i == y) continue;
     rho = get_order(i,x);
-    if (rho != AFTER) continue;
+    if (rho != AFTER && i != x) continue;
     rho = get_order(i,y);
-    if (rho != AFTER) continue;
+    if (rho != AFTER && i != y) continue;
     candidates.insert(i); 
   }
+
   // Find which among the candidates is the largest
   for(it=candidates.begin(); it!=candidates.end(); ++it) {
     i = *it;
@@ -187,14 +271,13 @@ unsigned int Lattice::join(unsigned int x,unsigned int y) const
       j = *jt;
       if (i == j) continue;
       rho = get_order(i,j);
-      if (rho != BEFORE) {
+      if (rho == AFTER) {
         max = false;
         break;
       }
     }
     if (max) return i;
   }
-  std::cerr << "Lattice pair which doesn't have a meet, exiting!" << std::endl;
-  std::exit(1);
+  return rvalue;
 }
 
