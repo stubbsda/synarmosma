@@ -195,10 +195,11 @@ unsigned int Poset::chain_number(unsigned int length) const
 void Poset::compute_width(unsigned int u,unsigned int v,std::set<unsigned int>& slice) const
 {
   assert(u != v);
+  unsigned int i;
 
   slice.clear();
 
-  for(int i=0; i<N; ++i) {
+  for(i=0; i<N; ++i) {
     if (i == u || i == v) continue;
     if (get_order(u,i) != BEFORE) continue;
     if (get_order(i,v) != BEFORE) continue;

@@ -78,7 +78,7 @@ void Lattice::clear()
 void Lattice::initialize()
 {
   if (N < 2) return; 
-  int i,j,n1,n2,delta = 2*N*(N-1),ndelta;
+  unsigned int i,j,n1,n2,delta = 2*N*(N-1),ndelta;
 
   do {
     n1 = RND.irandom(N);
