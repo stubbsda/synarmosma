@@ -41,6 +41,8 @@ namespace SYNARMOSMA {
     Lattice& operator =(const Lattice&);
     unsigned int meet(unsigned int,unsigned int) const;
     unsigned int join(unsigned int,unsigned int) const;
+    void serialize(std::ofstream&) const;
+    void deserialize(std::ifstream&);
     void clear();
     inline void add_element() {N += 1;};
     bool consistent() const;

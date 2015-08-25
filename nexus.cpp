@@ -109,6 +109,17 @@ void Nexus::clear()
   nvertex = 0;
 }
 
+void Nexus::serialize(std::ofstream& s) const
+{
+
+}
+
+void Nexus::deserialize(std::ifstream& s)
+{
+
+}
+
+
 void Nexus::paste(const std::set<int>& vx)
 {
   Cell c(vx);

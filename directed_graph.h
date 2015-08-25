@@ -40,7 +40,9 @@ namespace SYNARMOSMA {
     Directed_Graph(const Directed_Graph&);
     Directed_Graph& operator =(const Directed_Graph&);
     virtual ~Directed_Graph();
-    void clear();
+    virtual void clear();
+    virtual void serialize(std::ofstream&) const;
+    virtual void deserialize(std::ifstream&);
     bool add_edge(int,int);
     bool add_edge(int,int,DIRECTION);
     int two_cycles() const;

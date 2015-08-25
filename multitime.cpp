@@ -21,7 +21,7 @@
 
 using namespace SYNARMOSMA;
 
-const int Multitime::tdimension;
+const unsigned int Multitime::tdimension;
 
 Multitime::Multitime()
 {
@@ -30,10 +30,11 @@ Multitime::Multitime()
 
 Multitime::Multitime(double t)
 {
+  unsigned int i;
   allocate();
   chronos[0].first = t;
   chronos[0].second = true;
-  for(int i=1; i<Multitime::tdimension; ++i) {
+  for(i=1; i<Multitime::tdimension; ++i) {
     chronos[i].second = false;
   }
 }
@@ -45,8 +46,8 @@ Multitime::Multitime(const Multitime& source)
 
 Multitime& Multitime::operator=(const Multitime& source)
 {
-  if (this != &source) chronos = source.chronos;
-
+  if (this != &source) 
+  chronos = source.chronos;
   return *this;
 }
 
@@ -57,7 +58,8 @@ Multitime::~Multitime()
 
 void Multitime::clear()
 {
-  for(int i=0; i<Multitime::tdimension; ++i) {
+  unsigned int i;
+  for(i=0; i<Multitime::tdimension; ++i) {
     chronos[i].first = 0.0;
     chronos[i].second = true;
   }
@@ -65,17 +67,50 @@ void Multitime::clear()
 
 void Multitime::allocate()
 {
-  for(int i=0; i<Multitime::tdimension; ++i) {
+  unsigned int i;
+  for(i=0; i<Multitime::tdimension; ++i) {
     chronos.push_back(std::pair<double,bool>(0.0,true));
   }
 }
 
 void Multitime::initialize(double alpha)
 {
+  unsigned int i;
   chronos[0].first = alpha;
   chronos[1].second = true;
-  for(int i=1; i<Multitime::tdimension; ++i) {
+  for(i=1; i<Multitime::tdimension; ++i) {
     chronos[i].second = false;
+  }
+}
+
+void Multitime::serialize(std::ofstream& s) const
+{
+  unsigned int i,j,n = chronos.size();
+  double x;
+
+  s.write((char*)(&Multitime::tdimension),sizeof(int));
+  s.write((char*)(&n),sizeof(int));
+  for(i=0; i<n; ++i) {
+    x = chronos[i].first;
+    s.write((char*)(&x),sizeof(double));
+    j = int(chronos[i].second);
+    s.write((char*)(&j),sizeof(int));
+  }
+}
+
+void Multitime::deserialize(std::ifstream& s)
+{
+  unsigned int i,j,n;
+  double x;
+
+  chronos.clear();
+
+  s.read((char*)(&Multitime::tdimension),sizeof(int));
+  s.read((char*)(&n),sizeof(int));
+  for(i=0; i<n; ++i) {
+    s.read((char*)(&x),sizeof(double));
+    s.read((char*)(&j),sizeof(int));
+    chronos.push_back(std::pair<double,bool>(x,bool(j)));
   }
 }
 
@@ -138,9 +173,10 @@ namespace SYNARMOSMA {
 
   Multitime operator +(const Multitime& t1,const Multitime& t2)
   {
+    unsigned int i;
     Multitime output;
 
-    for(int i=0; i<Multitime::tdimension; ++i) {
+    for(i=0; i<Multitime::tdimension; ++i) {
       output.chronos[i].second = false;
       if (!t1.chronos[i].second && !t2.chronos[i].second) continue;
       output.chronos[i].second = true;
@@ -159,9 +195,10 @@ namespace SYNARMOSMA {
 
   Multitime operator -(const Multitime& t1,const Multitime& t2)
   {
+    unsigned int i;
     Multitime output;
 
-    for(int i=0; i<Multitime::tdimension; ++i) {
+    for(i=0; i<Multitime::tdimension; ++i) {
       output.chronos[i].second = false;
       if (!t1.chronos[i].second && !t2.chronos[i].second) continue;
       output.chronos[i].second = true;
@@ -180,9 +217,10 @@ namespace SYNARMOSMA {
 
   Multitime operator *(double alpha,const Multitime& tau)
   {
+    unsigned int i;
     Multitime output = tau;
 
-    for(int i=0; i<Multitime::tdimension; ++i) {
+    for(i=0; i<Multitime::tdimension; ++i) {
       if (output.chronos[i].second) output.chronos[i].first *= alpha;
     }
     return output;
@@ -190,9 +228,10 @@ namespace SYNARMOSMA {
 
   Multitime operator *(const Multitime& t1,const Multitime& t2)
   {
+    unsigned int i;
     Multitime output;
 
-    for(int i=0; i<Multitime::tdimension; ++i) {
+    for(i=0; i<Multitime::tdimension; ++i) {
       if (t1.chronos[i].second && t2.chronos[i].second) {
         output.chronos[i].first = t1.chronos[i].first * t2.chronos[i].first;
       }

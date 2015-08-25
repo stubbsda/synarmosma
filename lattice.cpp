@@ -68,12 +68,70 @@ Lattice& Lattice::operator =(const Lattice& source)
 
 void Lattice::clear()
 {
-  Poset::clear();
+  N = 0;
+  order.clear();
   atomic = false;
   null = 0;
   unity = 0;
   atoms.clear();
 }
+
+void Lattice::serialize(std::ofstream& s) const
+{
+  unsigned int i,j;
+  std::set<unsigned int>::const_iterator it;
+  RELATION rho;
+
+  s.write((char*)(&N),sizeof(int));
+  j = int(atomic);
+  s.write((char*)(&j),sizeof(int));
+  s.write((char*)(&null),sizeof(int));
+  s.write((char*)(&unity),sizeof(int));
+  for(i=0; i<N; ++i) {
+    for(j=1+i; j<N; ++j) {
+      rho = get_order(i,j);
+      s.write((char*)(&rho),sizeof(int));
+    }
+  }
+  j = atoms.size();
+  s.write((char*)(&j),sizeof(int));
+  for(it=atoms.begin(); it!=atoms.end(); ++it) {
+    i = *it;
+    s.write((char*)(&i),sizeof(int));
+  }
+}
+
+void Lattice::deserialize(std::ifstream& s)
+{
+  unsigned int i,j,k;
+  RELATION rho;
+
+  clear();
+
+  s.read((char*)(&N),sizeof(int));
+  s.read((char*)(&i),sizeof(int));
+  atomic = bool(i);
+  s.read((char*)(&null),sizeof(int));
+  s.read((char*)(&unity),sizeof(int));
+  for(i=0; i<N; ++i) {
+    for(j=1+i; j<N; ++j) {
+      s.read((char*)(&rho),sizeof(int));
+      if (rho == BEFORE) {
+        set_order(i,j);
+      }
+      else if (rho == AFTER) {
+        set_order(j,i);
+      }
+    }
+  }
+  s.read((char*)(&j),sizeof(int));
+  for(i=0; i<j; ++i) {
+    s.read((char*)(&k),sizeof(int));
+    atoms.insert(k);
+  }
+  assert(consistent());
+}
+
 
 void Lattice::initialize()
 {

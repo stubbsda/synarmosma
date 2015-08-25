@@ -123,6 +123,48 @@ void Polynomial<kind>::clear()
   normed = false;
 }
 
+template<class kind>
+void Polynomial<kind>::serialize(std::ofstream& s) const
+{
+  unsigned int i;
+  kind t;
+
+  s.write((char*)(&degree),sizeof(int));
+  s.write((char*)(&characteristic),sizeof(int));
+  i = int(homogeneous);
+  s.write((char*)(&i),sizeof(int));
+  i = int(irreducible);
+  s.write((char*)(&i),sizeof(int));
+  i = int(normed);
+  s.write((char*)(&i),sizeof(int));
+  for(i=0; i<=degree; ++i) {
+    t = terms[i];
+    s.write((char*)(&t),sizeof(kind));
+  }
+}
+
+template<class kind>
+void Polynomial<kind>::deserialize(std::ifstream& s)
+{
+  unsigned int i;
+  kind t;
+
+  clear();
+
+  s.read((char*)(&degree),sizeof(int));
+  s.read((char*)(&characteristic),sizeof(int));
+  s.read((char*)(&i),sizeof(int));
+  homogeneous = bool(i);
+  s.read((char*)(&i),sizeof(int));
+  irreducible = bool(i);
+  s.read((char*)(&i),sizeof(int));
+  normed = bool(i);
+  for(i=0; i<=degree; ++i) {
+    s.read((char*)(&t),sizeof(kind));
+    terms.push_back(t);
+  }
+}
+
 namespace SYNARMOSMA {
   template<>
   void Polynomial<NTL::ZZ>::initialize()

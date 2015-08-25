@@ -48,6 +48,8 @@ namespace SYNARMOSMA {
     void read(const char*);
     void write(const char*,unsigned int);
     void write(const char*);
+    void serialize(std::ofstream&) const;
+    void deserialize(std::ifstream&);
     unsigned int bit_count(unsigned int) const;
     unsigned int consistency(unsigned int,unsigned int,const std::string&) const;
     bool implication(unsigned int,const std::vector<unsigned int>&) const;

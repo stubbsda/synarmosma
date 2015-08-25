@@ -64,6 +64,17 @@ void Directed_Graph::clear()
   index_table.clear();
 }
 
+void Directed_Graph::serialize(std::ofstream& s) const
+{
+
+}
+
+void Directed_Graph::deserialize(std::ifstream& s)
+{
+
+}
+
+
 bool Directed_Graph::foliation_x(int v1,int v2)
 {
   if (v1 == v2) return false;

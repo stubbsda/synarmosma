@@ -84,6 +84,8 @@ namespace SYNARMOSMA {
     Matrix(unsigned int,unsigned int);
     Matrix(const Matrix<kind>&);
     ~Matrix();
+    void serialize(std::ofstream&) const;
+    void deserialize(std::ifstream&);
     void initialize(unsigned int,unsigned int);
     void set(unsigned int,unsigned int,kind);
     kind get(unsigned int,unsigned int) const;

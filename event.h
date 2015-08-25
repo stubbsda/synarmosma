@@ -36,8 +36,6 @@ namespace SYNARMOSMA {
     std::vector<std::string> entourage;
     Multitime proper_time;
 
-    double norm() const;
-    void clear();
     void initialize();
    public:
     Event();
@@ -45,7 +43,10 @@ namespace SYNARMOSMA {
     Event(const char*);
     ~Event();  
     Event& operator =(const Event&);
-    friend class Eventspace;
+    void serialize(std::ofstream&) const;
+    void deserialize(std::ifstream&);
+    void clear();
+    double norm() const;
   };
 }
 #endif 

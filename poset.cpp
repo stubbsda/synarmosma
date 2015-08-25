@@ -60,6 +60,42 @@ void Poset::clear()
   order.clear();
 }
 
+void Poset::serialize(std::ofstream& s) const
+{
+  unsigned int i,j;
+  RELATION rho;
+
+  s.write((char*)(&N),sizeof(int));
+  for(i=0; i<N; ++i) {
+    for(j=1+i; j<N; ++j) {
+      rho = get_order(i,j);
+      s.write((char*)(&rho),sizeof(int));
+    }
+  }
+}
+
+void Poset::deserialize(std::ifstream& s)
+{
+  unsigned int i,j;
+  RELATION rho;
+
+  clear();
+
+  s.read((char*)(&N),sizeof(int));
+  for(i=0; i<N; ++i) {
+    for(j=1+i; j<N; ++j) {
+      s.read((char*)(&rho),sizeof(int));
+      if (rho == BEFORE) {
+        set_order(i,j);
+      }
+      else if (rho == AFTER) {
+        set_order(j,i);
+      }
+    }
+  }
+  assert(consistent());
+}
+
 bool Poset::invert_order(unsigned int u,unsigned int v)
 {
   if (u == v) return false;

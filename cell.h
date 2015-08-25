@@ -48,7 +48,7 @@ namespace SYNARMOSMA {
     void inline get_vertices(std::vector<int>&) const;
     void inline get_vertices(std::set<int>& v) const {v = vertices;};
     void get_faces(std::vector<Cell>&) const;
-    void serialize(std::ofstream&) const;
+    virtual void serialize(std::ofstream&) const;
     virtual void deserialize(std::ifstream&);
     inline bool contains(int) const;
     inline bool empty() const {return vertices.empty();};

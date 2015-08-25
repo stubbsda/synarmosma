@@ -43,9 +43,11 @@ namespace SYNARMOSMA {
     Poset(unsigned int);
     Poset(const Poset&);
     Poset& operator =(const Poset&);
-    ~Poset();
-    void clear();
-    bool consistent() const;
+    virtual ~Poset();
+    virtual void clear();
+    virtual bool consistent() const;
+    virtual void serialize(std::ofstream&) const;
+    virtual void deserialize(std::ifstream&);
     inline void add_element() {N += 1;};
     bool sink(unsigned int) const;
     bool source(unsigned int) const;

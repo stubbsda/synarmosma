@@ -70,6 +70,17 @@ void Logic_Graph::create()
   rationalize_topology();
 }
 
+void Logic_Graph::serialize(std::ofstream& s) const
+{
+
+}
+
+void Logic_Graph::deserialize(std::ifstream& s)
+{
+
+}
+
+
 void Logic_Graph::compute_logical_breadth()
 {
   int i,in1;

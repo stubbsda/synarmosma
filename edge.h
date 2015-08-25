@@ -47,6 +47,8 @@ namespace SYNARMOSMA {
     Edge(const Edge&);
     ~Edge();
     Edge& operator =(const Edge&);
+    void serialize(std::ofstream&) const;
+    void deserialize(std::ifstream&);
     inline std::string key() const {std::string k = make_key(nodes[0],nodes[1]); k += (arrow == FORWARD) ? ":1" : ":-1"; return k;};
     friend class Directed_Graph;
   };

@@ -34,12 +34,14 @@ namespace SYNARMOSMA {
     Schema(const Schema&);
     Schema& operator =(const Schema&);
     virtual ~Schema();
+    virtual void serialize(std::ofstream&) const;
+    virtual void deserialize(std::ifstream&);
     bool connected() const;
     bool connected(int,int) const;
     virtual void clear();
     int add_vertex();
-    bool add_edge(int,int);
-    bool drop_edge(int,int);
+    virtual bool add_edge(int,int);
+    virtual bool drop_edge(int,int);
     bool positive_valence() const;
     int spanning_tree(std::vector<int>&) const;
     int component_analysis(std::vector<int>&) const;

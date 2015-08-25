@@ -115,6 +115,17 @@ Graph::~Graph()
 
 }
 
+void Graph::serialize(std::ofstream& s) const
+{
+
+}
+
+void Graph::deserialize(std::ifstream& s)
+{
+
+}
+
+
 void Graph::core(Graph* G,int k) const
 {
   // A method to compute the k-core of the current graph

@@ -59,6 +59,8 @@ namespace SYNARMOSMA {
     Variety(const Variety&);
     Variety& operator =(const Variety&);
     ~Variety();
+    void serialize(std::ofstream&) const;
+    void deserialize(std::ifstream&);
     void elaborate();
     void add_term(unsigned int,kind,const std::vector<unsigned int>&);
     void add_term(unsigned int,const Monomial<kind>&);

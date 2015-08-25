@@ -68,6 +68,8 @@ namespace SYNARMOSMA {
     kind get_value(unsigned int) const;
     bool set_value(kind,unsigned int);
     void clear();
+    void serialize(std::ofstream&) const;
+    void deserialize(std::ifstream&);
     Polynomial<kind> derivative() const;
     friend std::ostream& operator << <>(std::ostream&,const Polynomial<kind>&);
     friend Polynomial<kind> operator +<>(const Polynomial<kind>&,const Polynomial<kind>&);

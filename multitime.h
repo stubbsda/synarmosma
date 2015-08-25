@@ -27,7 +27,7 @@ namespace SYNARMOSMA {
    private:
     std::vector<std::pair<double,bool> > chronos; 
     // Not too Aristotelian, perhaps?
-    static const int tdimension = 1;
+    static const unsigned int tdimension = 1;
 
     void clear();
     void allocate();
@@ -38,6 +38,8 @@ namespace SYNARMOSMA {
     Multitime(const Multitime&);
     ~Multitime();
     Multitime& operator =(const Multitime&);
+    void serialize(std::ofstream&) const;
+    void deserialize(std::ifstream&);
     double norm() const;
     void extract(std::vector<double>&) const;
     friend Multitime operator +(const Multitime&,const Multitime&);
@@ -51,7 +53,6 @@ namespace SYNARMOSMA {
     friend bool operator <=(const Multitime&,const Multitime&);
     friend Multitime operator *(double alpha,const Multitime&);
     friend class Event;
-    friend class Eventspace;
   };
 }
 #endif 
