@@ -28,6 +28,7 @@ namespace SYNARMOSMA {
     std::vector<unsigned int>* elements;
     unsigned int nrow,ncolumn;
 
+     void clear();
    public:
     Binary_Matrix();
     Binary_Matrix(unsigned int);

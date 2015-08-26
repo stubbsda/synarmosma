@@ -82,6 +82,46 @@ void Binary_Matrix::initialize(unsigned int n,unsigned int m)
   elements = new std::vector<unsigned int>[nrow];
 }
 
+void Binary_Matrix::clear()
+{
+  nrow = 0;
+  ncolumn = 0;
+  delete[] elements;
+}
+
+void Binary_Matrix::serialize(std::ofstream& s) const
+{
+  unsigned int i,j,n;
+
+  s.write((char*)(&nrow),sizeof(int));
+  s.write((char*)(&ncolumn),sizeof(int));
+  for(i=0; i<nrow; ++i) {
+    n = elements[i].size();
+    s.write((char*)(&n),sizeof(int));
+    for(j=0; j<n; ++j) {
+      s.write((char*)(&elements[i][j]),sizeof(int));
+    }
+  }
+}
+
+void Binary_Matrix::deserialize(std::ifstream& s)
+{
+  unsigned int i,j,k,n;
+
+  clear();
+
+  s.read((char*)(&nrow),sizeof(int));
+  s.read((char*)(&ncolumn),sizeof(int));
+  elements = new std::vector<unsigned int>[nrow];
+  for(i=0; i<nrow; ++i) {
+    s.read((char*)(&n),sizeof(int));
+    for(j=0; j<n; ++j) {
+      s.read((char*)(&k),sizeof(int));
+      elements[i].push_back(k);
+    }
+  }
+}
+
 void Binary_Matrix::get_row(unsigned int n,bool* output) const
 {
   unsigned int i;

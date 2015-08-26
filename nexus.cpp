@@ -111,14 +111,60 @@ void Nexus::clear()
 
 void Nexus::serialize(std::ofstream& s) const
 {
+  int i,j,n;
+  std::set<int>::const_iterator it;
 
+  s.write((char*)(&nvertex),sizeof(int));
+  s.write((char*)(&dimension),sizeof(int));
+  for(i=0; i<nvertex; ++i) {
+    j = (signed) neighbours[i].size();
+    s.write((char*)(&j),sizeof(int));
+    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+      j = *it;
+      s.write((char*)(&j),sizeof(int));
+    }
+  }
+  for(i=1; i<dimension; ++i) {
+    n = (signed) elements[i].size();
+    s.write((char*)(&n),sizeof(int));
+    for(j=0; j<n; ++j) {
+      elements[i][j].serialize(s);
+    }
+  }
 }
 
 void Nexus::deserialize(std::ifstream& s)
 {
+  int i,j,k,n;
+  std::set<int> S;
+  Cell sigma;
 
+  clear();
+
+  s.read((char*)(&nvertex),sizeof(int));
+  s.read((char*)(&dimension),sizeof(int));
+  if (dimension > -1) {
+    elements = new std::vector<Cell>[1+dimension];
+    index_table = new hash_map[1+dimension];
+  }
+  for(i=0; i<nvertex; ++i) {
+    s.read((char*)(&n),sizeof(int));
+    for(j=0; j<n; ++j) {
+      s.read((char*)(&k),sizeof(int));
+      S.insert(k);
+    }
+    neighbours.push_back(S);
+    S.clear();
+  }
+  for(i=1; i<dimension; ++i) {
+    s.read((char*)(&n),sizeof(int));
+    for(j=0; j<n; ++j) {
+      sigma.deserialize(s);
+      elements[i].push_back(sigma);
+      index_table[i][sigma.vertices] = j;
+    }
+  }
 }
-
 
 void Nexus::paste(const std::set<int>& vx)
 {
