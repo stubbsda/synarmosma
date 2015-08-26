@@ -66,14 +66,49 @@ void Directed_Graph::clear()
 
 void Directed_Graph::serialize(std::ofstream& s) const
 {
+  int i,j,n;
+  std::set<int>::const_iterator it;
 
+  s.write((char*)(&nvertex),sizeof(int));
+  for(i=0; i<nvertex; ++i) {
+    j = (signed) neighbours[i].size();
+    s.write((char*)(&j),sizeof(int));
+    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+      j = *it;
+      s.write((char*)(&j),sizeof(int));
+    }
+  }
+  n = (signed) edges.size();
+  s.write((char*)(&n),sizeof(int));
+  for(i=0; i<n; ++i) {
+    edges[i].serialize(s);
+  }
 }
 
 void Directed_Graph::deserialize(std::ifstream& s)
 {
+  int i,j,k,n;
+  std::set<int> S;
+  Edge q;
 
+  clear();
+
+  s.read((char*)(&nvertex),sizeof(int));
+  for(i=0; i<nvertex; ++i) {
+    s.read((char*)(&n),sizeof(int));
+    for(j=0; j<n; ++j) {
+      s.read((char*)(&k),sizeof(int));
+      S.insert(k);
+    }
+    neighbours.push_back(S);
+    S.clear();
+  }
+  s.read((char*)(&n),sizeof(int));
+  for(i=0; i<n; ++i) {
+    q.deserialize(s);
+    edges.push_back(q);
+  }
 }
-
 
 bool Directed_Graph::foliation_x(int v1,int v2)
 {

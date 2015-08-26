@@ -70,16 +70,53 @@ void Logic_Graph::create()
   rationalize_topology();
 }
 
+void Logic_Graph::clear()
+{
+  logic->clear();
+  nvertex = 0;
+  nedge = 0;
+  neighbours.clear();
+}
+
 void Logic_Graph::serialize(std::ofstream& s) const
 {
+  int i,j;
+  std::set<int>::const_iterator it;
 
+  s.write((char*)(&nvertex),sizeof(int));
+  s.write((char*)(&nedge),sizeof(int));
+  for(i=0; i<nvertex; ++i) {
+    j = (signed) neighbours[i].size();
+    s.write((char*)(&j),sizeof(int));
+    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+      j = *it;
+      s.write((char*)(&j),sizeof(int));
+    }
+  }
+  logic->serialize(s);
 }
 
 void Logic_Graph::deserialize(std::ifstream& s)
 {
+  int i,j,k,n;
+  std::set<int> S;
 
+  clear();
+
+  s.read((char*)(&nvertex),sizeof(int));
+  s.read((char*)(&nedge),sizeof(int));
+  for(i=0; i<nvertex; ++i) {
+    s.read((char*)(&n),sizeof(int));
+    for(j=0; j<n; ++j) {
+      s.read((char*)(&k),sizeof(int));
+      S.insert(k);
+    }
+    neighbours.push_back(S);
+    S.clear();
+  }
+  logic->deserialize(s);
+  compute_logical_breadth();
 }
-
 
 void Logic_Graph::compute_logical_breadth()
 {

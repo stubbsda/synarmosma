@@ -240,7 +240,7 @@ namespace SYNARMOSMA {
       sum = zero;
       for(j=0; j<=p1.degree; ++j) {
         for(k=0; k<=p2.degree; ++k) {
-          if ((j+k) == i) sum += p1.terms[j]*p2.terms[k];
+          if ((j+k) == i) sum = sum + p1.terms[j]*p2.terms[k];
         }
       }
       new_terms.push_back(sum);

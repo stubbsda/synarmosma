@@ -65,7 +65,99 @@ Event::~Event()
 
 void Event::clear()
 {
-  initialize();
+  incept = -1;
+  colour = -1;
+  energy = 0.0;
+  topological_dimension = 0;
+  past.clear();
+  future.clear();
+  entourage.clear();
+  neighbours.clear();
+  proper_time.clear();
+  observation.clear();
+}
+
+void Event::serialize(std::ofstream& s) const
+{
+  int i,j,n,m;
+  char q;
+  std::set<int>::const_iterator it;
+
+  s.write((char*)(&incept),sizeof(int));
+  s.write((char*)(&colour),sizeof(int));
+  s.write((char*)(&topological_dimension),sizeof(int));
+  s.write((char*)(&energy),sizeof(double));
+  proper_time.serialize(s);
+  observation.serialize(s);
+  n = (signed) past.size();
+  s.write((char*)(&n),sizeof(int));
+  for(it=past.begin(); it!=past.end(); ++it) {
+    i = *it;
+    s.write((char*)(&i),sizeof(int));
+  }
+  n = (signed) future.size();
+  s.write((char*)(&n),sizeof(int));
+  for(it=future.begin(); it!=future.end(); ++it) {
+    i = *it;
+    s.write((char*)(&i),sizeof(int));
+  }
+  n = (signed) neighbours.size();
+  s.write((char*)(&n),sizeof(int));
+  for(it=neighbours.begin(); it!=neighbours.end(); ++it) {
+    i = *it;
+    s.write((char*)(&i),sizeof(int));
+  }
+  n = (signed) entourage.size();
+  s.write((char*)(&n),sizeof(int));
+  for(i=0; i<n; ++i) {
+    m = (signed) entourage[i].size();
+    s.write((char*)(&m),sizeof(int));
+    for(j=0; j<m; ++j) {
+      q = entourage[i][j];
+      s.write((char*)(&q),sizeof(char));
+    }
+  }
+}
+
+void Event::deserialize(std::ifstream& s)
+{
+  int i,j,n,m;
+  char q;
+  std::string estring;
+
+  clear();
+
+  s.read((char*)(&incept),sizeof(int));
+  s.read((char*)(&colour),sizeof(int));
+  s.read((char*)(&topological_dimension),sizeof(int));
+  s.read((char*)(&energy),sizeof(double));
+  proper_time.deserialize(s);
+  observation.deserialize(s);
+  s.read((char*)(&n),sizeof(int));
+  for(i=0; i<n; ++i) {
+    s.read((char*)(&j),sizeof(int));
+    past.insert(j);
+  }
+  s.read((char*)(&n),sizeof(int));
+  for(i=0; i<n; ++i) {
+    s.read((char*)(&j),sizeof(int));
+    future.insert(j);
+  }
+  s.read((char*)(&n),sizeof(int));
+  for(i=0; i<n; ++i) {
+    s.read((char*)(&j),sizeof(int));
+    neighbours.insert(j);
+  }
+  s.read((char*)(&n),sizeof(int));
+  for(i=0; i<n; ++i) {
+    s.read((char*)(&m),sizeof(int));
+    for(j=0; j<m; ++j) {
+      s.read((char*)(&q),sizeof(char));
+      estring += q;
+    }
+    entourage.push_back(estring);
+    estring.clear();
+  }
 }
 
 void Event::initialize()

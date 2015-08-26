@@ -44,10 +44,7 @@ namespace SYNARMOSMA {
     Propositional_System(const Propositional_System&);
     Propositional_System& operator =(const Propositional_System&);
     ~Propositional_System();
-    void read(const char*,unsigned int);
-    void read(const char*);
-    void write(const char*,unsigned int);
-    void write(const char*);
+    void clear();
     void serialize(std::ofstream&) const;
     void deserialize(std::ifstream&);
     unsigned int bit_count(unsigned int) const;

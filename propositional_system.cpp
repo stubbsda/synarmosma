@@ -109,6 +109,14 @@ Propositional_System::~Propositional_System()
 
 }
 
+void Propositional_System::clear()
+{
+  theorems.clear();
+  natom = 0;
+  nuniverse = 0;
+  truth.clear();
+}
+
 void Propositional_System::set_default_values()
 {
   natom = 10;
@@ -128,50 +136,34 @@ void Propositional_System::initialize(unsigned int n)
   compute_internal_logic();
 }
 
-void Propositional_System::write(const char* filename,unsigned int pointer)
+void Propositional_System::serialize(std::ofstream& s) const
 {
-  unsigned int i;
-  std::ofstream s(filename,std::ios_base::out | std::ios_base::ate | std::ios_base::binary);
-  s.seekp(pointer);
-  for(i=0; i<theorems.size(); ++i) {
+  unsigned int i,n = theorems.size();
+  s.write((char*)(&natom),sizeof(int));
+  s.write((char*)(&nuniverse),sizeof(int));
+  s.write((char*)(&n),sizeof(int));
+  for(i=0; i<n; ++i) {
     theorems[i].serialize(s);
   }
-  s.close();
 }
 
-void Propositional_System::write(const char* filename)
+void Propositional_System::deserialize(std::ifstream& s)
 {
-  unsigned int i;
-  std::ofstream s(filename,std::ios_base::out | std::ios_base::binary);
-  s.seekp(0);
-  for(i=0; i<theorems.size(); ++i) {
-    theorems[i].serialize(s);
-  }
-  s.close();
-}
+  unsigned int i,n;
+  Proposition p;
 
-void Propositional_System::read(const char* filename,unsigned int pointer)
-{
-  unsigned int i;
-  std::ifstream s(filename,std::ios_base::in | std::ios_base::binary);
-  s.seekg(pointer);
-  for(i=0; i<theorems.size(); ++i) {
-    theorems[i].deserialize(s);
+  clear();
+  s.read((char*)(&natom),sizeof(int));
+  s.read((char*)(&nuniverse),sizeof(int));
+  s.read((char*)(&n),sizeof(int));
+  for(i=0; i<n; ++i) {
+    p.deserialize(s);
+    theorems.push_back(p);
   }
-  // Close the file
-  s.close();
-}
-
-void Propositional_System::read(const char* filename)
-{
-  unsigned int i;
-  std::ifstream s(filename,std::ios_base::in | std::ios_base::binary);
-  s.seekg(0);
-  for(i=0; i<theorems.size(); ++i) {
-    theorems[i].deserialize(s);
+  for(i=0; i<n; ++i) {
+    truth.push_back(boost::dynamic_bitset<>(nuniverse));
   }
-  // Close the file
-  s.close();
+  compute_internal_logic();
 }
 
 unsigned int Propositional_System::bit_count(unsigned int i) const
