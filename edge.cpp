@@ -88,14 +88,10 @@ void Edge::clear()
 
 void Edge::serialize(std::ofstream& s) const
 {
-  int n;
-
   s.write((char*)(&nodes[0]),sizeof(int));
   s.write((char*)(&nodes[1]),sizeof(int));
-  n = int(active);
-  s.write((char*)(&n),sizeof(int));
-  n = int(cyclic);
-  s.write((char*)(&n),sizeof(int));
+  s.write((char*)(&active),sizeof(bool));
+  s.write((char*)(&cyclic),sizeof(bool));
   s.write((char*)(&arrow),sizeof(int));
   s.write((char*)(&length),sizeof(double));
   s.write((char*)(&flow),sizeof(double));
@@ -104,16 +100,12 @@ void Edge::serialize(std::ofstream& s) const
 
 void Edge::deserialize(std::ifstream& s)
 {
-  int n;
-
   clear();
 
   s.read((char*)(&nodes[0]),sizeof(int));
   s.read((char*)(&nodes[1]),sizeof(int));
-  s.read((char*)(&n),sizeof(int));
-  active = bool(n);
-  s.read((char*)(&n),sizeof(int));
-  cyclic = bool(n);
+  s.read((char*)(&active),sizeof(bool));
+  s.read((char*)(&cyclic),sizeof(bool));
   s.read((char*)(&arrow),sizeof(int));
   s.read((char*)(&length),sizeof(double));
   s.read((char*)(&flow),sizeof(double));

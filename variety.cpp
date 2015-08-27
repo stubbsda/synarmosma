@@ -27,6 +27,7 @@ template<class kind>
 Variety<kind>::Variety()
 {
   nequation = 3 + RND.irandom(5);
+  nvariable = 2 + RND.irandom(3);
   characteristic = 0;
   allocate();
 }
@@ -36,6 +37,7 @@ Variety<kind>::Variety(unsigned int n)
 {
   assert(n > 0);
   nequation = n;
+  nvariable = n;
   characteristic = 0;
   allocate();
 }
@@ -47,6 +49,7 @@ namespace SYNARMOSMA
   {
     assert(n > 0 && p > 0);
     nequation = n;
+    nvariable = n;
     if (!NTL::ProbPrime(p)) {
       std::cerr << "The field characteristic must be a prime!" << std::endl;
       std::exit(1);
@@ -62,6 +65,7 @@ Variety<kind>::Variety(unsigned int n,unsigned int p)
 {
   assert(n > 0 && p == 0);
   nequation = n;
+  nvariable = n;
   nvariable = p;
   characteristic = p;
   allocate();
@@ -133,9 +137,9 @@ void Variety<kind>::initialize()
     alpha = RND.irandom(3,8);
     atoms.clear();
     for(j=0; j<alpha; ++j) {
-      beta = RND.irandom(1,5);
+      beta = RND.irandom(1,1+nvariable);
       term.coefficient = (characteristic > 0) ? RND.irandom(characteristic) : RND.irandom(-10,10);
-      assert(beta < nvariable);
+      assert(beta <= nvariable);
       for(k=0; k<beta; ++k) {
         // What of the case where duo.first is the same number for different iterations
         // of this loop over k? We need to ensure that this never happens...
@@ -174,8 +178,79 @@ void Variety<kind>::clear()
   // algebraic variety over GF(p).
   dependencies.clear();
   remainder.clear();
-  delete[] equations;
+  if (nequation > 0) delete[] equations;
   nequation = 0;
+}
+
+template<class kind>
+void Variety<kind>::serialize(std::ofstream& s) const
+{
+  unsigned int i,j,k,l,n,m;
+  kind x;
+
+  s.write((char*)(&nequation),sizeof(int));
+  s.write((char*)(&nvariable),sizeof(int));
+  s.write((char*)(&characteristic),sizeof(int));
+  s.write((char*)(&linear),sizeof(bool));
+  s.write((char*)(&homogeneous),sizeof(bool));
+  s.write((char*)(&projective),sizeof(bool));
+  for(i=0; i<nequation; ++i) {
+    n = equations[i].size();
+    s.write((char*)(&n),sizeof(int));
+    for(j=0; j<n; ++j) {
+      x = equations[i][j].coefficient;
+      s.write((char*)(&x),sizeof(kind));
+      m = equations[i][j].exponents.size();
+      s.write((char*)(&m),sizeof(int));
+      for(k=0; k<m; ++k) {
+        l = equations[i][j].exponents[k].first;
+        s.write((char*)(&l),sizeof(int));
+        l = equations[i][j].exponents[k].second;
+        s.write((char*)(&l),sizeof(int));
+      }
+    }
+  }
+  for(i=0; i<nequation; ++i) {
+    x = remainder[i];
+    s.write((char*)(&x),sizeof(kind));
+  }
+}
+
+template<class kind>
+void Variety<kind>::deserialize(std::ifstream& s) 
+{
+  unsigned int i,j,k,l1,l2,n,m;
+  kind x;
+  Monomial<kind> t;
+
+  clear();
+
+  s.read((char*)(&nequation),sizeof(int));
+  s.read((char*)(&nvariable),sizeof(int));
+  s.read((char*)(&characteristic),sizeof(int));
+  equations = new std::vector<Monomial<kind> >[nequation];
+  s.read((char*)(&linear),sizeof(bool));
+  s.read((char*)(&homogeneous),sizeof(bool));
+  s.read((char*)(&projective),sizeof(bool));  
+  for(i=0; i<nequation; ++i) {
+    s.read((char*)(&n),sizeof(int));
+    for(j=0; j<n; ++j) {
+      s.read((char*)(&x),sizeof(kind));
+      t.coefficient = x;
+      s.read((char*)(&m),sizeof(int));
+      for(k=0; k<m; ++k) {
+        s.read((char*)(&l1),sizeof(int));
+        s.read((char*)(&l2),sizeof(int));
+        t.exponents.push_back(std::pair<unsigned int,unsigned int>(l1,l2));
+      }
+      equations[i].push_back(t);
+      t.exponents.clear();
+    }
+  }
+  for(i=0; i<nequation; ++i) {
+    s.read((char*)(&x),sizeof(kind));
+    remainder.push_back(x);
+  }
 }
 
 template<class kind>

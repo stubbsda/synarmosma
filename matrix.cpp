@@ -206,6 +206,47 @@ void Matrix<kind>::clear(bool deep)
 }
 
 template<class kind>
+void Matrix<kind>::serialize(std::ofstream& s) const
+{
+  unsigned int i,j,k,n;
+  kind x;
+
+  s.write((char*)(&nrow),sizeof(int));
+  s.write((char*)(&ncolumn),sizeof(int));
+  for(i=0; i<nrow; ++i) {
+    n = elements[i].size();
+    s.write((char*)(&n),sizeof(int));
+    for(j=0; j<n; ++j) {
+      x = elements[i][j].first;
+      k = elements[i][j].second;
+      s.write((char*)(&x),sizeof(kind));
+      s.write((char*)(&k),sizeof(int));
+    }
+  }
+}
+
+template<class kind>
+void Matrix<kind>::deserialize(std::ifstream& s)
+{
+  unsigned int i,j,k,n;
+  kind x;
+
+  clear();
+
+  s.read((char*)(&nrow),sizeof(int));
+  s.read((char*)(&ncolumn),sizeof(int));
+  elements = new std::vector<std::pair<kind,unsigned int> >[nrow];
+  for(i=0; i<nrow; ++i) {
+    s.read((char*)(&n),sizeof(int));
+    for(j=0; j<n; ++j) {
+      s.read((char*)(&x),sizeof(kind));
+      s.read((char*)(&k),sizeof(int));
+      elements[i].push_back(std::pair<kind,unsigned int>(x,k));
+    }
+  }
+}
+
+template<class kind>
 void Matrix<kind>::initialize(unsigned int n,unsigned int m)
 {
   if (nrow == n) {

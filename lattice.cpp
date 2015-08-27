@@ -83,8 +83,7 @@ void Lattice::serialize(std::ofstream& s) const
   RELATION rho;
 
   s.write((char*)(&N),sizeof(int));
-  j = int(atomic);
-  s.write((char*)(&j),sizeof(int));
+  s.write((char*)(&atomic),sizeof(bool));
   s.write((char*)(&null),sizeof(int));
   s.write((char*)(&unity),sizeof(int));
   for(i=0; i<N; ++i) {
@@ -109,8 +108,7 @@ void Lattice::deserialize(std::ifstream& s)
   clear();
 
   s.read((char*)(&N),sizeof(int));
-  s.read((char*)(&i),sizeof(int));
-  atomic = bool(i);
+  s.read((char*)(&atomic),sizeof(bool));
   s.read((char*)(&null),sizeof(int));
   s.read((char*)(&unity),sizeof(int));
   for(i=0; i<N; ++i) {

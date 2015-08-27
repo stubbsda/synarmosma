@@ -295,6 +295,56 @@ Functional_Equation<kind>::~Functional_Equation()
 }
 
 template<class kind>
+void Functional_Equation<kind>::clear()
+{
+  terms.clear();
+  remainder.clear();
+  linear = false;
+  homogeneous = false;
+}
+
+template<class kind>
+void Functional_Equation<kind>::serialize(std::ofstream& s) const
+{
+  unsigned int i,j,n;
+  Polynomial<kind> p;
+  
+  s.write((char*)(&linear),sizeof(bool));
+  s.write((char*)(&homogeneous),sizeof(bool));
+  n = terms.size();
+  s.write((char*)(&n),sizeof(int));
+  for(i=0; i<n; ++i) {
+    j = boost::get<2>(terms[i]);
+    s.write((char*)(&j),sizeof(int));
+    p = boost::get<0>(terms[i]);
+    p.serialize(s);
+    p = boost::get<1>(terms[i]);
+    p.serialize(s);
+  }
+  remainder.serialize(s);
+}
+
+template<class kind>
+void Functional_Equation<kind>::deserialize(std::ifstream& s)
+{
+  unsigned int i,j,n;
+  Polynomial<kind> p1,p2;
+
+  clear();
+
+  s.read((char*)(&linear),sizeof(bool));
+  s.read((char*)(&homogeneous),sizeof(bool));
+  s.read((char*)(&n),sizeof(int));
+  for(i=0; i<n; ++i) {
+    s.read((char*)(&j),sizeof(int));
+    p1.deserialize(s);
+    p2.deserialize(s);
+    terms.push_back(boost::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int>(p1,p2,j));
+  }
+  remainder.deserialize(s);
+}
+
+template<class kind>
 void Functional_Equation<kind>::initialize(unsigned int n)
 {
   unsigned int i,m = 1;

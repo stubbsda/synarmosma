@@ -48,6 +48,7 @@ namespace SYNARMOSMA {
     Functional_Equation(const Functional_Equation&);
     Functional_Equation& operator =(const Functional_Equation&);
     ~Functional_Equation();
+    void clear();
     void serialize(std::ofstream&) const;
     void deserialize(std::ifstream&);
     Variety<unsigned int> reduce(unsigned int);  

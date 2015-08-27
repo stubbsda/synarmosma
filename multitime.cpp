@@ -85,7 +85,8 @@ void Multitime::initialize(double alpha)
 
 void Multitime::serialize(std::ofstream& s) const
 {
-  unsigned int i,j,n = chronos.size();
+  unsigned int i,n = chronos.size();
+  bool t;
   double x;
 
   s.write((char*)(&Multitime::tdimension),sizeof(int));
@@ -93,14 +94,15 @@ void Multitime::serialize(std::ofstream& s) const
   for(i=0; i<n; ++i) {
     x = chronos[i].first;
     s.write((char*)(&x),sizeof(double));
-    j = int(chronos[i].second);
-    s.write((char*)(&j),sizeof(int));
+    t = chronos[i].second;
+    s.write((char*)(&t),sizeof(bool));
   }
 }
 
 void Multitime::deserialize(std::ifstream& s)
 {
-  unsigned int i,j,n;
+  unsigned int i,n;
+  bool t;
   double x;
 
   chronos.clear();
@@ -109,8 +111,8 @@ void Multitime::deserialize(std::ifstream& s)
   s.read((char*)(&n),sizeof(int));
   for(i=0; i<n; ++i) {
     s.read((char*)(&x),sizeof(double));
-    s.read((char*)(&j),sizeof(int));
-    chronos.push_back(std::pair<double,bool>(x,bool(j)));
+    s.read((char*)(&t),sizeof(bool));
+    chronos.push_back(std::pair<double,bool>(x,t));
   }
 }
 

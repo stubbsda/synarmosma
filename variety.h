@@ -69,6 +69,7 @@ namespace SYNARMOSMA {
     void clear();
     void zeta_function(unsigned int,std::vector<unsigned int>&) const;
     int compute_dependencies(std::vector<unsigned int>&) const;
+    friend std::ostream& operator << <>(std::ostream&,const Variety<kind>&);
   };
 
   template<class kind>
