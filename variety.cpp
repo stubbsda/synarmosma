@@ -182,18 +182,66 @@ void Variety<kind>::clear()
   nequation = 0;
 }
 
+namespace SYNARMOSMA {
+  template<>
+  void Variety<Rational>::write_equations(std::ofstream& s) const
+  {
+    unsigned int i,j,k,l,n,m;
+
+    for(i=0; i<nequation; ++i) {
+      n = equations[i].size();
+      s.write((char*)(&n),sizeof(int));
+      for(j=0; j<n; ++j) {
+        write_ZZ(s,equations[i][j].coefficient.numerator());
+        write_ZZ(s,equations[i][j].coefficient.denominator());
+        m = equations[i][j].exponents.size();
+        s.write((char*)(&m),sizeof(int));
+        for(k=0; k<m; ++k) {
+          l = equations[i][j].exponents[k].first;
+          s.write((char*)(&l),sizeof(int));
+          l = equations[i][j].exponents[k].second;
+          s.write((char*)(&l),sizeof(int));
+        }
+      }
+    }
+    for(i=0; i<nequation; ++i) {
+      write_ZZ(s,remainder[i].numerator());
+      write_ZZ(s,remainder[i].denominator());
+    }
+  }
+
+  template<>
+  void Variety<NTL::ZZ>::write_equations(std::ofstream& s) const
+  {
+    unsigned int i,j,k,l,n,m;
+
+    for(i=0; i<nequation; ++i) {
+      n = equations[i].size();
+      s.write((char*)(&n),sizeof(int));
+      for(j=0; j<n; ++j) {
+        write_ZZ(s,equations[i][j].coefficient);
+        m = equations[i][j].exponents.size();
+        s.write((char*)(&m),sizeof(int));
+        for(k=0; k<m; ++k) {
+          l = equations[i][j].exponents[k].first;
+          s.write((char*)(&l),sizeof(int));
+          l = equations[i][j].exponents[k].second;
+          s.write((char*)(&l),sizeof(int));
+        }
+      }
+    }
+    for(i=0; i<nequation; ++i) {
+      write_ZZ(s,remainder[i]);
+    }
+  }
+}
+
 template<class kind>
-void Variety<kind>::serialize(std::ofstream& s) const
+void Variety<kind>::write_equations(std::ofstream& s) const
 {
   unsigned int i,j,k,l,n,m;
   kind x;
 
-  s.write((char*)(&nequation),sizeof(int));
-  s.write((char*)(&nvariable),sizeof(int));
-  s.write((char*)(&characteristic),sizeof(int));
-  s.write((char*)(&linear),sizeof(bool));
-  s.write((char*)(&homogeneous),sizeof(bool));
-  s.write((char*)(&projective),sizeof(bool));
   for(i=0; i<nequation; ++i) {
     n = equations[i].size();
     s.write((char*)(&n),sizeof(int));
@@ -217,21 +265,83 @@ void Variety<kind>::serialize(std::ofstream& s) const
 }
 
 template<class kind>
-void Variety<kind>::deserialize(std::ifstream& s) 
+void Variety<kind>::serialize(std::ofstream& s) const
+{
+  s.write((char*)(&nequation),sizeof(int));
+  s.write((char*)(&nvariable),sizeof(int));
+  s.write((char*)(&characteristic),sizeof(int));
+  s.write((char*)(&linear),sizeof(bool));
+  s.write((char*)(&homogeneous),sizeof(bool));
+  s.write((char*)(&projective),sizeof(bool));
+  write_equations(s);
+}
+
+namespace SYNARMOSMA {
+  template<>
+  void Variety<Rational>::read_equations(std::ifstream& s)
+  {
+    unsigned int i,j,k,l1,l2,n,m;
+    NTL::ZZ q1,q2;
+    Monomial<Rational> t;
+
+    for(i=0; i<nequation; ++i) {
+      s.read((char*)(&n),sizeof(int));
+      for(j=0; j<n; ++j) {
+        q1 = read_ZZ(s);
+        q2 = read_ZZ(s);
+        t.coefficient = Rational(q1,q2);
+        s.read((char*)(&m),sizeof(int));
+        for(k=0; k<m; ++k) {
+          s.read((char*)(&l1),sizeof(int));
+          s.read((char*)(&l2),sizeof(int));
+          t.exponents.push_back(std::pair<unsigned int,unsigned int>(l1,l2));
+        }
+        equations[i].push_back(t);
+        t.exponents.clear();
+      }
+    }
+    for(i=0; i<nequation; ++i) {
+      q1 = read_ZZ(s);
+      q2 = read_ZZ(s);
+      remainder.push_back(Rational(q1,q2));
+    }
+  }
+
+  template<>
+  void Variety<NTL::ZZ>::read_equations(std::ifstream& s)
+  {
+    unsigned int i,j,k,l1,l2,n,m;
+    NTL::ZZ q;
+    Monomial<NTL::ZZ> t;
+
+    for(i=0; i<nequation; ++i) {
+      s.read((char*)(&n),sizeof(int));
+      for(j=0; j<n; ++j) {
+        t.coefficient = read_ZZ(s);
+        s.read((char*)(&m),sizeof(int));
+        for(k=0; k<m; ++k) {
+          s.read((char*)(&l1),sizeof(int));
+          s.read((char*)(&l2),sizeof(int));
+          t.exponents.push_back(std::pair<unsigned int,unsigned int>(l1,l2));
+        }
+        equations[i].push_back(t);
+        t.exponents.clear();
+      }
+    }
+    for(i=0; i<nequation; ++i) {
+      q = read_ZZ(s);
+      remainder.push_back(q);
+    }
+  }
+}
+
+template<class kind>
+void Variety<kind>::read_equations(std::ifstream& s)
 {
   unsigned int i,j,k,l1,l2,n,m;
   kind x;
   Monomial<kind> t;
 
-  clear();
-
-  s.read((char*)(&nequation),sizeof(int));
-  s.read((char*)(&nvariable),sizeof(int));
-  s.read((char*)(&characteristic),sizeof(int));
-  equations = new std::vector<Monomial<kind> >[nequation];
-  s.read((char*)(&linear),sizeof(bool));
-  s.read((char*)(&homogeneous),sizeof(bool));
-  s.read((char*)(&projective),sizeof(bool));  
   for(i=0; i<nequation; ++i) {
     s.read((char*)(&n),sizeof(int));
     for(j=0; j<n; ++j) {
@@ -251,6 +361,22 @@ void Variety<kind>::deserialize(std::ifstream& s)
     s.read((char*)(&x),sizeof(kind));
     remainder.push_back(x);
   }
+}
+
+template<class kind>
+void Variety<kind>::deserialize(std::ifstream& s) 
+{
+  clear();
+
+  s.read((char*)(&nequation),sizeof(int));
+  s.read((char*)(&nvariable),sizeof(int));
+  s.read((char*)(&characteristic),sizeof(int));  
+  s.read((char*)(&linear),sizeof(bool));
+  s.read((char*)(&homogeneous),sizeof(bool));
+  s.read((char*)(&projective),sizeof(bool)); 
+ 
+  equations = new std::vector<Monomial<kind> >[nequation];
+  read_equations(s);
 }
 
 template<class kind>

@@ -40,6 +40,13 @@ Rational::Rational(signed int x,signed int y)
   normalize();
 }
 
+Rational::Rational(const NTL::ZZ& x,const NTL::ZZ& y)
+{
+  n = x;
+  d = y;
+  normalize();
+}
+
 Rational::Rational(const Rational& source)
 {
   n = source.n;

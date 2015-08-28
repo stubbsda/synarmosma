@@ -123,17 +123,35 @@ void Polynomial<kind>::clear()
   normed = false;
 }
 
+namespace SYNARMOSMA {
+  template<>
+  void Polynomial<Rational>::write_terms(std::ofstream& s) const
+  {
+    unsigned int i;
+
+    for(i=0; i<=degree; ++i) {
+      write_ZZ(s,terms[i].numerator());
+      write_ZZ(s,terms[i].denominator());
+    }
+  }
+
+  template<>
+  void Polynomial<NTL::ZZ>::write_terms(std::ofstream& s) const
+  {
+    unsigned int i;
+
+    for(i=0; i<=degree; ++i) {
+      write_ZZ(s,terms[i]);
+    }
+  }
+}
+
 template<class kind>
-void Polynomial<kind>::serialize(std::ofstream& s) const
+void Polynomial<kind>::write_terms(std::ofstream& s) const
 {
   unsigned int i;
   kind t;
 
-  s.write((char*)(&degree),sizeof(int));
-  s.write((char*)(&characteristic),sizeof(int));
-  s.write((char*)(&homogeneous),sizeof(bool));
-  s.write((char*)(&irreducible),sizeof(bool));
-  s.write((char*)(&normed),sizeof(bool));
   for(i=0; i<=degree; ++i) {
     t = terms[i];
     s.write((char*)(&t),sizeof(kind));
@@ -141,11 +159,58 @@ void Polynomial<kind>::serialize(std::ofstream& s) const
 }
 
 template<class kind>
-void Polynomial<kind>::deserialize(std::ifstream& s)
+void Polynomial<kind>::serialize(std::ofstream& s) const
+{
+  s.write((char*)(&degree),sizeof(int));
+  s.write((char*)(&characteristic),sizeof(int));
+  s.write((char*)(&homogeneous),sizeof(bool));
+  s.write((char*)(&irreducible),sizeof(bool));
+  s.write((char*)(&normed),sizeof(bool));
+  write_terms(s);
+}
+
+namespace SYNARMOSMA {
+  template<>
+  void Polynomial<Rational>::read_terms(std::ifstream& s)
+  {
+    unsigned int i;
+    NTL::ZZ t1,t2;
+
+    for(i=0; i<=degree; ++i) {
+      t1 = read_ZZ(s);
+      t2 = read_ZZ(s);
+      terms.push_back(Rational(t1,t2));
+    }
+  }
+
+  template<>
+  void Polynomial<NTL::ZZ>::read_terms(std::ifstream& s)
+  {
+    unsigned int i;
+    NTL::ZZ t;
+
+    for(i=0; i<=degree; ++i) {
+      t = read_ZZ(s);
+      terms.push_back(t);
+    }
+  }
+}
+
+template<class kind>
+void Polynomial<kind>::read_terms(std::ifstream& s)
 {
   unsigned int i;
   kind t;
 
+  for(i=0; i<=degree; ++i) {
+    s.read((char*)(&t),sizeof(kind));
+    terms.push_back(t);
+  }
+}
+
+template<class kind>
+void Polynomial<kind>::deserialize(std::ifstream& s)
+{
   clear();
 
   s.read((char*)(&degree),sizeof(int));
@@ -153,10 +218,7 @@ void Polynomial<kind>::deserialize(std::ifstream& s)
   s.read((char*)(&homogeneous),sizeof(bool));
   s.read((char*)(&irreducible),sizeof(bool));
   s.read((char*)(&normed),sizeof(bool));
-  for(i=0; i<=degree; ++i) {
-    s.read((char*)(&t),sizeof(kind));
-    terms.push_back(t);
-  }
+  read_terms(s);
 }
 
 namespace SYNARMOSMA {

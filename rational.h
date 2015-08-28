@@ -37,6 +37,7 @@ namespace SYNARMOSMA {
     Rational();
     Rational(signed int); 
     Rational(signed int,signed int);
+    Rational(const NTL::ZZ&,const NTL::ZZ&);
     Rational& operator =(const Rational&);
     Rational operator -();
     Rational(const Rational&);

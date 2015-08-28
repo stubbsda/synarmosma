@@ -107,6 +107,36 @@ namespace SYNARMOSMA {
    }
   } 
 
+  void write_ZZ(std::ofstream& s,const NTL::ZZ& p)
+  {
+    int i,n = NTL::NumBytes(p);
+    bool neg = (p < 0) ? true : false;
+    unsigned char q[n];
+
+    s.write((char*)(&neg),sizeof(bool));
+    s.write((char*)(&n),sizeof(int));    
+    NTL::BytesFromZZ(q,p,n);
+    for(i=0; i<n; ++i) {
+      s.write((char*)(&q[i]),sizeof(char));
+    } 
+  }
+
+  NTL::ZZ read_ZZ(std::ifstream& s)
+  {
+    int i,n;
+    bool neg;
+
+    s.read((char*)(&neg),sizeof(bool));
+    s.read((char*)(&n),sizeof(int));
+    unsigned char q[n];
+    for(i=0; i<n; ++i) {
+      s.read((char*)(&q[i]),sizeof(char));
+    }
+    NTL::ZZ output = NTL::ZZFromBytes(q,n);
+    if (neg) output = -output;
+    return output;
+  }
+
   int parity(const std::vector<int>& v1,const std::vector<int>& v2)
   {
     assert(v1.size() == v2.size());

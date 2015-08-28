@@ -52,6 +52,8 @@ namespace SYNARMOSMA {
     void property_check();
     void find_partial(std::vector<unsigned int>&,unsigned int,const std::vector<unsigned int>*) const;
     int compute_zeros() const;
+    void write_equations(std::ofstream&) const;
+    void read_equations(std::ifstream&);
    public:
     Variety();
     Variety(unsigned int);

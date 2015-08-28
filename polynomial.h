@@ -53,6 +53,8 @@ namespace SYNARMOSMA {
   
     void initialize();
     void property_check();
+    void write_terms(std::ofstream&) const;
+    void read_terms(std::ifstream&);
    public:
     Polynomial();
     Polynomial(unsigned int);
