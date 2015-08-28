@@ -205,14 +205,30 @@ void Matrix<kind>::clear(bool deep)
   }
 }
 
+namespace SYNARMOSMA {
+  template<>
+  void Matrix<NTL::ZZ>::write_elements(std::ofstream& s) const
+  {
+    unsigned int i,j,k,n;
+
+    for(i=0; i<nrow; ++i) {
+      n = elements[i].size();
+      s.write((char*)(&n),sizeof(int));
+      for(j=0; j<n; ++j) {        
+        write_ZZ(s,elements[i][j].first);
+        k = elements[i][j].second;
+        s.write((char*)(&k),sizeof(int));
+      }
+    }
+  }
+}
+
 template<class kind>
-void Matrix<kind>::serialize(std::ofstream& s) const
+void Matrix<kind>::write_elements(std::ofstream& s) const
 {
   unsigned int i,j,k,n;
   kind x;
 
-  s.write((char*)(&nrow),sizeof(int));
-  s.write((char*)(&ncolumn),sizeof(int));
   for(i=0; i<nrow; ++i) {
     n = elements[i].size();
     s.write((char*)(&n),sizeof(int));
@@ -226,16 +242,37 @@ void Matrix<kind>::serialize(std::ofstream& s) const
 }
 
 template<class kind>
-void Matrix<kind>::deserialize(std::ifstream& s)
+void Matrix<kind>::serialize(std::ofstream& s) const
+{
+  s.write((char*)(&nrow),sizeof(int));
+  s.write((char*)(&ncolumn),sizeof(int));
+  write_elements(s);
+}
+
+namespace SYNARMOSMA {
+  template<>
+  void Matrix<NTL::ZZ>::read_elements(std::ifstream& s)
+  {
+    unsigned int i,j,k,n;
+    NTL::ZZ p;
+
+    for(i=0; i<nrow; ++i) {
+      s.read((char*)(&n),sizeof(int));
+      for(j=0; j<n; ++j) {
+        p = read_ZZ(s);
+        s.read((char*)(&k),sizeof(int));
+        elements[i].push_back(std::pair<NTL::ZZ,unsigned int>(p,k));
+      }
+    }
+  }
+}
+
+template<class kind>
+void Matrix<kind>::read_elements(std::ifstream& s)
 {
   unsigned int i,j,k,n;
   kind x;
 
-  clear();
-
-  s.read((char*)(&nrow),sizeof(int));
-  s.read((char*)(&ncolumn),sizeof(int));
-  elements = new std::vector<std::pair<kind,unsigned int> >[nrow];
   for(i=0; i<nrow; ++i) {
     s.read((char*)(&n),sizeof(int));
     for(j=0; j<n; ++j) {
@@ -244,6 +281,17 @@ void Matrix<kind>::deserialize(std::ifstream& s)
       elements[i].push_back(std::pair<kind,unsigned int>(x,k));
     }
   }
+}
+
+template<class kind>
+void Matrix<kind>::deserialize(std::ifstream& s)
+{
+  clear();
+
+  s.read((char*)(&nrow),sizeof(int));
+  s.read((char*)(&ncolumn),sizeof(int));
+  elements = new std::vector<std::pair<kind,unsigned int> >[nrow];
+  read_elements(s);
 }
 
 template<class kind>

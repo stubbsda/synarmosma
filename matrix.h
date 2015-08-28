@@ -74,6 +74,8 @@ namespace SYNARMOSMA {
     void transpose(const Matrix<kind>&);
     void clear();
     void clear(bool);
+    void write_elements(std::ofstream&) const;
+    void read_elements(std::ifstream&);
    public:
     static const kind zero;
     static const kind neg1;
