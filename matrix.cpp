@@ -613,9 +613,20 @@ void move_minimum(Matrix<kind>& A,unsigned int n)
     }
     if (VX.empty()) continue;
     full[i-n] = true;
-    alpha = abs(VX[0].first); jm = VX[0].second;
+    if (VX[0].first < 0) {
+      alpha = -VX[0].first;
+    }
+    else {
+      alpha = VX[0].first;
+    }
+    jm = VX[0].second;
     for(j=1; j<VX.size(); ++j) {
-      beta = abs(VX[j].first);
+      if (VX[j].first < 0) {
+        beta = -VX[j].first;
+      }
+      else {
+        beta = VX[j].first;
+      }
       if (beta < alpha) {
         alpha = beta;
         jm = VX[j].second;

@@ -43,21 +43,24 @@ namespace SYNARMOSMA {
     ~Rational();
     NTL::ZZ numerator() const;
     NTL::ZZ denominator() const;
+    friend Rational operator -(const Rational&);
     friend Rational operator +(const Rational&,const Rational&);
     friend Rational operator -(const Rational&,const Rational&);
     friend Rational operator *(const Rational&,const Rational&);
     friend Rational operator /(const Rational&,const Rational&); 
     friend bool operator ==(const Rational&,const Rational&);
+    friend bool operator ==(const Rational&,int);
     friend bool operator !=(const Rational&,const Rational&);
+    friend bool operator !=(const Rational&,int);
     friend bool operator <=(const Rational&,const Rational&);
     friend bool operator >=(const Rational&,const Rational&);
     friend bool operator <(const Rational&,const Rational&);
+    friend bool operator <(const Rational&,int);
     friend bool operator >(const Rational&,const Rational&);
+    friend bool operator >(const Rational&,int);
     friend std::ostream& operator <<(std::ostream&,const Rational&);
-    friend Rational abs(Rational);
   };
 
-  Rational abs(Rational);
   unsigned int convert(const Rational&,unsigned int);
   Rational qdiv(const Rational&,const Rational&);
 }

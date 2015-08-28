@@ -111,10 +111,10 @@ namespace SYNARMOSMA {
       }
       else {
         if (source.degree == 1) {
-          s << "-" << std::abs(source.terms[1]) << "*x ";
+          s << "-" << -source.terms[1] << "*x ";
         }
         else {
-          s << "-" << std::abs(source.terms[source.degree]) << "*x^" << source.degree << " "; 	
+          s << "-" << -source.terms[source.degree] << "*x^" << source.degree << " "; 	
         }
       }
     }
@@ -132,7 +132,7 @@ namespace SYNARMOSMA {
             s << "+ " << source.terms[i] << "*x^" << i << " ";
           }
           else {
-            s << "- " << std::abs(source.terms[i]) << "*x^" << i << " ";
+            s << "- " << -source.terms[i] << "*x^" << i << " ";
           }	    	
         }
       }	
@@ -148,7 +148,7 @@ namespace SYNARMOSMA {
             s << "+ " << source.terms[i] << "*x ";
           }
           else {
-            s << "- " << std::abs(source.terms[i]) << "*x ";
+            s << "- " << -source.terms[i] << "*x ";
           }	    	
         }  	
       }   	
@@ -158,7 +158,7 @@ namespace SYNARMOSMA {
         s << "+ " << source.terms[0];
       }
       else {
-        s << "- " << std::abs(source.terms[0]); 		
+        s << "- " << -source.terms[0]; 		
       }
     } 	
     return s;
@@ -232,12 +232,11 @@ namespace SYNARMOSMA {
     unsigned int i,j,k,mdegree = p1.degree + p2.degree;
     kind sum;
     std::vector<kind> new_terms;
-    const kind zero = kind(0);
 
     new_terms.push_back(p1.terms[0]*p2.terms[0]);
     for(i=0; i<mdegree-1; ++i) {
       // Need all the two factor additive partitions of "i"
-      sum = zero;
+      sum = 0;
       for(j=0; j<=p1.degree; ++j) {
         for(k=0; k<=p2.degree; ++k) {
           if ((j+k) == i) sum = sum + p1.terms[j]*p2.terms[k];

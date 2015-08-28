@@ -96,17 +96,10 @@ void Rational::normalize()
     n = n/c;
     d = d/c;
   }
-  height = (abs(n) > abs(d)) ? log(n) : log(d);
+  height = (NTL::abs(n) > NTL::abs(d)) ? NTL::log(NTL::abs(n)) : NTL::log(NTL::abs(d));
 }
 
 namespace SYNARMOSMA {
-  Rational abs(Rational source)
-  {
-    Rational output;
-    output.n = abs(source.n);
-    output.d = abs(source.d);
-    return output;
-  }
 
   Rational operator +(const Rational& r1,const Rational& r2)
   {
@@ -162,6 +155,14 @@ namespace SYNARMOSMA {
     return s;
   }
 
+  Rational operator -(const Rational& r)
+  {
+    Rational output = r; 
+    if (output.d < 0) output.d = -output.d;
+    if (output.n < 0) output.n = -output.n;
+    return output;
+  }
+
   bool operator >=(const Rational& r1,const Rational& r2)
   {
     if (r1.d == r2.d) {
@@ -178,8 +179,26 @@ namespace SYNARMOSMA {
     return ((r1.n*r2.d) > (r2.n*r1.d));
   }
 
+  bool operator >(const Rational& r1,int alpha)
+  {
+    Rational r2(alpha);
+    if (r1.d == r2.d) {
+      return (r1.n > r2.n);
+    }
+    return ((r1.n*r2.d) > (r2.n*r1.d));
+  }
+
   bool operator <(const Rational& r1,const Rational& r2)
   {
+    if (r1.d == r2.d) {
+      return (r1.n < r2.n);
+    }
+    return ((r1.n*r2.d) < (r2.n*r1.d));
+  }
+
+  bool operator <(const Rational& r1,int alpha)
+  {
+    Rational r2(alpha);
     if (r1.d == r2.d) {
       return (r1.n < r2.n);
     }
@@ -200,8 +219,22 @@ namespace SYNARMOSMA {
     return false;
   }
 
+  bool operator !=(const Rational& r1,int alpha)
+  {
+    Rational r2(alpha);
+    if (r1.n != r2.n || r1.d != r2.d) return true;
+    return false;
+  }
+
   bool operator ==(const Rational& r1,const Rational& r2)
   {
+    if (r1.n == r2.n && r1.d == r2.d) return true;
+    return false;
+  }
+
+  bool operator ==(const Rational& r1,int alpha)
+  {
+    Rational r2(alpha);
     if (r1.n == r2.n && r1.d == r2.d) return true;
     return false;
   }
