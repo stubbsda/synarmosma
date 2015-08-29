@@ -118,9 +118,10 @@ void Multitime::deserialize(std::ifstream& s)
 
 double Multitime::norm() const
 {
+  unsigned int i;
   double sum = 0.0;
   
-  for(int i=0; i<Multitime::tdimension; ++i) {
+  for(i=0; i<Multitime::tdimension; ++i) {
     if (!chronos[i].second) continue;
     sum += chronos[i].first*chronos[i].first;
   }
@@ -129,9 +130,10 @@ double Multitime::norm() const
 
 void Multitime::extract(std::vector<double>& tau) const
 {
+  unsigned int i;
   tau.clear();
 
-  for(int i=0; i<Multitime::tdimension; ++i) {
+  for(i=0; i<Multitime::tdimension; ++i) {
     if (!chronos[i].second) continue;
     tau.push_back(chronos[i].first);
   }
