@@ -17,17 +17,16 @@
   along with Synarmosma.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "edge.h"
-#include "schema.h"
+#include "graph.h"
+#include "poset.h"
 
 #ifndef __dgraph
 #define __dgraph
 
 namespace SYNARMOSMA {
-  class Directed_Graph : public Schema {
+  class Directed_Graph : public Graph {
    private:
-    std::vector<Edge> edges;
-    string_hash index_table;
+    Poset* orientation;
 
     // Hyphantic operators
     bool foliation_x(int,int);
@@ -44,7 +43,7 @@ namespace SYNARMOSMA {
     virtual void serialize(std::ofstream&) const;
     virtual void deserialize(std::ifstream&);
     bool add_edge(int,int);
-    bool add_edge(int,int,DIRECTION);
+    bool add_edge(int,int,RELATION);
     int two_cycles() const;
     bool path_connected(int,int) const;
     void compute_sinks(std::set<int>&) const;

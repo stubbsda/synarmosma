@@ -99,6 +99,7 @@ Graph::Graph(const Graph& source)
   nvertex = source.nvertex;
   neighbours = source.neighbours;
   nedge = source.nedge;
+  edges = source.edges;
 }
 
 Graph& Graph::operator =(const Graph& source) 
@@ -107,6 +108,7 @@ Graph& Graph::operator =(const Graph& source)
   nvertex = source.nvertex;
   neighbours = source.neighbours;
   nedge = source.nedge;
+  edges = source.edges;
   return *this;
 }
 
@@ -242,6 +244,7 @@ void Graph::clear()
   nedge = 0;
   nvertex = 0;
   neighbours.clear();
+  edges.clear();
 }
 
 int Graph::make_complete()
