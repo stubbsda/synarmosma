@@ -117,8 +117,8 @@ bool Schema::connected(unsigned int n,unsigned int m) const
 unsigned int Schema::add_vertex()
 {
   unsigned int nv = vertices.size();
-  std::set<int> empty;
-  vertices.push_back(std::pair<bool,std::set<int> >(true,empty));
+  std::set<unsigned int> empty;
+  vertices.push_back(std::pair<bool,std::set<unsigned int> >(true,empty));
   return nv;
 }
 
@@ -197,64 +197,70 @@ bool Schema::consistent() const
   // or claim to be bonded to nonexistent vertices. If any of these conditions
   // arise, then a relatively verbose error message is printed out, and the method
   // returns false.
-  int i,in1;
-  std::set<int>::const_iterator it;
+  unsigned int i,n,order  = get_order();
+  std::set<unsigned int>::const_iterator it;
 
   // Loop through all vertices
-  for(i=0; i<nvertex; ++i) {
+  for(i=0; i<order; ++i) {
     // Check if the valence is weird
-    if (neighbours[i].size() == 0) return false;
+    if (vertices[i].first && vertices[i].second.size() == 0) return false;
     // Now loop through all the neighbours
-    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
-      in1 = *it;
+    for(it=vertices[i].second.begin(); it!=vertices[i].second.end(); ++it) {
+      n = *it;
       // Check for self-bonding
-      if (in1 == i) return false;
+      if (n == i) {
+        std::cerr << "Self-bonding in schema at vertex " << i << std::endl;
+        return false;
+      }
       // Check for neighbour values that are negative or too large
-      if (in1 >= nvertex) return false;
+      if (n >= order) {
+        std::cerr << "Schema neighbour out of range at " << i << " with " << n << " and " << order << std::endl;
+        return false;
+      }
       // If this neighbour vertex is local, then check to see if it too lists
       // i as a neighbour
-      if (neighbours[in1].count(i) != 1) {
-        std::cerr << "Schema inconsistent at " << i << " and " << in1 << std::endl;
-        std::exit(1);
+      if (vertices[n].second.count(i) != 1) {
+        std::cerr << "Schema inconsistent at " << i << " and " << n << std::endl;
+        return false;
       }
     }
   }
   return true;
 }
 
-void Schema::components(std::vector<int>& csize,std::vector<int>& celements) const
+void Schema::components(std::vector<unsigned int>& csize,std::vector<unsigned int>& celements) const
 {
-  int i,start,nc,noe;
-  std::vector<int> component;
-  std::set<int> change,nchange;
-  std::set<int>::const_iterator it1,it2;
+  unsigned int i,start,noe,nc = 0,order = get_order();
+  bool found,assigned[order];
+  std::set<unsigned int> change,nchange;
+  std::set<unsigned int>::const_iterator it1,it2;
 
-  nc = 0;
-  for(i=0; i<nvertex; ++i) {
-    component.push_back(-1);
+  for(i=0; i<order; ++i) {
+    assigned[i] = false;
   }
 
   do {
-    start = -1;
-    for(i=0; i<nvertex; ++i) {
-      if (component[i] == -1) {
+    found = false;
+    for(i=0; i<order; ++i) {
+      if (vertices[i].first && !assigned[i]) {
         start = i;
+        found = true;
         break;
       }
     }
-    if (start == -1) break;
+    if (!found) break;
     change.insert(start);
     noe = 0;
     do {
-      for(it1=change.begin(); it1!=change.end(); it1++) {
-        component[*it1] = nc;
+      for(it1=change.begin(); it1!=change.end(); ++it1) {
+        assigned[*it1] = true;
         celements.push_back(*it1);
       }
       noe += change.size();
-      for(it1=change.begin(); it1!=change.end(); it1++) {
+      for(it1=change.begin(); it1!=change.end(); ++it1) {
         i = *it1;
-        for(it2=neighbours[i].begin(); it2!=neighbours[i].end(); it2++) {
-          if (component[*it2] < 0) nchange.insert(*it2);
+        for(it2=vertices[i].second.begin(); it2!=vertices[i].second.end(); ++it2) {
+          if (!assigned[*it2]) nchange.insert(*it2);
         }
       }
       if (nchange.empty()) break;
@@ -269,21 +275,25 @@ void Schema::components(std::vector<int>& csize,std::vector<int>& celements) con
 
 bool Schema::connected() const
 {
-  int i,n;
-  std::vector<int> ubiquity;
-  std::set<int> change,nchange;
-  std::set<int>::const_iterator it,jt;
+  unsigned int i,l,n = 0,order = get_order();
+  std::vector<unsigned int> ubiquity;
+  std::set<unsigned int> change,nchange;
+  std::set<unsigned int>::const_iterator it,jt;
 
-  for(i=0; i<nvertex; ++i) {
+  for(i=0; i<order; ++i) {
     ubiquity.push_back(0);
+    if (vertices[i].second.size() > n) {
+      n = vertices[i].second.size();
+      l = i;
+    }
   }
-  ubiquity[0] = 1;
-  change.insert(0);
+  ubiquity[l] = 1;
+  change.insert(l);
 
   do {
     for(it=change.begin(); it!=change.end(); ++it) {
       i = *it;
-      for(jt=neighbours[i].begin(); jt!=neighbours[i].end(); ++jt) {
+      for(jt=vertices[i].second.begin(); jt!=vertices[i].second.end(); ++jt) {
         n = *jt;
         if (ubiquity[n] == 1) continue;
         nchange.insert(n);
@@ -297,32 +307,38 @@ bool Schema::connected() const
     change = nchange;
     nchange.clear();
   } while(true);
-  for(i=0; i<nvertex; ++i) {
+  for(i=0; i<order; ++i) {
+    if (!vertices[i].first) continue;
     if (ubiquity[i] == 0) return false;
   }
   return true;
 }
 
-int Schema::component_analysis(std::vector<int>& component) const
+unsigned int Schema::component_analysis(std::vector<unsigned int>& component) const
 {
-  int i,n,m,start,nc = 0;
-  std::set<int> change,nchange;
-  std::set<int>::const_iterator it,jt;
+  // One potential issue with this method - all the inactive vertices are assigned to 
+  // first connected component of the graph
+  unsigned int i,n,m,start,nc = 0,order = get_order();
+  bool found,assigned[order];
+  std::set<unsigned int> change,nchange;
+  std::set<unsigned int>::const_iterator it,jt;
 
   component.clear();
-  for(i=0; i<nvertex; ++i) {
-    component.push_back(-1);
+  for(i=0; i<order; ++i) {
+    component.push_back(0);
+    assigned[i] = false;
   }
 
   do {
-    start = -1;
-    for(i=0; i<nvertex; ++i) {
-      if (component[i] == -1) {
+    found = false;
+    for(i=0; i<order; ++i) {
+      if (vertices[i].first && !assigned[i]) {
         start = i;
+        found = true;
         break;
       }
     }
-    if (start == -1) break;
+    if (!found) break;
     change.insert(start);
     do {
       for(it=change.begin(); it!=change.end(); ++it) {
@@ -331,9 +347,9 @@ int Schema::component_analysis(std::vector<int>& component) const
       }
       for(it=change.begin(); it!=change.end(); ++it) {
         n = *it;
-        for(jt=neighbours[n].begin(); jt!=neighbours[n].end(); ++jt) {
+        for(jt=vertices[n].second.begin(); jt!=vertices[n].second.end(); ++jt) {
           m = *jt;
-          if (component[m] < 0) nchange.insert(m);
+          if (!assigned[m]) nchange.insert(m);
         }
       }
       if (nchange.empty()) break;
@@ -346,27 +362,32 @@ int Schema::component_analysis(std::vector<int>& component) const
   return nc;
 }
 
-int Schema::spanning_tree(std::vector<int>& tree_edges) const
+unsigned int Schema::spanning_tree(std::vector<unsigned int>& tree_edges) const
 {
-  int ntree,n,m;
-  std::set<int> current,vertices,next;
-  std::set<int>::const_iterator it,jt,kt,lt;
+  unsigned int i,n,m,ntree,order = get_order();
+  std::set<unsigned int> current,vx,next;
+  std::set<unsigned int>::const_iterator it,jt,kt,lt;
 
   // A sanity check...
   assert(connected());
 
-  current.insert(0);
+  for(i=0; i<order; ++i) {
+    if (vertices[i].first) {
+      current.insert(i);
+      break;
+    }
+  }
 
   do {
     for(it=current.begin(); it!=current.end(); ++it) {
-      vertices.insert(*it);
+      vx.insert(*it);
     }
     for(it=current.begin(); it!=current.end(); ++it) {
       n = *it;
-      for(jt=neighbours[n].begin(); jt!=neighbours[n].end(); ++jt) {
+      for(jt=vertices[n].second.begin(); jt!=vertices[n].second.end(); ++jt) {
         m = *jt;
-        kt = std::find(vertices.begin(),vertices.end(),m);
-        if (kt != vertices.end()) continue;
+        kt = std::find(vx.begin(),vx.end(),m);
+        if (kt != vx.end()) continue;
         lt = std::find(next.begin(),next.end(),m);
         if (lt != next.end()) continue;
         next.insert(m);
@@ -383,8 +404,8 @@ int Schema::spanning_tree(std::vector<int>& tree_edges) const
     current = next;
     next.clear();
   } while(true);
-  ntree = (signed) tree_edges.size();
-  assert(nvertex == (1+ntree/2));
+  ntree = tree_edges.size();
+  assert(order == (1 + ntree/2));
   return ntree;
 }
 

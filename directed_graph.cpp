@@ -23,84 +23,88 @@ using namespace SYNARMOSMA;
 
 extern Random RND;
 
-Directed_Graph::Directed_Graph() : Schema() 
+Directed_Graph::Directed_Graph() : Graph() 
 {
 
 }
 
-Directed_Graph::Directed_Graph(int n) : Schema(n)
+Directed_Graph::Directed_Graph(unsigned int n) : Graph(n)
 {
-
+  orientation = new Poset(n);
 }
 
 Directed_Graph::~Directed_Graph()
 {
-
+  delete orientation;
 }
 
 Directed_Graph::Directed_Graph(const Directed_Graph& source)
 {
-  nvertex = source.nvertex;
-  neighbours = source.neighbours;
+  vertices = source.vertices;
   edges = source.edges;
-  index_table = source.index_table;
+  orientation = source.orientation;
 }
 
 Directed_Graph& Directed_Graph::operator =(const Directed_Graph& source) 
 {
   if (this == &source) return *this;
-  nvertex = source.nvertex;
-  neighbours = source.neighbours;
+  vertices = source.vertices;
   edges = source.edges;
-  index_table = source.index_table;
+  orientation = source.orientation;
   return *this;
 }
 
 void Directed_Graph::clear()
 {
-  nvertex = 0;
-  neighbours.clear();
+  vertices.clear();
   edges.clear();
-  index_table.clear();
+  orientation->clear();
 }
 
 void Directed_Graph::serialize(std::ofstream& s) const
 {
-  int i,j,n;
-  std::set<int>::const_iterator it;
+  unsigned int i,j,order = get_order();
+  bool active;
+  std::set<unsigned int>::const_iterator it;
 
-  s.write((char*)(&nvertex),sizeof(int));
-  for(i=0; i<nvertex; ++i) {
-    j = (signed) neighbours[i].size();
+  s.write((char*)(&order),sizeof(int));
+  for(i=0; i<order; ++i) {
+    active = vertices[i].first;
+    s.write((char*)(&active),sizeof(bool));
+    j = vertices[i].second.size();
     s.write((char*)(&j),sizeof(int));
-    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+    for(it=vertices[i].second.begin(); it!=vertices[i].second.end(); ++it) {
       j = *it;
       s.write((char*)(&j),sizeof(int));
     }
   }
-  n = (signed) edges.size();
-  s.write((char*)(&n),sizeof(int));
-  for(i=0; i<n; ++i) {
+  j = edges.size();
+  s.write((char*)(&j),sizeof(int));
+  for(i=0; i<j; ++i) {
     edges[i].serialize(s);
   }
+  orientation->serialize(s);
 }
 
 void Directed_Graph::deserialize(std::ifstream& s)
 {
-  int i,j,k,n;
-  std::set<int> S;
+  unsigned int i,j,k,n,m;
+  bool active;
+  std::set<unsigned int> S;
   Edge q;
 
   clear();
 
-  s.read((char*)(&nvertex),sizeof(int));
-  for(i=0; i<nvertex; ++i) {
-    s.read((char*)(&n),sizeof(int));
-    for(j=0; j<n; ++j) {
+  s.read((char*)(&n),sizeof(int));
+  orientation = new Poset(n);
+  for(i=0; i<n; ++i) {
+    s.read((char*)(&active),sizeof(bool));
+    s.read((char*)(&m),sizeof(int));
+    for(j=0; j<m; ++j) {
       s.read((char*)(&k),sizeof(int));
       S.insert(k);
     }
-    neighbours.push_back(S);
+    vertices.push_back(std::pair<bool,std::set<unsigned int> >(active,S));
     S.clear();
   }
   s.read((char*)(&n),sizeof(int));
@@ -108,13 +112,25 @@ void Directed_Graph::deserialize(std::ifstream& s)
     q.deserialize(s);
     edges.push_back(q);
   }
+  orientation->deserialize(s);
 }
 
-bool Directed_Graph::foliation_x(int v1,int v2)
+bool Directed_Graph::foliation_x(unsigned int v)
+{
+  if (!vertices[v].first) return false;
+  unsigned int w,order = get_order();
+  do {
+    w = RND.irandom(order);
+    if (vertices[w].first && w != v) break;
+  } while(true);
+  return foliation_x(v,w);
+}
+
+bool Directed_Graph::foliation_x(unsigned int v1,unsigned int v2)
 {
   if (v1 == v2) return false;
-  if (neighbours[v1].empty()) return false;
-  if (v2 == -1) v2 = RND.irandom(neighbours[v1]);
+  if (!vertices[v1].first || vertices[v1].second.empty()) return false;
+
   neighbours[v1].erase(v2);
   neighbours[v2].erase(v1);
   std::string clef = make_key(v1,v2);
@@ -128,31 +144,37 @@ bool Directed_Graph::foliation_x(int v1,int v2)
   return true;  
 }
 
-bool Directed_Graph::foliation_m(int v1,int v2)
+bool Directed_Graph::foliation_m(unsigned int v)
 {
-  if (v2 == -1) {
-    do {
-      v2 = RND.irandom(nvertex);
-      if (v2 != v1) break;
-    } while(true);
-  }
+  if (!vertices[v].first) return false;
+  unsigned int w,order = get_order();
+  do {
+    w = RND.irandom(order);
+    if (vertices[w].first && w != v) break;
+  } while(true);
+  return foliation_m(v,w);
+}
+
+bool Directed_Graph::foliation_m(unsigned int v1,unsigned int v2)
+{
+  if (!vertices[v1].first || !vertices[v1].first) return false;
   return add_edge(v1,v2);
 }
 
-int Directed_Graph::fission_x(int v)
+unsigned int Directed_Graph::fission_x(unsigned int v)
 {
-  int u = nvertex;
-  nvertex++;
+  assert(vertices[v].first);
+  unsigned int u = add_vertex();
   add_edge(v,u);
   return u;
 }
 
-int Directed_Graph::fission_m(int v)
+unsigned int Directed_Graph::fission_m(unsigned int v)
 {
-  int u = nvertex;
-  std::set<int> S = neighbours[v];
-  std::set<int>::const_iterator it;
-  nvertex++;
+  unsigned int u = add_vertex();
+  std::set<unsigned int> S = vertices[v].second;
+  std::set<unsigned int>::const_iterator it;
+
   add_edge(v,u);
   for(it=S.begin(); it!=S.end(); ++it) {
     add_edge(u,*it);

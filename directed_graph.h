@@ -29,25 +29,28 @@ namespace SYNARMOSMA {
     Poset* orientation;
 
     // Hyphantic operators
-    bool foliation_x(int,int);
-    bool foliation_m(int,int);
-    int fission_x(int);
-    int fission_m(int);
+    bool foliation_x(unsigned int);
+    bool foliation_x(unsigned int,unsigned int);
+    bool foliation_m(unsigned int);
+    bool foliation_m(unsigned int,unsigned int);
+    unsigned int fission_x(unsigned int);
+    unsigned int fission_m(unsigned int);
    public:
     Directed_Graph();
-    Directed_Graph(int);
+    Directed_Graph(unsigned int);
     Directed_Graph(const Directed_Graph&);
     Directed_Graph& operator =(const Directed_Graph&);
     virtual ~Directed_Graph();
     virtual void clear();
     virtual void serialize(std::ofstream&) const;
     virtual void deserialize(std::ifstream&);
-    bool add_edge(int,int);
-    bool add_edge(int,int,RELATION);
-    int two_cycles() const;
-    bool path_connected(int,int) const;
-    void compute_sinks(std::set<int>&) const;
-    void compute_sources(std::set<int>&) const;
+    bool add_edge(unsigned int,unsigned int);
+    bool add_edge(unsigned int,unsigned int,RELATION);
+    bool alter_orientation(unsigned int,unsigned int,RELATION);
+    unsigned int two_cycles() const;
+    bool path_connected(unsigned int,unsigned int) const;
+    void compute_sinks(std::set<unsigned int>&) const;
+    void compute_sources(std::set<unsigned int>&) const;
   };
 }
 #endif

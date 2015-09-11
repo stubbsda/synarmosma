@@ -26,7 +26,7 @@ Edge::Edge()
   clear();
 }
 
-Edge::Edge(int x,int y) 
+Edge::Edge(unsigned int x,unsigned int y) 
 {
   clear();
   nodes[0] = x;
@@ -68,8 +68,8 @@ void Edge::clear()
 {
   active = true;
   length = 0.0;
-  nodes[0] = -1;
-  nodes[1] = -1;
+  nodes[0] = 0;
+  nodes[1] = 0;
   capacity = 0.0;
   flow = 0.0;
   cyclic = false;

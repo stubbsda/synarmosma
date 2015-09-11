@@ -48,6 +48,7 @@ namespace SYNARMOSMA {
     bool consistent() const;
     void components(std::vector<unsigned int>&,std::vector<unsigned int>&) const;
     inline unsigned int get_order() const;
+    inline unsigned int get_component_number() const {std::vector<unsigned int> temp; return component_analysis(temp);};
   };
 
   inline unsigned int Schema::get_order() const 
