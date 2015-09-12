@@ -49,6 +49,7 @@ namespace SYNARMOSMA {
     virtual void serialize(std::ofstream&) const;
     virtual void deserialize(std::ifstream&);
     inline void add_element() {N += 1;};
+    bool drop_element(unsigned int);
     bool sink(unsigned int) const;
     bool source(unsigned int) const;
     void compute_anteriority(unsigned int,std::set<unsigned int>&) const;

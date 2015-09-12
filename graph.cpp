@@ -210,32 +210,40 @@ bool Graph::planar() const
   return output;
 }
 
-bool Graph::add_edge(int v,int u)
+bool Graph::add_edge(unsigned int v,unsigned int u)
 {
   if (u == v) return false;
-  if (neighbours[v].count(u) == 0) {
-    neighbours[v].insert(u);
-    neighbours[u].insert(v);
-    nedge++;
-    return true;
-  }
-  return false;
+  const unsigned int order = get_order();
+  assert(u < order && v < order);
+  std::set<unsigned int> S;
+
+  S.insert(u); S.insert(v);
+  hash_map::const_iterator qt = index_table.find(S);
+
+  if (qt != index_table.end()) return false;
+  Edge e(v,u);
+  
+  neighbours[v].insert(u);
+  neighbours[u].insert(v);
+  index_table[S] = edges.size();
+  edges.push_back(e);
+  
+  return true;
 }
 
 bool Graph::drop_edge(int v,int u)
 {
   if (u == v) return false;
-  std::set<int>::const_iterator it;
+  const unsigned int order = get_order();
+  assert(u < order && v < order);
+  std::set<unsigned int> S;
 
-  it = neighbours[v].find(u);
-  if (it == neighbours[v].end()) {
-    // Edge doesn't exist...
-    return false;
-  }
-  neighbours[v].erase(*it);
-  it = neighbours[u].find(u);
-  neighbours[u].erase(*it);
-  nedge--;
+  S.insert(u); S.insert(v);
+  hash_map::const_iterator qt = index_table.find(S);
+
+  if (qt == index_table.end()) return false;
+
+
   return true;
 }
 

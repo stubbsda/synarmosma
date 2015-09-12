@@ -31,9 +31,12 @@ namespace SYNARMOSMA {
    protected:
     // The edges
     std::vector<Edge> edges;
+    hash_map index_table;
 
     // Returns the topological energy of this graph
     virtual double compute_energy() const;
+    virtual unsigned int add_vertex();
+    virtual bool drop_vertex(unsigned int);
     // A basic operator for adding an edge
     virtual bool add_edge(unsigned int,unsigned int);
     // A basic operator for undoing the above edge addition

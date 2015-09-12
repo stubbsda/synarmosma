@@ -30,7 +30,7 @@ namespace SYNARMOSMA {
     bool cyclic;
     double flow;
     double capacity;
-    unsigned int nodes[2];
+    std::set<unsigned int> nodes;
 
     void clear();
    public:

@@ -148,16 +148,11 @@ bool Schema::drop_edge(unsigned int n,unsigned int m)
   assert(n < order);
   assert(m < order);
 
-  std::set<unsigned int>::const_iterator it;
-
-  it = vertices[n].second.find(m);
-  if (it == vertices[n].second.end()) {
-    // This edge doesn't exist...
-    return false;
-  }
-  vertices[n].second.erase(*it);
-  it = vertices[m].second.find(n);
-  vertices[m].second.erase(*it);
+  // Check if this edge doesn't exist...
+  if (vertices[n].second.count(m) == 0) return false;
+  
+  vertices[n].second.erase(m);
+  vertices[m].second.erase(n);
   return true;
 }
 

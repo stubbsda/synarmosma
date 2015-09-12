@@ -29,12 +29,12 @@ namespace SYNARMOSMA {
     Poset* orientation;
 
     // Hyphantic operators
-    bool foliation_x(unsigned int);
-    bool foliation_x(unsigned int,unsigned int);
-    bool foliation_m(unsigned int);
-    bool foliation_m(unsigned int,unsigned int);
-    unsigned int fission_x(unsigned int);
-    unsigned int fission_m(unsigned int);
+    virtual bool foliation_x(unsigned int);
+    virtual bool foliation_x(unsigned int,unsigned int);
+    virtual bool foliation_m(unsigned int);
+    virtual bool foliation_m(unsigned int,unsigned int);
+    virtual unsigned int fission_x(unsigned int);
+    virtual unsigned int fission_m(unsigned int);
    public:
     Directed_Graph();
     Directed_Graph(unsigned int);
@@ -44,7 +44,10 @@ namespace SYNARMOSMA {
     virtual void clear();
     virtual void serialize(std::ofstream&) const;
     virtual void deserialize(std::ifstream&);
-    bool add_edge(unsigned int,unsigned int);
+    virtual unsigned int add_vertex();
+    virtual bool drop_vertex(unsigned int);
+    virtual bool add_edge(unsigned int,unsigned int);
+    virtual bool drop_edge(unsigned int,unsigned int);
     bool add_edge(unsigned int,unsigned int,RELATION);
     bool alter_orientation(unsigned int,unsigned int,RELATION);
     unsigned int two_cycles() const;
