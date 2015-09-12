@@ -99,7 +99,6 @@ Graph::Graph(const Graph& source)
   nvertex = source.nvertex;
   neighbours = source.neighbours;
   nedge = source.nedge;
-  edges = source.edges;
 }
 
 Graph& Graph::operator =(const Graph& source) 
@@ -108,7 +107,6 @@ Graph& Graph::operator =(const Graph& source)
   nvertex = source.nvertex;
   neighbours = source.neighbours;
   nedge = source.nedge;
-  edges = source.edges;
   return *this;
 }
 
@@ -210,40 +208,32 @@ bool Graph::planar() const
   return output;
 }
 
-bool Graph::add_edge(unsigned int v,unsigned int u)
+bool Graph::add_edge(int v,int u)
 {
   if (u == v) return false;
-  const unsigned int order = get_order();
-  assert(u < order && v < order);
-  std::set<unsigned int> S;
-
-  S.insert(u); S.insert(v);
-  hash_map::const_iterator qt = index_table.find(S);
-
-  if (qt != index_table.end()) return false;
-  Edge e(v,u);
-  
-  neighbours[v].insert(u);
-  neighbours[u].insert(v);
-  index_table[S] = edges.size();
-  edges.push_back(e);
-  
-  return true;
+  if (neighbours[v].count(u) == 0) {
+    neighbours[v].insert(u);
+    neighbours[u].insert(v);
+    nedge++;
+    return true;
+  }
+  return false;
 }
 
 bool Graph::drop_edge(int v,int u)
 {
   if (u == v) return false;
-  const unsigned int order = get_order();
-  assert(u < order && v < order);
-  std::set<unsigned int> S;
+  std::set<int>::const_iterator it;
 
-  S.insert(u); S.insert(v);
-  hash_map::const_iterator qt = index_table.find(S);
-
-  if (qt == index_table.end()) return false;
-
-
+  it = neighbours[v].find(u);
+  if (it == neighbours[v].end()) {
+    // Edge doesn't exist...
+    return false;
+  }
+  neighbours[v].erase(*it);
+  it = neighbours[u].find(u);
+  neighbours[u].erase(*it);
+  nedge--;
   return true;
 }
 
@@ -252,7 +242,6 @@ void Graph::clear()
   nedge = 0;
   nvertex = 0;
   neighbours.clear();
-  edges.clear();
 }
 
 int Graph::make_complete()

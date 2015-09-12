@@ -23,88 +23,84 @@ using namespace SYNARMOSMA;
 
 extern Random RND;
 
-Directed_Graph::Directed_Graph() : Graph() 
+Directed_Graph::Directed_Graph() : Schema() 
 {
 
 }
 
-Directed_Graph::Directed_Graph(unsigned int n) : Graph(n)
+Directed_Graph::Directed_Graph(int n) : Schema(n)
 {
-  orientation = new Poset(n);
+
 }
 
 Directed_Graph::~Directed_Graph()
 {
-  delete orientation;
+
 }
 
 Directed_Graph::Directed_Graph(const Directed_Graph& source)
 {
-  vertices = source.vertices;
+  nvertex = source.nvertex;
+  neighbours = source.neighbours;
   edges = source.edges;
-  orientation = new Poset(*source.orientation);
+  index_table = source.index_table;
 }
 
 Directed_Graph& Directed_Graph::operator =(const Directed_Graph& source) 
 {
   if (this == &source) return *this;
-  vertices = source.vertices;
+  nvertex = source.nvertex;
+  neighbours = source.neighbours;
   edges = source.edges;
-  orientation = new Poset(*source.orientation);
+  index_table = source.index_table;
   return *this;
 }
 
 void Directed_Graph::clear()
 {
-  vertices.clear();
+  nvertex = 0;
+  neighbours.clear();
   edges.clear();
-  orientation->clear();
+  index_table.clear();
 }
 
 void Directed_Graph::serialize(std::ofstream& s) const
 {
-  unsigned int i,j,order = get_order();
-  bool active;
-  std::set<unsigned int>::const_iterator it;
+  int i,j,n;
+  std::set<int>::const_iterator it;
 
-  s.write((char*)(&order),sizeof(int));
-  for(i=0; i<order; ++i) {
-    active = vertices[i].first;
-    s.write((char*)(&active),sizeof(bool));
-    j = vertices[i].second.size();
+  s.write((char*)(&nvertex),sizeof(int));
+  for(i=0; i<nvertex; ++i) {
+    j = (signed) neighbours[i].size();
     s.write((char*)(&j),sizeof(int));
-    for(it=vertices[i].second.begin(); it!=vertices[i].second.end(); ++it) {
+    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
       j = *it;
       s.write((char*)(&j),sizeof(int));
     }
   }
-  j = edges.size();
-  s.write((char*)(&j),sizeof(int));
-  for(i=0; i<j; ++i) {
+  n = (signed) edges.size();
+  s.write((char*)(&n),sizeof(int));
+  for(i=0; i<n; ++i) {
     edges[i].serialize(s);
   }
-  orientation->serialize(s);
 }
 
 void Directed_Graph::deserialize(std::ifstream& s)
 {
-  unsigned int i,j,k,n,m;
-  bool active;
-  std::set<unsigned int> S;
+  int i,j,k,n;
+  std::set<int> S;
   Edge q;
 
   clear();
 
-  s.read((char*)(&n),sizeof(int));
-  orientation = new Poset(n);
-  for(i=0; i<n; ++i) {
-    s.read((char*)(&active),sizeof(bool));
-    s.read((char*)(&m),sizeof(int));
-    for(j=0; j<m; ++j) {
+  s.read((char*)(&nvertex),sizeof(int));
+  for(i=0; i<nvertex; ++i) {
+    s.read((char*)(&n),sizeof(int));
+    for(j=0; j<n; ++j) {
       s.read((char*)(&k),sizeof(int));
       S.insert(k);
     }
-    vertices.push_back(std::pair<bool,std::set<unsigned int> >(active,S));
+    neighbours.push_back(S);
     S.clear();
   }
   s.read((char*)(&n),sizeof(int));
@@ -112,65 +108,51 @@ void Directed_Graph::deserialize(std::ifstream& s)
     q.deserialize(s);
     edges.push_back(q);
   }
-  orientation->deserialize(s);
 }
 
-bool Directed_Graph::foliation_x(unsigned int v)
-{
-  if (!vertices[v].first) return false;
-  unsigned int w,order = get_order();
-  do {
-    w = RND.irandom(order);
-    if (vertices[w].first && w != v) break;
-  } while(true);
-  return foliation_x(v,w);
-}
-
-bool Directed_Graph::foliation_x(unsigned int v1,unsigned int v2)
+bool Directed_Graph::foliation_x(int v1,int v2)
 {
   if (v1 == v2) return false;
-  if (!vertices[v1].first || vertices[v1].second.empty()) return false;
-  std::set<unsigned int> S;
-
-  S.insert(v1); S.insert(v2);
-  vertices[v1].second.erase(v2);
-  vertices[v2].second.erase(v1);
-  hash_map::const_iterator qt = index_table.find(S);
+  if (neighbours[v1].empty()) return false;
+  if (v2 == -1) v2 = RND.irandom(neighbours[v1]);
+  neighbours[v1].erase(v2);
+  neighbours[v2].erase(v1);
+  std::string clef = make_key(v1,v2);
+  string_hash::const_iterator qt = index_table.find(clef + ":-1");
+  if (qt != index_table.end()) {
+    edges[qt->second].active = false;
+    return true;
+  }
+  qt = index_table.find(clef+":+1");
   edges[qt->second].active = false;
-  return true;
+  return true;  
 }
 
-bool Directed_Graph::foliation_m(unsigned int v)
+bool Directed_Graph::foliation_m(int v1,int v2)
 {
-  if (!vertices[v].first) return false;
-  unsigned int w,order = get_order();
-  do {
-    w = RND.irandom(order);
-    if (vertices[w].first && w != v) break;
-  } while(true);
-  return foliation_m(v,w);
-}
-
-bool Directed_Graph::foliation_m(unsigned int v1,unsigned int v2)
-{
-  if (!vertices[v1].first || !vertices[v1].first) return false;
+  if (v2 == -1) {
+    do {
+      v2 = RND.irandom(nvertex);
+      if (v2 != v1) break;
+    } while(true);
+  }
   return add_edge(v1,v2);
 }
 
-unsigned int Directed_Graph::fission_x(unsigned int v)
+int Directed_Graph::fission_x(int v)
 {
-  assert(vertices[v].first);
-  unsigned int u = add_vertex();
+  int u = nvertex;
+  nvertex++;
   add_edge(v,u);
   return u;
 }
 
-unsigned int Directed_Graph::fission_m(unsigned int v)
+int Directed_Graph::fission_m(int v)
 {
-  unsigned int u = add_vertex();
-  std::set<unsigned int> S = vertices[v].second;
-  std::set<unsigned int>::const_iterator it;
-
+  int u = nvertex;
+  std::set<int> S = neighbours[v];
+  std::set<int>::const_iterator it;
+  nvertex++;
   add_edge(v,u);
   for(it=S.begin(); it!=S.end(); ++it) {
     add_edge(u,*it);
@@ -178,59 +160,67 @@ unsigned int Directed_Graph::fission_m(unsigned int v)
   return u;
 }
 
-unsigned int Directed_Graph::add_vertex()
-{  
-  orientation->add_element();
-  return Graph::add_vertex();
-}
-
-bool Directed_Graph::drop_vertex(unsigned int v)
-{
-  if (!Graph::drop_vertex(v)) return false;
-  orientation->drop_element(v);
-  return true;
-}
-
-bool Directed_Graph::add_edge(unsigned int v1,unsigned int v2)
+bool Directed_Graph::add_edge(int v1,int v2)
 {
   if (v1 == v2) return false;
-  if (!Graph::add_edge(v1,v2)) return false;
+  bool frwd,bkwd;
+  std::string name,base = make_key(v1,v2);
+  string_hash::const_iterator qt;
 
-  // Choose a random orientation for this edge...
-  double alpha = RND.drandom();
-  if (alpha < 0.25) { 
-    orientation->set_order(v1,v2);
+  name = base + ":1";
+  qt = index_table.find(name);
+  frwd = (qt != index_table.end()) ? true : false;
+
+  name = base + ":-1";
+  qt = index_table.find(name);
+  bkwd = (qt != index_table.end()) ? true : false;  
+
+  if (frwd && bkwd) return false;
+
+  neighbours[v1].insert(v2);
+  neighbours[v2].insert(v1);
+
+  if (frwd) {
+    // Add the backward-oriented edge
+    edges.push_back(Edge(v1,v2,BACKWARD));
+    index_table[base+":-1"] = (signed) edges.size() - 1;
   }
-  else if (alpha < 0.5) {
-
+  else if (bkwd) {
+    // Add the forward-oriented edge
+    edges.push_back(Edge(v1,v2,FORWARD));
+    index_table[base+":1"] = (signed) edges.size() - 1;
   }
   else {
-
+    // Randomly choose a direction...
+    if (RND.irandom(2) == 0) {
+      edges.push_back(Edge(v1,v2,FORWARD));
+      index_table[base+":1"] = (signed) edges.size() - 1;
+    }
+    else {
+      edges.push_back(Edge(v1,v2,BACKWARD));
+      index_table[base+":-1"] = (signed) edges.size() - 1;
+    }
   }
   return true;
 }
 
-bool Directed_Graph::add_edge(unsigned int v1,unsigned int v2,RELATION rho)
+bool Directed_Graph::add_edge(int v1,int v2,DIRECTION d)
 {
   if (v1 == v2) return false;
-  if (!Graph::add_edge(v1,v2)) return false;
-
+  string_hash::const_iterator qt;
+  std::string name = make_key(v1,v2) + ":";
   if (v1 < v2) {
-
+    name += (d == FORWARD) ? "1" : "-1";
   }
   else {
-
+    name += (d == FORWARD) ? "-1" : "1";
   }
-
-  return true;
-}
-
-bool Directed_Graph::drop_edge(unsigned int v1,unsigned int v2)
-{
-  if (!Graph::drop_edge(v1,v2)) return false;
-
-  orientation->unset_order(v1,v2);
-
+  qt = index_table.find(name);
+  if (qt != index_table.end()) return false;
+  neighbours[v1].insert(v2);
+  neighbours[v2].insert(v1);
+  edges.push_back(Edge(v1,v2,d));
+  index_table[name] = (signed) edges.size() - 1;
   return true;
 }
 

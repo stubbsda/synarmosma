@@ -25,23 +25,23 @@
 namespace SYNARMOSMA {
   class Cell {
    protected:
-    std::set<unsigned int> vertices;
-    std::set<unsigned int> entourage;
-    std::vector<std::set<unsigned int> > faces;
+    std::set<int> vertices;
+    std::set<int> entourage;
+    std::vector<std::set<int> > faces;
 
    public:
     Cell();
     Cell(const Cell&);
-    Cell(unsigned int);
-    Cell(unsigned int,unsigned int);
-    Cell(const std::set<unsigned int>&);
+    Cell(int);
+    Cell(int,int);
+    Cell(const std::set<int>&);
     virtual ~Cell();
     Cell& operator =(const Cell&);
-    void initialize(unsigned int,unsigned int);
-    void initialize(const std::set<unsigned int>&);
+    void initialize(int,int);
+    void initialize(const std::set<int>&);
     void calculate_faces();
     virtual void clear();
-    inline unsigned int dimension() const; 
+    inline int dimension() const {return (vertices.size() - 1);};
     bool exchange(int,int);
     bool face(const std::set<int>&) const;
     void inline get_vertices(int*) const;
@@ -50,7 +50,7 @@ namespace SYNARMOSMA {
     void get_faces(std::vector<Cell>&) const;
     virtual void serialize(std::ofstream&) const;
     virtual void deserialize(std::ifstream&);
-    inline bool contains(unsigned int) const;
+    inline bool contains(int) const;
     inline bool empty() const {return vertices.empty();};
     friend inline int affinity(const Cell&,const Cell&);
     friend inline bool operator ==(const Cell&,const Cell&);
@@ -60,12 +60,6 @@ namespace SYNARMOSMA {
     friend class Nexus;
     friend class Homology;
   };
-
-  inline unsigned int Cell::dimension() const 
-  {
-    assert(!vertices.empty());
-    return (vertices.size() - 1);
-  }
 
   inline void Cell::get_vertices(std::vector<int>& v) const
   {

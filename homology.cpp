@@ -310,7 +310,8 @@ void Homology::compute_native(const Nexus* NX)
   if (!NX->connected()) {
     // In this case the integral homology group is just the free abelian group
     // on the number of distinct components...
-    betti = NX->get_component_number();
+    std::vector<int> components;
+    betti = NX->component_analysis(components);
   }
   sequence.push_back(Group(betti,torsion));
 
@@ -397,7 +398,8 @@ void Homology::compute_gap(const Nexus* NX)
     if (!(NX->connected())) {
       // In this case the integral homology group is just the free abelian group
       // on the number of distinct components...
-      betti = NX->get_component_number();
+      std::vector<int> components;
+      betti = NX->component_analysis(components);
     }
     sequence.push_back(Group(betti,torsion));
 

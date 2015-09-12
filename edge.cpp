@@ -26,11 +26,19 @@ Edge::Edge()
   clear();
 }
 
-Edge::Edge(unsigned int x,unsigned int y) 
+Edge::Edge(int x,int y) 
 {
   clear();
   nodes[0] = x;
   nodes[1] = y;
+}
+
+Edge::Edge(int x,int y,DIRECTION d)
+{
+  clear();
+  nodes[0] = x;
+  nodes[1] = y;
+  arrow = d;
 }
 
 Edge::~Edge()
@@ -42,6 +50,7 @@ Edge::Edge(const Edge& source)
 {
   active = source.active;
   length = source.length;
+  arrow = source.arrow;
   flow = source.flow;
   capacity = source.capacity;
   nodes[0] = source.nodes[0];
@@ -55,6 +64,7 @@ Edge& Edge::operator =(const Edge& source)
 
   active = source.active;
   length = source.length;
+  arrow = source.arrow;
   flow = source.flow;
   capacity = source.capacity;
   nodes[0] = source.nodes[0];
@@ -68,10 +78,11 @@ void Edge::clear()
 {
   active = true;
   length = 0.0;
-  nodes[0] = 0;
-  nodes[1] = 0;
+  nodes[0] = -1;
+  nodes[1] = -1;
   capacity = 0.0;
   flow = 0.0;
+  arrow = FORWARD;
   cyclic = false;
 }
 
@@ -81,6 +92,7 @@ void Edge::serialize(std::ofstream& s) const
   s.write((char*)(&nodes[1]),sizeof(int));
   s.write((char*)(&active),sizeof(bool));
   s.write((char*)(&cyclic),sizeof(bool));
+  s.write((char*)(&arrow),sizeof(int));
   s.write((char*)(&length),sizeof(double));
   s.write((char*)(&flow),sizeof(double));
   s.write((char*)(&capacity),sizeof(double));
@@ -94,6 +106,7 @@ void Edge::deserialize(std::ifstream& s)
   s.read((char*)(&nodes[1]),sizeof(int));
   s.read((char*)(&active),sizeof(bool));
   s.read((char*)(&cyclic),sizeof(bool));
+  s.read((char*)(&arrow),sizeof(int));
   s.read((char*)(&length),sizeof(double));
   s.read((char*)(&flow),sizeof(double));
   s.read((char*)(&capacity),sizeof(double));

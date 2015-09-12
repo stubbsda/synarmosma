@@ -23,25 +23,33 @@
 #define _edgeh
 
 namespace SYNARMOSMA {
+  enum DIRECTION 
+  {
+      FORWARD,
+      BACKWARD
+  };
+
   class Edge {
    private:
     bool active;
     double length;
+    DIRECTION arrow;
     bool cyclic;
     double flow;
     double capacity;
-    std::set<unsigned int> nodes;
+    int nodes[2];
 
     void clear();
    public:
     Edge();
-    Edge(unsigned int,unsigned int);
+    Edge(int,int);
+    Edge(int,int,DIRECTION);
     Edge(const Edge&);
     ~Edge();
     Edge& operator =(const Edge&);
     void serialize(std::ofstream&) const;
     void deserialize(std::ifstream&);
-    friend class Graph;
+    inline std::string key() const {std::string k = make_key(nodes[0],nodes[1]); k += (arrow == FORWARD) ? ":1" : ":-1"; return k;};
     friend class Directed_Graph;
   };
 }

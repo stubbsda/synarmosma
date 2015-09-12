@@ -18,7 +18,6 @@
 */
 
 #include "schema.h"
-#include "edge.h"
 #include "matrix.h"
 #include "binary_matrix.h"
 
@@ -29,21 +28,18 @@ namespace SYNARMOSMA {
   // The class Graph itself
   class Graph : public Schema {
    protected:
-    // The edges
-    std::vector<Edge> edges;
-    hash_map index_table;
+    // The number of edges
+    int nedge;
 
     // Returns the topological energy of this graph
     virtual double compute_energy() const;
-    virtual unsigned int add_vertex();
-    virtual bool drop_vertex(unsigned int);
     // A basic operator for adding an edge
-    virtual bool add_edge(unsigned int,unsigned int);
+    virtual bool add_edge(int,int);
     // A basic operator for undoing the above edge addition
-    virtual bool drop_edge(unsigned int,unsigned int);
+    virtual bool drop_edge(int,int);
     // A method to minimize the graph topology according 
     // to a fitness function using simulated annealing 
-    int minimize_topology(unsigned int,double,std::vector<double>&);
+    int minimize_topology(int,double,std::vector<double>&);
     // A method to render the graph topology complete
     int make_complete();
    public:
@@ -51,50 +47,50 @@ namespace SYNARMOSMA {
     Graph();
     Graph(const Graph&);
     Graph(const char*);
-    Graph(unsigned int);
-    Graph(unsigned int,unsigned int);
-    Graph(unsigned int,double);
+    Graph(int);
+    Graph(int,int);
+    Graph(int,double);
     Graph& operator =(const Graph&);
     virtual ~Graph();
     virtual void clear();
     // Hyphantic operators
-    virtual bool amputation(unsigned int);
-    virtual bool fusion(unsigned int,unsigned int);
-    virtual bool foliation_x(unsigned int,unsigned int);
-    virtual bool foliation_m(unsigned int,unsigned int);
-    virtual unsigned int fission_x(unsigned int);
-    virtual unsigned int fission_m(unsigned int);
+    virtual bool amputation(int);
+    virtual bool fusion(int,int);
+    virtual bool foliation_x(int,int);
+    virtual bool foliation_m(int,int);
+    virtual int fission_x(int);
+    virtual int fission_m(int);
     // A series of const methods to calculate various graph properties
-    void core(Graph*,unsigned int) const;
+    void core(Graph*,int) const;
     bool planar() const;
     bool biconnected() const;
-    double cosine_similarity(unsigned int,unsigned int) const;
+    double cosine_similarity(int,int) const;
     double inverse_girth() const;
-    double clustering_coefficient(unsigned int) const;
-    unsigned int bridge_count() const;
-    unsigned int depth_first_search(int,int,int,int*,int*) const;
+    double clustering_coefficient(int) const;
+    int bridge_count() const;
+    int depth_first_search(int,int,int,int*,int*) const;
     double cyclicity() const;
     double connectivity() const;
-    unsigned int omega() const;
+    int omega() const;
     void katz_centrality(std::vector<double>&) const;
     void degree_distribution(bool,std::vector<double>&) const;
     double percolation(bool) const;
     double cyclic_resistance() const;
     double entwinement() const;
     double completeness() const;
-    unsigned int cyclomatic_number() const;
-    unsigned int chromatic_number() const;
-    unsigned int boundary_nodes() const;
-    unsigned int max_degree() const;
-    unsigned int min_degree() const;
+    int cyclomatic_number() const;
+    int chromatic_number() const;
+    int boundary_nodes() const;
+    int max_degree() const;
+    int min_degree() const;
     double average_degree() const;
     double return_probability(int,int) const;
     void random_walk(double*,double*,int) const;
     void compute_adjacency_matrix(Binary_Matrix*) const;
     void compute_laplacian(Matrix<double>*) const;
-    unsigned int genus(std::vector<unsigned int>&) const;
-    inline unsigned int size() const;
-    inline unsigned int order() const;
+    int genus(std::vector<int>&) const;
+    inline int size() const {return nedge;};
+    inline int order() const {return nvertex;};
     virtual void serialize(std::ofstream&) const;
     virtual void deserialize(std::ifstream&);
     friend class Nexus;
