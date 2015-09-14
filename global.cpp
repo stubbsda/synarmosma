@@ -146,7 +146,8 @@ namespace SYNARMOSMA {
     }
     assert((n % 2) == 0);
     n /= 2;
-    return ipow(-1,n);
+    int output = (n%2 == 0) ? 1 : -1;
+    return output;
   }
 
   void cross_product(const std::vector<double>& x,const std::vector<double>& y,std::vector<double>& z)
@@ -201,7 +202,7 @@ namespace SYNARMOSMA {
         if (j == i) continue;
         vx.insert(S[j]);
       }
-      p = ipow(-1,i+1);
+      p = ((i+1)%2 == 0) ? 1 : -1; 
       // n is the index of vx in the array of faces...
       qt = face_index.find(vx);
       assert(qt != face_index.end());
