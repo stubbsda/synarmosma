@@ -185,11 +185,6 @@ void Nexus::paste(const Cell& c)
   }
 }
 
-int Nexus::size() const
-{
-  return nvertex;
-}
-
 void Nexus::surface_construction(int stype)
 {
   // A method to construct certain standard surfaces for testing the correctness 

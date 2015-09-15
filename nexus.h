@@ -47,7 +47,7 @@ namespace SYNARMOSMA {
     void paste(const std::set<int>&);
     void paste(const Cell&);
     void regularization();
-    int size() const;
+    inline int size() const {return nvertex;};
     void ascend(int,int,std::vector<Cell>&) const;
     void star(const std::set<std::set<int> >&,std::vector<Cell>*) const;
     void link(const std::set<std::set<int> >&,std::vector<Cell>*) const;

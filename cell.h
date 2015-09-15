@@ -83,8 +83,7 @@ namespace SYNARMOSMA {
 
   inline bool Cell::contains(int v) const
   {
-    std::set<int>::const_iterator it = std::find(vertices.begin(),vertices.end(),v);
-    bool output = (it == vertices.end()) ? false : true;
+    bool output = (vertices.count(v) == 0) ? false : true;
     return output;
   }
 
