@@ -334,7 +334,7 @@ void Poset::write_incastrature(const std::string& filename) const
   for(i=0; i<N; ++i) {
     for(j=0; j<N; ++j) {
       if (i == j) continue;
-      if (get_order(i,j) == AFTER) {
+      if (get_order(i,j) == BEFORE) {
         s << "  \"" << 1+i << "\" -> \"" << 1+j << "\";" << std::endl;
       }
     }

@@ -18,6 +18,7 @@
 */
 
 #include "schema.h"
+#include "edge.h"
 #include "matrix.h"
 #include "binary_matrix.h"
 
@@ -28,8 +29,9 @@ namespace SYNARMOSMA {
   // The class Graph itself
   class Graph : public Schema {
    protected:
-    // The number of edges
-    int nedge;
+    // The edges
+    std::vector<Edge> edges;
+    hash_map index_table;
 
     // Returns the topological energy of this graph
     virtual double compute_energy() const;
@@ -37,11 +39,15 @@ namespace SYNARMOSMA {
     virtual bool add_edge(int,int);
     // A basic operator for undoing the above edge addition
     virtual bool drop_edge(int,int);
+    // A method to handle dropping a vertex, a rather complicated
+    // operation for this class
+    virtual bool drop_vertex(int);
     // A method to minimize the graph topology according 
     // to a fitness function using simulated annealing 
     int minimize_topology(int,double,std::vector<double>&);
     // A method to render the graph topology complete
     int make_complete();
+    virtual bool consistent() const;
    public:
     // The usual public methods for a class
     Graph();
@@ -54,7 +60,6 @@ namespace SYNARMOSMA {
     virtual ~Graph();
     virtual void clear();
     // Hyphantic operators
-    virtual bool amputation(int);
     virtual bool fusion(int,int);
     virtual bool foliation_x(int,int);
     virtual bool foliation_m(int,int);
@@ -89,11 +94,20 @@ namespace SYNARMOSMA {
     void compute_adjacency_matrix(Binary_Matrix*) const;
     void compute_laplacian(Matrix<double>*) const;
     int genus(std::vector<int>&) const;
-    inline int size() const {return nedge;};
+    inline int size() const;
     inline int order() const {return nvertex;};
     virtual void serialize(std::ofstream&) const;
     virtual void deserialize(std::ifstream&);
     friend class Nexus;
   };
+
+  inline int Graph::size() const 
+  {
+    int i,output = 0,n = (signed) edges.size();
+    for(i=0; i<n; ++i) {
+      if (edges[i].active) output++;
+    }
+    return output;
+  }
 }
 #endif

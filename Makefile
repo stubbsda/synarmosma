@@ -1,7 +1,7 @@
-OBJECTS = global.o random.o cell.o nexus.o schema.o group.o graph.o geometry.o word.o rational.o\
+OBJECTS = global.o random.o cell.o nexus.o schema.o group.o geometry.o word.o rational.o\
 variety_wrapper.o polynomial_wrapper.o proposition.o propositional_system.o logic_graph.o edge.o\
-event.o multitime.o binary_matrix.o matrix_wrapper.o functional_equation_wrapper.o directed_graph.o\
-homology.o homotopy.o poset.o lattice.o
+event.o multitime.o binary_matrix.o matrix_wrapper.o functional_equation_wrapper.o\
+homology.o homotopy.o poset.o lattice.o graph.o directed_graph.o
 
 CXX_FLAGS += -fPIC
 

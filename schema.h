@@ -45,7 +45,7 @@ namespace SYNARMOSMA {
     bool positive_valence() const;
     int spanning_tree(std::vector<int>&) const;
     int component_analysis(std::vector<int>&) const;
-    bool consistent() const;
+    virtual bool consistent() const;
     void components(std::vector<int>&,std::vector<int>&) const;
     inline int get_order() const {return nvertex;};
   };

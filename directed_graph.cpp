@@ -23,14 +23,36 @@ using namespace SYNARMOSMA;
 
 extern Random RND;
 
-Directed_Graph::Directed_Graph() : Schema() 
+Directed_Graph::Directed_Graph() : Graph() 
 {
 
 }
 
-Directed_Graph::Directed_Graph(int n) : Schema(n)
+Directed_Graph::Directed_Graph(int n) : Graph(n)
 {
+  for(int i=0; i<n; ++i) {
+    orientation.add_element();
+  }
+}
 
+Directed_Graph::Directed_Graph(int n,double rho) : Graph()
+{
+  // Something probabilistic
+  int i,u,v;
+  double p = 0.0;
+  const double MX = double(n*(n-1))/2.0;
+
+  for(i=0; i<n; ++i) {
+    add_vertex();
+  }
+
+  do {
+    u = RND.irandom(nvertex);
+    v = RND.irandom(nvertex);
+    if (u == v) continue;
+    if (add_edge(u,v)) p = double(edges.size())/MX;  
+  } while(p < rho);
+  assert(connected());
 }
 
 Directed_Graph::~Directed_Graph()
@@ -44,6 +66,7 @@ Directed_Graph::Directed_Graph(const Directed_Graph& source)
   neighbours = source.neighbours;
   edges = source.edges;
   index_table = source.index_table;
+  orientation = source.orientation;
 }
 
 Directed_Graph& Directed_Graph::operator =(const Directed_Graph& source) 
@@ -53,6 +76,7 @@ Directed_Graph& Directed_Graph::operator =(const Directed_Graph& source)
   neighbours = source.neighbours;
   edges = source.edges;
   index_table = source.index_table;
+  orientation = source.orientation;
   return *this;
 }
 
@@ -62,6 +86,29 @@ void Directed_Graph::clear()
   neighbours.clear();
   edges.clear();
   index_table.clear();
+  orientation.clear();
+}
+
+bool Directed_Graph::consistent() const
+{
+  if (!Graph::consistent()) return false;
+  return orientation.consistent();
+}
+
+int Directed_Graph::directedness() const
+{
+  // A method to calculate how many of the edges are directed...
+  int vx[2],output,null = 0;
+  std::vector<Edge>::const_iterator it;
+
+  for(it=edges.begin(); it!=edges.end(); ++it) {
+    if (it->active) {
+      it->get_nodes(vx);
+      if (orientation.get_order(vx[0],vx[1]) == INCOMPARABLE) null++;
+    }
+  }
+  output = size() - null;
+  return output;
 }
 
 void Directed_Graph::serialize(std::ofstream& s) const
@@ -83,6 +130,7 @@ void Directed_Graph::serialize(std::ofstream& s) const
   for(i=0; i<n; ++i) {
     edges[i].serialize(s);
   }
+  orientation.serialize(s);
 }
 
 void Directed_Graph::deserialize(std::ifstream& s)
@@ -108,35 +156,58 @@ void Directed_Graph::deserialize(std::ifstream& s)
     q.deserialize(s);
     edges.push_back(q);
   }
+  orientation.deserialize(s);
 }
 
-bool Directed_Graph::foliation_x(int v1,int v2)
+int Directed_Graph::add_vertex()
 {
-  if (v1 == v2) return false;
-  if (neighbours[v1].empty()) return false;
-  if (v2 == -1) v2 = RND.irandom(neighbours[v1]);
-  neighbours[v1].erase(v2);
-  neighbours[v2].erase(v1);
-  std::string clef = make_key(v1,v2);
-  string_hash::const_iterator qt = index_table.find(clef + ":-1");
-  if (qt != index_table.end()) {
-    edges[qt->second].active = false;
-    return true;
+  int n = Graph::add_vertex();
+  orientation.add_element();
+  return n;
+}
+
+bool Directed_Graph::drop_vertex(int u)
+{
+  if (!Graph::drop_vertex(u)) return false;
+  // We need to re-index the poset, which is rather complicated...
+  int i,j,nv = nvertex+1;
+  RELATION rho;
+  for(i=0; i<nv; ++i) {
+    for(j=0; j<nv; ++j) {
+      if (i < u && j < u) continue;
+      if (i == j) continue;
+      rho = orientation.get_order(i,j);
+      
+    }
   }
-  qt = index_table.find(clef+":+1");
-  edges[qt->second].active = false;
+  orientation.N -= 1;
+  return true; 
+}
+
+bool Directed_Graph::drop_edge(int u,int v)
+{
+  if (!Graph::drop_edge(u,v)) return false;
+  orientation.unset_order(u,v);
   return true;  
 }
 
-bool Directed_Graph::foliation_m(int v1,int v2)
+bool Directed_Graph::foliation_x(int u,int v)
 {
-  if (v2 == -1) {
+  if (u == v) return false;
+  if (neighbours[u].empty()) return false;
+  if (v == -1) v = RND.irandom(neighbours[u]);
+  return drop_edge(u,v);
+}
+
+bool Directed_Graph::foliation_m(int u,int v)
+{
+  if (v == -1) {
     do {
-      v2 = RND.irandom(nvertex);
-      if (v2 != v1) break;
+      v = RND.irandom(nvertex);
+      if (v != u) break;
     } while(true);
   }
-  return add_edge(v1,v2);
+  return add_edge(u,v);
 }
 
 int Directed_Graph::fission_x(int v)
@@ -160,67 +231,28 @@ int Directed_Graph::fission_m(int v)
   return u;
 }
 
-bool Directed_Graph::add_edge(int v1,int v2)
+bool Directed_Graph::add_edge(int u,int v)
 {
-  if (v1 == v2) return false;
-  bool frwd,bkwd;
-  std::string name,base = make_key(v1,v2);
-  string_hash::const_iterator qt;
-
-  name = base + ":1";
-  qt = index_table.find(name);
-  frwd = (qt != index_table.end()) ? true : false;
-
-  name = base + ":-1";
-  qt = index_table.find(name);
-  bkwd = (qt != index_table.end()) ? true : false;  
-
-  if (frwd && bkwd) return false;
-
-  neighbours[v1].insert(v2);
-  neighbours[v2].insert(v1);
-
-  if (frwd) {
-    // Add the backward-oriented edge
-    edges.push_back(Edge(v1,v2,BACKWARD));
-    index_table[base+":-1"] = (signed) edges.size() - 1;
+  if (!Graph::add_edge(u,v)) return false;
+  double alpha = RND.drandom();
+  if (alpha < 0.1) {
+    orientation.set_order(u,v);
   }
-  else if (bkwd) {
-    // Add the forward-oriented edge
-    edges.push_back(Edge(v1,v2,FORWARD));
-    index_table[base+":1"] = (signed) edges.size() - 1;
-  }
-  else {
-    // Randomly choose a direction...
-    if (RND.irandom(2) == 0) {
-      edges.push_back(Edge(v1,v2,FORWARD));
-      index_table[base+":1"] = (signed) edges.size() - 1;
-    }
-    else {
-      edges.push_back(Edge(v1,v2,BACKWARD));
-      index_table[base+":-1"] = (signed) edges.size() - 1;
-    }
+  else if (alpha < 0.2) {
+    orientation.set_order(v,u);
   }
   return true;
 }
 
-bool Directed_Graph::add_edge(int v1,int v2,DIRECTION d)
+bool Directed_Graph::add_edge(int u,int v,RELATION rho)
 {
-  if (v1 == v2) return false;
-  string_hash::const_iterator qt;
-  std::string name = make_key(v1,v2) + ":";
-  if (v1 < v2) {
-    name += (d == FORWARD) ? "1" : "-1";
+  if (!Graph::add_edge(u,v)) return false;
+  if (rho == BEFORE) {
+    return orientation.set_order(u,v);
   }
-  else {
-    name += (d == FORWARD) ? "-1" : "1";
+  else if (rho == AFTER) {
+    return orientation.set_order(v,u);
   }
-  qt = index_table.find(name);
-  if (qt != index_table.end()) return false;
-  neighbours[v1].insert(v2);
-  neighbours[v2].insert(v1);
-  edges.push_back(Edge(v1,v2,d));
-  index_table[name] = (signed) edges.size() - 1;
   return true;
 }
 
@@ -229,9 +261,9 @@ bool Directed_Graph::path_connected(int u,int v) const
   // Is it possible to get from u to v following the orientation of the graph edges?
   int i,j;
   bool output = false;
-  std::set<int> current,next;
+  std::set<int> current,next,S;
   std::set<int>::const_iterator it,jt;
-  string_hash::const_iterator qt;
+  hash_map::const_iterator qt;
 
   current.insert(u);
   do {
@@ -239,10 +271,10 @@ bool Directed_Graph::path_connected(int u,int v) const
       i = *it;
       for(jt=neighbours[i].begin(); jt!=neighbours[i].end(); ++jt) {
         j = *jt;
-        if (j < i) continue;
-        qt = index_table.find(make_key(i,j) + ":1");
-        if (qt == index_table.end()) continue;
-        if (edges[qt->second].active) next.insert(j);
+        S.clear();
+        S.insert(i); S.insert(j);
+        qt = index_table.find(S);
+        if (edges[qt->second].active && orientation.get_order(i,j) == BEFORE) next.insert(j);
       }
     }
     if (next.empty()) break;
@@ -256,39 +288,13 @@ bool Directed_Graph::path_connected(int u,int v) const
   return output;
 }
 
-int Directed_Graph::two_cycles() const
-{
-  // Return how many two-cycles there are in this directed graph
-  int i,j,t_cycle = 0;
-  std::string key;
-  std::set<int>::const_iterator it;
-  string_hash::const_iterator qt;
-
-  for(i=0; i<nvertex; ++i) {
-    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
-      j = *it;
-      if (j < i) continue;
-      key = make_key(i,j);
-      qt = index_table.find(key + ":1");
-      if (qt == index_table.end()) continue;
-      if (!edges[qt->second].active) continue;
-      // Now see if there is an edge going back from j to i...
-      qt = index_table.find(key + ":-1");
-      if (qt == index_table.end()) continue;
-      if (!edges[qt->second].active) continue;
-      t_cycle++;
-    }
-  }
-  return t_cycle;
-}
-
 void Directed_Graph::compute_sinks(std::set<int>& output) const
 {
   int i,j;
   bool sink;
-  std::string key;
+  std::set<int> S;
   std::set<int>::const_iterator it;
-  string_hash::const_iterator qt;
+  hash_map::const_iterator qt;
 
   output.clear();
   // A sink is a vertex all of whose edges are incoming...
@@ -297,10 +303,10 @@ void Directed_Graph::compute_sinks(std::set<int>& output) const
     sink = true;
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
       j = *it;
-      if (j < i) continue;
-      key = make_key(i,j);
-      qt = index_table.find(key + ":1");
-      if (qt != index_table.end()) {
+      S.clear();
+      S.insert(i); S.insert(j);
+      qt = index_table.find(S);
+      if (edges[qt->second].active && orientation.get_order(i,j) == BEFORE) {
         // If this vertex has an outgoing edge, it isn't a sink...
         sink = false;
         break;
@@ -314,9 +320,9 @@ void Directed_Graph::compute_sources(std::set<int>& output) const
 {
   int i,j;
   bool source;
-  std::string key;
+  std::set<int> S;
   std::set<int>::const_iterator it;
-  string_hash::const_iterator qt;
+  hash_map::const_iterator qt;
 
   output.clear();
   // A source is a vertex all of whose edges are outgoing...
@@ -325,10 +331,10 @@ void Directed_Graph::compute_sources(std::set<int>& output) const
     source = true;
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
       j = *it;
-      if (j < i) continue;
-      key = make_key(i,j);
-      qt = index_table.find(key + ":-1");
-      if (qt != index_table.end()) {
+      S.clear();
+      S.insert(i); S.insert(j);
+      qt = index_table.find(S);
+      if (edges[qt->second].active && orientation.get_order(i,j) == AFTER) {
         // If this vertex has an incoming edge, it isn't a source...
         source = false;
         break;

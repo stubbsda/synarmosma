@@ -36,8 +36,8 @@ namespace SYNARMOSMA {
     Nexus(const Nexus&);
     Nexus& operator =(const Nexus&);
     virtual ~Nexus();
-    void serialize(std::ofstream&) const;
-    void deserialize(std::ifstream&);
+    virtual void serialize(std::ofstream&) const;
+    virtual void deserialize(std::ifstream&);
     bool orientable() const;
     bool pseudomanifold(bool*) const;
     void surface_construction(int);
@@ -47,7 +47,6 @@ namespace SYNARMOSMA {
     void paste(const std::set<int>&);
     void paste(const Cell&);
     void regularization();
-    inline int size() const {return nvertex;};
     void ascend(int,int,std::vector<Cell>&) const;
     void star(const std::set<std::set<int> >&,std::vector<Cell>*) const;
     void link(const std::set<std::set<int> >&,std::vector<Cell>*) const;

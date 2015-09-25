@@ -26,7 +26,6 @@ extern Random RND;
 Graph::Graph() : Schema()
 {
   nvertex = 0;
-  nedge = 0;
 }
 
 Graph::Graph(int n) : Schema(n)
@@ -34,7 +33,6 @@ Graph::Graph(int n) : Schema(n)
   // The complete graph on n vertices...
   int i,j;
 
-  nedge = 0;
   for(i=0; i<n; ++i) {
     for(j=1+i; j<n; ++j) {
       add_edge(i,j);
@@ -51,7 +49,6 @@ Graph::Graph(int n,int c) : Schema(n)
 
   assert(c >= 1);
  
-  nedge = 0;
   for(i=0; i<c+1; ++i) {
     for(j=(signed) neighbours[i].size(); j<c; ++j) {
       do {
@@ -69,7 +66,7 @@ Graph::Graph(int n,int c) : Schema(n)
       sum = 0;
       for(k=0; k<i; ++k) {
         sum += neighbours[k].size();
-        if (rho < double(sum)/double(2*nedge)) break;
+        if (rho < double(sum)/double(2*size())) break;
       }
       add_edge(i,k);
     }
@@ -83,7 +80,6 @@ Graph::Graph(int n,double p) : Schema(n)
   int i,j;
   double alpha;
 
-  nedge = 0;
   for(i=0; i<n; ++i) {
     // Compute a lower bound for the valence of this vertex
     for(j=1+i; j<n; ++j) {
@@ -98,7 +94,7 @@ Graph::Graph(const Graph& source)
 {
   nvertex = source.nvertex;
   neighbours = source.neighbours;
-  nedge = source.nedge;
+  edges = source.edges;
 }
 
 Graph& Graph::operator =(const Graph& source) 
@@ -106,7 +102,7 @@ Graph& Graph::operator =(const Graph& source)
   if (this == &source) return *this;
   nvertex = source.nvertex;
   neighbours = source.neighbours;
-  nedge = source.nedge;
+  edges = source.edges;
   return *this;
 }
 
@@ -115,13 +111,32 @@ Graph::~Graph()
 
 }
 
+bool Graph::consistent() const
+{
+  if (!Schema::consistent()) return false;
+  int i,j,vx[2],nedge = (signed) edges.size();
+  std::set<int>::const_iterator it;
+  for(i=0; i<nedge; ++i) {
+    if (edges[i].nodes.size() != 2) return false;
+    j = 0;
+    for(it=edges[i].nodes.begin(); it!=edges[i].nodes.end(); ++it) {
+      vx[j] = *it; ++j;
+    }
+    if (vx[0] < 0 || vx[0] >= nvertex) return false;
+    if (vx[1] < 0 || vx[1] >= nvertex) return false;
+    if (!edges[i].active) continue;
+    if (neighbours[vx[0]].count(vx[1]) == 0) return false;
+    if (neighbours[vx[1]].count(vx[0]) == 0) return false;
+  }
+  return true;
+}
+
 void Graph::serialize(std::ofstream& s) const
 {
-  int i,j;
+  int i,j,nedge = (signed) edges.size();
   std::set<int>::const_iterator it;
 
   s.write((char*)(&nvertex),sizeof(int));
-  s.write((char*)(&nedge),sizeof(int));
   for(i=0; i<nvertex; ++i) {
     j = (signed) neighbours[i].size();
     s.write((char*)(&j),sizeof(int));
@@ -130,18 +145,21 @@ void Graph::serialize(std::ofstream& s) const
       s.write((char*)(&j),sizeof(int));
     }
   }
-
+  s.write((char*)(&nedge),sizeof(int));
+  for(i=0; i<nedge; ++i) {
+    edges[i].serialize(s);
+  }
 }
 
 void Graph::deserialize(std::ifstream& s)
 {
   int i,j,k,n;
+  Edge q;
   std::set<int> S;
 
   clear();
 
   s.read((char*)(&nvertex),sizeof(int));
-  s.read((char*)(&nedge),sizeof(int));
   for(i=0; i<nvertex; ++i) {
     s.read((char*)(&n),sizeof(int));
     for(j=0; j<n; ++j) {
@@ -150,6 +168,12 @@ void Graph::deserialize(std::ifstream& s)
     }
     neighbours.push_back(S);
     S.clear();
+  }
+  s.read((char*)(&n),sizeof(int));
+  for(i=0; i<n; ++i) {
+    q.deserialize(s);
+    edges.push_back(q);
+    index_table[q.nodes] = i;
   }
 }
 
@@ -167,7 +191,7 @@ void Graph::core(Graph* G,int k) const
   else if (k < min_degree()) {
     // The k-core is just the graph as a whole in this case...
     G->nvertex = nvertex; 
-    G->nedge = nedge;
+    G->edges = edges;
     G->neighbours = neighbours;
     return;
   }
@@ -176,7 +200,7 @@ void Graph::core(Graph* G,int k) const
   bool found;
 
   G->nvertex = nvertex; 
-  G->nedge = nedge;
+  G->edges = edges;
   G->neighbours = neighbours;
 
   do {
@@ -188,7 +212,7 @@ void Graph::core(Graph* G,int k) const
     found = false;
     for(i=0; i<G->nvertex; ++i) {
       if ((signed) G->neighbours[i].size() < k) {
-        G->amputation(i);
+        G->drop_vertex(i);
         found = true;
         break;
       }
@@ -200,7 +224,7 @@ void Graph::core(Graph* G,int k) const
 bool Graph::planar() const
 {
   if (nvertex <= 2) return true;
-  if (nedge > (3*nvertex - 6)) return false;
+  if (size() > (3*nvertex - 6)) return false;
   // Now the hard case where we need to do some work
   // to get the answer...
   bool output = true;
@@ -208,13 +232,81 @@ bool Graph::planar() const
   return output;
 }
 
+bool Graph::drop_vertex(int v)
+{
+  assert(v >= 0 && v < nvertex);
+  int i,j,nedges = (signed) edges.size();
+  std::vector<int> deletion;
+  std::set<int> S = neighbours[v];
+  std::set<int>::const_iterator it;
+
+  for(it=S.begin(); it!=S.end(); ++it) {
+    neighbours[*it].erase(v);
+  }
+  //nedge -= S.size();
+  for(i=0; i<nvertex; ++i) {
+    if (i == v) continue;
+    S.clear();
+    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+      j = *it;
+      if (j > v) {
+        S.insert(j-1);
+      }
+      else {
+        S.insert(j);
+      }
+    }
+    neighbours[i] = S;
+  }
+  nvertex--;
+  neighbours.erase(neighbours.begin() + v);
+  // In this case we will need to delete the edges containing v, 
+  // since the 
+  index_table.clear();
+  for(i=0; i<nedges; ++i) {
+    if (edges[i].nodes.count(v) > 0) {
+      deletion.push_back(i);
+      continue;
+    }
+    S.clear();
+    for(it=edges[i].nodes.begin(); it!=edges[i].nodes.end(); ++it) {
+      j = *it;
+      if (j > v) {
+        S.insert(j-1);
+      }
+      else {
+        S.insert(j);
+      }
+    }
+    edges[i].nodes = S;
+  }
+  j = (signed) deletion.size();
+  for(i=j-1; i>=0; --i) {
+    edges.erase(edges.begin() + deletion[i]);
+  }
+  for(i=0; i<(signed) edges.size(); ++i) {
+    index_table[edges[i].nodes] = i;
+  }
+  return true;
+}
+
 bool Graph::add_edge(int v,int u)
 {
   if (u == v) return false;
-  if (neighbours[v].count(u) == 0) {
+  if (!connected(v,u)) {
     neighbours[v].insert(u);
     neighbours[u].insert(v);
-    nedge++;
+    std::set<int> vx; vx.insert(v); vx.insert(u);
+    hash_map::const_iterator qt = index_table.find(vx);
+    if (qt == index_table.end()) {
+      Edge q(v,u);
+      index_table[q.nodes] = (signed) edges.size();
+      edges.push_back(q);
+    }
+    else {
+      assert(!edges[qt->second].active);
+      edges[qt->second].active = true;
+    }
     return true;
   }
   return false;
@@ -223,25 +315,23 @@ bool Graph::add_edge(int v,int u)
 bool Graph::drop_edge(int v,int u)
 {
   if (u == v) return false;
-  std::set<int>::const_iterator it;
+  if (!connected(v,u)) return false;
 
-  it = neighbours[v].find(u);
-  if (it == neighbours[v].end()) {
-    // Edge doesn't exist...
-    return false;
-  }
-  neighbours[v].erase(*it);
-  it = neighbours[u].find(u);
-  neighbours[u].erase(*it);
-  nedge--;
+  neighbours[u].erase(v);
+  neighbours[v].erase(u);
+  std::set<int> vx; vx.insert(u); vx.insert(v);
+  hash_map::const_iterator qt = index_table.find(vx);
+  edges[qt->second].active = false;
+
   return true;
 }
 
 void Graph::clear()
 {
-  nedge = 0;
   nvertex = 0;
   neighbours.clear();
+  edges.clear();
+  index_table.clear();
 }
 
 int Graph::make_complete()
@@ -259,36 +349,6 @@ int Graph::make_complete()
   return sum;
 }
 
-bool Graph::amputation(int v)
-{
-  assert(v >= 0 && v < nvertex);
-  int i,j;
-  std::set<int> S = neighbours[v];
-  std::set<int>::const_iterator it;
-
-  for(it=S.begin(); it!=S.end(); ++it) {
-    neighbours[*it].erase(v);
-  }
-  nedge -= S.size();
-  for(i=0; i<nvertex; ++i) {
-    if (i == v) continue;
-    S.clear();
-    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
-      j = *it;
-      if (j > v) {
-        S.insert(j-1);
-      }
-      else {
-        S.insert(j);
-      }
-    }
-    neighbours[i] = S;
-  }
-  nvertex--;
-  neighbours.erase(neighbours.begin() + v);
-  return true;
-}
-
 bool Graph::fusion(int v,int u)
 {
   if (u == v) return false;
@@ -296,10 +356,10 @@ bool Graph::fusion(int v,int u)
     if (neighbours[v].empty()) return false;
     u = RND.irandom(neighbours[v]);
   }
+  if (!drop_vertex(u)) return false;
   int i;
   std::set<int> S = neighbours[u];
   std::set<int>::const_iterator it;
-  amputation(u);
   if (u < v) v = v - 1;
   for(it=S.begin(); it!=S.end(); ++it) {
     i = *it;
@@ -315,10 +375,7 @@ bool Graph::foliation_x(int v,int u)
   if (u == v) return false;
   if (neighbours[v].empty()) return false;
   if (u == -1) u = RND.irandom(neighbours[v]);
-  neighbours[v].erase(u);
-  neighbours[u].erase(v);
-  nedge--;
-  return true;
+  return drop_edge(v,u);
 }
 
 bool Graph::foliation_m(int v,int u)
@@ -588,7 +645,7 @@ double Graph::percolation(bool site) const
   int i,n,nc;
   double output;
   std::vector<int> csize,components;
-  const double NE = double(nedge);
+  const double NE = double(size());
   const double NV = double(nvertex);
   
   Graph wcopy(*this);
@@ -597,7 +654,7 @@ double Graph::percolation(bool site) const
     // Site percolation - we remove vertices and their associated edges...
     do {
       n = RND.irandom(wcopy.nvertex);
-      if (!wcopy.amputation(n)) continue;
+      if (!wcopy.drop_vertex(n)) continue;
       nc = wcopy.component_analysis(components);
       if (nc == 1) continue;
       // We need to see if the giant component still exists...
@@ -638,7 +695,7 @@ double Graph::percolation(bool site) const
       if (double(csize[nc-1])/double(csize[nc-2]) < 2.0) break;
       csize.clear();
     } while(true);
-    output = double(wcopy.nedge)/NE;
+    output = double(wcopy.size())/NE;
   }
   return output;
 }
@@ -666,7 +723,7 @@ double Graph::cosine_similarity(int u,int v) const
 double Graph::inverse_girth() const
 {
   assert(nvertex > 0);
-  int i,j,p,q,alpha,output = 1 + nedge,done[nvertex],parent[nvertex],dist[nvertex];
+  int i,j,p,q,alpha,output = 1 + size(),done[nvertex],parent[nvertex],dist[nvertex];
   std::set<int> current,next;
   std::set<int>::const_iterator it,jt;
 
@@ -701,13 +758,13 @@ double Graph::inverse_girth() const
     } while(true);
     current.clear();
   }
-  double ginv = (output == (1+nedge)) ? 0.0 : 1.0/double(output);
+  double ginv = (output == (1+size())) ? 0.0 : 1.0/double(output);
   return ginv;
 }
 
 int Graph::cyclomatic_number() const
 {
-  return (nedge - nvertex + 1);
+  return (size() - nvertex + 1);
 }
 
 int Graph::max_degree() const
@@ -722,7 +779,7 @@ int Graph::max_degree() const
 
 int Graph::min_degree() const
 {
-  int i,n,output = 1 + nedge;
+  int i,n,output = 1 + size();
   for(i=0; i<nvertex; ++i) {
     n = (signed) neighbours[i].size();
     if (n < output) output = n;
@@ -745,7 +802,7 @@ double Graph::completeness() const
   double output = 0.0;
   if (nvertex == 1) return output;
 
-  output = 2.0*double(nedge)/double(nvertex*(nvertex-1));
+  output = 2.0*double(size())/double(nvertex*(nvertex-1));
   return output;
 }
 
@@ -880,7 +937,7 @@ double Graph::cyclic_resistance() const
   for(i=0; i<nvertex; ++i) {
     sum += L[nvertex*i+i];
   }
-  sum -= nedge;
+  sum -= double(size()); 
 
   delete[] work;
   delete[] pivots;
@@ -931,6 +988,7 @@ int Graph::bridge_count() const
 
 double Graph::cyclicity() const
 {
+  const int nedge = size();
   double output = double(nedge - bridge_count())/double(nedge);
   return output;
 }
@@ -942,6 +1000,7 @@ int Graph::genus(std::vector<int>& gamma) const
   gamma.clear();
   assert(connected());
   if (planar()) return 0;
+  int nedge = size();
   int ll = std::ceil(double(nedge)/6.0 - 0.5*double(nvertex) + 1.0);
   int ul = std::floor(0.5*double(nedge - nvertex + 1));
   // If the lower and upper limits are identical, then we have the genus of the graph
@@ -1124,11 +1183,9 @@ int Graph::minimize_topology(int nsteps,double temperature,std::vector<double>& 
       m = RND.irandom(nvertex);
       if (n != m) break;
     } while(true);
-    if (neighbours[n].count(m) == 1) {
+    if (connected(n,m)) {
       // The edge exists, so delete it...
-      neighbours[n].erase(m);
-      neighbours[m].erase(n);
-      nedge--;
+      drop_edge(n,m);
       added = false;
     }
     else {
@@ -1159,9 +1216,7 @@ int Graph::minimize_topology(int nsteps,double temperature,std::vector<double>& 
         // This one is rejected, so let the other CPUs know this, and rollback the 
         // mutation
         if (added) {
-          neighbours[n].erase(m);
-          neighbours[m].erase(n);
-          nedge--;
+          drop_edge(n,m);
         }
         else {
           add_edge(n,m);

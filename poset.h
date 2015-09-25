@@ -36,8 +36,9 @@ namespace SYNARMOSMA {
     boost::unordered_map<std::pair<unsigned int,unsigned int>,bool> order;
 
     void compute_width(unsigned int,unsigned int,std::set<unsigned int>&) const;
-    RELATION get_order(unsigned int,unsigned int) const;
     unsigned int build_chain(std::vector<unsigned int>&,unsigned int) const;
+    virtual void serialize(std::ofstream&) const;
+    virtual void deserialize(std::ifstream&);
    public:
     Poset();
     Poset(unsigned int);
@@ -46,8 +47,6 @@ namespace SYNARMOSMA {
     virtual ~Poset();
     virtual void clear();
     virtual bool consistent() const;
-    virtual void serialize(std::ofstream&) const;
-    virtual void deserialize(std::ifstream&);
     inline void add_element() {N += 1;};
     bool sink(unsigned int) const;
     bool source(unsigned int) const;
@@ -60,6 +59,8 @@ namespace SYNARMOSMA {
     bool covered(unsigned int,unsigned int) const;
     unsigned int chain_number(unsigned int) const;
     void write_incastrature(const std::string&) const;
+    RELATION get_order(unsigned int,unsigned int) const;
+    friend class Directed_Graph;
   };
 }
 #endif

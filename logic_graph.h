@@ -35,13 +35,13 @@ namespace SYNARMOSMA {
     double rationalize_topology();
     void compute_logical_breadth();
 
-    virtual bool amputation(int);
     virtual bool fusion(int,int);
     virtual bool foliation_x(int,int);
     virtual bool foliation_m(int,int);
     virtual int fission_x(int);
     virtual int fission_m(int);
     virtual bool add_edge(int,int);  
+    virtual bool drop_vertex(int);
    public:
     Logic_Graph();
     Logic_Graph(int);

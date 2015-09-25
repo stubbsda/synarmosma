@@ -112,6 +112,7 @@ bool Schema::connected(int n,int m) const
 
   if (neighbours[n].count(m) == 0) {
     // This edge doesn't exist...
+    assert(neighbours[m].count(n) == 0);
     return false;
   }
   return true;

@@ -37,7 +37,7 @@ Logic_Graph::Logic_Graph(const Logic_Graph& source)
 {
   nvertex = source.nvertex;
   neighbours = source.neighbours;
-  nedge = source.nedge;
+  edges = source.edges;
   logical_breadth = source.logical_breadth;
   if (nvertex > 0) {
     logic = new Propositional_System(nvertex);
@@ -51,7 +51,7 @@ Logic_Graph& Logic_Graph::operator =(const Logic_Graph& source)
   if (nvertex > 0) delete logic;
   nvertex = source.nvertex;
   neighbours = source.neighbours;
-  nedge = source.nedge;
+  edges = source.edges;
   logical_breadth = source.logical_breadth;
   if (nvertex > 0) {
     logic = new Propositional_System(nvertex);
@@ -74,17 +74,17 @@ void Logic_Graph::clear()
 {
   logic->clear();
   nvertex = 0;
-  nedge = 0;
+  edges.clear();
+  index_table.clear();
   neighbours.clear();
 }
 
 void Logic_Graph::serialize(std::ofstream& s) const
 {
-  int i,j;
+  int i,j,nedge = edges.size();
   std::set<int>::const_iterator it;
 
   s.write((char*)(&nvertex),sizeof(int));
-  s.write((char*)(&nedge),sizeof(int));
   for(i=0; i<nvertex; ++i) {
     j = (signed) neighbours[i].size();
     s.write((char*)(&j),sizeof(int));
@@ -93,18 +93,22 @@ void Logic_Graph::serialize(std::ofstream& s) const
       s.write((char*)(&j),sizeof(int));
     }
   }
+  s.write((char*)(&nedge),sizeof(int));
+  for(i=0; i<nedge; ++i) {
+    edges[i].serialize(s);
+  }
   logic->serialize(s);
 }
 
 void Logic_Graph::deserialize(std::ifstream& s)
 {
   int i,j,k,n;
+  Edge q;
   std::set<int> S;
 
   clear();
 
   s.read((char*)(&nvertex),sizeof(int));
-  s.read((char*)(&nedge),sizeof(int));
   for(i=0; i<nvertex; ++i) {
     s.read((char*)(&n),sizeof(int));
     for(j=0; j<n; ++j) {
@@ -113,6 +117,12 @@ void Logic_Graph::deserialize(std::ifstream& s)
     }
     neighbours.push_back(S);
     S.clear();
+  }
+  s.read((char*)(&n),sizeof(int));
+  for(i=0; i<n; ++i) {
+    q.deserialize(s);
+    edges.push_back(q);
+    index_table[q.nodes] = i;
   }
   logic->deserialize(s);
   compute_logical_breadth();
@@ -183,9 +193,9 @@ double Logic_Graph::rationalize_topology()
   return double(rsum)/double(nvertex);
 }
 
-bool Logic_Graph::amputation(int v)
+bool Logic_Graph::drop_vertex(int v)
 {
-  if (Graph::amputation(v)) {
+  if (Graph::drop_vertex(v)) {
     logic->theorems.erase(logic->theorems.begin() + v);
     logic->truth.erase(logic->truth.begin() + v);
     return true;
