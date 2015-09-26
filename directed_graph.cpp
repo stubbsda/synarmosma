@@ -170,14 +170,39 @@ bool Directed_Graph::drop_vertex(int u)
 {
   if (!Graph::drop_vertex(u)) return false;
   // We need to re-index the poset, which is rather complicated...
-  int i,j,nv = nvertex+1;
+  int i,j,nv = nvertex + 1;
   RELATION rho;
-  for(i=0; i<nv; ++i) {
-    for(j=0; j<nv; ++j) {
+  for(i=nv-1; i>=0; --i) {
+    for(j=nv-1; j>=0; --j) {
       if (i < u && j < u) continue;
       if (i == j) continue;
       rho = orientation.get_order(i,j);
-      
+      if (rho == INCOMPARABLE) continue;
+      if (i >= u && j >= u) {
+        if (rho == BEFORE) {
+          orientation.set_order(i-1,j-1);
+        }
+        else {
+          orientation.set_order(j-1,i-1);
+        }
+      }
+      else if (i >= u) {
+        if (rho == BEFORE) {
+          orientation.set_order(i-1,j);
+        }
+        else {
+          orientation.set_order(j,i-1);
+        }
+      }
+      else {
+        // Has to be j >= u
+        if (rho == BEFORE) {
+          orientation.set_order(i,j-1);
+        }
+        else {
+          orientation.set_order(j-1,i);
+        }
+      }
     }
   }
   orientation.N -= 1;
