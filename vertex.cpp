@@ -17,87 +17,78 @@
   along with Synarmosma.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "event.h"
+#include "vertex.h"
 
 using namespace SYNARMOSMA;
 
 extern Random RND;
 
-Event::Event()
+Vertex::Vertex()
 {
-  initialize();
+  clear();
 }
 
-Event::Event(const Event& source)
+Vertex::Vertex(const Vertex& source)
 {
-  proper_time = source.proper_time;
   energy = source.energy;
   neighbours = source.neighbours;
   entourage = source.entourage;
-  observation = source.observation;
+  theorem = source.theorem;
   incept = source.incept;
   topological_dimension = source.topological_dimension;
-  colour = source.colour;
-  past = source.past;
-  future = source.future;
+  anterior = source.anterior;
+  posterior = source.posterior;
 }
 
-Event& Event::operator =(const Event& source)
+Vertex& Vertex::operator =(const Vertex& source)
 {
   if (this == &source)  return *this;
-  proper_time = source.proper_time;
   energy = source.energy;
   neighbours = source.neighbours;
   entourage = source.entourage;
-  observation = source.observation;
+  theorem = source.theorem;
   incept = source.incept;
   topological_dimension = source.topological_dimension;
-  colour = source.colour;
-  past = source.past;
-  future = source.future;
+  anterior = source.anterior;
+  posterior = source.posterior;
   return *this;
 }
 
-Event::~Event()
+Vertex::~Vertex()
 {
 
 }
 
-void Event::clear()
+void Vertex::clear()
 {
-  incept = -1;
-  colour = -1;
+  incept = 0;
   energy = 0.0;
   topological_dimension = 0;
-  past.clear();
-  future.clear();
+  anterior.clear();
+  posterior.clear();
   entourage.clear();
   neighbours.clear();
-  proper_time.clear();
-  observation.clear();
+  theorem.clear();
 }
 
-void Event::serialize(std::ofstream& s) const
+void Vertex::serialize(std::ofstream& s) const
 {
-  int i,j,n,m;
-  char q;
+  int i,n;
   std::set<int>::const_iterator it;
 
   s.write((char*)(&incept),sizeof(int));
-  s.write((char*)(&colour),sizeof(int));
   s.write((char*)(&topological_dimension),sizeof(int));
   s.write((char*)(&energy),sizeof(double));
-  proper_time.serialize(s);
-  observation.serialize(s);
-  n = (signed) past.size();
+  theorem.serialize(s);
+  n = (signed) anterior.size();
   s.write((char*)(&n),sizeof(int));
-  for(it=past.begin(); it!=past.end(); ++it) {
+  for(it=anterior.begin(); it!=anterior.end(); ++it) {
     i = *it;
     s.write((char*)(&i),sizeof(int));
   }
-  n = (signed) future.size();
+  n = (signed) posterior.size();
   s.write((char*)(&n),sizeof(int));
-  for(it=future.begin(); it!=future.end(); ++it) {
+  for(it=posterior.begin(); it!=posterior.end(); ++it) {
     i = *it;
     s.write((char*)(&i),sizeof(int));
   }
@@ -109,39 +100,31 @@ void Event::serialize(std::ofstream& s) const
   }
   n = (signed) entourage.size();
   s.write((char*)(&n),sizeof(int));
-  for(i=0; i<n; ++i) {
-    m = (signed) entourage[i].size();
-    s.write((char*)(&m),sizeof(int));
-    for(j=0; j<m; ++j) {
-      q = entourage[i][j];
-      s.write((char*)(&q),sizeof(char));
-    }
+  for(it=entourage.begin(); it!=entourage.end(); ++it) {
+    i = *it;
+    s.write((char*)(&i),sizeof(int));
   }
 }
 
-void Event::deserialize(std::ifstream& s)
+void Vertex::deserialize(std::ifstream& s)
 {
-  int i,j,n,m;
-  char q;
-  std::string estring;
+  int i,j,n;
 
   clear();
 
   s.read((char*)(&incept),sizeof(int));
-  s.read((char*)(&colour),sizeof(int));
   s.read((char*)(&topological_dimension),sizeof(int));
   s.read((char*)(&energy),sizeof(double));
-  proper_time.deserialize(s);
-  observation.deserialize(s);
+  theorem.deserialize(s);
   s.read((char*)(&n),sizeof(int));
   for(i=0; i<n; ++i) {
     s.read((char*)(&j),sizeof(int));
-    past.insert(j);
+    anterior.insert(j);
   }
   s.read((char*)(&n),sizeof(int));
   for(i=0; i<n; ++i) {
     s.read((char*)(&j),sizeof(int));
-    future.insert(j);
+    posterior.insert(j);
   }
   s.read((char*)(&n),sizeof(int));
   for(i=0; i<n; ++i) {
@@ -150,28 +133,9 @@ void Event::deserialize(std::ifstream& s)
   }
   s.read((char*)(&n),sizeof(int));
   for(i=0; i<n; ++i) {
-    s.read((char*)(&m),sizeof(int));
-    for(j=0; j<m; ++j) {
-      s.read((char*)(&q),sizeof(char));
-      estring += q;
-    }
-    entourage.push_back(estring);
-    estring.clear();
+    s.read((char*)(&j),sizeof(int));
+    entourage.insert(j);
   }
-}
-
-void Event::initialize()
-{
-  topological_dimension = 1;
-  incept = 0;
-  colour = 2;
-  proper_time.initialize(RND.nrandom(1.5));
-}
-
-double Event::norm() const
-{
-  double output = double(topological_dimension)*proper_time.norm();
-  return output;
 }
 
 

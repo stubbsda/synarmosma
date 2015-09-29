@@ -18,35 +18,29 @@
 */
 
 #include "proposition.h"
-#include "multitime.h"
 
 #ifndef _eventh
 #define _eventh
 
 namespace SYNARMOSMA {
-  class Event {
-   private:
+  class Vertex {
+   protected:
     int incept;
-    int colour;
     int topological_dimension;
     double energy;
-    Proposition observation;
-    std::set<int> future,past;  
+    Proposition theorem;
+    std::set<int> posterior,anterior;  
     std::set<int> neighbours;
-    std::vector<std::string> entourage;
-    Multitime proper_time;
+    std::set<int> entourage;
 
-    void initialize();
    public:
-    Event();
-    Event(const Event&);
-    Event(const char*);
-    ~Event();  
-    Event& operator =(const Event&);
+    Vertex();
+    Vertex(const Vertex&);
+    ~Vertex();  
+    Vertex& operator =(const Vertex&);
     void serialize(std::ofstream&) const;
     void deserialize(std::ifstream&);
     void clear();
-    double norm() const;
   };
 }
 #endif 

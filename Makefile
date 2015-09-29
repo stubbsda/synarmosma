@@ -1,7 +1,7 @@
-OBJECTS = global.o random.o cell.o nexus.o schema.o group.o geometry.o word.o rational.o\
+OBJECTS = global.o random.o cell.o nexus.o schema.o group.o graph.o geometry.o word.o rational.o\
 variety_wrapper.o polynomial_wrapper.o proposition.o propositional_system.o logic_graph.o edge.o\
-event.o multitime.o binary_matrix.o matrix_wrapper.o functional_equation_wrapper.o\
-homology.o homotopy.o poset.o lattice.o graph.o directed_graph.o
+vertex.o multitime.o binary_matrix.o matrix_wrapper.o directed_graph.o functional_equation_wrapper.o\
+homology.o homotopy.o poset.o lattice.o
 
 CXX_FLAGS += -fPIC
 
@@ -82,8 +82,8 @@ propositional_system.o: global.h graph.h logic_graph.h proposition.h proposition
 multitime.o: global.h multitime.h multitime.cpp
 	$(CXX) $(CXX_FLAGS) -c multitime.cpp
 
-event.o: global.h multitime.h proposition.h event.h event.cpp
-	$(CXX) $(CXX_FLAGS) -c event.cpp
+vertex.o: global.h proposition.h vertex.h vertex.cpp
+	$(CXX) $(CXX_FLAGS) -c vertex.cpp
 
 graph.o: graph.cpp graph.h schema.h global.h
 	$(CXX) $(CXX_FLAGS) -c graph.cpp

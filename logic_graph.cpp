@@ -157,9 +157,10 @@ double Logic_Graph::rationalize_topology()
   // obviously connected. At each iteration, we examine the causal
   // edges to verify that the proposition of the antecedent vertex
   // implies the propositions of its descendent vertex neighbours
-  int i,p,q,n,rsum,its = 0;
+  int i,m,n,vx[2],rsum,its = 0;
   std::vector<int> bcount;
   std::set<int>::const_iterator it;
+  const int N = order()/2;
 
   make_complete();
 
@@ -168,25 +169,24 @@ double Logic_Graph::rationalize_topology()
   }
 
   do {
-    p = RND.irandom(nvertex);
-    q = RND.irandom(nvertex);
-    if (p == q) continue;
+    m = RND.irandom(edges.size());
+    if (!edges[m].active) continue;
     its++;
-    if (!connected(p,q)) continue;
-    n = logic->consistency(p,q,"and");
+    edges[m].get_nodes(vx);
+    n = logic->consistency(vx[0],vx[1],"and");
     // Keep this edge if the bit count is complete...
-    if (n == bcount[p]) continue;
+    if (n == bcount[vx[0]]) continue;
     // If not, drop it
-    drop_edge(p,q);
+    drop_edge(vx[0],vx[1]);
     // Unless this would disconnect the graph...
-    if (!connected()) add_edge(p,q);
-  } while(its < nvertex*nvertex);
+    if (!connected()) add_edge(vx[1],vx[1]);
+  } while(its < N);
 
   rsum = 0;
   for(i=0; i<nvertex; ++i) {
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
-      p = *it;
-      n = logic->consistency(i,p,"and");
+      m = *it;
+      n = logic->consistency(i,m,"and");
       rsum += (bcount[i] - n);
     }
   }
