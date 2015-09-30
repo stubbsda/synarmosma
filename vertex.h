@@ -19,8 +19,8 @@
 
 #include "proposition.h"
 
-#ifndef _eventh
-#define _eventh
+#ifndef _vertexh
+#define _vertexh
 
 namespace SYNARMOSMA {
   class Vertex {
@@ -36,11 +36,11 @@ namespace SYNARMOSMA {
    public:
     Vertex();
     Vertex(const Vertex&);
-    ~Vertex();  
+    virtual ~Vertex();  
     Vertex& operator =(const Vertex&);
-    void serialize(std::ofstream&) const;
-    void deserialize(std::ifstream&);
-    void clear();
+    virtual void serialize(std::ofstream&) const;
+    virtual void deserialize(std::ifstream&);
+    virtual void clear();
   };
 }
 #endif 

@@ -61,7 +61,7 @@ Vertex::~Vertex()
 
 void Vertex::clear()
 {
-  incept = 0;
+  incept = -1;
   energy = 0.0;
   topological_dimension = 0;
   anterior.clear();

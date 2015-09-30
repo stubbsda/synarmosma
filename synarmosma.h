@@ -25,4 +25,5 @@
 #include "geometry.h"
 #include "cell.h"
 #include "lattice.h"
+#include "vertex.h"
 
