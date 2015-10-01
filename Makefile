@@ -115,7 +115,7 @@ clean:
 	rm -f $(SYNARMOSMA)/include/cell.h
 	rm -f $(SYNARMOSMA)/include/directed_graph.h
 	rm -f $(SYNARMOSMA)/include/edge.h
-	rm -f $(SYNARMOSMA)/include/event.h
+	rm -f $(SYNARMOSMA)/include/vertex.h
 	rm -f $(SYNARMOSMA)/include/functional_equation.h
 	rm -f $(SYNARMOSMA)/include/geometry.h
 	rm -f $(SYNARMOSMA)/include/global.h
