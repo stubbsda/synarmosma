@@ -17,7 +17,6 @@
   along with Synarmosma.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "poset.h"
 #include "graph.h"
 
 #ifndef __dgraph
@@ -26,11 +25,10 @@
 namespace SYNARMOSMA {
   class Directed_Graph : public Graph {
    private:
-    // Hyphantic operators
-    bool foliation_x(int,int);
-    bool foliation_m(int,int);
-    int fission_x(int);
-    int fission_m(int);
+    virtual bool add_edge(int,int);
+    bool add_edge(int,int,RELATION);
+    bool mutate_edge(int,int);
+
    public:
     Directed_Graph();
     Directed_Graph(int);
@@ -38,15 +36,6 @@ namespace SYNARMOSMA {
     Directed_Graph(const Directed_Graph&);
     Directed_Graph& operator =(const Directed_Graph&);
     virtual ~Directed_Graph();
-    virtual void clear();
-    virtual void serialize(std::ofstream&) const;
-    virtual void deserialize(std::ifstream&);
-    virtual bool consistent() const;
-    virtual int add_vertex();
-    virtual bool drop_vertex(int);
-    virtual bool drop_edge(int,int);
-    virtual bool add_edge(int,int);
-    bool add_edge(int,int,RELATION);
     int directedness() const;
     bool path_connected(int,int) const;
     void compute_sinks(std::set<int>&) const;

@@ -46,6 +46,8 @@ namespace SYNARMOSMA {
     inline void set_nodes(int u,int v) {assert(u != v); nodes.clear(); nodes.insert(u); nodes.insert(v);};
     inline bool get_activity() const {return active;};
     inline void set_activity(bool a) {active = a;};
+    inline RELATION get_direction() const {return direction;};
+    inline void set_direction(RELATION rho) {direction = rho;};
     friend class Graph;
     friend class Directed_Graph;
     friend class Logic_Graph;
