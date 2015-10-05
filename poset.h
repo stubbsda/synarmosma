@@ -23,13 +23,6 @@
 #define _poseth
 
 namespace SYNARMOSMA {
-  enum RELATION
-  {
-      BEFORE,
-      AFTER,
-      INCOMPARABLE
-  };
-
   class Poset {
    protected:
     unsigned int N;

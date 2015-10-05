@@ -30,6 +30,7 @@ namespace SYNARMOSMA {
     bool cyclic;
     double flow;
     double capacity;
+    RELATION direction;
     std::set<int> nodes;
 
     void clear();
@@ -42,6 +43,7 @@ namespace SYNARMOSMA {
     ~Edge();
     Edge& operator =(const Edge&);
     inline void get_nodes(int*) const;
+    inline void set_nodes(int u,int v) {assert(u != v); nodes.clear(); nodes.insert(u); nodes.insert(v);};
     inline bool get_activity() const {return active;};
     inline void set_activity(bool a) {active = a;};
     friend class Graph;

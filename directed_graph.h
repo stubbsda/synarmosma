@@ -26,8 +26,6 @@
 namespace SYNARMOSMA {
   class Directed_Graph : public Graph {
    private:
-    Poset orientation;
-
     // Hyphantic operators
     bool foliation_x(int,int);
     bool foliation_m(int,int);

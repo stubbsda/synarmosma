@@ -48,6 +48,7 @@ Edge::Edge(const Edge& source)
   capacity = source.capacity;
   nodes = source.nodes;
   cyclic = source.cyclic;
+  direction = source.direction;
 }
 
 Edge& Edge::operator =(const Edge& source)
@@ -60,6 +61,7 @@ Edge& Edge::operator =(const Edge& source)
   capacity = source.capacity;
   nodes = source.nodes;
   cyclic = source.cyclic;
+  direction = source.direction;
 
   return *this;
 }
@@ -72,6 +74,7 @@ void Edge::clear()
   capacity = 0.0;
   flow = 0.0;
   cyclic = false;
+  direction = DISPARATE;
 }
 
 void Edge::serialize(std::ofstream& s) const
@@ -87,6 +90,7 @@ void Edge::serialize(std::ofstream& s) const
   s.write((char*)(&length),sizeof(double));
   s.write((char*)(&flow),sizeof(double));
   s.write((char*)(&capacity),sizeof(double));
+  s.write((char*)(&direction),sizeof(int));
 }
 
 void Edge::deserialize(std::ifstream& s)
@@ -104,5 +108,6 @@ void Edge::deserialize(std::ifstream& s)
   s.read((char*)(&length),sizeof(double));
   s.read((char*)(&flow),sizeof(double));
   s.read((char*)(&capacity),sizeof(double));
+  s.read((char*)(&direction),sizeof(int));
 }
 

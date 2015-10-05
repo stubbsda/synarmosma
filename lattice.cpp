@@ -140,7 +140,7 @@ void Lattice::initialize()
     n1 = RND.irandom(N);
     n2 = RND.irandom(N);
     if (n1 == n2) continue;
-    if (get_order(n1,n2) != INCOMPARABLE) continue;
+    if (get_order(n1,n2) != DISPARATE) continue;
     set_order(n1,n2);
     
     ndelta = 0;

@@ -31,7 +31,7 @@ Poset::Poset()
 Poset::Poset(unsigned int n)
 {
   // We begin by assuming that every pair of points is 
-  // incomparable, so the hash map is empty
+  // disparate, so the hash map is empty
   N = n;
 }
 
@@ -100,7 +100,7 @@ bool Poset::invert_order(unsigned int u,unsigned int v)
 {
   if (u == v) return false;
   RELATION rho = get_order(u,v);
-  if (rho == INCOMPARABLE) return false;
+  if (rho == DISPARATE) return false;
   if (rho == BEFORE) {
     // Inverting order of u < v
     set_order(v,u);
@@ -117,7 +117,7 @@ bool Poset::unset_order(unsigned int u,unsigned int v)
   if (u == v) return false;
   unsigned int i;
   RELATION rho = get_order(u,v);
-  if (rho == INCOMPARABLE) return false;
+  if (rho == DISPARATE) return false;
   if (rho == BEFORE) {
     // Removing order of u < v
     order.erase(std::pair<int,int>(u,v));
@@ -162,7 +162,7 @@ RELATION Poset::get_order(unsigned int u,unsigned int v) const
   qt = order.find(std::pair<unsigned int,unsigned int>(u,v));
   if (qt != order.end()) return BEFORE;
   qt = order.find(std::pair<unsigned int,unsigned int>(v,u));
-  if (qt == order.end()) return INCOMPARABLE;
+  if (qt == order.end()) return DISPARATE;
   return AFTER;
 }
 

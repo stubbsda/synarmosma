@@ -90,6 +90,13 @@ namespace SYNARMOSMA {
     std::vector<std::pair<unsigned int,unsigned int> > exponents; 
   };
 
+  enum RELATION
+  {
+      BEFORE,
+      AFTER,
+      DISPARATE
+  };
+
   UINT64 ipow(int,int);
   UINT64 factorial(int);
   int combinations(const std::set<int>&,int,std::vector<int>&);
