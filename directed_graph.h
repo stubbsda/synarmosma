@@ -40,6 +40,7 @@ namespace SYNARMOSMA {
     bool path_connected(int,int) const;
     void compute_sinks(std::set<int>&) const;
     void compute_sources(std::set<int>&) const;
+    friend class Propositional_System;
   };
 }
 #endif
