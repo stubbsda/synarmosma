@@ -278,7 +278,7 @@ void Geometry::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<dou
   int i,j,k;
   double delta;
   std::vector<double> xc;
-  const int npair = N*(N+1)/2;
+  const int npair = N*(N-1)/2;
   const int vsize = (signed) x.size();
   const double pfactor = (euclidean) ? 1.0 : -1.0;
 
@@ -331,7 +331,7 @@ void Geometry::multiple_vertex_addition(int N,double mu,double sigma)
   int i,j,k;
   double delta;
   std::vector<double> xc;
-  const int npair = N*(N+1)/2;
+  const int npair = N*(N-1)/2;
   const double pfactor = (euclidean) ? 1.0 : -1.0;
 
   clear();
@@ -363,6 +363,34 @@ void Geometry::multiple_vertex_addition(int N,double mu,double sigma)
       distances[compute_index(i,j)] = delta;
     }
   }
+}
+
+void Geometry::multiple_vertex_addition(const std::vector<std::vector<double> >& source)
+{
+  int i,j,k,npair;
+  double delta;
+  const double pfactor = (euclidean) ? 1.0 : -1.0;
+
+  clear();
+
+  nvertex = (signed) source.size();
+  npair = nvertex*(nvertex-1)/2;
+  for(i=0; i<npair; ++i) {
+    distances.push_back(0.0);
+  }
+  coordinates = source;
+#ifdef PARALLEL
+#pragma omp parallel for default(shared) private(i,j,k,delta) schedule(dynamic,1)
+#endif
+  for(i=0; i<nvertex; ++i) {
+    for(j=1+i; j<nvertex; ++j) {
+      delta = pfactor*(coordinates[i][0] - coordinates[j][0])*(coordinates[i][0] - coordinates[j][0]);
+      for(k=1; k<background_dimension; ++k) {
+        delta += (coordinates[i][k] - coordinates[j][k])*(coordinates[i][k] - coordinates[j][k]);
+      }
+      distances[compute_index(i,j)] = delta;
+    }
+  }  
 }
 
 double Geometry::dot_product(const std::vector<double>& vx,const std::vector<double>& vy) const
