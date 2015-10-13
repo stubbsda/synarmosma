@@ -24,11 +24,6 @@
 
 namespace SYNARMOSMA {
   class Directed_Graph : public Graph {
-   private:
-    virtual bool add_edge(int,int);
-    bool add_edge(int,int,RELATION);
-    bool mutate_edge(int,int);
-
    public:
     Directed_Graph();
     Directed_Graph(int);
@@ -36,6 +31,9 @@ namespace SYNARMOSMA {
     Directed_Graph(const Directed_Graph&);
     Directed_Graph& operator =(const Directed_Graph&);
     virtual ~Directed_Graph();
+    virtual bool add_edge(int,int);
+    bool add_edge(int,int,RELATION);
+    bool mutate_edge(int,int);
     int directedness() const;
     bool path_connected(int,int) const;
     void compute_sinks(std::set<int>&) const;
