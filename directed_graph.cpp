@@ -115,7 +115,17 @@ bool Directed_Graph::add_edge(int u,int v,RELATION rho)
   std::set<int> S;
   S.insert(u); S.insert(v);
   hash_map::const_iterator qt = index_table.find(S);
-  edges[qt->second].direction = rho;
+  if (rho == DISPARATE) { 
+    edges[qt->second].direction = rho;
+  }
+  else {
+    if (u < v) {
+      edges[qt->second].direction = rho;
+    }
+    else {
+      edges[qt->second].direction = (rho == BEFORE) ? AFTER : BEFORE;
+    }
+  }
   return true;
 }
 
@@ -151,6 +161,7 @@ bool Directed_Graph::path_connected(int u,int v) const
   bool output = false;
   std::set<int> current,next,S;
   std::set<int>::const_iterator it,jt;
+  RELATION rho;
   hash_map::const_iterator qt;
 
   current.insert(u);
@@ -162,7 +173,9 @@ bool Directed_Graph::path_connected(int u,int v) const
         S.clear();
         S.insert(i); S.insert(j);
         qt = index_table.find(S);
-        if (edges[qt->second].active && edges[qt->second].direction == BEFORE) next.insert(j);
+        if (!edges[qt->second].active) continue;
+        rho = edges[qt->second].direction;
+        if ((i < j && rho == BEFORE) || (j < i && rho == AFTER)) next.insert(j);
       }
     }
     if (next.empty()) break;
@@ -176,12 +189,53 @@ bool Directed_Graph::path_connected(int u,int v) const
   return output;
 }
 
+bool Directed_Graph::directed_cycle(const std::vector<int>& path,int base,int length) const
+{
+  if (base == path[0] && path.size() > 2) return true;
+  if ((signed) path.size() == length) return false;
+  int v;
+  bool out;
+  std::set<int> S;
+  std::set<int>::const_iterator it;
+  RELATION rho;
+  hash_map::const_iterator qt;
+
+  for(it=neighbours[base].begin(); it!=neighbours[base].end(); ++it) {
+    v = *it;
+    S.clear();
+    S.insert(base); S.insert(v);
+    qt = index_table.find(S);
+    if (!edges[qt->second].active) continue;
+    rho = edges[qt->second].get_direction();
+    if ((base < v && rho == BEFORE) || (v < base && rho == AFTER)) {
+      std::vector<int> npath = path;
+      npath.push_back(v);
+      out = directed_cycle(npath,v,length);
+      if (out) return true;
+    }
+  }
+  return false;
+}
+
+bool Directed_Graph::acyclic() const
+{
+  std::vector<int> path;
+
+  for(int i=0; i<nvertex; ++i) {
+    path.clear();
+    path.push_back(i);
+    if (directed_cycle(path,i,nvertex)) return false;
+  }
+  return true;
+}
+
 void Directed_Graph::compute_sinks(std::set<int>& output) const
 {
   int i,j;
   bool sink;
   std::set<int> S;
   std::set<int>::const_iterator it;
+  RELATION rho;
   hash_map::const_iterator qt;
 
   output.clear();
@@ -194,7 +248,9 @@ void Directed_Graph::compute_sinks(std::set<int>& output) const
       S.clear();
       S.insert(i); S.insert(j);
       qt = index_table.find(S);
-      if (edges[qt->second].active && edges[qt->second].direction == BEFORE) {
+      if (!edges[qt->second].active) continue;
+      rho = edges[qt->second].direction;
+      if ((i < j && rho == BEFORE) || (j < i && rho == AFTER)) {
         // If this vertex has an outgoing edge, it isn't a sink...
         sink = false;
         break;
@@ -210,6 +266,7 @@ void Directed_Graph::compute_sources(std::set<int>& output) const
   bool source;
   std::set<int> S;
   std::set<int>::const_iterator it;
+  RELATION rho;
   hash_map::const_iterator qt;
 
   output.clear();
@@ -222,7 +279,9 @@ void Directed_Graph::compute_sources(std::set<int>& output) const
       S.clear();
       S.insert(i); S.insert(j);
       qt = index_table.find(S);
-      if (edges[qt->second].active && edges[qt->second].direction == AFTER) {
+      if (!edges[qt->second].active) continue;
+      rho = edges[qt->second].direction;
+      if ((i < j && rho == AFTER) || (j < i && rho == BEFORE)) {
         // If this vertex has an incoming edge, it isn't a source...
         source = false;
         break;

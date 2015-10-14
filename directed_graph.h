@@ -24,6 +24,9 @@
 
 namespace SYNARMOSMA {
   class Directed_Graph : public Graph {
+   private:
+    bool directed_cycle(const std::vector<int>&,int,int) const;
+
    public:
     Directed_Graph();
     Directed_Graph(int);
@@ -35,6 +38,7 @@ namespace SYNARMOSMA {
     bool add_edge(int,int,RELATION);
     bool mutate_edge(int,int);
     int directedness() const;
+    bool acyclic() const;
     bool path_connected(int,int) const;
     void compute_sinks(std::set<int>&) const;
     void compute_sources(std::set<int>&) const;
