@@ -86,6 +86,7 @@ namespace SYNARMOSMA {
     inline bool get_uniform() const {return uniform;};
     inline void add(int,double);
     inline int dimension() const {return background_dimension;};
+    inline RELATION get_temporal_order(int,int) const;
     inline void set_element(int,double);
     inline double get_argument(const std::vector<double>&,const std::vector<double>&) const;
     inline double get_element(int) const;
@@ -110,6 +111,13 @@ namespace SYNARMOSMA {
       n += (v1 - (1+v2));
     }
     return n;
+  }
+
+  RELATION Geometry::get_temporal_order(int u,int v) const 
+  {
+    if (relational || euclidean) return DISPARATE;
+    RELATION rho = (coordinates[u][0] < coordinates[v][0]) ? BEFORE : AFTER;
+    return rho;
   }
 
   double Geometry::get_argument(const std::vector<double>& vx,const std::vector<double>& vy) const
