@@ -3,19 +3,15 @@ variety_wrapper.o polynomial_wrapper.o proposition.o propositional_system.o logi
 vertex.o multitime.o binary_matrix.o matrix_wrapper.o directed_graph.o functional_equation_wrapper.o\
 homology.o homotopy.o poset.o lattice.o
 
-CXX_FLAGS += -fPIC
+CXX_FLAGS += $(OPENMP) -fPIC
 
-DEBUG    = -g
-
-OPT      = $(CXX_OPT)
-
-#CXX_FLAGS += $(OPT)
+#CXX_FLAGS += $(CXX_OPT)
 CXX_FLAGS += $(DEBUG) 
 
-#LD_FLAGS += $(OPT)
+#LD_FLAGS += $(CXX_OPT)
 LD_FLAGS += $(DEBUG)
 
-LD_FLAGS += -shared
+LD_FLAGS += $(OPENMP) -shared
 
 LIBS = $(LAPACK) $(BOOST) -lntl -lm 
 
