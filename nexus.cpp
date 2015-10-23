@@ -671,7 +671,7 @@ bool Nexus::pseudomanifold(bool* boundary) const
         vlist.push_back(vx[j]);
       }
     }
-#ifdef PARALLEL
+#ifdef _OPENMP
 #pragma omp parallel for default(shared) private(i,j,k,l,in1,ni,nf,off1,off2) schedule(dynamic,1)
 #endif
     for(i=0; i<nc; ++i) {

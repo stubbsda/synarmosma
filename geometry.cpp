@@ -249,10 +249,8 @@ double Geometry::perceptual_divergence(const double* raxis,double theta,const do
 
   ct = std::cos(theta);
   st = std::sin(theta);
-#ifndef USE_MPI
-#ifdef PARALLEL
+#ifdef _OPENMP
 #pragma omp parallel for default(shared) private(i,j,xt,temp,delta,d1,q0) reduction(+:sum)
-#endif
 #endif
   for(i=0; i<nvertex; ++i) {
     // The angular motion:
@@ -310,7 +308,7 @@ void Geometry::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<dou
     distances.push_back(0.0);
   }
   nvertex = N;
-#ifdef PARALLEL
+#ifdef _OPENMPI
 #pragma omp parallel for default(shared) private(i,j,k,delta) schedule(dynamic,1)
 #endif
   for(i=0; i<N; ++i) {
@@ -351,7 +349,7 @@ void Geometry::multiple_vertex_addition(int N,double mu,double sigma)
   // We need to set nvertex here before we start calling the compute_index
   // method
   nvertex = N;
-#ifdef PARALLEL
+#ifdef _OPENMPI
 #pragma omp parallel for default(shared) private(i,j,k,delta) schedule(dynamic,1)
 #endif
   for(i=0; i<N; ++i) {
@@ -379,7 +377,7 @@ void Geometry::multiple_vertex_addition(const std::vector<std::vector<double> >&
     distances.push_back(0.0);
   }
   coordinates = source;
-#ifdef PARALLEL
+#ifdef _OPENMPI
 #pragma omp parallel for default(shared) private(i,j,k,delta) schedule(dynamic,1)
 #endif
   for(i=0; i<nvertex; ++i) {
@@ -1055,7 +1053,7 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
       R.push_back(0.0);
     }
     angles.push_back(R);
-#ifdef PARALLEL
+#ifdef _OPENMPI
 #pragma omp parallel for default(shared) private(i,j,base,v,r)
 #endif
     for(i=0; i<nvertex; ++i) {
@@ -1077,7 +1075,7 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
     }
     angles.push_back(R);
     angles.push_back(R);
-#ifdef PARALLEL
+#ifdef _OPENMPI
 #pragma omp parallel for default(shared) private(i,j,base,v,r)
 #endif
     for(i=0; i<nvertex; ++i) {
@@ -1106,7 +1104,7 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
     for(i=0; i<nm1; ++i) {
       angles.push_back(R);
     }
-#ifdef PARALLEL
+#ifdef _OPENMPI
 #pragma omp parallel for default(shared) private(i,j,k,base,v,r,sum)
 #endif
     for(i=0; i<nvertex; ++i) {
@@ -1210,8 +1208,8 @@ void Geometry::compute_distances()
   }
 
   if (uniform) {
-#ifdef PARALLEL
-    #pragma omp parallel for default(shared) private(i,j,k,in1,delta) schedule(dynamic,1)
+#ifdef _OPENMPI
+#pragma omp parallel for default(shared) private(i,j,k,in1,delta) schedule(dynamic,1)
 #endif
     for(i=0; i<nvertex; ++i) {
       in1 = i*nvertex - i*(i+1)/2;
@@ -1226,8 +1224,8 @@ void Geometry::compute_distances()
   }
   else {
     int n1,n2;
-#ifdef PARALLEL
-    #pragma omp parallel for default(shared) private(i,j,k,n1,n2,in1,delta) schedule(dynamic,1)
+#ifdef _OPENMPI
+#pragma omp parallel for default(shared) private(i,j,k,n1,n2,in1,delta) schedule(dynamic,1)
 #endif
     for(i=0; i<nvertex; ++i) {
       n1 = (signed) coordinates[i].size();
