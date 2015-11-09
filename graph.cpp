@@ -349,6 +349,60 @@ int Graph::make_complete()
   return sum;
 }
 
+bool Graph::stellar_addition(int v)
+{
+  // This only works if this vertex is of degree three...
+  if (neighbours[v].size() != 3) return false;
+  int n,i = 0,vx[3];
+  std::set<int> S = neighbours[v];
+  std::set<int>::const_iterator it;
+  drop_vertex(v);
+  for(it=S.begin(); it!=S.end(); ++it) {
+    n = *it;
+    if (n > v) n--;
+    vx[i] = n;
+    ++i;
+  }
+  add_edge(vx[0],vx[1]);
+  add_edge(vx[0],vx[2]);
+  add_edge(vx[1],vx[2]);
+  return true;
+}
+
+bool Graph::stellar_deletion(int v)
+{
+  // This only works if this vertex is part of a 3-cycle...
+  int n,m,vx[3];
+  std::vector<boost::tuple<int,int,int> > cycles;
+  std::set<int> S = neighbours[v];
+  std::set<int>::const_iterator it,jt;
+
+  for(it=S.begin(); it!=S.end(); ++it) {
+    n = *it;
+    for(jt=S.begin(); jt!=S.end(); ++jt) {
+      m = *jt;
+      if (m == n) continue;
+      if (neighbours[n].count(m) > 0) {
+        cycles.push_back(boost::make_tuple(v,n,m));
+        break;
+      }
+    }
+  }
+  if (cycles.empty()) return false;
+  m = RND.irandom(cycles.size());
+  vx[0] = cycles[m].get<0>();
+  vx[1] = cycles[m].get<1>();
+  vx[2] = cycles[m].get<2>();
+  drop_edge(vx[0],vx[1]);
+  drop_edge(vx[0],vx[2]);
+  drop_edge(vx[1],vx[2]);
+  n = add_vertex();
+  add_edge(vx[0],n);
+  add_edge(vx[1],n);
+  add_edge(vx[2],n);
+  return true;
+}
+
 bool Graph::fusion(int v,int u)
 {
   if (u == v) return false;

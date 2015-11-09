@@ -60,6 +60,8 @@ namespace SYNARMOSMA {
     virtual ~Graph();
     virtual void clear();
     // Hyphantic operators
+    bool stellar_addition(int);
+    bool stellar_deletion(int);
     virtual bool fusion(int,int);
     virtual bool foliation_x(int,int);
     virtual bool foliation_m(int,int);
