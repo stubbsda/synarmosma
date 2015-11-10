@@ -349,7 +349,7 @@ int Graph::make_complete()
   return sum;
 }
 
-bool Graph::stellar_addition(int v)
+bool Graph::stellar_deletion(int v)
 {
   // This only works if this vertex is of degree three...
   if (neighbours[v].size() != 3) return false;
@@ -369,7 +369,7 @@ bool Graph::stellar_addition(int v)
   return true;
 }
 
-bool Graph::stellar_deletion(int v)
+bool Graph::stellar_addition(int v)
 {
   // This only works if this vertex is part of a 3-cycle...
   int n,m,vx[3];
