@@ -53,7 +53,7 @@ namespace SYNARMOSMA {
     Graph();
     Graph(const Graph&);
     Graph(const char*);
-    Graph(int);
+    Graph(int,bool);
     Graph(int,int);
     Graph(int,double);
     Graph& operator =(const Graph&);

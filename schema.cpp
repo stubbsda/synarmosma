@@ -243,16 +243,21 @@ void Schema::components(std::vector<int>& csize,std::vector<int>& celements) con
 
 bool Schema::connected() const
 {
-  int i,n;
+  int i,n,p,m = 0;
   std::vector<int> ubiquity;
   std::set<int> change,nchange;
   std::set<int>::const_iterator it,jt;
 
   for(i=0; i<nvertex; ++i) {
+    p = (signed) neighbours[i].size();
+    if (p > m) {
+      m = p;
+      n = i;
+    }
     ubiquity.push_back(0);
   }
-  ubiquity[0] = 1;
-  change.insert(0);
+  ubiquity[n] = 1;
+  change.insert(n);
 
   do {
     for(it=change.begin(); it!=change.end(); ++it) {
@@ -265,8 +270,7 @@ bool Schema::connected() const
     }
     if (nchange.empty()) break;
     for(it=nchange.begin(); it!=nchange.end(); ++it) {
-      n = *it;
-      ubiquity[n] = 1;
+      ubiquity[*it] = 1;
     }
     change = nchange;
     nchange.clear();

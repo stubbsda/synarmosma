@@ -39,6 +39,7 @@ namespace SYNARMOSMA {
    public:
     Edge();
     Edge(int,int);
+    Edge(int,int,RELATION);
     Edge(const Edge&);
     ~Edge();
     Edge& operator =(const Edge&);

@@ -25,17 +25,28 @@ extern Random RND;
 
 Graph::Graph() : Schema()
 {
+  // The empty graph, no vertices or edges...
   nvertex = 0;
 }
 
-Graph::Graph(int n) : Schema(n)
+Graph::Graph(int n,bool complete) : Schema(n)
 {
+  // If complete = false, just build a graph on n vertices and exit
+  if (!complete) return;
   // The complete graph on n vertices...
-  int i,j;
+  int i,j,nc = 0;
+  std::set<int> vx;
 
   for(i=0; i<n; ++i) {
     for(j=1+i; j<n; ++j) {
-      add_edge(i,j);
+      vx.insert(i);
+      vx.insert(j);
+      index_table[vx] = nc;
+      edges.push_back(Edge(i,j));
+      neighbours[i].insert(j);
+      neighbours[j].insert(i);
+      vx.clear();
+      nc++;
     }
   }
 }
@@ -75,17 +86,24 @@ Graph::Graph(int n,int c) : Schema(n)
 
 Graph::Graph(int n,double p) : Schema(n)
 {
-  // We will use the Erdős–Rényi random graph model (the G(n,p) variant) to
-  // assemble a random graph, with n = initial_size...
-  int i,j;
+  // A constructor that builds a graph with n vertices and p percent of 
+  // the number of edges in the complete graph on n vertices, chosen randomly.
+  int i,j,nc = 0;
   double alpha;
+  std::set<int> vx;
 
   for(i=0; i<n; ++i) {
-    // Compute a lower bound for the valence of this vertex
     for(j=1+i; j<n; ++j) {
       alpha = RND.drandom();
       if (alpha > p) continue;
-      add_edge(i,j);
+      vx.insert(i);
+      vx.insert(j);
+      index_table[vx] = nc;
+      edges.push_back(Edge(i,j));
+      neighbours[i].insert(j);
+      neighbours[j].insert(i);
+      vx.clear();
+      nc++;
     }
   }
 }
@@ -299,9 +317,8 @@ bool Graph::add_edge(int v,int u)
     std::set<int> vx; vx.insert(v); vx.insert(u);
     hash_map::const_iterator qt = index_table.find(vx);
     if (qt == index_table.end()) {
-      Edge q(v,u);
-      index_table[q.nodes] = (signed) edges.size();
-      edges.push_back(q);
+      index_table[vx] = (signed) edges.size();
+      edges.push_back(Edge(v,u));
     }
     else {
       assert(!edges[qt->second].active);
@@ -1096,18 +1113,18 @@ int Graph::omega() const
   return int(sum);
 }
 
-void Graph::compute_laplacian(Matrix<double>* laplacian) const
+void Graph::compute_laplacian(Matrix<double>* L) const
 {
   int i;
   std::set<int>::const_iterator it;
   const double m_one = -1.0;
 
-  laplacian->initialize(nvertex,nvertex);
+  L->initialize(nvertex,nvertex);
 
   for(i=0; i<nvertex; ++i) {
-    laplacian->set(i,i,double(neighbours[i].size()));
+    L->set(i,i,double(neighbours[i].size()));
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
-      laplacian->set(i,*it,m_one);
+      L->set(i,*it,m_one);
     }
   }
 }

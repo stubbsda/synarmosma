@@ -26,14 +26,22 @@ Edge::Edge()
   clear();
 }
 
-Edge::Edge(int x,int y) 
+Edge::Edge(int u,int v) 
 {
-  assert(x != y);
+  assert(u != v);
   clear();
-  nodes.insert(x);
-  nodes.insert(y);
+  nodes.insert(u);
+  nodes.insert(v);
 }
 
+Edge::Edge(int u,int v,RELATION rho)
+{
+  assert(u != v);
+  clear();
+  nodes.insert(u);
+  nodes.insert(v); 
+  direction = rho;
+}
 
 Edge::~Edge()
 {

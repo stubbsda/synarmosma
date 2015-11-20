@@ -28,7 +28,7 @@ Logic_Graph::Logic_Graph() : Graph()
 
 }
 
-Logic_Graph::Logic_Graph(int n) : Graph(n)
+Logic_Graph::Logic_Graph(int n) : Graph(n,true)
 {
   logic = new Propositional_System(nvertex);
 }

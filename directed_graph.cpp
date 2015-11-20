@@ -28,29 +28,64 @@ Directed_Graph::Directed_Graph() : Graph()
 
 }
 
-Directed_Graph::Directed_Graph(int n) : Graph(n)
+Directed_Graph::Directed_Graph(int n) : Graph(n,false)
 {
-
-}
-
-Directed_Graph::Directed_Graph(int n,double rho) : Graph()
-{
-  // Something probabilistic
-  int i,u,v;
-  double p = 0.0;
-  const double MX = double(n*(n-1))/2.0;
+  int i,j,nc = 0;
+  double alpha;
+  std::set<int> vx;
+  RELATION rho;
 
   for(i=0; i<n; ++i) {
-    add_vertex();
+    for(j=1+i; j<n; ++j) {
+      vx.insert(i);
+      vx.insert(j);
+      index_table[vx] = nc;
+      rho = DISPARATE;
+      alpha = RND.drandom();
+      if (alpha < 0.15) {
+        rho = BEFORE;
+      }
+      else if (alpha < 0.3) {
+        rho = AFTER;
+      }      
+      edges.push_back(Edge(i,j,rho));
+      neighbours[i].insert(j);
+      neighbours[j].insert(i);
+      vx.clear();
+      nc++;
+    }
   }
+}
 
-  do {
-    u = RND.irandom(nvertex);
-    v = RND.irandom(nvertex);
-    if (u == v) continue;
-    if (add_edge(u,v)) p = double(edges.size())/MX;  
-  } while(p < rho);
-  assert(connected());
+Directed_Graph::Directed_Graph(int n,double p) : Graph(n,false)
+{
+  int i,j,nc = 0;
+  double alpha;
+  std::set<int> vx;
+  RELATION rho;
+
+  for(i=0; i<n; ++i) {
+    for(j=1+i; j<n; ++j) {
+      alpha = RND.drandom();
+      if (alpha > p) continue;
+      vx.insert(i);
+      vx.insert(j);
+      index_table[vx] = nc;
+      rho = DISPARATE;
+      alpha = RND.drandom();
+      if (alpha < 0.15) {
+        rho = BEFORE;
+      }
+      else if (alpha < 0.3) {
+        rho = AFTER;
+      }      
+      edges.push_back(Edge(i,j,rho));
+      neighbours[i].insert(j);
+      neighbours[j].insert(i);
+      vx.clear();
+      nc++;
+    }
+  }
 }
 
 Directed_Graph::~Directed_Graph()

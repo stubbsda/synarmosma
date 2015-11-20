@@ -717,7 +717,7 @@ bool Nexus::orientable() const
 
   if (dimension == 1) {
     int i,vx[2];
-    Graph* G = new Graph(nvertex);
+    Graph* G = new Graph(nvertex,false);
 
     for(i=0; i<(signed) elements[1].size(); ++i) {
       elements[1][i].get_vertices(vx);
