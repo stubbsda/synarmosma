@@ -51,11 +51,11 @@ namespace SYNARMOSMA {
    public:
     // The usual public methods for a class
     Graph();
-    Graph(const Graph&);
-    Graph(const char*);
-    Graph(int,bool);
+    Graph(int);
+    Graph(int,std::string&);
     Graph(int,int);
     Graph(int,double);
+    Graph(const Graph&);
     Graph& operator =(const Graph&);
     virtual ~Graph();
     virtual void clear();

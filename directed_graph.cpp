@@ -28,7 +28,7 @@ Directed_Graph::Directed_Graph() : Graph()
 
 }
 
-Directed_Graph::Directed_Graph(int n) : Graph(n,false)
+Directed_Graph::Directed_Graph(int n) : Graph(n)
 {
   int i,j,nc = 0;
   double alpha;
@@ -57,7 +57,7 @@ Directed_Graph::Directed_Graph(int n) : Graph(n,false)
   }
 }
 
-Directed_Graph::Directed_Graph(int n,double p) : Graph(n,false)
+Directed_Graph::Directed_Graph(int n,double p) : Graph(n)
 {
   int i,j,nc = 0;
   double alpha;

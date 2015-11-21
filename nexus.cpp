@@ -657,15 +657,14 @@ bool Nexus::pseudomanifold(bool* boundary) const
     if (affinity(elements[dimension][candidates[0]],elements[dimension][candidates[1]]) != dimension) return false;
   }
   else if (candidates.size() > 2) {
-    Graph* G = new Graph;
     int in1,k,l,nf,ni,off1,off2,vx[dimension+1];
     std::vector<int> vlist;
     const int nc = (signed) candidates.size();
     const int N = nc*(nc-1)/2;
     int* link = new int[N];
+    Graph* G = new Graph(nc);
 
     for(i=0; i<nc; ++i) {
-      G->add_vertex();
       elements[dimension][candidates[i]].get_vertices(vx);
       for(j=0; j<=dimension; ++j) {
         vlist.push_back(vx[j]);
@@ -717,7 +716,7 @@ bool Nexus::orientable() const
 
   if (dimension == 1) {
     int i,vx[2];
-    Graph* G = new Graph(nvertex,false);
+    Graph* G = new Graph(nvertex);
 
     for(i=0; i<(signed) elements[1].size(); ++i) {
       elements[1][i].get_vertices(vx);

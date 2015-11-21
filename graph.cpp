@@ -29,24 +29,40 @@ Graph::Graph() : Schema()
   nvertex = 0;
 }
 
-Graph::Graph(int n,bool complete) : Schema(n)
+Graph::Graph(int n) : Schema(n)
 {
-  // If complete = false, just build a graph on n vertices and exit
-  if (!complete) return;
-  // The complete graph on n vertices...
-  int i,j,nc = 0;
+  // A graph with n vertices but no edges...
+}
+
+Graph::Graph(int n,std::string& type) : Schema(n)
+{
+  int i;
   std::set<int> vx;
 
-  for(i=0; i<n; ++i) {
-    for(j=1+i; j<n; ++j) {
-      vx.insert(i);
-      vx.insert(j);
-      index_table[vx] = nc;
-      edges.push_back(Edge(i,j));
-      neighbours[i].insert(j);
-      neighbours[j].insert(i);
+  if (type == "complete") {
+    // The complete graph on n vertices...
+    int j,nc = 0;
+
+    for(i=0; i<n; ++i) {
+      for(j=1+i; j<n; ++j) {
+        vx.insert(i); vx.insert(j);
+        index_table[vx] = nc;
+        edges.push_back(Edge(i,j));
+        neighbours[i].insert(j);
+        neighbours[j].insert(i);
+        vx.clear();
+        nc++;
+      }
+    }
+  }
+  else if (type == "chain") {
+    // A minimally connected graph with n - 1 edges
+    for(i=0; i<n-1; ++i) {
+      vx.insert(i); vx.insert(1+i);
+      index_table[vx] = i;
+      neighbours[i].insert(1+i);
+      neighbours[i+1].insert(i);
       vx.clear();
-      nc++;
     }
   }
 }
