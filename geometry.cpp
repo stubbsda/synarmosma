@@ -662,7 +662,7 @@ double Geometry::inner_product(const Matrix<double>& L,const std::vector<int>& o
 {
   if (relational) return 0.0;
   const int nv = L.get_nrow();
-  int i,j,k,l,nelements;
+  int i,j,k,nelements;
   double value,result[nv][background_dimension],sum[background_dimension];
   double energy = 0.0;
   std::vector<double> Lx;
@@ -672,7 +672,6 @@ double Geometry::inner_product(const Matrix<double>& L,const std::vector<int>& o
     for(j=0; j<background_dimension; ++j) {
       sum[j] = 0.0;
     }
-    l = 0;
     L.get_row(Lx,Lc,i);
     nelements = (signed) Lx.size();
     for(j=0; j<nelements; ++j) {
