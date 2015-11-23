@@ -423,7 +423,7 @@ Matrix<kind>& operator *(const Matrix<kind>& A,const Matrix<kind>& B)
 }
 
 template<class kind>
-void Matrix<kind>::set(unsigned int n,unsigned int m,kind v)
+void Matrix<kind>::set(unsigned int n,unsigned int m,kind v,bool increment)
 {
   unsigned int i,q;
   bool found = false;
@@ -435,7 +435,12 @@ void Matrix<kind>::set(unsigned int n,unsigned int m,kind v)
     }
   }
   if (found) {
-    elements[n][q].first = v;
+    if (increment) {
+      elements[n][q].first += v;
+    }
+    else {
+      elements[n][q].first = v;
+    }
   }
   else {
     elements[n].push_back(std::pair<kind,unsigned int>(v,m));
@@ -455,6 +460,38 @@ kind Matrix<kind>::get(unsigned int n,unsigned int m) const
     } 
   }
   return output;
+}
+
+template<class kind>
+void Matrix<kind>::increment(unsigned int n,unsigned int m,kind v)
+{
+  unsigned int i,q;
+  bool found = false;
+  for(i=0; i<elements[n].size(); ++i) {
+    if (elements[n][i].second == m) {
+      found = true;
+      q = i;
+      break;
+    }
+  }
+  if (found) {
+    elements[n][q].first += v;
+  }
+  else {
+    elements[n].push_back(std::pair<kind,unsigned int>(v,m));
+  }
+}
+
+template<class kind>
+void Matrix<kind>::get_row(std::vector<kind>& v,std::vector<unsigned int>& c,int rnumber) const
+{
+  unsigned int i;
+  v.clear();
+  c.clear();
+  for(i=0; i<elements[rnumber].size(); ++i) {
+    v.push_back(elements[rnumber][i].first);
+    c.push_back(elements[rnumber][i].second);
+  }
 }
 
 template<class kind>

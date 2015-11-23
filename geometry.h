@@ -17,7 +17,7 @@
   along with Synarmosma.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "global.h"
+#include "matrix.h"
 
 #ifndef _geometryh
 #define _geometryh

@@ -662,23 +662,23 @@ double Geometry::inner_product(const Matrix<double>& L,const std::vector<int>& o
 {
   if (relational) return 0.0;
   const int nv = L.get_nrow();
-  int i,j,k,l,nelements,column;
+  int i,j,k,l,nelements;
   double value,result[nv][background_dimension],sum[background_dimension];
   double energy = 0.0;
+  std::vector<double> Lx;
+  std::vector<unsigned int> Lc;
 
   for(i=0; i<nv; ++i) {
     for(j=0; j<background_dimension; ++j) {
       sum[j] = 0.0;
     }
     l = 0;
-    nelements = (signed) laplacian[i].size()/2;
+    L.get_row(Lx,Lc,i);
+    nelements = (signed) Lx.size();
     for(j=0; j<nelements; ++j) {
-      value = laplacian[i][l];
-      column = int(laplacian[i][l+1]);
       for(k=0; k<background_dimension; ++k) {
-        sum[k] += coordinates[column][k]*value;
+        sum[k] += coordinates[Lc[j]][k]*Lx[j];
       }
-      l += 2;
     }
     for(j=0; j<background_dimension; ++j) {
       result[i][j] = sum[j];
