@@ -70,7 +70,7 @@ namespace SYNARMOSMA {
     void compute_distances();
     void compute_distances(const std::set<int>&);
     double dot_product(const std::vector<double>&,const std::vector<double>&) const;
-    double inner_product(const std::vector<double>*,const std::vector<int>&,int) const;
+    double inner_product(const Matrix<double>&,const std::vector<int>&) const;
     int compute_coordinates(std::vector<double>&) const;
     void compute_relational_matrices(std::vector<double>&,std::vector<std::vector<double> >&) const;
     int vertex_order(int,int) const;

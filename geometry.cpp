@@ -658,10 +658,10 @@ void Geometry::vertex_difference(int n,int m,std::vector<double>& delta) const
   }
 }
 
-double Geometry::inner_product(const std::vector<double>* laplacian,const std::vector<int>& offset,int nv) const
+double Geometry::inner_product(const Matrix<double>& L,const std::vector<int>& offset) const
 {
   if (relational) return 0.0;
-
+  const int nv = L.get_nrow();
   int i,j,k,l,nelements,column;
   double value,result[nv][background_dimension],sum[background_dimension];
   double energy = 0.0;
