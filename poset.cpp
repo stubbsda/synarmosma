@@ -347,7 +347,7 @@ void Poset::construct_ordering(double lambda)
 {
   // A method to impose a random order on the poset 
   unsigned int u,v,n = 0;
-  double percent;
+  double percent = 0.0;
   const unsigned int M = (N*(N-1))/2;
 
   do {
