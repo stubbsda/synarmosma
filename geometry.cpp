@@ -80,15 +80,17 @@ void Geometry::set_default_values()
   euclidean = true;
   relational = false;
   uniform = true;
+  corpulent = true;
   background_dimension = 3;
 }
 
-void Geometry::initialize(bool type,bool model,bool flat,int D)
+void Geometry::initialize(bool type,bool model,bool flat,bool high_memory,int D)
 {
   clear();
   euclidean = type;
   relational = model;
   uniform = flat;
+  corpulent = high_memory;
   background_dimension = D;
 }
 
@@ -122,11 +124,6 @@ bool Geometry::consistent() const
     }
   }
 
-  if ((nvertex*(nvertex-1))/2 != (signed) distances.size()) {
-    std::cout << distances.size() << "  " << nvertex << "  " << (nvertex*(nvertex-1))/2 << std::endl;
-    return false;
-  }
-
   for(i=0; i<nvertex; ++i) {
     for(j=1+i; j<nvertex; ++j) {
       if (std::isnan(get_distance(i,j,false))) {
@@ -136,6 +133,14 @@ bool Geometry::consistent() const
       }
     }
   }
+
+  if (!corpulent) return true;
+
+  if ((nvertex*(nvertex-1))/2 != (signed) distances.size()) {
+    std::cout << distances.size() << "  " << nvertex << "  " << (nvertex*(nvertex-1))/2 << std::endl;
+    return false;
+  }
+
   for(i=0; i<(signed) distances.size(); ++i) {
     if (std::isnan(distances[i])) {
       std::cout << i << "  " << distances[i] << std::endl;
@@ -155,17 +160,16 @@ void Geometry::serialize(std::ofstream& s) const
   s.write((char*)(&euclidean),sizeof(bool));
   s.write((char*)(&relational),sizeof(bool));
   s.write((char*)(&uniform),sizeof(bool));
-
-  for(i=0; i<nvertex; ++i) {
-    for(j=1+i; j<nvertex; ++j) {
-      x = distances[n];
-      s.write((char*)(&x),sizeof(double));
-      n++;
-    }
-  }
+  s.write((char*)(&corpulent),sizeof(bool));
 
   if (relational) {
-
+    for(i=0; i<nvertex; ++i) {
+      for(j=1+i; j<nvertex; ++j) {
+        x = distances[n];
+        s.write((char*)(&x),sizeof(double));
+        n++;
+      }
+    }
   }
   else {
     if (uniform) {
@@ -186,7 +190,16 @@ void Geometry::serialize(std::ofstream& s) const
         }
       }
     }
-  }
+    if (corpulent) {
+      for(i=0; i<nvertex; ++i) {
+        for(j=1+i; j<nvertex; ++j) {
+          x = distances[n];
+          s.write((char*)(&x),sizeof(double));
+          n++;
+        }
+      }
+    }
+  } 
 }
 
 void Geometry::deserialize(std::ifstream& s)
@@ -201,15 +214,15 @@ void Geometry::deserialize(std::ifstream& s)
   s.read((char*)(&euclidean),sizeof(bool));
   s.read((char*)(&relational),sizeof(bool));
   s.read((char*)(&uniform),sizeof(bool));
+  s.read((char*)(&corpulent),sizeof(bool));
 
-  for(i=0; i<nvertex; ++i) {
-    for(j=1+i; j<nvertex; ++j) {
-      s.read((char*)(&x),sizeof(double));
-      distances.push_back(x);
-    }
-  }
   if (relational) {
-
+    for(i=0; i<nvertex; ++i) {
+      for(j=1+i; j<nvertex; ++j) {
+        s.read((char*)(&x),sizeof(double));
+        distances.push_back(x);
+      }
+    }
   }
   else {
     std::vector<double> xc;
@@ -232,6 +245,14 @@ void Geometry::deserialize(std::ifstream& s)
         }
         coordinates.push_back(xc);
         xc.clear();
+      }
+    }
+    if (corpulent) {
+      for(i=0; i<nvertex; ++i) {
+        for(j=1+i; j<nvertex; ++j) {
+          s.read((char*)(&x),sizeof(double));
+          distances.push_back(x);
+        }
       }
     }
   }
@@ -304,6 +325,8 @@ void Geometry::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<dou
       coordinates.push_back(xc);
     }
   }
+  if (!corpulent) return;
+
   for(i=0; i<npair; ++i) {
     distances.push_back(0.0);
   }
@@ -337,14 +360,16 @@ void Geometry::multiple_vertex_addition(int N,double mu,double sigma)
   for(i=0; i<background_dimension; ++i) {
     xc.push_back(0.0);
   }
-  for(i=0; i<npair; ++i) {
-    distances.push_back(0.0);
-  }
   for(i=0; i<N; ++i) {
     for(j=0; j<background_dimension; ++j) {
       xc[j] = RND.nrandom(mu,sigma);
     }
     coordinates.push_back(xc);
+  }
+  if (!corpulent) return;
+
+  for(i=0; i<npair; ++i) {
+    distances.push_back(0.0);
   }
   // We need to set nvertex here before we start calling the compute_index
   // method
@@ -365,18 +390,22 @@ void Geometry::multiple_vertex_addition(int N,double mu,double sigma)
 
 void Geometry::multiple_vertex_addition(const std::vector<std::vector<double> >& source)
 {
+  clear();
+
+  coordinates = source;
+
+  if (!corpulent) return;
+
   int i,j,k,npair;
   double delta;
   const double pfactor = (euclidean) ? 1.0 : -1.0;
 
-  clear();
-
   nvertex = (signed) source.size();
   npair = nvertex*(nvertex-1)/2;
+
   for(i=0; i<npair; ++i) {
     distances.push_back(0.0);
   }
-  coordinates = source;
 #ifdef _OPENMPI
 #pragma omp parallel for default(shared) private(i,j,k,delta) schedule(dynamic,1)
 #endif
@@ -1137,7 +1166,7 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
 
 void Geometry::compute_distances(const std::set<int>& vmodified)
 {
-  if (relational) return;
+  if (relational || !corpulent) return;
 
   int i,j,k,n1,n2,in1;
   double delta;
@@ -1195,7 +1224,7 @@ void Geometry::compute_distances(const std::set<int>& vmodified)
 
 void Geometry::compute_distances()
 {
-  if (relational) return;
+  if (relational || !corpulent) return;
 
   int i,j,k,in1;
   double delta;

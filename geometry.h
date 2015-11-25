@@ -39,6 +39,8 @@ namespace SYNARMOSMA {
     bool relational;
     // Whether the geometry is dimensionally uniform
     bool uniform;
+    // Whether to fill the "distances" vector (only makes sense when relational = false)
+    bool corpulent;
     // The asymptotic "flat space" dimension
     int background_dimension; 
 
@@ -52,7 +54,7 @@ namespace SYNARMOSMA {
     Geometry& operator =(const Geometry&);
     ~Geometry();
     void reciprocate();
-    void initialize(bool,bool,bool,int);
+    void initialize(bool,bool,bool,bool,int);
     void serialize(std::ofstream&) const;
     void deserialize(std::ifstream&);
     void load(const Geometry*);
@@ -207,6 +209,11 @@ namespace SYNARMOSMA {
       coordinates.push_back(x);
     }
 
+    if (!corpulent) {
+      nvertex++;
+      return;
+    }
+
     if (uniform) {
       for(i=0; i<nvertex; ++i) {
         for(j=1+i; j<nvertex; ++j) {
@@ -297,8 +304,9 @@ namespace SYNARMOSMA {
 
   double Geometry::get_distance(int v1,int v2,bool lorentzian) const
   {
+    if (!corpulent) return get_computed_distance(v1,v2,lorentzian);
+    
     assert(v1 != v2);
-
     int n = compute_index(v1,v2);
   
     assert(n >= 0 && n < (signed) distances.size());

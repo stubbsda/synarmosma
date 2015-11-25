@@ -62,6 +62,7 @@ namespace SYNARMOSMA {
     void initialize(FIELD,METHOD);
     void clear();
     void compute(const Nexus*);
+    void compute(const Nexus*,std::vector<int>&) const;
     void serialize(std::ofstream&) const;
     void deserialize(std::ifstream&);
     void betti_numbers(std::vector<int>&) const;
