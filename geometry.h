@@ -40,7 +40,7 @@ namespace SYNARMOSMA {
     // Whether the geometry is dimensionally uniform
     bool uniform;
     // Whether to fill the "distances" vector (only makes sense when relational = false)
-    bool corpulent;
+    bool high_memory;
     // The asymptotic "flat space" dimension
     int background_dimension; 
 

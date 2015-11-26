@@ -5,11 +5,11 @@ homology.o homotopy.o poset.o lattice.o
 
 CXX_FLAGS += $(OPENMP) -fPIC
 
-#CXX_FLAGS += $(CXX_OPT)
-CXX_FLAGS += $(DEBUG) 
+CXX_FLAGS += $(CXX_OPT)
+#CXX_FLAGS += $(DEBUG) 
 
-#LD_FLAGS += $(CXX_OPT)
-LD_FLAGS += $(DEBUG)
+LD_FLAGS += $(CXX_OPT)
+#LD_FLAGS += $(DEBUG)
 
 LD_FLAGS += $(OPENMP) -shared
 

@@ -80,17 +80,17 @@ void Geometry::set_default_values()
   euclidean = true;
   relational = false;
   uniform = true;
-  corpulent = true;
+  high_memory = true;
   background_dimension = 3;
 }
 
-void Geometry::initialize(bool type,bool model,bool flat,bool high_memory,int D)
+void Geometry::initialize(bool type,bool model,bool flat,bool hmemory,int D)
 {
   clear();
   euclidean = type;
   relational = model;
   uniform = flat;
-  corpulent = high_memory;
+  high_memory = hmemory;
   background_dimension = D;
 }
 
@@ -134,7 +134,7 @@ bool Geometry::consistent() const
     }
   }
 
-  if (!corpulent) return true;
+  if (!high_memory) return true;
 
   if ((nvertex*(nvertex-1))/2 != (signed) distances.size()) {
     std::cout << distances.size() << "  " << nvertex << "  " << (nvertex*(nvertex-1))/2 << std::endl;
@@ -160,7 +160,7 @@ void Geometry::serialize(std::ofstream& s) const
   s.write((char*)(&euclidean),sizeof(bool));
   s.write((char*)(&relational),sizeof(bool));
   s.write((char*)(&uniform),sizeof(bool));
-  s.write((char*)(&corpulent),sizeof(bool));
+  s.write((char*)(&high_memory),sizeof(bool));
 
   if (relational) {
     for(i=0; i<nvertex; ++i) {
@@ -190,7 +190,7 @@ void Geometry::serialize(std::ofstream& s) const
         }
       }
     }
-    if (corpulent) {
+    if (high_memory) {
       for(i=0; i<nvertex; ++i) {
         for(j=1+i; j<nvertex; ++j) {
           x = distances[n];
@@ -214,7 +214,7 @@ void Geometry::deserialize(std::ifstream& s)
   s.read((char*)(&euclidean),sizeof(bool));
   s.read((char*)(&relational),sizeof(bool));
   s.read((char*)(&uniform),sizeof(bool));
-  s.read((char*)(&corpulent),sizeof(bool));
+  s.read((char*)(&high_memory),sizeof(bool));
 
   if (relational) {
     for(i=0; i<nvertex; ++i) {
@@ -247,7 +247,7 @@ void Geometry::deserialize(std::ifstream& s)
         xc.clear();
       }
     }
-    if (corpulent) {
+    if (high_memory) {
       for(i=0; i<nvertex; ++i) {
         for(j=1+i; j<nvertex; ++j) {
           s.read((char*)(&x),sizeof(double));
@@ -325,7 +325,7 @@ void Geometry::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<dou
       coordinates.push_back(xc);
     }
   }
-  if (!corpulent) return;
+  if (!high_memory) return;
 
   for(i=0; i<npair; ++i) {
     distances.push_back(0.0);
@@ -366,7 +366,7 @@ void Geometry::multiple_vertex_addition(int N,double mu,double sigma)
     }
     coordinates.push_back(xc);
   }
-  if (!corpulent) return;
+  if (!high_memory) return;
 
   for(i=0; i<npair; ++i) {
     distances.push_back(0.0);
@@ -394,7 +394,7 @@ void Geometry::multiple_vertex_addition(const std::vector<std::vector<double> >&
 
   coordinates = source;
 
-  if (!corpulent) return;
+  if (!high_memory) return;
 
   int i,j,k,npair;
   double delta;
@@ -1166,7 +1166,7 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
 
 void Geometry::compute_distances(const std::set<int>& vmodified)
 {
-  if (relational || !corpulent) return;
+  if (relational || !high_memory) return;
 
   int i,j,k,n1,n2,in1;
   double delta;
@@ -1224,7 +1224,7 @@ void Geometry::compute_distances(const std::set<int>& vmodified)
 
 void Geometry::compute_distances()
 {
-  if (relational || !corpulent) return;
+  if (relational || !high_memory) return;
 
   int i,j,k,in1;
   double delta;
