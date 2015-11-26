@@ -17,7 +17,6 @@
   along with Synarmosma.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "group.h"
 #include "nexus.h"
 
 #ifndef _homologyh
@@ -40,7 +39,10 @@ namespace SYNARMOSMA {
 
   class Homology {
    private:
-    std::vector<Group> sequence;
+    //std::vector<Group> sequence;
+    //std::vector<std::pair<unsigned int,std::vector<unsigned int> > > sequence;
+    std::vector<unsigned int> betti_number;
+    std::vector<std::vector<unsigned int> > torsion;
     METHOD method;
     FIELD field;
 
@@ -59,13 +61,12 @@ namespace SYNARMOSMA {
     inline void set_field(FIELD f) {field = f;};
     inline METHOD get_method() const {return method;};
     inline FIELD get_field() const {return field;};
+    inline void get_betti_numbers(std::vector<unsigned int>& output) const {output = betti_number;}; 
     void initialize(FIELD,METHOD);
     void clear();
     void compute(const Nexus*);
-    void compute(const Nexus*,std::vector<int>&) const;
     void serialize(std::ofstream&) const;
     void deserialize(std::ifstream&);
-    void betti_numbers(std::vector<int>&) const;
   };
 }
 #endif 

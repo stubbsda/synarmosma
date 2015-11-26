@@ -34,7 +34,8 @@ Homology::Homology(FIELD f,METHOD m)
 
 Homology::Homology(const Homology& source)
 {
-  sequence = source.sequence;
+  betti_number = source.betti_number;
+  torsion = source.torsion;
   field = source.field;
   method = source.method;
 }
@@ -42,7 +43,8 @@ Homology::Homology(const Homology& source)
 Homology& Homology::operator =(const Homology& source)
 {
   if (this == &source) return *this;
-  sequence = source.sequence;
+  betti_number = source.betti_number;
+  torsion = source.torsion;
   field = source.field;
   method = source.method;
   return *this;
@@ -53,53 +55,73 @@ Homology::~Homology()
 
 }
 
-void Homology::betti_numbers(std::vector<int>& bnumbers) const
-{
-  unsigned int i;
-  bnumbers.clear();
-  for(i=0; i<sequence.size(); ++i) {
-    bnumbers.push_back(sequence[i].get_rank());
-  }
-}
-
 void Homology::clear()
 {
-  sequence.clear();
+  betti_number.clear();
+  torsion.clear();
 }
 
 std::string Homology::write() const
-{
-  std::string output = "[";
-  if (sequence.empty()) {
-    output += "]";
+{ 
+  std::string output = "{";
+
+  if (betti_number.empty()) {
+    output += "}";
     return output;
   }
-  int i,n = (signed) sequence.size() - 1;
-  
+  unsigned int i,j,m,n = betti_number.size() - 1;
+  std::stringstream sstream;
+  sstream << "{";
   for(i=0; i<n; ++i) {
-    output += sequence[i].compact_form() + "],[";
+    sstream << "[" << betti_number[i];
+    if (torsion[i].empty()) {
+      sstream << "],";
+      continue;
+    } 
+    sstream << ";";
+    m = torsion[i].size() - 1;
+    for(j=0; j<m; ++j) {
+      sstream << torsion[i][j] << ",";
+    }
+    sstream << torsion[i][m] << "],";
   }
-  output += sequence[n].compact_form() + "]";
+  sstream << "[" << betti_number[n];
+  if (torsion[n].empty()) {
+    sstream << "]}";
+    return sstream.str();
+  } 
+  m = torsion[n].size() - 1;
+  for(j=0; j<m; ++j) {
+    sstream << torsion[n][j] << ",";
+  }
+  sstream << torsion[n][m] << "]}";  
 
-  return output;
+  return sstream.str();
 }
 
 void Homology::serialize(std::ofstream& s) const 
 {
-  int i,n = (signed) sequence.size();
+  unsigned int i,j,k,m,n = betti_number.size();
 
   s.write((char*)(&field),sizeof(FIELD));
   s.write((char*)(&method),sizeof(METHOD));
   s.write((char*)(&n),sizeof(int));
   for(i=0; i<n; ++i) {
-    sequence[i].serialize(s);
+    m = betti_number[i];
+    s.write((char*)(&m),sizeof(int));
+    m = torsion[i].size();
+    s.write((char*)(&m),sizeof(int));
+    for(j=0; j<m; ++j) {
+      k = torsion[i][j];
+      s.write((char*)(&k),sizeof(int));
+    }
   }
 }
 
 void Homology::deserialize(std::ifstream& s)
 {
-  int i,n;
-  Group g;
+  unsigned int i,j,k,n,m;
+  std::vector<unsigned int> tau;
 
   clear();
 
@@ -107,9 +129,16 @@ void Homology::deserialize(std::ifstream& s)
   s.read((char*)(&method),sizeof(METHOD));
   s.read((char*)(&n),sizeof(int));
   for(i=0; i<n; ++i) {
-    g.deserialize(s);
-    sequence.push_back(g);
-  }  
+    s.read((char*)(&m),sizeof(int));
+    betti_number.push_back(m);
+    s.read((char*)(&m),sizeof(int));
+    for(j=0; j<m; ++j) {
+      s.read((char*)(&k),sizeof(int));
+      tau.push_back(k);
+    }
+    torsion.push_back(tau);
+    tau.clear();
+  }
 } 
 
 void Homology::compute_integral_native(const Nexus* NX)
@@ -118,19 +147,19 @@ void Homology::compute_integral_native(const Nexus* NX)
   const int dimension = NX->dimension;
   const int nvertex = NX->nvertex;
   int i,j,d,p,v2[2];
-  unsigned int k,r,betti,ulimit,d1 = nvertex,d2 = NX->elements[1].size();
+  unsigned int k,r,ulimit,d1 = nvertex,d2 = NX->elements[1].size();
   std::string cx;
   std::stringstream ss;
   std::vector<unsigned int> image,kernel,tgenerators;
-  std::vector<unsigned int>* torsion = new std::vector<unsigned int>[1+dimension];
   std::set<int> vx,S;
   std::set<int>::const_iterator it;
   hash_map::const_iterator qt;
 
   image.push_back(0);
   kernel.push_back(0);
-  for(d=0; d<=dimension; ++d) {
-    torsion[d] = tgenerators;
+  for(d=1; d<=dimension; ++d) {
+    betti_number.push_back(0);
+    torsion.push_back(tgenerators);
   } 
 
   if (field == INT) {
@@ -291,21 +320,19 @@ void Homology::compute_integral_native(const Nexus* NX)
     delete A;
   }
   for(d=1; d<dimension; ++d) {
-    betti = kernel[d] - image[d+1];
-    sequence.push_back(Group(betti,torsion[d])); 
+    betti_number[d] = kernel[d] - image[d+1];
   }
-  betti = kernel[dimension];
-  sequence.push_back(Group(betti,torsion[dimension]));
-  delete[] torsion;
+  betti_number[dimension] = kernel[dimension];
 }
 
 void Homology::compute_native(const Nexus* NX)
 {
   int d;
   unsigned int betti = 1;
-  std::vector<unsigned int> torsion;
+  std::vector<unsigned int> null;
 
-  sequence.clear();
+  betti_number.clear();
+  torsion.clear();
 
   if (!NX->connected()) {
     // In this case the integral homology group is just the free abelian group
@@ -313,7 +340,9 @@ void Homology::compute_native(const Nexus* NX)
     std::vector<int> components;
     betti = NX->component_analysis(components);
   }
-  sequence.push_back(Group(betti,torsion));
+  //sequence.push_back(Group(betti,torsion));
+  betti_number.push_back(betti);
+  torsion.push_back(null);
 
   // Now the higher order homology groups...
   if (field == GF2) {
@@ -361,11 +390,11 @@ void Homology::compute_native(const Nexus* NX)
       kernel.push_back(d2 - r);
     }
     for(d=1; d<NX->dimension; ++d) {
-      betti = kernel[d] - image[d+1];
-      sequence.push_back(Group(betti,torsion));
+      betti_number.push_back(kernel[d] - image[d+1]);
+      torsion.push_back(null);
     }
-    betti = kernel[NX->dimension];
-    sequence.push_back(Group(betti,torsion));
+    betti_number.push_back(kernel[NX->dimension]);
+    torsion.push_back(null);
     delete A;
   }
   else {
@@ -380,7 +409,8 @@ void Homology::compute_gap(const Nexus* NX)
   std::string line;
   std::set<int>::const_iterator it;
 
-  sequence.clear();
+  betti_number.clear();
+  torsion.clear();
 
   if (field == GF2) {
     // Construct the boundary operator at each dimension and use GAP to 
@@ -388,7 +418,7 @@ void Homology::compute_gap(const Nexus* NX)
     unsigned int i,j,d1,d2,r,betti = 1;
     bool done;
     int d,alpha;
-    std::vector<unsigned int> torsion,image,kernel;
+    std::vector<unsigned int> null,image,kernel;
     std::vector<std::string> tokens;
     std::vector<unsigned char> rvector;
     std::set<int> vx;
@@ -401,7 +431,8 @@ void Homology::compute_gap(const Nexus* NX)
       std::vector<int> components;
       betti = NX->component_analysis(components);
     }
-    sequence.push_back(Group(betti,torsion));
+    betti_number.push_back(betti);
+    torsion.push_back(null);
 
     for(d=1; d<=NX->dimension; ++d) {
       std::ofstream s("input.gap");
@@ -475,19 +506,16 @@ void Homology::compute_gap(const Nexus* NX)
       kernel.push_back(d2 - r);
     }
     for(d=1; d<NX->dimension; ++d) {
-      betti = kernel[d] - image[d+1];
-      sequence.push_back(Group(betti,torsion));
+      betti_number.push_back(kernel[d] - image[d+1]);
+      torsion.push_back(null);
     }
-    betti = kernel[NX->dimension];
-    sequence.push_back(Group(betti,torsion));
+    betti_number.push_back(kernel[NX->dimension]);
+    torsion.push_back(null);
     return;
   }
 
   int i,j,k;
-  std::vector<Word> relations;
-  Word w(0);
-  std::vector<unsigned int> bnumber,tnumber;
-  std::vector<std::vector<unsigned int> > telements;
+  std::vector<unsigned int> tnumber;
   bool first = true;
   int depth;
   std::string hdata;
@@ -546,7 +574,7 @@ void Homology::compute_gap(const Nexus* NX)
   boost::tokenizer<boost::char_separator<char> > tok(hdata,sep);
   depth = 0;
   std::string str;
-  bool torsion = false;
+  bool analyze_torsion = false;
   bool group = false;
 
   for(boost::tokenizer<boost::char_separator<char> >::iterator beg=tok.begin(); beg!=tok.end(); beg++) {
@@ -556,27 +584,24 @@ void Homology::compute_gap(const Nexus* NX)
     if (depth == 2 && !group) {
       group = true;
     }
-    else if (depth == 2 && group && !torsion) {
-      bnumber.push_back(boost::lexical_cast<int>(str));
+    else if (depth == 2 && group && !analyze_torsion) {
+      betti_number.push_back(boost::lexical_cast<int>(str));
     }
     else if (depth == 2) {
-      torsion = false;
-      telements.push_back(tnumber);
+      analyze_torsion = false;
+      torsion.push_back(tnumber);
       tnumber.clear();
     }
-    if (depth == 3 && torsion) {
+    if (depth == 3 && analyze_torsion) {
       tnumber.push_back(boost::lexical_cast<int>(str));
     }
     else if (depth == 3) {
-      torsion = true;
+      analyze_torsion = true;
     }
     if (depth == 1 && group) group = false;
   }
   // Due to a weird issue with simpcomp...
-  bnumber[0] += 1;
-  for(i=0; i<=NX->dimension; ++i) {
-    sequence.push_back(Group(bnumber[i],telements[i]));
-  }
+  betti_number[0] += 1;
 }
 
 void Homology::compute(const Nexus* NX)
