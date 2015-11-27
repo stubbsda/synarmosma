@@ -209,7 +209,7 @@ namespace SYNARMOSMA {
       coordinates.push_back(x);
     }
 
-    if (!corpulent) {
+    if (!high_memory) {
       nvertex++;
       return;
     }
@@ -304,7 +304,7 @@ namespace SYNARMOSMA {
 
   double Geometry::get_distance(int v1,int v2,bool lorentzian) const
   {
-    if (!corpulent) return get_computed_distance(v1,v2,lorentzian);
+    if (!high_memory) return get_computed_distance(v1,v2,lorentzian);
     
     assert(v1 != v2);
     int n = compute_index(v1,v2);
