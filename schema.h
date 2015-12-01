@@ -37,9 +37,9 @@ namespace SYNARMOSMA {
     virtual void serialize(std::ofstream&) const;
     virtual void deserialize(std::ifstream&);
     bool connected() const;
-    bool connected(int,int) const;
+    inline bool connected(int,int) const;
     virtual void clear();
-    int add_vertex();
+    inline int add_vertex();
     virtual bool add_edge(int,int);
     virtual bool drop_edge(int,int);
     bool positive_valence() const;
@@ -49,5 +49,29 @@ namespace SYNARMOSMA {
     void components(std::vector<int>&,std::vector<int>&) const;
     inline int get_order() const {return nvertex;};
   };
+
+  int Schema::add_vertex()
+  {
+    std::set<int> empty;
+    neighbours.push_back(empty);
+    nvertex++;
+    return nvertex-1;
+  }
+
+  bool Schema::connected(int n,int m) const
+  {
+    // A method to check if the vertices n and m share a direct 
+    // connection
+    //assert(n >= 0 && n < nvertex);
+    //assert(m >= 0 && m < nvertex);
+    if (n == m) return false;
+
+    if (neighbours[n].count(m) == 0) {
+      // This edge doesn't exist...
+      //assert(neighbours[m].count(n) == 0);
+      return false;
+    }
+    return true;
+  }
 }
 #endif

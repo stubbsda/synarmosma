@@ -32,7 +32,17 @@ namespace SYNARMOSMA {
     // The edges
     std::vector<Edge> edges;
     hash_map index_table;
-
+  public:
+    // The usual public methods for a class
+    Graph();
+    Graph(int);
+    Graph(int,std::string&);
+    Graph(int,int);
+    Graph(int,double);
+    Graph(const Graph&);
+    Graph& operator =(const Graph&);
+    virtual ~Graph();
+    virtual void clear();
     // Returns the topological energy of this graph
     virtual double compute_energy() const;
     // A basic operator for adding an edge
@@ -48,17 +58,6 @@ namespace SYNARMOSMA {
     // A method to render the graph topology complete
     int make_complete();
     virtual bool consistent() const;
-   public:
-    // The usual public methods for a class
-    Graph();
-    Graph(int);
-    Graph(int,std::string&);
-    Graph(int,int);
-    Graph(int,double);
-    Graph(const Graph&);
-    Graph& operator =(const Graph&);
-    virtual ~Graph();
-    virtual void clear();
     // Hyphantic operators
     bool stellar_addition(int);
     bool stellar_deletion(int);

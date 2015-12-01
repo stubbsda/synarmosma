@@ -917,31 +917,26 @@ double Graph::entwinement() const
 
   assert(connected());
 
-  int i,info,nv = nvertex,nwork = 3*nvertex - 1;
-  unsigned int j;
+  int i,j,info,nv = nvertex,nwork = 3*nvertex - 1;
   char jtype = 'N';
   char uplo = 'U';
   double output = 0.0;
   double* AD = new double[nvertex*nvertex];
   double* w = new double[nvertex];
   double* work = new double[nwork];
-  std::vector<unsigned int>::const_iterator it;
-
-  // First built the adjacency matrix
-  Binary_Matrix* A = new Binary_Matrix;
-  compute_adjacency_matrix(A);
 
   for(i=0; i<nvertex*nvertex; ++i) {
     AD[i] = 0.0;
   }
 
   for(i=0; i<nvertex; ++i) {
-    for(it=A->elements[i].begin(); it!=A->elements[i].end(); ++it) {
-      j = *it;
-      AD[nvertex*i+j] = 1.0;
+    for(j=1+i; j<nvertex; ++j) {
+      if (connected(i,j)) {
+        AD[nvertex*i+j] = 1.0; AD[nvertex*j+i] = 1.0;
+      }
     }
   }
-  delete A;
+
   // If info is zero after this LAPACK call, then w will contain
   // the eigenvalues of A (which are real since A is symmetric and
   // real) in ascending order, thus w[nv-1] will be the largest

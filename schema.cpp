@@ -59,14 +59,6 @@ void Schema::clear()
   neighbours.clear();
 }
 
-int Schema::add_vertex()
-{
-  std::set<int> empty;
-  neighbours.push_back(empty);
-  nvertex++;
-  return nvertex-1;
-}
-
 void Schema::serialize(std::ofstream& s) const
 {
   int i,j;
@@ -100,22 +92,6 @@ void Schema::deserialize(std::ifstream& s)
     neighbours.push_back(S);
     S.clear();
   }
-}
-
-bool Schema::connected(int n,int m) const
-{
-  // A method to check if the vertices n and m share a direct 
-  // connection
-  assert(n >= 0 && n < nvertex);
-  assert(m >= 0 && m < nvertex);
-  if (n == m) return false;
-
-  if (neighbours[n].count(m) == 0) {
-    // This edge doesn't exist...
-    assert(neighbours[m].count(n) == 0);
-    return false;
-  }
-  return true;
 }
 
 bool Schema::drop_edge(int n,int m)
