@@ -39,8 +39,6 @@ namespace SYNARMOSMA {
 
   class Homology {
    private:
-    //std::vector<Group> sequence;
-    //std::vector<std::pair<unsigned int,std::vector<unsigned int> > > sequence;
     std::vector<unsigned int> betti_number;
     std::vector<std::vector<unsigned int> > torsion;
     METHOD method;
