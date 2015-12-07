@@ -389,8 +389,8 @@ void Variety<kind>::elaborate()
 
   for(i=0; i<nequation; ++i) {
     atoms.clear();
-    for(j=0; j<(signed) equations[i].size(); ++j) {
-      for(k=0; k<(signed) equations[i][j].exponents.size(); ++k) {
+    for(j=0; j<equations[i].size(); ++j) {
+      for(k=0; k<equations[i][j].exponents.size(); ++k) {
         atoms.insert(equations[i][j].exponents[k].first);
       }
     }
