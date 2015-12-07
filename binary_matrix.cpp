@@ -253,7 +253,9 @@ namespace SYNARMOSMA {
 
   Binary_Matrix operator +(const Binary_Matrix& A,const Binary_Matrix& B)
   {
+#ifdef DEBUG
     assert(A.nrow == B.nrow && A.ncolumn == B.ncolumn);
+#endif
 
     unsigned int i,j,k;
     std::vector<unsigned int>::const_iterator it;
@@ -280,8 +282,9 @@ namespace SYNARMOSMA {
 
   Binary_Matrix operator *(const Binary_Matrix& A,const Binary_Matrix& B)
   {
+#ifdef DEBUG
     assert(A.ncolumn == B.nrow);
-
+#endif
     unsigned int i,j,k,l,in1,sum;
     Binary_Matrix output(A.nrow,B.ncolumn);
 

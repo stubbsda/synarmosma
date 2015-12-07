@@ -28,7 +28,9 @@ Edge::Edge()
 
 Edge::Edge(int u,int v) 
 {
+#ifdef DEBUG
   assert(u != v);
+#endif
   clear();
   nodes.insert(u);
   nodes.insert(v);
@@ -36,7 +38,9 @@ Edge::Edge(int u,int v)
 
 Edge::Edge(int u,int v,RELATION rho)
 {
+#ifdef DEBUG
   assert(u != v);
+#endif
   clear();
   nodes.insert(u);
   nodes.insert(v); 

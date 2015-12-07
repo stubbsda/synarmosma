@@ -93,7 +93,9 @@ void Poset::deserialize(std::ifstream& s)
       }
     }
   }
+#ifdef DEBUG
   assert(consistent());
+#endif
 }
 
 bool Poset::invert_order(unsigned int u,unsigned int v)
@@ -230,7 +232,9 @@ unsigned int Poset::chain_number(unsigned int length) const
 
 void Poset::compute_width(unsigned int u,unsigned int v,std::set<unsigned int>& slice) const
 {
+#ifdef DEBUG
   assert(u != v);
+#endif
   unsigned int i;
 
   slice.clear();
@@ -354,7 +358,9 @@ void Poset::construct_ordering(double lambda)
     u = RND.irandom(N);
     v = RND.irandom(N);
     if (set_order(u,v)) {
+#ifdef DEBUG
       assert(consistent());
+#endif
       n++;
       percent = double(order.size())/double(M);
     }

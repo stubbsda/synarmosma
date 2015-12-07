@@ -30,7 +30,9 @@ Group::Group()
 
 Group::Group(const std::string& name,unsigned int n)
 {
+#ifdef DEBUG
   assert(n > 0);
+#endif
   if (name == "Order") {
     // Here the user has specified the desired order of the 
     // group that is to be constructed
@@ -359,7 +361,9 @@ bool Group::consistent() const
 bool Group::equivalent(const Word& w1,const Word& w2) const
 {
   // Make sure these are in fact words in this group...
+#ifdef DEBUG
   assert(w1.legal() && w2.legal());
+#endif
   // We only know how to solve the word problem in the braid group...
   if (!braid) return false;
   Word nword(ngenerator,0),cword = w1*w2.invert();
@@ -607,7 +611,9 @@ void Group::initialize(unsigned int r,const std::vector<unsigned int>& torsion)
   }
   if (rank == 0) cardinality = 0;
   for(i=0; i<torsion.size(); ++i) {
+#ifdef DEBUG
     assert(torsion[i] > 1);
+#endif
     w.content.push_back(std::pair<int,int>(rank+i,torsion[i]));
     relations.push_back(w);
     w.clear();

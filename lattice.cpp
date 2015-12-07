@@ -127,7 +127,9 @@ void Lattice::deserialize(std::ifstream& s)
     s.read((char*)(&k),sizeof(int));
     atoms.insert(k);
   }
+#ifdef DEBUG
   assert(consistent());
+#endif
 }
 
 
@@ -157,7 +159,9 @@ void Lattice::initialize()
     }
     delta = ndelta;
   } while(delta > 0);
+#ifdef DEBUG
   assert(consistent());
+#endif
   compute_bounds();
   compute_atoms();
 }

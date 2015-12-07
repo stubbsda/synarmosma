@@ -96,8 +96,10 @@ void Schema::deserialize(std::ifstream& s)
 
 bool Schema::drop_edge(int n,int m)
 {
+#ifdef DEBUG
   assert(n >= 0 && n < nvertex);
   assert(m >= 0 && m < nvertex);
+#endif
   if (n == m) return false;
 
   std::set<int>::const_iterator it;
@@ -115,8 +117,10 @@ bool Schema::drop_edge(int n,int m)
 
 bool Schema::add_edge(int n,int m)
 {
+#ifdef DEBUG
   assert(n >= 0 && n < nvertex);
   assert(m >= 0 && m < nvertex);
+#endif
   if (n == m) return false;
 
   if (neighbours[n].count(m) == 0) {
@@ -307,7 +311,9 @@ int Schema::spanning_tree(std::vector<int>& tree_edges) const
   std::set<int>::const_iterator it,jt,kt,lt;
 
   // A sanity check...
+#ifdef DEBUG
   assert(connected());
+#endif
 
   current.insert(0);
 
@@ -338,7 +344,9 @@ int Schema::spanning_tree(std::vector<int>& tree_edges) const
     next.clear();
   } while(true);
   ntree = (signed) tree_edges.size();
+#ifdef DEBUG
   assert(nvertex == (1+ntree/2));
+#endif
   return ntree;
 }
 

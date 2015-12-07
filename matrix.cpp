@@ -330,8 +330,9 @@ void Matrix<kind>::transpose(const Matrix<kind>& source)
 template<class kind>
 std::vector<kind>& operator *(const Matrix<kind>& A,const std::vector<kind>& b)
 {
+#ifdef DEBUG
   assert(A.ncolumn == b.size());
-
+#endif
   unsigned int i,j;
   kind sum;
   std::vector<kind> output;
@@ -349,8 +350,9 @@ std::vector<kind>& operator *(const Matrix<kind>& A,const std::vector<kind>& b)
 template<class kind>
 Matrix<kind>& operator +(const Matrix<kind>& A,const Matrix<kind>& B)
 {
+#ifdef DEBUG
   assert(A.nrow == B.nrow && A.ncolumn == B.ncolumn);
-
+#endif
   unsigned int i,j,k,in1,cvalue;
   bool found;
   Matrix<kind> output(A.nrow,A.ncolumn);
@@ -383,8 +385,9 @@ Matrix<kind>& operator +(const Matrix<kind>& A,const Matrix<kind>& B)
 template<class kind>
 Matrix<kind>& operator *(const Matrix<kind>& A,const Matrix<kind>& B)
 {
+#ifdef DEBUG
   assert(A.ncolumn == B.nrow);
-
+#endif
   unsigned int i,j,k,l,in1;
   kind sum;
   Matrix<kind> output(A.nrow,B.ncolumn);

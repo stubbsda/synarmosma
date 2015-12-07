@@ -44,7 +44,7 @@ namespace SYNARMOSMA {
     ~Edge();
     Edge& operator =(const Edge&);
     inline void get_nodes(int*) const;
-    inline void set_nodes(int u,int v) {assert(u != v); nodes.clear(); nodes.insert(u); nodes.insert(v);};
+    inline void set_nodes(int u,int v);
     inline bool get_activity() const {return active;};
     inline void set_activity(bool a) {active = a;};
     inline RELATION get_direction() const {return direction;};
@@ -54,7 +54,17 @@ namespace SYNARMOSMA {
     friend class Logic_Graph;
   };
 
-  inline void Edge::get_nodes(int* vx) const
+  void Edge::set_nodes(int u,int v) 
+  {
+#ifdef DEBUG
+    assert(u != v);
+#endif
+    nodes.clear();
+    nodes.insert(u);
+    nodes.insert(v);
+  }
+
+  void Edge::get_nodes(int* vx) const
   {
     int i = 0;
     std::set<int>::const_iterator it;

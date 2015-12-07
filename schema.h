@@ -62,13 +62,17 @@ namespace SYNARMOSMA {
   {
     // A method to check if the vertices n and m share a direct 
     // connection
-    //assert(n >= 0 && n < nvertex);
-    //assert(m >= 0 && m < nvertex);
+#ifdef DEBUG
+    assert(n >= 0 && n < nvertex);
+    assert(m >= 0 && m < nvertex);
     if (n == m) return false;
+#endif
 
     if (neighbours[n].count(m) == 0) {
       // This edge doesn't exist...
-      //assert(neighbours[m].count(n) == 0);
+#ifdef DEBUG
+      assert(neighbours[m].count(n) == 0);
+#endif
       return false;
     }
     return true;

@@ -76,7 +76,9 @@ Nexus::~Nexus()
 void Nexus::initialize(int d)
 {
   clear();
+#ifdef DEBUG
   assert(d > 0);
+#endif
   elements = new std::vector<Cell>[1+d];
   index_table = new hash_map[1+d];
   dimension = d;
@@ -86,8 +88,10 @@ void Nexus::initialize(int d)
 void Nexus::initialize(int d,int nv)
 {
   clear();
+#ifdef DEBUG
   assert(d > 0);
   assert(nv > 0);
+#endif
   elements = new std::vector<Cell>[1+d];
   index_table = new hash_map[1+d];
   dimension = d;

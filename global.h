@@ -154,7 +154,9 @@ namespace SYNARMOSMA {
 
   inline std::string make_key(int x,int y)
   {
+#ifdef DEBUG
     assert(x != y);
+#endif
     std::stringstream s;
     if (x < y) {
       s << x << ":" << y;
@@ -167,7 +169,9 @@ namespace SYNARMOSMA {
 
   inline std::string make_key(const std::vector<int>& v) 
   {
+#ifdef DEBUG
     assert(!v.empty());
+#endif
     unsigned int i,n = v.size();
     std::stringstream s;
 
@@ -180,7 +184,9 @@ namespace SYNARMOSMA {
 
   inline std::string make_key(const std::set<int>& S)
   {
+#ifdef DEBUG
     assert(!S.empty());
+#endif
     unsigned int i,n = S.size();
     std::stringstream s;
     std::set<int>::const_iterator it;

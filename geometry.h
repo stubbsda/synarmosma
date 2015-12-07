@@ -102,7 +102,9 @@ namespace SYNARMOSMA {
 
   inline int Geometry::compute_index(int v1,int v2) const
   {
+#ifdef DEBUG
     assert(v1 != v2);
+#endif
     int n;
     if (v1 < v2) {
       n = nvertex*v1 - v1*(1+v1)/2;
@@ -191,7 +193,9 @@ namespace SYNARMOSMA {
       std::cerr << "Illegal geometric method call for relational model!" << std::endl;
       std::exit(1);
     }
+#ifdef DEBUG
     assert((signed) x.size() >= background_dimension);
+#endif
 
     int i,j,k = 0;
     double delta;
@@ -262,7 +266,9 @@ namespace SYNARMOSMA {
       std::cerr << "Illegal geometric method call for relational model!" << std::endl;
       std::exit(1);
     }
+#ifdef DEBUG
     assert((signed) x.size() >= background_dimension);
+#endif
     if (uniform) {
       std::vector<double> xt;
       for(int i=0; i<background_dimension; ++i) {
@@ -281,7 +287,9 @@ namespace SYNARMOSMA {
       std::cerr << "Illegal geometric method call for relational model!" << std::endl;
       std::exit(1);
     }
+#ifdef DEBUG
     assert((signed) x.size() >= background_dimension);
+#endif
 
     double delta = (coordinates[v][0] - x[0])*(coordinates[v][0] - x[0]);
     if (lorentzian) delta = -delta;
@@ -305,8 +313,9 @@ namespace SYNARMOSMA {
   double Geometry::get_distance(int v1,int v2,bool lorentzian) const
   {
     if (!high_memory) return get_computed_distance(v1,v2,lorentzian);
-    
+#ifdef DEBUG    
     assert(v1 != v2);
+#endif
     int n = compute_index(v1,v2);
   
     assert(n >= 0 && n < (signed) distances.size());
@@ -317,7 +326,9 @@ namespace SYNARMOSMA {
 
   double Geometry::get_computed_distance(int v1,int v2,bool lorentzian) const
   {
+#ifdef DEBUG
     assert(v1 != v2);
+#endif
     double l;
     int n;
     if (relational) {
