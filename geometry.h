@@ -30,9 +30,15 @@ namespace SYNARMOSMA {
    private:
     int nvertex;
     int vperturb;
+#ifdef DISCRETE
+    std::vector<INT64> original;
+    std::vector<INT64> distances;
+    std::vector<std::vector<INT64> > coordinates;
+#else
     std::vector<double> original;
     std::vector<double> distances;
     std::vector<std::vector<double> > coordinates;
+#endif
     // Whether the geometry is Euclidean or Lorentzian
     bool euclidean;
     // Whether the geometry is based on a relational or absolute model of space

@@ -27,7 +27,11 @@ namespace SYNARMOSMA {
    protected:
     int incept;
     int topological_dimension;
+#ifdef DISCRETE
+    UINT64 energy;
+#else
     double energy;
+#endif
     Proposition theorem;
     std::set<int> posterior,anterior;  
     std::set<int> neighbours;

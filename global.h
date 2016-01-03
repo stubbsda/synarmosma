@@ -68,9 +68,16 @@ namespace SYNARMOSMA {
   typedef boost::unordered_map<std::string,int> string_hash;
 
 #ifdef __LP64__
+  typedef signed long INT64;
   typedef unsigned long UINT64;
 #else
+  typedef signed long long INT64;
   typedef unsigned long long UINT64;
+#endif
+
+#ifdef DISCRETE
+  const double energy_quantum = 1e-7;
+  const double space_quantum = 1e-8;
 #endif
 
   template<unsigned int N>
