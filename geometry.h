@@ -120,6 +120,9 @@ namespace SYNARMOSMA {
       n = nvertex*v2 - v2*(1+v2)/2;
       n += (v1 - (1+v2));
     }
+#ifdef DEBUG
+    assert(n >= 0 && n < (signed) distances.size());
+#endif
     return n;
   }
 
@@ -231,9 +234,15 @@ namespace SYNARMOSMA {
     }
 
     int i,j,k = 0;
+#ifdef DISCRETE
+    INT64 delta;
+    std::vector<INT64> ndistances;
+    const int pfactor = (euclidean) ? 1 : -1;
+#else
     double delta;
     std::vector<double> ndistances;
     const double pfactor = (euclidean) ? 1.0 : -1.0;
+#endif
 
     if (uniform) {
       for(i=0; i<nvertex; ++i) {
@@ -274,7 +283,14 @@ namespace SYNARMOSMA {
       std::cerr << "Illegal geometric method call for relational model!" << std::endl;
       std::exit(1);
     }
+#ifdef DISCRETE
+    x.clear();
+    for(int i=0; i<(signed) coordinates[v].size(); ++i) {
+      x.push_back(space_quantum*double(coordinates[v][i]));
+    }
+#else
     x = coordinates[v];
+#endif
   }
 
   void Geometry::set_coordinates(int v,const std::vector<double>& x)
@@ -286,6 +302,17 @@ namespace SYNARMOSMA {
 #ifdef DEBUG
     assert((signed) x.size() >= background_dimension);
 #endif
+
+#ifdef DISCRETE
+    int ulimit = (uniform) ? background_dimension : (signed) x.size();
+    INT64 n;
+    std::vector<INT64> xt;
+    for(int i=0; i<ulimit; ++i) {
+      n = INT64(x[i]/space_quantum);
+      xt.push_back(n);
+    }
+    coordinates[v] = xt;
+#else
     if (uniform) {
       std::vector<double> xt;
       for(int i=0; i<background_dimension; ++i) {
@@ -296,6 +323,7 @@ namespace SYNARMOSMA {
     else {
       coordinates[v] = x;
     }
+#endif
   }
 
   double Geometry::get_distance(int v,const std::vector<double>& x,bool lorentzian) const 
@@ -308,20 +336,28 @@ namespace SYNARMOSMA {
     assert((signed) x.size() >= background_dimension);
 #endif
 
-    double delta = (coordinates[v][0] - x[0])*(coordinates[v][0] - x[0]);
+#ifdef DISCRETE    
+    std::vector<double> base;
+    for(int i=0; i<(signed) coordinates[v].size(); ++i) {
+      base.push_back(space_quantum*double(coordinates[v][i]));
+    }
+#else
+    std::vector<double> base = coordinates[v];
+#endif
+    double delta = (base[0] - x[0])*(base[0] - x[0]);
     if (lorentzian) delta = -delta;
 
     if (uniform) {
       for(int i=1; i<background_dimension; ++i) {
-        delta += (coordinates[v][i] - x[i])*(coordinates[v][i] - x[i]);
+        delta += (base[i] - x[i])*(base[i] - x[i]);
       }
     }
     else {
-      int n1 = (signed) coordinates[v].size();
+      int n1 = (signed) base.size();
       int n2 = (signed) x.size();
       n1 = (n1 <= n2) ? n1 : n2;
       for(int i=1; i<n1; ++i) {
-        delta += (coordinates[v][i] - x[i])*(coordinates[v][i] - x[i]);
+        delta += (base[i] - x[i])*(base[i] - x[i]);
       }
     }
     return delta;
@@ -333,10 +369,13 @@ namespace SYNARMOSMA {
 #ifdef DEBUG    
     assert(v1 != v2);
 #endif
-    int n = compute_index(v1,v2);
-  
-    assert(n >= 0 && n < (signed) distances.size());
+    int n = compute_index(v1,v2);  
+
+#ifdef DISCRETE
+    double l = space_quantum*double(distances[n]);
+#else
     double l = distances[n];
+#endif
     if (!lorentzian && l < 0.0) l = -l;
     return l;
   }
@@ -349,13 +388,16 @@ namespace SYNARMOSMA {
     double l;
     int n;
     if (relational) {
+#ifdef DISCRETE
+      l = space_quantum*double(distances[compute_index(v1,v2)]);
+#else
       l = distances[compute_index(v1,v2)];
+#endif
       if (!lorentzian && l < 0.0) l = -l;
     }
     else {
       int m;
-      l = (coordinates[v1][0] - coordinates[v2][0])*(coordinates[v1][0] - coordinates[v2][0]);
-      if (lorentzian) l = -l;
+
       if (uniform) {
         m = background_dimension;
       }
@@ -364,9 +406,20 @@ namespace SYNARMOSMA {
         n = (signed) coordinates[v2].size();
         m = (m <= n) ? m : n;
       }
+#ifdef DISCRETE
+      INT64 q = (coordinates[v1][0] - coordinates[v2][0])*(coordinates[v1][0] - coordinates[v2][0]);
+      if (lorentzian) q = -q;
+      for(n=1; n<m; ++n) {
+        q += (coordinates[v1][n] - coordinates[v2][n])*(coordinates[v1][n] - coordinates[v2][n]);
+      }
+      l = space_quantum*double(q);
+#else
+      l = (coordinates[v1][0] - coordinates[v2][0])*(coordinates[v1][0] - coordinates[v2][0]);
+      if (lorentzian) l = -l;
       for(n=1; n<m; ++n) {
         l += (coordinates[v1][n] - coordinates[v2][n])*(coordinates[v1][n] - coordinates[v2][n]);
       }
+#endif
     }
     return l;
   }
