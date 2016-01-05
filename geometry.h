@@ -203,14 +203,19 @@ namespace SYNARMOSMA {
     assert((signed) x.size() >= background_dimension);
 #endif
 
-    int i,j,k = 0;
-    double delta;
-    std::vector<double> ndistances;
-    const double pfactor = (euclidean) ? 1.0 : -1.0;
-
+#ifdef DISCRETE
+    int ulimit = (uniform) ? background_dimension : (signed) x.size();
+    INT64 n;
+    std::vector<INT64> xt;
+    for(int i=0; i<ulimit; ++i) {
+      n = INT64(x[i]/space_quantum);
+      xt.push_back(n);
+    }
+    coordinates.push_back(xt);
+#else
     if (uniform) {
       std::vector<double> xt;
-      for(i=0; i<background_dimension; ++i) {
+      for(int i=0; i<background_dimension; ++i) {
         xt.push_back(x[i]);
       }
       coordinates.push_back(xt);
@@ -218,11 +223,17 @@ namespace SYNARMOSMA {
     else {
       coordinates.push_back(x);
     }
+#endif
 
     if (!high_memory) {
       nvertex++;
       return;
     }
+
+    int i,j,k = 0;
+    double delta;
+    std::vector<double> ndistances;
+    const double pfactor = (euclidean) ? 1.0 : -1.0;
 
     if (uniform) {
       for(i=0; i<nvertex; ++i) {
