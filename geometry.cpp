@@ -205,7 +205,11 @@ void Geometry::serialize(std::ofstream& s) const
 void Geometry::deserialize(std::ifstream& s)
 {
   int i,j,n;
+#ifdef DISCRETE
+  INT64 x;
+#else
   double x;
+#endif
 
   clear();
 
@@ -219,17 +223,29 @@ void Geometry::deserialize(std::ifstream& s)
   if (relational) {
     for(i=0; i<nvertex; ++i) {
       for(j=1+i; j<nvertex; ++j) {
+#ifdef DISCRETE
+        s.read((char*)(&x),sizeof(INT64));
+#else
         s.read((char*)(&x),sizeof(double));
+#endif
         distances.push_back(x);
       }
     }
   }
   else {
+#ifdef DISCRETE
+    std::vector<INT64> xc;
+#else
     std::vector<double> xc;
+#endif
     if (uniform) {
       for(i=0; i<nvertex; ++i) {
         for(j=0; j<background_dimension; ++j) {
+#ifdef DISCRETE
+          s.read((char*)(&x),sizeof(INT64));
+#else           
           s.read((char*)(&x),sizeof(double));
+#endif
           xc.push_back(x);
         }
         coordinates.push_back(xc);
@@ -240,7 +256,11 @@ void Geometry::deserialize(std::ifstream& s)
       for(i=0; i<nvertex; ++i) {
         s.read((char*)(&n),sizeof(int));
         for(j=0; j<n; ++j) {
+#ifdef DISCRETE
+          s.read((char*)(&x),sizeof(INT64));
+#else
           s.read((char*)(&x),sizeof(double));
+#endif
           xc.push_back(x);
         }
         coordinates.push_back(xc);
@@ -250,7 +270,11 @@ void Geometry::deserialize(std::ifstream& s)
     if (high_memory) {
       for(i=0; i<nvertex; ++i) {
         for(j=1+i; j<nvertex; ++j) {
+#ifdef DISCRETE
+          s.read((char*)(&x),sizeof(INT64));
+#else
           s.read((char*)(&x),sizeof(double));
+#endif
           distances.push_back(x);
         }
       }
@@ -295,42 +319,75 @@ double Geometry::perceptual_divergence(const double* raxis,double theta,const do
 void Geometry::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<double>& x)
 {
   int i,j,k;
-  double delta;
   std::vector<double> xc;
   const int npair = N*(N-1)/2;
+#ifdef DEBUG
   const int vsize = (signed) x.size();
+#endif
+#ifdef DISCRETE
+  INT64 delta;
+  std::vector<INT64> xi;
+  const int pfactor = (euclidean) ? 1 : -1;
+#else
+  double delta;
   const double pfactor = (euclidean) ? 1.0 : -1.0;
+#endif
 
   clear();
 
   for(i=0; i<background_dimension; ++i) {
     xc.push_back(0.0);
+#ifdef DISCRETE
+    xi.push_back(0);
+#endif
   }
 
   if (unf_rnd) {
+#ifdef DEBUG
     assert(2*background_dimension == vsize);
+#endif
     for(i=0; i<N; ++i) {
       for(j=0; j<background_dimension; ++j) {
         xc[j] = x[2*j] + (x[2*j+1] - x[2*j])*RND.drandom();
       }
+#ifdef DISCRETE
+      for(j=0; j<background_dimension; ++j) {
+        xi[j] = INT64(xc[j]/space_quantum);
+      }
+      coordinates.push_back(xi);
+#else
       coordinates.push_back(xc);
+#endif
     }    
   }
   else {
+#ifdef DEBUG
     assert(background_dimension*N == vsize);
+#endif
     for(i=0; i<N; ++i) {
       for(j=0; j<background_dimension; ++j) {
         xc[j] = x[background_dimension*i + j];
       }
+#ifdef DISCRETE
+      for(j=0; j<background_dimension; ++j) {
+        xi[j] = INT64(xc[j]/space_quantum);
+      }
+      coordinates.push_back(xi);
+#else
       coordinates.push_back(xc);
+#endif
     }
   }
+  nvertex = N;
   if (!high_memory) return;
 
   for(i=0; i<npair; ++i) {
+#ifdef DISCRETE
+    distances.push_back(0);
+#else
     distances.push_back(0.0);
+#endif
   }
-  nvertex = N;
 #ifdef _OPENMPI
 #pragma omp parallel for default(shared) private(i,j,k,delta) schedule(dynamic,1)
 #endif
