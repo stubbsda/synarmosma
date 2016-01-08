@@ -320,17 +320,11 @@ void Geometry::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<dou
 {
   int i,j,k;
   std::vector<double> xc;
-  const int npair = N*(N-1)/2;
+#ifdef DISCRETE
+  std::vector<INT64> xi;
+#endif
 #ifdef DEBUG
   const int vsize = (signed) x.size();
-#endif
-#ifdef DISCRETE
-  INT64 delta;
-  std::vector<INT64> xi;
-  const int pfactor = (euclidean) ? 1 : -1;
-#else
-  double delta;
-  const double pfactor = (euclidean) ? 1.0 : -1.0;
 #endif
 
   clear();
@@ -381,6 +375,15 @@ void Geometry::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<dou
   nvertex = N;
   if (!high_memory) return;
 
+  const int npair = N*(N-1)/2;
+#ifdef DISCRETE
+  INT64 delta;
+  const int pfactor = (euclidean) ? 1 : -1;
+#else
+  double delta;
+  const double pfactor = (euclidean) ? 1.0 : -1.0;
+#endif
+
   for(i=0; i<npair; ++i) {
 #ifdef DISCRETE
     distances.push_back(0);
@@ -407,30 +410,54 @@ void Geometry::multiple_vertex_addition(int N,double mu,double sigma)
   // Should this method operate on the assumption that we're starting from an empty geometry?
   // For the moment (December 6, 2014), we will suppose so...
   int i,j,k;
-  double delta;
   std::vector<double> xc;
-  const int npair = N*(N-1)/2;
-  const double pfactor = (euclidean) ? 1.0 : -1.0;
+#ifdef DISCRETE
+  std::vector<INT64> xi;
+#endif
 
   clear();
 
   for(i=0; i<background_dimension; ++i) {
     xc.push_back(0.0);
+#ifdef DISCRETE
+    xi.push_back(0);
+#endif
   }
   for(i=0; i<N; ++i) {
     for(j=0; j<background_dimension; ++j) {
       xc[j] = RND.nrandom(mu,sigma);
     }
+#ifdef DISCRETE
+    for(j=0; j<background_dimension; ++j) {
+      xi[j] = INT64(xc[j]/space_quantum);
+    }
+    coordinates.push_back(xi);
+#else
     coordinates.push_back(xc);
+#endif
   }
+  nvertex = N;
   if (!high_memory) return;
 
+  const int npair = N*(N-1)/2;
+#ifdef DISCRETE
+  INT64 delta;
+  const int pfactor = (euclidean) ? 1 : -1;
+#else
+  double delta;
+  const double pfactor = (euclidean) ? 1.0 : -1.0;
+#endif
+
   for(i=0; i<npair; ++i) {
+#ifdef DISCRETE
+    distances.push_back(0);
+#else
     distances.push_back(0.0);
+#endif
   }
   // We need to set nvertex here before we start calling the compute_index
   // method
-  nvertex = N;
+
 #ifdef _OPENMPI
 #pragma omp parallel for default(shared) private(i,j,k,delta) schedule(dynamic,1)
 #endif
@@ -449,19 +476,41 @@ void Geometry::multiple_vertex_addition(const std::vector<std::vector<double> >&
 {
   clear();
 
+  nvertex = (signed) source.size();
+#ifdef DISCRETE
+  INT64 n;
+  std::vector<INT64> xi;
+  for(int i=0; i<nvertex; ++i) {
+    for(int j=0; j<(signed) source[i].size(); ++j) {
+      n = INT64(source[i][j]/space_quantum);
+      xi.push_back(n);
+    }
+    coordinates.push_back(xi);
+    xi.clear();
+  }
+#else
   coordinates = source;
+#endif
+
 
   if (!high_memory) return;
 
-  int i,j,k,npair;
+  int i,j,k;
+  const int npair = nvertex*(nvertex-1)/2;
+#ifdef DISCRETE
+  INT64 delta;
+  const int pfactor = (euclidean) ? 1 : -1;
+#else
   double delta;
   const double pfactor = (euclidean) ? 1.0 : -1.0;
-
-  nvertex = (signed) source.size();
-  npair = nvertex*(nvertex-1)/2;
+#endif
 
   for(i=0; i<npair; ++i) {
+#ifdef DISCRETE
+    distances.push_back(0);
+#else
     distances.push_back(0.0);
+#endif
   }
 #ifdef _OPENMPI
 #pragma omp parallel for default(shared) private(i,j,k,delta) schedule(dynamic,1)
@@ -584,11 +633,21 @@ int Geometry::vertex_order(int n,int m) const
 {
   if (relational || euclidean) return -1;
 
-  double sum = -(coordinates[n][0] - coordinates[m][0])*(coordinates[n][0] - coordinates[m][0]);
+#ifdef DISCRETE
+  INT64 sum;
+#else
+  double sum;
+#endif
+
+  sum = -(coordinates[n][0] - coordinates[m][0])*(coordinates[n][0] - coordinates[m][0]);
   for(int i=1; i<background_dimension; ++i) {
     sum += (coordinates[n][i] - coordinates[m][i])*(coordinates[n][i] - coordinates[m][i]);
   }
+#ifdef DISCRETE
+  if (sum > 0) return -1;
+#else
   if (sum > 0.0) return -1;
+#endif
   int output = (coordinates[n][0] < coordinates[m][0]) ? 1 : 0;
   return output;
 }
@@ -604,11 +663,13 @@ void Geometry::create(int n,const std::string& type)
 
   int i,j;
   if (type == "CARTESIAN") {
+    nvertex = ipow(n,background_dimension);
+    if (!high_memory) return;
+
     int l,p,q,s,alpha;
     double delta;
     std::vector<int> x,y;
 
-    nvertex = ipow(n,background_dimension);
     for(i=0; i<nvertex; ++i) {
       s = i;
       for(j=background_dimension; j>=1; j--) {
@@ -646,6 +707,7 @@ void Geometry::create(int n,const std::string& type)
   }
   else if (type == "RANDOM") {
     nvertex = n;
+    if (!high_memory) return;
     if (euclidean) {
       for(i=0; i<nvertex; ++i) {
         for(j=1+i; j<nvertex; ++j) {
@@ -667,6 +729,7 @@ void Geometry::create(int n,const std::string& type)
     // In this case n is the monoplex dimension, so the number of vertices
     // is 1+n
     nvertex = 1 + n;
+    if (!high_memory) return;
     if (euclidean) {
       // The distance from vertex 0 to the other vertices is unity...
       for(i=0; i<nvertex-1; ++i) {
@@ -698,7 +761,7 @@ void Geometry::create(int n,const std::string& type)
     }
   }
   else {
-    std::cerr << "Illegal spacetime type in Geometry::initialize!" << std::endl;
+    std::cerr << "Illegal spatial type in Geometry::initialize!" << std::endl;
     std::exit(1);
   }
 }
