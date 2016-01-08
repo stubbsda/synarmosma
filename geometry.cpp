@@ -667,7 +667,11 @@ void Geometry::create(int n,const std::string& type)
     if (!high_memory) return;
 
     int l,p,q,s,alpha;
+#ifdef DISCRETE
+    INT64 delta;
+#else
     double delta;
+#endif
     std::vector<int> x,y;
 
     for(i=0; i<nvertex; ++i) {
@@ -688,11 +692,19 @@ void Geometry::create(int n,const std::string& type)
           s -= p*q;
         }
         y.push_back(s);
+#ifdef DISCRETE
+        delta = INT64((x[0] - y[0])*(x[0] - y[0]));
+#else
         delta = double((x[0] - y[0])*(x[0] - y[0]));
+#endif
         if (!euclidean) delta = -delta;
         for(l=1; l<background_dimension; ++l) {
           alpha = (x[l] - y[l])*(x[l] - y[l]);
+#ifdef DISCRETE
+          delta += INT64(alpha);
+#else
           delta += double(alpha);
+#endif
         }
         distances.push_back(delta);
         y.clear();
@@ -711,15 +723,27 @@ void Geometry::create(int n,const std::string& type)
     if (euclidean) {
       for(i=0; i<nvertex; ++i) {
         for(j=1+i; j<nvertex; ++j) {
+#ifdef DISCRETE
+          distances.push_back(1 + INT64(RND.irandom(250)));
+#else
           distances.push_back(0.25 + 10.0*RND.drandom());
+#endif
         }
       }
     }
     else {
-      double alpha,r = 1.0 + double(background_dimension-1);
+#ifdef DISCRETE
+      INT64 alpha;
+#else
+      double alpha,r = 1.0 + double(background_dimension - 1);
+#endif
       for(i=0; i<nvertex; ++i) {
         for(j=1+i; j<nvertex; ++j) {
+#ifdef DISCRETE
+          alpha = -5 + 5*INT64(RND.irandom(background_dimension - 1));
+#else
           alpha = -5.0 + 5.0*r*RND.drandom();
+#endif
           distances.push_back(alpha);
         }
       }
@@ -730,32 +754,43 @@ void Geometry::create(int n,const std::string& type)
     // is 1+n
     nvertex = 1 + n;
     if (!high_memory) return;
+#ifdef DISCRETE
+    const INT64 zero = 0;
+    const INT64 one = 1;
+    const INT64 m_one = -1;
+    const INT64 two = 2;
+#else
+    const double zero = 0.0;
+    const double one = 1.0;
+    const double m_one = -1.0;
+    const double two = 2.0;
+#endif
     if (euclidean) {
       // The distance from vertex 0 to the other vertices is unity...
       for(i=0; i<nvertex-1; ++i) {
-        distances.push_back(1.0);
+        distances.push_back(one);
       }
       // All the other distances are equal to 2.0
       for(i=1; i<nvertex; ++i) {
         for(j=1+i; j<nvertex; ++j) {
-          distances.push_back(2.0);
+          distances.push_back(two);
         }
       }
     }
     else {
       // Distances between v_0 and the other n-1 vertices
-      distances.push_back(-1.0);
+      distances.push_back(m_one);
       for(i=0; i<nvertex-2; ++i) {
-        distances.push_back(1.0);
+        distances.push_back(one);
       }
       // Distances between v_1 and the other n-2 vertices
       for(i=0; i<nvertex-2; ++i) {
-        distances.push_back(0.0);
+        distances.push_back(zero);
       }
       // All the other distances...
       for(i=2; i<nvertex; ++i) {
         for(j=1+i; j<nvertex; ++j) {
-          distances.push_back(2.0);
+          distances.push_back(two);
         }
       }
     }
@@ -776,17 +811,32 @@ void Geometry::vertex_difference(int n,int m,std::vector<double>& delta) const
 
   delta.clear();
   if (uniform) {
+    double xd;
     for(i=0; i<background_dimension; ++i) {
-      delta.push_back(coordinates[n][i] - coordinates[m][i]);
+#ifdef DISCRETE
+      xd = double((coordinates[n][i] - coordinates[m][i])/space_quantum);
+#else
+      xd = coordinates[n][i] - coordinates[m][i]
+#endif
+      delta.push_back(xd);
     }
     return;
   }
   int d1 = (signed) coordinates[n].size();
   int d2 = (signed) coordinates[m].size();
   int k=0,l = d1;
-
-  std::vector<double> vlx = coordinates[n];
-  std::vector<double> vly = coordinates[m];
+  std::vector<double> vlx,vly;
+#ifdef DISCRETE
+  for(i=0; i<d1; ++i) {
+    vlx.push_back(double(coordinates[n][i])/space_quantum);
+  }
+  for(i=0; i<d2; ++i) {
+    vly.push_back(double(coordinates[m][i])/space_quantum);
+  }
+#else
+  vlx = coordinates[n];
+  vly = coordinates[m];
+#endif
 
   if (d1 < d2) {
     for(i=d1; i<d2; ++i) {
@@ -825,7 +875,11 @@ double Geometry::inner_product(const Matrix<double>& L,const std::vector<int>& o
     nelements = (signed) Lx.size();
     for(j=0; j<nelements; ++j) {
       for(k=0; k<background_dimension; ++k) {
+#ifdef DISCRETE
+        sum[k] += (double(coordinates[Lc[j]][k])/space_quantum)*Lx[j];
+#else
         sum[k] += coordinates[Lc[j]][k]*Lx[j];
+#endif
       }
     }
     for(j=0; j<background_dimension; ++j) {
@@ -837,7 +891,11 @@ double Geometry::inner_product(const Matrix<double>& L,const std::vector<int>& o
     value = 0.0;
     for(j=0; j<nvertex; ++j) {
       if (offset[j] == -1) continue;
+#ifdef DISCRETE
+      value += result[offset[j]][i]*(double(coordinates[j][i])/space_quantum);
+#else
       value += result[offset[j]][i]*coordinates[j][i];
+#endif
     }
     energy += value;
   }
@@ -846,6 +904,9 @@ double Geometry::inner_product(const Matrix<double>& L,const std::vector<int>& o
 
 void Geometry::reciprocate()
 {
+#ifdef DISCRETE
+
+#else
   if (relational) {
     const int n = (signed) distances.size();
     for(int i=0; i<n; ++i) {
@@ -855,6 +916,7 @@ void Geometry::reciprocate()
   else {
 
   }
+#endif
 }
 
 void Geometry::rollback()
@@ -883,13 +945,21 @@ void Geometry::vertex_perturbation(int v)
       if (i == v) continue;
       j = compute_index(i,v);
       original.push_back(distances[j]);
+#ifdef DISCRETE
+      distances[j] += INT64(RND.irandom(-50,50));
+#else
       distances[j] += RND.nrandom(0.0,0.5);
+#endif
     }
   }
   else {
     int k = RND.irandom(background_dimension);
     original = coordinates[v];
+#ifdef DISCRETE
+    coordinates[v][k] += INT64(RND.irandom(-10,10));
+#else
     coordinates[v][k] += RND.nrandom(0.0,0.1);
+#endif
   }
 }
 
@@ -909,19 +979,33 @@ void Geometry::vertex_addition(const std::set<int>& antecedents)
 
       if (relational) {
         int k = 0;
+#ifdef DISCRETE
+        INT64 l;
+        std::vector<INT64> ndistances;
+        const INT64 nt = INT64(antecedents.size());
+#else
         double l;
         std::vector<double> ndistances;
+#endif
 
         for(i=0; i<nvertex; ++i) {
           for(j=1+i; j<nvertex; ++j) {
             ndistances.push_back(distances[k]);
             k++;
           }
+#ifdef DISCRETE
+          l = 0;
+          for(it=antecedents.begin(); it!=antecedents.end(); ++it) {
+            l += distances[compute_index(i,*it)];
+          }
+          l = l/nt;
+#else
           l = 0.0;
           for(it=antecedents.begin(); it!=antecedents.end(); ++it) {
             l += distances[compute_index(i,*it)];
           }
           l = l/na;
+#endif
           ndistances.push_back(l);
         }
         distances = ndistances;
@@ -935,7 +1019,11 @@ void Geometry::vertex_addition(const std::set<int>& antecedents)
         for(it=antecedents.begin(); it!=antecedents.end(); ++it) {
           j = *it;
           for(i=0; i<background_dimension; ++i) {
+#ifdef DISCRETE
+            avg_x[i] += double(coordinates[j][i])/space_quantum;
+#else
             avg_x[i] += coordinates[j][i];
+#endif
           }
         }
         for(i=0; i<background_dimension; ++i) {
@@ -959,7 +1047,11 @@ void Geometry::vertex_addition(int parent,double mutation)
   if (parent == -1) {
     // No antecedent, so place the vertex randomly...
     if (relational) {
+#ifdef DISCRETE
+      std::vector<INT64> ndistances;
+#else
       std::vector<double> ndistances;
+#endif
 
       if (euclidean) {
         for(i=0; i<nvertex; ++i) {
@@ -1000,7 +1092,11 @@ void Geometry::vertex_addition(int parent,double mutation)
     // Should be close to its parent vertex...
     if (relational) {
       double mu,sigma;
+#ifdef DISCRETE
+      std::vector<INT64> ndistances;
+#else
       std::vector<double> ndistances;
+#endif
 
       for(i=0; i<nvertex; ++i) {
         for(j=1+i; j<nvertex; ++j) {
@@ -1023,7 +1119,7 @@ void Geometry::vertex_addition(int parent,double mutation)
     else {
       int q,p = RND.irandom(background_dimension);
       double r = RND.drandom(0.1+0.5*mutation,0.2+mutation);
-      x = coordinates[parent];
+      get_coordinates(parent,x);
       alpha = RND.drandom(0.0,2.0*M_PI);
       do {
         q = RND.irandom(background_dimension);
@@ -1038,11 +1134,16 @@ void Geometry::vertex_addition(int parent,double mutation)
 
 void Geometry::geometry_modification(int n,double mu,double sigma)
 {
+#ifdef DISCRETE
+  INT64 alpha = INT64(RND.irandom());
+#else
+  double alpha = RND.nrandom(mu,sigma);
+#endif
   vperturb = n;
   original.clear();
   if (relational) {
     original.push_back(distances[n]);
-    distances[n] *= RND.nrandom(mu,sigma);
+    distances[n] *= alpha;
     return;
   }
   int i,j,kt = 0;
@@ -1050,7 +1151,7 @@ void Geometry::geometry_modification(int n,double mu,double sigma)
     for(j=0; j<(signed) coordinates[i].size(); ++j) {
       if (kt == n) {
         original.push_back(coordinates[i][j]);
-        coordinates[i][j] *= RND.nrandom(mu,sigma);
+        coordinates[i][j] *= alpha;
         return;
       }
       kt++;
@@ -1079,6 +1180,11 @@ void Geometry::geometry_restoration()
 void Geometry::multiplicative_modification(int v,bool total,double mu,double sigma)
 {
   int i;
+#ifdef DISCRETE
+  INT64 alpha = INT64(RND.irandom());
+#else
+  double alpha = RND.nrandom(mu,sigma);
+#endif
 
   vperturb = v;
   if (relational) {
@@ -1089,19 +1195,29 @@ void Geometry::multiplicative_modification(int v,bool total,double mu,double sig
       if (i == v) continue;
       j = compute_index(v,i);
       original.push_back(distances[j]);
-      distances[j] *= RND.nrandom(mu,sigma);
+#ifdef DISCRETE
+      alpha = INT64(RND.irandom());
+#else
+      alpha = RND.nrandom(mu,sigma);
+#endif
+      distances[j] *= alpha;
     }
   }
   else {
     original = coordinates[v];
     if (total) {
       for(i=0; i<(signed) coordinates[v].size(); ++i) {
-        coordinates[v][i] *= RND.nrandom(mu,sigma);
+#ifdef DISCRETE
+        alpha = INT64(RND.irandom());
+#else
+        alpha = RND.nrandom(mu,sigma);
+#endif
+        coordinates[v][i] *= alpha;
       }
     }
     else {
       i = (signed) coordinates[v].size();
-      coordinates[v][RND.irandom(i)] *= RND.nrandom(mu,sigma);
+      coordinates[v][RND.irandom(i)] *= alpha;
     }
   }
 }
@@ -1109,6 +1225,11 @@ void Geometry::multiplicative_modification(int v,bool total,double mu,double sig
 void Geometry::additive_modification(int v,bool total,double mu,double sigma)
 {
   int i;
+#ifdef DISCRETE
+  INT64 alpha = INT64(RND.irandom());
+#else
+  double alpha = RND.nrandom(mu,sigma);
+#endif
 
   vperturb = v;
   if (relational) {
@@ -1119,19 +1240,29 @@ void Geometry::additive_modification(int v,bool total,double mu,double sigma)
       if (i == v) continue;
       j = compute_index(v,i);
       original.push_back(distances[j]);
-      distances[j] += RND.nrandom(mu,sigma);
+#ifdef DISCRETE
+      alpha = INT64(RND.irandom());
+#else
+      alpha = RND.nrandom(mu,sigma);
+#endif
+      distances[j] += alpha;
     }
   }
   else {
     original = coordinates[v];
     if (total) {
       for(i=0; i<(signed) coordinates[v].size(); ++i) {
-        coordinates[v][i] += RND.nrandom(mu,sigma);
+#ifdef DISCRETE
+        alpha = INT64(RND.irandom());
+#else
+        alpha = RND.nrandom(mu,sigma);
+#endif
+        coordinates[v][i] += alpha;
       }
     }
     else {
       i = (signed) coordinates[v].size();
-      coordinates[v][RND.irandom(i)] += RND.nrandom(mu,sigma);
+      coordinates[v][RND.irandom(i)] += alpha;
     }
   }
 }
@@ -1142,7 +1273,11 @@ bool Geometry::adjust_dimension(const std::vector<int>& vdimension)
   
   int i,j,n,m;
   std::set<int> vmodified;
+#ifdef DISCRETE
+  std::vector<INT64> x;
+#else
   std::vector<double> x;
+#endif
 
   for(i=0; i<nvertex; ++i) {
     if (vdimension[i] == -1) continue;
@@ -1192,7 +1327,12 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
   // uniform, absolute geometry
   assert(background_dimension > 1 && euclidean && uniform && !relational);
   int i,j,k;
-  double r,v[background_dimension],base[background_dimension];
+  double r,v[background_dimension];
+#ifdef DISCRETE
+  INT64 base[background_dimension];
+#else
+  double base[background_dimension];
+#endif
 
   // For the angles matrices, the last one is always the one that covers the range [0,2\pi), so 
   // all the others range over [0,\pi]
@@ -1209,10 +1349,14 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
       base[1] = coordinates[i][1];
       for(j=0; j<nvertex; ++j) {
         if (i == j) continue;
+#ifdef DISCRETE
+        v[0] = double(coordinates[j][0] - base[0])/space_quantum;
+        v[1] = double(coordinates[j][1] - base[1])/space_quantum;
+#else
         v[0] = coordinates[j][0] - base[0];
         v[1] = coordinates[j][1] - base[1];
-        //r = std::sqrt(v[0]*v[0] + v[1]*v[1]);
-        R[j+nvertex*i] = std::sqrt(distances[compute_index(i,j)]);
+#endif
+        R[j+nvertex*i] = std::sqrt(get_distance(i,j,false));
         angles[0][j+nvertex*i] = M_PI + std::atan2(v[1],v[0]);
       }
     }
@@ -1232,10 +1376,16 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
       base[2] = coordinates[i][2];
       for(j=0; j<nvertex; ++j) {
         if (i == j) continue;
+#ifdef DISCRETE
+        v[0] = double(coordinates[j][0] - base[0])/space_quantum;
+        v[1] = double(coordinates[j][1] - base[1])/space_quantum;
+        v[2] = double(coordinates[j][2] - base[2])/space_quantum;
+#else
         v[0] = coordinates[j][0] - base[0];
         v[1] = coordinates[j][1] - base[1];
         v[2] = coordinates[j][2] - base[2];
-        r = std::sqrt(distances[compute_index(i,j)]);
+#endif
+        r = std::sqrt(get_distance(i,j,false));
         R[j+nvertex*i] = r;
         angles[0][j+nvertex*i] = std::acos(v[2]/r);
         angles[1][j+nvertex*i] = M_PI + std::atan2(v[1],v[0]); 
@@ -1262,10 +1412,13 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
       for(j=0; j<nvertex; ++j) {
         if (i == j) continue;
         for(k=0; k<background_dimension; ++k) {
+#ifdef DISCRETE
+          v[k] = double(coordinates[j][k] - base[k])/space_quantum;
+#else
           v[k] = coordinates[j][k] - base[k];
+#endif
         }
-        //r = norm(v,background_dimension);
-        r = distances[compute_index(i,j)];
+        r = get_distance(i,j,false);
         R[j+nvertex*i] = std::sqrt(r);
         sum = 0.0;
         for(k=0; k<nm2; ++k) {
@@ -1289,9 +1442,14 @@ void Geometry::compute_distances(const std::set<int>& vmodified)
   if (relational || !high_memory) return;
 
   int i,j,k,n1,n2,in1;
-  double delta;
   std::set<int>::const_iterator it;
+#ifdef DISCRETE
+  INT64 delta;
+  const int pfactor = (euclidean) ? 1 : -1;
+#else
+  double delta;
   const double pfactor = (euclidean) ? 1.0 : -1.0;
+#endif
 
   if (uniform) {
     for(it=vmodified.begin(); it!=vmodified.end(); ++it) {
@@ -1347,12 +1505,22 @@ void Geometry::compute_distances()
   if (relational || !high_memory) return;
 
   int i,j,k,in1;
+  const int npair = nvertex*(nvertex-1)/2;
+#ifdef DISCRETE
+  INT64 delta;
+  const int pfactor = (euclidean) ? 1 : -1;
+#else
   double delta;
   const double pfactor = (euclidean) ? 1.0 : -1.0;
+#endif
 
   distances.clear();
-  for(i=0; i<nvertex*(nvertex-1)/2; ++i) {
+  for(i=0; i<npair; ++i) {
+#ifdef DISCRETE
+    distances.push_back(0);
+#else
     distances.push_back(0.0);
+#endif
   }
 
   if (uniform) {
@@ -1406,7 +1574,11 @@ int Geometry::compute_coordinates(std::vector<double>& x) const
     for(i=0; i<nvertex; ++i) {
       k = (signed) coordinates[i].size();
       for(j=0; j<k; ++j) {
+#ifdef DISCRETE 
+        x.push_back(double(coordinates[i][j])/space_quantum);
+#else
         x.push_back(coordinates[i][j]);
+#endif
       }
       for(j=k; j<edim; ++j) {
         x.push_back(0.0);
@@ -1517,7 +1689,7 @@ int Geometry::compute_coordinates(std::vector<double>& x) const
     for(j=0; j<nvertex; ++j) {
       alpha = (j == i) ? 1.0-pfactor : -pfactor;
       J[nvertex*i+j] = alpha;
-      D[nvertex*i+j] = distances[compute_index(i,j)];
+      D[nvertex*i+j] = get_distance(i,j,false); 
     }
   }
   // Now form the matrix B = -0.5*J*D2*J
@@ -1580,7 +1752,11 @@ double SYNARMOSMA::geometry_change(const Geometry* g1,const Geometry* g2)
 {
   int i,j,nva;
   bool arg1 = true;
+#ifdef DISCRETE
+  INT64 gdelta = 0;
+#else
   double gdelta = 0.0;
+#endif
 
   assert(g1->relational == g2->relational);
   assert(g1->euclidean == g2->euclidean);
@@ -1593,7 +1769,11 @@ double SYNARMOSMA::geometry_change(const Geometry* g1,const Geometry* g2)
     nva = g2->nvertex;
   }
   if (g1->relational) {
+#ifdef DISCRETE
+    INT64 d1,d2;
+#else
     double d1,d2;
+#endif
 
     for(i=0; i<nva; ++i) {
       for(j=1+i; j<nva; ++j) {
@@ -1625,13 +1805,20 @@ double SYNARMOSMA::geometry_change(const Geometry* g1,const Geometry* g2)
     }
   }
   else {
-    double d;
     int n1,n2,m;
+#ifdef DISCRETE
+    INT64 d;
+    const INT64 zero = 0;
+#else
+    double d;
+    const double zero = 0.0;
+#endif
+
     for(i=0; i<nva; ++i) {
       n1 = (signed) g1->coordinates[i].size();
       n2 = (signed) g2->coordinates[i].size();
       m = n2 - n1;
-      d = 0.0;
+      d = zero;
       if (m == 0) {
         for(j=0; j<n1; ++j) {
           d += std::abs(g1->coordinates[i][j] - g2->coordinates[i][j]);
@@ -1657,7 +1844,7 @@ double SYNARMOSMA::geometry_change(const Geometry* g1,const Geometry* g2)
     }
     if (arg1) {
       for(i=nva; i<g1->nvertex; ++i) {
-        d = 0.0;
+        d = zero;
         for(j=0; j<(signed) g1->coordinates[i].size(); ++j) {
           d += std::abs(g1->coordinates[i][j]);
         }
@@ -1666,7 +1853,7 @@ double SYNARMOSMA::geometry_change(const Geometry* g1,const Geometry* g2)
     }
     else {
       for(i=nva; i<g2->nvertex; ++i) {
-        d = 0.0;
+        d = zero;
         for(j=0; j<(signed) g2->coordinates[i].size(); ++j) {
           d += std::abs(g2->coordinates[i][j]);
         }
@@ -1674,5 +1861,9 @@ double SYNARMOSMA::geometry_change(const Geometry* g1,const Geometry* g2)
       }
     }
   }
+#ifdef DISCRETE
+  return double(gdelta)/space_quantum;
+#else
   return gdelta;
+#endif
 }
