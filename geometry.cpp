@@ -814,9 +814,9 @@ void Geometry::vertex_difference(int n,int m,std::vector<double>& delta) const
     double xd;
     for(i=0; i<background_dimension; ++i) {
 #ifdef DISCRETE
-      xd = double((coordinates[n][i] - coordinates[m][i])/space_quantum);
+      xd = space_quantum*double(coordinates[n][i] - coordinates[m][i]);
 #else
-      xd = coordinates[n][i] - coordinates[m][i]
+      xd = coordinates[n][i] - coordinates[m][i];
 #endif
       delta.push_back(xd);
     }
@@ -828,10 +828,10 @@ void Geometry::vertex_difference(int n,int m,std::vector<double>& delta) const
   std::vector<double> vlx,vly;
 #ifdef DISCRETE
   for(i=0; i<d1; ++i) {
-    vlx.push_back(double(coordinates[n][i])/space_quantum);
+    vlx.push_back(space_quantum*double(coordinates[n][i]));
   }
   for(i=0; i<d2; ++i) {
-    vly.push_back(double(coordinates[m][i])/space_quantum);
+    vly.push_back(space_quantum*double(coordinates[m][i]));
   }
 #else
   vlx = coordinates[n];
@@ -876,7 +876,7 @@ double Geometry::inner_product(const Matrix<double>& L,const std::vector<int>& o
     for(j=0; j<nelements; ++j) {
       for(k=0; k<background_dimension; ++k) {
 #ifdef DISCRETE
-        sum[k] += (double(coordinates[Lc[j]][k])/space_quantum)*Lx[j];
+        sum[k] += space_quantum*double(coordinates[Lc[j]][k])*Lx[j];
 #else
         sum[k] += coordinates[Lc[j]][k]*Lx[j];
 #endif
@@ -892,7 +892,7 @@ double Geometry::inner_product(const Matrix<double>& L,const std::vector<int>& o
     for(j=0; j<nvertex; ++j) {
       if (offset[j] == -1) continue;
 #ifdef DISCRETE
-      value += result[offset[j]][i]*(double(coordinates[j][i])/space_quantum);
+      value += result[offset[j]][i]*space_quantum*double(coordinates[j][i]);
 #else
       value += result[offset[j]][i]*coordinates[j][i];
 #endif
@@ -1020,7 +1020,7 @@ void Geometry::vertex_addition(const std::set<int>& antecedents)
           j = *it;
           for(i=0; i<background_dimension; ++i) {
 #ifdef DISCRETE
-            avg_x[i] += double(coordinates[j][i])/space_quantum;
+            avg_x[i] += space_quantum*double(coordinates[j][i]);
 #else
             avg_x[i] += coordinates[j][i];
 #endif
@@ -1135,7 +1135,7 @@ void Geometry::vertex_addition(int parent,double mutation)
 void Geometry::geometry_modification(int n,double mu,double sigma)
 {
 #ifdef DISCRETE
-  INT64 alpha = INT64(RND.irandom());
+  INT64 alpha = INT64((RND.nrandom(mu,sigma)/space_quantum));
 #else
   double alpha = RND.nrandom(mu,sigma);
 #endif
@@ -1181,7 +1181,7 @@ void Geometry::multiplicative_modification(int v,bool total,double mu,double sig
 {
   int i;
 #ifdef DISCRETE
-  INT64 alpha = INT64(RND.irandom());
+  INT64 alpha = INT64((RND.nrandom(mu,sigma)/space_quantum));
 #else
   double alpha = RND.nrandom(mu,sigma);
 #endif
@@ -1196,7 +1196,7 @@ void Geometry::multiplicative_modification(int v,bool total,double mu,double sig
       j = compute_index(v,i);
       original.push_back(distances[j]);
 #ifdef DISCRETE
-      alpha = INT64(RND.irandom());
+      alpha = INT64((RND.nrandom(mu,sigma)/space_quantum));
 #else
       alpha = RND.nrandom(mu,sigma);
 #endif
@@ -1208,7 +1208,7 @@ void Geometry::multiplicative_modification(int v,bool total,double mu,double sig
     if (total) {
       for(i=0; i<(signed) coordinates[v].size(); ++i) {
 #ifdef DISCRETE
-        alpha = INT64(RND.irandom());
+        alpha = INT64((RND.nrandom(mu,sigma)/space_quantum));
 #else
         alpha = RND.nrandom(mu,sigma);
 #endif
@@ -1226,7 +1226,7 @@ void Geometry::additive_modification(int v,bool total,double mu,double sigma)
 {
   int i;
 #ifdef DISCRETE
-  INT64 alpha = INT64(RND.irandom());
+  INT64 alpha = INT64((RND.nrandom(mu,sigma)/space_quantum));
 #else
   double alpha = RND.nrandom(mu,sigma);
 #endif
@@ -1241,7 +1241,7 @@ void Geometry::additive_modification(int v,bool total,double mu,double sigma)
       j = compute_index(v,i);
       original.push_back(distances[j]);
 #ifdef DISCRETE
-      alpha = INT64(RND.irandom());
+      alpha = INT64((RND.nrandom(mu,sigma)/space_quantum));
 #else
       alpha = RND.nrandom(mu,sigma);
 #endif
@@ -1253,7 +1253,7 @@ void Geometry::additive_modification(int v,bool total,double mu,double sigma)
     if (total) {
       for(i=0; i<(signed) coordinates[v].size(); ++i) {
 #ifdef DISCRETE
-        alpha = INT64(RND.irandom());
+        alpha = INT64((RND.nrandom(mu,sigma)/space_quantum));
 #else
         alpha = RND.nrandom(mu,sigma);
 #endif
@@ -1350,8 +1350,8 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
       for(j=0; j<nvertex; ++j) {
         if (i == j) continue;
 #ifdef DISCRETE
-        v[0] = double(coordinates[j][0] - base[0])/space_quantum;
-        v[1] = double(coordinates[j][1] - base[1])/space_quantum;
+        v[0] = space_quantum*double(coordinates[j][0] - base[0]);
+        v[1] = space_quantum*double(coordinates[j][1] - base[1]);
 #else
         v[0] = coordinates[j][0] - base[0];
         v[1] = coordinates[j][1] - base[1];
@@ -1377,9 +1377,9 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
       for(j=0; j<nvertex; ++j) {
         if (i == j) continue;
 #ifdef DISCRETE
-        v[0] = double(coordinates[j][0] - base[0])/space_quantum;
-        v[1] = double(coordinates[j][1] - base[1])/space_quantum;
-        v[2] = double(coordinates[j][2] - base[2])/space_quantum;
+        v[0] = space_quantum*double(coordinates[j][0] - base[0]);
+        v[1] = space_quantum*double(coordinates[j][1] - base[1]);
+        v[2] = space_quantum*double(coordinates[j][2] - base[2]);
 #else
         v[0] = coordinates[j][0] - base[0];
         v[1] = coordinates[j][1] - base[1];
@@ -1413,7 +1413,7 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
         if (i == j) continue;
         for(k=0; k<background_dimension; ++k) {
 #ifdef DISCRETE
-          v[k] = double(coordinates[j][k] - base[k])/space_quantum;
+          v[k] = space_quantum*double(coordinates[j][k] - base[k]);
 #else
           v[k] = coordinates[j][k] - base[k];
 #endif
@@ -1575,7 +1575,7 @@ int Geometry::compute_coordinates(std::vector<double>& x) const
       k = (signed) coordinates[i].size();
       for(j=0; j<k; ++j) {
 #ifdef DISCRETE 
-        x.push_back(double(coordinates[i][j])/space_quantum);
+        x.push_back(space_quantum*double(coordinates[i][j]));
 #else
         x.push_back(coordinates[i][j]);
 #endif
@@ -1862,7 +1862,7 @@ double SYNARMOSMA::geometry_change(const Geometry* g1,const Geometry* g2)
     }
   }
 #ifdef DISCRETE
-  return double(gdelta)/space_quantum;
+  return space_quantum*double(gdelta);
 #else
   return gdelta;
 #endif
