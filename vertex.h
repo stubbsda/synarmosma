@@ -42,10 +42,31 @@ namespace SYNARMOSMA {
     Vertex(const Vertex&);
     virtual ~Vertex();  
     Vertex& operator =(const Vertex&);
+    inline bool zero_energy() const;
+    inline double get_energy() const;
     virtual void serialize(std::ofstream&) const;
     virtual void deserialize(std::ifstream&);
-    virtual void clear();
+    virtual void clear();    
   };
+
+  bool Vertex::zero_energy() const
+  {
+#ifdef DISCRETE
+    bool output = (energy == 0) ? true : false;
+#else
+    bool output = (std::abs(energy) < std::numeric_limits<double>::epsilon()) ? true : false;
+#endif
+    return output;
+  }
+
+  double Vertex::get_energy() const
+  {
+#ifdef DISCRETE
+    return energy_quantum*double(energy);
+#else
+    return energy;
+#endif
+  }
 }
 #endif 
 
