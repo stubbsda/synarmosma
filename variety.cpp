@@ -512,7 +512,6 @@ namespace SYNARMOSMA {
     bool soln;
     unsigned int wt,value;
     Monomial<unsigned int> term;
-
   
     bdry = ipow(characteristic,nvariable);
     for(i=0; i<characteristic; ++i) {
