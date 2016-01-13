@@ -372,7 +372,7 @@ namespace SYNARMOSMA {
     int n = compute_index(v1,v2);  
 
 #ifdef DISCRETE
-    double l = space_quantum*double(distances[n]);
+    double l = space_quantum*space_quantum*double(distances[n]);
 #else
     double l = distances[n];
 #endif
@@ -412,7 +412,7 @@ namespace SYNARMOSMA {
       for(n=1; n<m; ++n) {
         q += (coordinates[v1][n] - coordinates[v2][n])*(coordinates[v1][n] - coordinates[v2][n]);
       }
-      l = space_quantum*double(q);
+      l = space_quantum*space_quantum*double(q);
 #else
       l = (coordinates[v1][0] - coordinates[v2][0])*(coordinates[v1][0] - coordinates[v2][0]);
       if (lorentzian) l = -l;

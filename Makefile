@@ -3,7 +3,7 @@ variety_wrapper.o polynomial_wrapper.o proposition.o propositional_system.o logi
 vertex.o multitime.o binary_matrix.o matrix_wrapper.o directed_graph.o functional_equation_wrapper.o\
 homology.o homotopy.o poset.o lattice.o
 
-CXX_FLAGS += $(OPENMP) -fPIC
+CXX_FLAGS += $(OPENMP) -fPIC -DDISCRETE
 
 #CXX_FLAGS += $(CXX_OPT)
 CXX_FLAGS += $(DEBUG) 
