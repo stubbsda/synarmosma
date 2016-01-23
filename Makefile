@@ -13,6 +13,12 @@ LD_FLAGS += $(DEBUG)
 
 LD_FLAGS += $(OPENMP) -shared
 
+UNAME = $(shell uname)
+
+ifeq ($(UNAME),Darwin)
+  LD_FLAGS += -install_name $(BIBLIOTHEK)/lib/libsynarmosma.so
+endif 
+
 LIBS = $(LAPACK) $(BOOST) -lntl -lm 
 
 install: synarmosma
