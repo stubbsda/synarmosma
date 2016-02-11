@@ -1132,33 +1132,6 @@ void Geometry::vertex_addition(int parent,double mutation)
   }
 }
 
-void Geometry::geometry_modification(int n,double mu,double sigma)
-{
-#ifdef DISCRETE
-  INT64 alpha = INT64((RND.nrandom(mu,sigma)/space_quantum));
-#else
-  double alpha = RND.nrandom(mu,sigma);
-#endif
-  vperturb = n;
-  original.clear();
-  if (relational) {
-    original.push_back(distances[n]);
-    distances[n] *= alpha;
-    return;
-  }
-  int i,j,kt = 0;
-  for(i=0; i<nvertex; ++i) {
-    for(j=0; j<(signed) coordinates[i].size(); ++j) {
-      if (kt == n) {
-        original.push_back(coordinates[i][j]);
-        coordinates[i][j] *= alpha;
-        return;
-      }
-      kt++;
-    }
-  }
-}
-
 void Geometry::geometry_restoration()
 {
   if (relational) {
@@ -1177,92 +1150,69 @@ void Geometry::geometry_restoration()
   }
 }
 
-void Geometry::multiplicative_modification(int v,bool total,double mu,double sigma)
+void Geometry::mutation(int v,bool by_vertex,bool complete,double severity)
 {
   int i;
 #ifdef DISCRETE
-  INT64 alpha = INT64((RND.nrandom(mu,sigma)/space_quantum));
+  INT64 alpha = INT64((RND.nrandom(0.0,severity)/space_quantum));
 #else
-  double alpha = RND.nrandom(mu,sigma);
+  double alpha = RND.nrandom(0.0,severity);
 #endif
 
-  vperturb = v;
-  if (relational) {
-    int j;
+  if (by_vertex) {
+    vperturb = v;
+    if (relational) {
+      int j;
 
-    original.clear();
-    for(i=0; i<nvertex; ++i) {
-      if (i == v) continue;
-      j = compute_index(v,i);
-      original.push_back(distances[j]);
+      original.clear();
+      for(i=0; i<nvertex; ++i) {
+        if (i == v) continue;
+        j = compute_index(v,i);
+        original.push_back(distances[j]);
 #ifdef DISCRETE
-      alpha = INT64((RND.nrandom(mu,sigma)/space_quantum));
+        alpha = INT64((RND.nrandom(0.0,severity)/space_quantum));
 #else
-      alpha = RND.nrandom(mu,sigma);
+        alpha = RND.nrandom(0.0,severity);
 #endif
-      distances[j] *= alpha;
-    }
-  }
-  else {
-    original = coordinates[v];
-    if (total) {
-      for(i=0; i<(signed) coordinates[v].size(); ++i) {
-#ifdef DISCRETE
-        alpha = INT64((RND.nrandom(mu,sigma)/space_quantum));
-#else
-        alpha = RND.nrandom(mu,sigma);
-#endif
-        coordinates[v][i] *= alpha;
+        distances[j] += alpha;
       }
     }
     else {
-      i = (signed) coordinates[v].size();
-      coordinates[v][RND.irandom(i)] *= alpha;
-    }
-  }
-}
-
-void Geometry::additive_modification(int v,bool total,double mu,double sigma)
-{
-  int i;
+      original = coordinates[v];
+      if (complete) {
+        for(i=0; i<(signed) coordinates[v].size(); ++i) {
 #ifdef DISCRETE
-  INT64 alpha = INT64((RND.nrandom(mu,sigma)/space_quantum));
+          alpha = INT64((RND.nrandom(0.0,severity)/space_quantum));
 #else
-  double alpha = RND.nrandom(mu,sigma);
+          alpha = RND.nrandom(0.0,severity);
 #endif
-
-  vperturb = v;
-  if (relational) {
-    int j;
-
-    original.clear();
-    for(i=0; i<nvertex; ++i) {
-      if (i == v) continue;
-      j = compute_index(v,i);
-      original.push_back(distances[j]);
-#ifdef DISCRETE
-      alpha = INT64((RND.nrandom(mu,sigma)/space_quantum));
-#else
-      alpha = RND.nrandom(mu,sigma);
-#endif
-      distances[j] += alpha;
+          coordinates[v][i] += alpha;
+        }
+      }
+      else {
+        i = (signed) coordinates[v].size();
+        coordinates[v][RND.irandom(i)] += alpha;
+      }
     }
   }
   else {
-    original = coordinates[v];
-    if (total) {
-      for(i=0; i<(signed) coordinates[v].size(); ++i) {
-#ifdef DISCRETE
-        alpha = INT64((RND.nrandom(mu,sigma)/space_quantum));
-#else
-        alpha = RND.nrandom(mu,sigma);
-#endif
-        coordinates[v][i] += alpha;
-      }
+    vperturb = v;
+    original.clear();
+    if (relational) {
+      original.push_back(distances[v]);
+      distances[v] += alpha;
+      return;
     }
-    else {
-      i = (signed) coordinates[v].size();
-      coordinates[v][RND.irandom(i)] += alpha;
+    int j,kt = 0;
+    for(i=0; i<nvertex; ++i) {
+      for(j=0; j<(signed) coordinates[i].size(); ++j) {
+        if (kt == v) {
+          original.push_back(coordinates[i][j]);
+          coordinates[i][j] += alpha;
+          return;
+        }
+        kt++;
+      }
     }
   }
 }

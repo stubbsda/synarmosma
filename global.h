@@ -77,7 +77,7 @@ namespace SYNARMOSMA {
 
 #ifdef DISCRETE
   const double energy_quantum = 1e-7;
-  const double space_quantum = 1e-4;
+  const double space_quantum = 1e-8;
 #endif
 
   template<unsigned int N>

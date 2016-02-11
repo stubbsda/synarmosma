@@ -83,11 +83,9 @@ namespace SYNARMOSMA {
     void compute_relational_matrices(std::vector<double>&,std::vector<std::vector<double> >&) const;
     int vertex_order(int,int) const;
     void vertex_difference(int,int,std::vector<double>&) const;
-    void additive_modification(int,bool,double,double);
-    void multiplicative_modification(int,bool,double,double);
+    void mutation(int,bool,bool,double);
     void vertex_perturbation(int);
     void rollback();
-    void geometry_modification(int,double,double);
     void geometry_restoration();
     inline bool get_euclidean() const {return euclidean;};
     inline bool get_relational() const {return relational;};
