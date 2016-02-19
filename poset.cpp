@@ -247,6 +247,82 @@ void Poset::compute_width(unsigned int u,unsigned int v,std::set<unsigned int>& 
   }
 }
 
+void Poset::power_set(unsigned int n)
+{
+  // A method that builds a poset based on the inclusion relation for 
+  // the power set on n elements.
+  int k = 0;
+  bool inclusion;
+  unsigned int i,j,stack[1+n];
+  std::set<unsigned int> S;
+  std::set<unsigned int>::const_iterator it;
+  std::vector<std::set<unsigned int> > powerset;
+
+  clear();
+  N = ipow(2,n);
+
+  stack[0] = 0; 
+  powerset.push_back(S);
+  while(true) {
+    if (stack[k] < n) {
+      stack[k+1] = stack[k] + 1;
+      k++;
+    }
+    else {
+      stack[k-1] = stack[k-1] + 1;
+      k--;
+    }
+
+    if (k == 0) break;
+    S.clear();
+    for(i=1; i<=(unsigned) k; ++i) {
+      S.insert(stack[i]);
+    }
+    powerset.push_back(S);
+  }
+
+  for(i=0; i<N; ++i) {
+    for(j=1+i; j<N; ++j) {
+      inclusion = true;
+      for(it=powerset[i].begin(); it!=powerset[i].end(); ++it) {
+        if (powerset[j].count(*it) == 0) {
+          inclusion = false;
+          break;
+        }
+      }
+      if (inclusion) {
+        set_order(i,j);
+        continue;
+      }
+      inclusion = true;
+      for(it=powerset[j].begin(); it!=powerset[j].end(); ++it) {
+        if (powerset[i].count(*it) == 0) {
+          inclusion = false;
+          break;
+        }
+      }
+      if (inclusion) set_order(j,i);
+    }
+  }   
+}
+
+double Poset::totality() const
+{
+  // A method to calculate the percentage of pair-wise relationships in this 
+  // poset, i.e. how close is this partial order to being a total order?
+  unsigned int i,j,norder = 0;
+  RELATION rho;
+  const unsigned int ntotal = N*(N-1)/2;
+
+  for(i=0; i<N; ++i) {
+    for(j=1+i; j<N; ++j) {
+      rho = get_order(i,j);
+      if (rho != DISPARATE) norder++;
+    }
+  }
+  return double(norder)/double(ntotal);
+}
+
 bool Poset::covered(unsigned int u,unsigned int v) const
 {
   // A method to determine if u is covered by v

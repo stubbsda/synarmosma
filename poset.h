@@ -49,6 +49,8 @@ namespace SYNARMOSMA {
     bool unset_order(unsigned int,unsigned int); 
     bool invert_order(unsigned int,unsigned int);
     void construct_ordering(double);
+    void power_set(unsigned int);
+    double totality() const;
     bool covered(unsigned int,unsigned int) const;
     unsigned int chain_number(unsigned int) const;
     void write_incastrature(const std::string&) const;
