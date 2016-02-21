@@ -255,13 +255,38 @@ void Graph::core(Graph* G,int k) const
   } while(true);
 }
 
+bool Graph::bipartite() const
+{
+  // We need to determine if this graph has a cycle of odd length
+}
+
+int Graph::eccentricity(int v) const
+{
+  assert(v >= 0 && v < nvertex);
+
+  int i,delta,output = 0;
+  for(i=0; i<v; ++i) {
+    delta = distance(i,v);
+    if (delta > output) output = delta;
+  }
+  for(i=v+1; i<nvertex; ++i) {
+    delta = distance(i,v);
+    if (delta > output) output = delta;
+  }
+  return output;  
+}
+
 bool Graph::planar() const
 {
+  // Small graphs are always planar...
   if (nvertex <= 2) return true;
+  // The more edges, the less likely it's planar...
   if (size() > (3*nvertex - 6)) return false;
+  // If every vertex has degree greater than five, it can't be planar...
+  if (min_degree() > 5) return false;
   // Now the hard case where we need to do some work
   // to get the answer...
-  bool output = true;
+  bool output = false;
 
   return output;
 }

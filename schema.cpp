@@ -221,6 +221,53 @@ void Schema::components(std::vector<int>& csize,std::vector<int>& celements) con
   } while(true);
 }
 
+int Schema::distance(int v1,int v2) const
+{
+  // A method to calculate the topological distance
+  // between the two vertices v1 and v2
+  if (v1 == v2) return 0;
+
+  // Handle the simplest case first, where v2 is a neighbour of v1...
+  if (neighbours[v1].count(v2) == 1) return 1;
+
+  // So, we'll have to use Dijkstra's algorithm then...
+  int i,n,v,md,base,l = -1;
+  bool visited[nvertex];
+  std::vector<int> distance;
+  std::set<int>::const_iterator it;
+
+  for(i=0; i<nvertex; ++i) {
+    distance.push_back(-1);
+    visited[i] = false;
+  }
+  distance[v1] = 0;
+  do {
+    base = -1;
+    md = nvertex + 1;
+    for(i=0; i<nvertex; ++i) {
+      if (visited[i]) continue;
+      n = distance[i];
+      if (n == -1) continue;
+      if (n < md) {
+        md = n;
+        base = i;
+      }
+    }
+    if (base == -1) break;
+    if (base == v2) {
+      l = md;
+      break;
+    }
+    visited[base] = true;
+    for(it=neighbours[base].begin(); it!=neighbours[base].end(); ++it) {
+      v = *it;
+      n = distance[base] + 1;
+      if (distance[v] < 0 || distance[v] > n) distance[v] = n;
+    }
+  } while(true);
+  return l;
+}
+
 bool Schema::connected() const
 {
   int i,n,p,m = 0;

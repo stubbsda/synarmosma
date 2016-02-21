@@ -68,12 +68,14 @@ namespace SYNARMOSMA {
     virtual int fission_m(int);
     // A series of const methods to calculate various graph properties
     void core(Graph*,int) const;
+    int eccentricity(int) const;
     bool planar() const;
     bool biconnected() const;
     double cosine_similarity(int,int) const;
     double inverse_girth() const;
     double clustering_coefficient(int) const;
     int bridge_count() const;
+    bool bipartite() const;
     int depth_first_search(int,int,int,int*,int*) const;
     double cyclicity() const;
     double connectivity() const;

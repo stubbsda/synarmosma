@@ -42,6 +42,7 @@ namespace SYNARMOSMA {
     inline int add_vertex();
     virtual bool add_edge(int,int);
     virtual bool drop_edge(int,int);
+    virtual int distance(int,int) const;
     bool positive_valence() const;
     int spanning_tree(std::vector<int>&) const;
     int component_analysis(std::vector<int>&) const;
