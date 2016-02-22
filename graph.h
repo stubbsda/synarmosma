@@ -32,6 +32,8 @@ namespace SYNARMOSMA {
     // The edges
     std::vector<Edge> edges;
     hash_map index_table;
+
+    void path_diffusion(int,int,std::set<int>&) const;
   public:
     // The usual public methods for a class
     Graph();
@@ -72,6 +74,7 @@ namespace SYNARMOSMA {
     bool planar() const;
     bool biconnected() const;
     double cosine_similarity(int,int) const;
+    int girth() const;
     double inverse_girth() const;
     double clustering_coefficient(int) const;
     int bridge_count() const;

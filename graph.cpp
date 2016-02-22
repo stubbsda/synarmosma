@@ -255,9 +255,55 @@ void Graph::core(Graph* G,int k) const
   } while(true);
 }
 
+void Graph::path_diffusion(int base,int length,std::set<int>& endpoints) const
+{
+  int i,j,hops = 1;
+  bool visited[nvertex];
+  std::set<int> current,next;
+  std::set<int>::const_iterator it,jt;
+
+  for(i=0; i<nvertex; ++i) {
+    visited[i] = false;
+  }
+  visited[base] = true;
+  current.insert(base);
+  do {
+    for(it=current.begin(); it!=current.end(); ++it) {
+      i = *it;
+      for(jt=neighbours[i].begin(); jt!=neighbours[i].end(); ++jt) {
+        j = *jt;
+        if (visited[j] && hops < (length-1)) continue;
+        next.insert(j);
+      }
+    }
+    current = next;
+    for(it=current.begin(); it!=current.end(); ++it) {
+      visited[*it] = true;
+    }
+    next.clear();
+    hops++;
+  } while(hops < length);
+  endpoints = current;
+}
+
 bool Graph::bipartite() const
 {
   // We need to determine if this graph has a cycle of odd length
+  int i,l,mlength = (nvertex%2 == 0) ? nvertex - 1: nvertex;
+  std::set<int> paths;
+  std::set<int>::const_iterator it;
+
+  for(l=3; l<mlength; l+=2) {
+    for(i=0; i<nvertex; ++i) {
+      path_diffusion(i,l,paths);
+      for(it=paths.begin(); it!=paths.end(); ++it) {
+        //std::cout << i << "  " << l << "  " << *it << std::endl;
+        if (neighbours[i].count(*it) > 0) return false;
+      }
+      paths.clear(); 
+    }
+  }
+  return true;
 }
 
 int Graph::eccentricity(int v) const
@@ -832,10 +878,10 @@ double Graph::cosine_similarity(int u,int v) const
   return double(sum)/denominator;
 }
 
-double Graph::inverse_girth() const
+int Graph::girth() const
 {
   assert(nvertex > 0);
-  int i,j,p,q,alpha,output = 1 + size(),done[nvertex],parent[nvertex],dist[nvertex];
+  int i,j,p,q,alpha,length = 1 + size(),done[nvertex],parent[nvertex],dist[nvertex];
   std::set<int> current,next;
   std::set<int>::const_iterator it,jt;
 
@@ -855,7 +901,7 @@ double Graph::inverse_girth() const
           if (q == parent[p]) continue;
           if (done[q] == 1) {
             alpha = 1 + dist[p] + dist[q];
-            if (alpha < output) output = alpha;
+            if (alpha < length) length = alpha;
           }
           else {
             parent[q] = p;
@@ -870,8 +916,19 @@ double Graph::inverse_girth() const
     } while(true);
     current.clear();
   }
-  double ginv = (output == (1+size())) ? 0.0 : 1.0/double(output);
-  return ginv;
+  // The graph is acyclic...
+  if (length == (1 + size())) return -1;
+  return length;
+}
+
+double Graph::inverse_girth() const
+{
+  int output = girth();
+  double g = 0.0;
+  if (output > 0) {
+    g = 1.0/double(output);
+  }
+  return g;
 }
 
 int Graph::cyclomatic_number() const
