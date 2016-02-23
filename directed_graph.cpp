@@ -126,6 +126,58 @@ int Directed_Graph::directedness() const
   return output;
 }
 
+int Directed_Graph::distance(int u,int v) const
+{
+  // A method to calculate the topological distance from 
+  // u to v; the method returns -1 if it is impossible to 
+  // get from u to v.
+  if (u == v) return 0;
+
+  int i,j,l = -1,its = 1;
+  bool visited[nvertex];
+  RELATION rho;
+  std::set<int> S,current,next;
+  std::set<int>::const_iterator it,jt;
+  hash_map::const_iterator qt;
+
+  for(i=0; i<nvertex; ++i) {
+    visited[i] = false;
+  }
+  current.insert(u);
+  visited[u] = true;
+  do {
+    for(it=current.begin(); it!=current.end(); ++it) {
+      i = *it;
+      for(jt=neighbours[i].begin(); jt!=neighbours[i].end(); ++jt) {
+        j = *jt;
+        if (visited[j]) continue;
+        S.clear();
+        S.insert(i); S.insert(j);
+        qt = index_table.find(S);
+        rho = edges[qt->second].direction;
+        if (i < j && rho == BEFORE) {
+          next.insert(j);
+        }
+        else if (i > j && rho == AFTER) {
+          next.insert(j);
+        }
+      }
+    }
+    if (next.empty()) break;
+    if (next.count(v) > 0) {
+      l = its;
+      break;
+    }
+    for(it=next.begin(); it!=next.end(); ++it) {
+      visited[*it] = true;
+    }
+    current = next;
+    next.clear();
+    its++;
+  } while(true);
+  return l;
+}
+
 bool Directed_Graph::add_edge(int u,int v)
 {
   if (!Graph::add_edge(u,v)) return false;
