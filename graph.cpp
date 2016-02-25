@@ -73,9 +73,9 @@ Graph::Graph(int n,int c) : Schema(n)
   // the minimum degree is c
   int i,j,k,sum;
   double rho;
-
+#ifdef DEBUG
   assert(c >= 1);
- 
+#endif 
   for(i=0; i<c+1; ++i) {
     for(j=(signed) neighbours[i].size(); j<c; ++j) {
       do {
@@ -215,7 +215,9 @@ void Graph::core(Graph* G,int k) const
 {
   // A method to compute the k-core of the current graph
   // The 1-core is just the graph itself...
+#ifdef DEBUG
   assert(k > 1);
+#endif
 
   if (k > max_degree()) {
     // The k-core in this case is null
@@ -255,6 +257,42 @@ void Graph::core(Graph* G,int k) const
   } while(true);
 }
 
+void Graph::vertex_centrality(std::vector<double>& output,double tolerance) const
+{
+  int i,j;
+  double sum,alpha,error;
+  std::vector<double> sigma,sigma_new;
+  const double beta = 1.0;
+
+  adjacency_eigenvalues(sigma);
+  assert(!sigma.empty());
+  alpha = 0.5/sigma[nvertex-1];
+  output.clear();
+  sigma.clear();
+  for(i=0; i<nvertex; ++i) {
+    sigma.push_back(1.0);
+    sigma_new.push_back(0.0);
+  }
+
+  do {
+    for(i=0; i<nvertex; ++i) {
+      sum = 0.0;
+      for(j=0; j<nvertex; ++j) {
+        if (connected(i,j)) sum += sigma[j];
+      }
+      sigma_new[i] = beta + alpha*sum;
+    }
+    sum = 0.0;
+    for(i=0; i<nvertex; ++i) {
+      sum += (sigma_new[i] - sigma[i])*(sigma_new[i] - sigma[i]);
+    }
+    error = std::sqrt(sum);
+    if (error < tolerance) break;
+    sigma = sigma_new;
+  } while(true);
+  output = sigma;
+}
+
 void Graph::path_diffusion(int base,int length,std::set<int>& endpoints) const
 {
   int i,j,hops = 1;
@@ -283,16 +321,67 @@ void Graph::path_diffusion(int base,int length,std::set<int>& endpoints) const
     next.clear();
     hops++;
   } while(hops < length);
+  if (base == 0 && length == 5) {
+    for(i=0; i<nvertex; ++i) {
+      std::cout << i << "  " << visited[i] << std::endl;
+    }
+    std::cout << current.size() << std::endl;
+    std::exit(1);
+  }
   endpoints = current;
+}
+
+bool Graph::dsearch(int parent,int current,std::vector<int>& path,bool* visited) const
+{
+  int i,v,n;
+  std::set<int>::const_iterator it;
+
+  visited[current] = true;
+  path.push_back(current);
+  for(it=neighbours[current].begin(); it!=neighbours[current].end(); ++it) {
+    v = *it;
+    if (!visited[v]) {
+      std::vector<int> npath = path;
+      dsearch(current,v,npath,visited);
+    }
+    else if (v != parent) {
+      n = (signed) path.size();
+      for(i=0; i<n; ++i) {
+        if (v == path[i]) {
+          if ((n-i)%2 != 0) return false;
+          /*
+          std::cout << "Found cycle of length " << n-i << " with vertices ";
+          for(int j=i; j<n; ++j) {
+            std::cout << path[j] << "  ";
+          }
+          std::cout << std::endl;
+          */
+        }
+      }
+    }
+  }
+  return true;
 }
 
 bool Graph::bipartite() const
 {
   // We need to determine if this graph has a cycle of odd length
-  int i,l,mlength = (nvertex%2 == 0) ? nvertex - 1: nvertex;
-  std::set<int> paths;
-  std::set<int>::const_iterator it;
+  int i; //,l,mlength = (nvertex%2 == 0) ? nvertex - 1: nvertex;
+  bool ocycle,visited[nvertex];
+  std::vector<int> path;
+  
+  for(i=0; i<nvertex; ++i) {
+    visited[i] = false;
+  }
 
+  for(i=0; i<nvertex; ++i) {
+    if (!visited[i]) {
+      ocycle = dsearch(i,i,path,visited);
+      if (ocycle) return false;
+    }
+    path.clear();
+  }
+  /*
   for(l=3; l<mlength; l+=2) {
     for(i=0; i<nvertex; ++i) {
       path_diffusion(i,l,paths);
@@ -303,12 +392,15 @@ bool Graph::bipartite() const
       paths.clear(); 
     }
   }
+  */
   return true;
 }
 
 int Graph::eccentricity(int v) const
 {
+#ifdef DEBUG
   assert(v >= 0 && v < nvertex);
+#endif
 
   int i,delta,output = 0;
   for(i=0; i<v; ++i) {
@@ -339,7 +431,9 @@ bool Graph::planar() const
 
 bool Graph::drop_vertex(int v)
 {
+#ifdef DEBUG
   assert(v >= 0 && v < nvertex);
+#endif
   int i,j,nedges = (signed) edges.size();
   std::vector<int> deletion;
   std::set<int> S = neighbours[v];
@@ -408,7 +502,9 @@ bool Graph::add_edge(int v,int u)
       edges.push_back(Edge(v,u));
     }
     else {
+#ifdef DEBUG
       assert(!edges[qt->second].active);
+#endif
       edges[qt->second].active = true;
     }
     return true;
@@ -603,7 +699,9 @@ void Graph::katz_centrality(std::vector<double>& output) const
   // the eigenvalues of A (which are real since A is symmetric and
   // real) in ascending order, thus w[nv-1] will be the largest
   dsyev_(&jtype,&uplo,&nv,AD,&nv,w,work,&nwork,&info);
+#ifdef DEBUG
   assert(info == 0);  
+#endif
 
   for(i=0; i<nvertex; ++i) {
     x.push_back(1.0);
@@ -756,7 +854,9 @@ void Graph::random_walk(double* mean,double* sdeviation,int D) const
 
 void Graph::degree_distribution(bool logarithmic,std::vector<double>& histogram) const
 {
+#ifdef DEBUG
   assert(connected());
+#endif
   int i;
   const int max = max_degree();
   int counter[1+max];
@@ -799,7 +899,9 @@ void Graph::degree_distribution(bool logarithmic,std::vector<double>& histogram)
 
 double Graph::percolation(bool site) const 
 {
+#ifdef DEBUG
   assert(connected());
+#endif
   int i,n,nc;
   double output;
   std::vector<int> csize,components;
@@ -880,7 +982,9 @@ double Graph::cosine_similarity(int u,int v) const
 
 int Graph::girth() const
 {
+#ifdef DEBUG
   assert(nvertex > 0);
+#endif
   int i,j,p,q,alpha,length = 1 + size(),done[nvertex],parent[nvertex],dist[nvertex];
   std::set<int> current,next;
   std::set<int>::const_iterator it,jt;
@@ -991,21 +1095,21 @@ void Graph::compute_adjacency_matrix(Binary_Matrix* A) const
   }
 }
 
-double Graph::entwinement() const
+void Graph::adjacency_eigenvalues(std::vector<double>& output) const
 {
-  // This method produces a real number between 0 and 1 that measures the
-  // degree of "labyrinthicity" of the graph
-  if (nvertex == 1) return 0.0;
-
-  assert(connected());
+#ifdef DEBUG
+  assert(connected() && nvertex > 1);
+#endif
 
   int i,j,info,nv = nvertex,nwork = 3*nvertex - 1;
   char jtype = 'N';
   char uplo = 'U';
-  double output = 0.0;
+ 
   double* AD = new double[nvertex*nvertex];
   double* w = new double[nvertex];
   double* work = new double[nwork];
+
+  output.clear();
 
   for(i=0; i<nvertex*nvertex; ++i) {
     AD[i] = 0.0;
@@ -1024,25 +1128,43 @@ double Graph::entwinement() const
   // real) in ascending order, thus w[nv-1] will be the largest
   dsyev_(&jtype,&uplo,&nv,AD,&nv,w,work,&nwork,&info);
 
-  // We know that w[nv-1] <= max_degree(), so we divide by this
-  // to normalize the output
   if (info == 0) {
-    double ds = sqrt(double(max_degree()));
-    double da = average_degree();
-    double m1 = (ds < da) ? da : ds;
-    output = (w[nvertex-1] - m1)/(ds*ds - m1);
+    for(i=0; i<nvertex; ++i) {
+      output.push_back(w[i]);
+    }
   }
 
   delete[] AD;
   delete[] w;
   delete[] work;
+}
 
+double Graph::entwinement() const
+{
+  // This method produces a real number between 0 and 1 that measures the
+  // degree of "labyrinthicity" of the graph
+  if (nvertex == 1) return 0.0;
+
+  double output = 0.0;
+  std::vector<double> w;
+  adjacency_eigenvalues(w);
+
+  // We know that w[nv-1] <= max_degree(), so we divide by this
+  // to normalize the output
+  if (!w.empty()) {
+    double ds = sqrt(double(max_degree()));
+    double da = average_degree();
+    double m1 = (ds < da) ? da : ds;
+    output = (w[nvertex-1] - m1)/(ds*ds - m1);
+  }
   return output;
 }
 
 double Graph::cyclic_resistance() const
 {
+#ifdef DEBUG
   assert(connected());
+#endif
   int i,j,info,nv = nvertex;
   int nwork = 5*nvertex;
   unsigned int l;
@@ -1161,8 +1283,10 @@ int Graph::genus(std::vector<int>& gamma) const
 {
   // A method to compute the genus of a connected graph, assumed simple as well, or to 
   // calculate at least the minimum and maximum genus of this graph.  
-  gamma.clear();
+#ifdef DEBUG
   assert(connected());
+#endif
+  gamma.clear();
   if (planar()) return 0;
   int nedge = size();
   int ll = std::ceil(double(nedge)/6.0 - 0.5*double(nvertex) + 1.0);

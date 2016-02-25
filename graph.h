@@ -34,6 +34,8 @@ namespace SYNARMOSMA {
     hash_map index_table;
 
     void path_diffusion(int,int,std::set<int>&) const;
+    bool dsearch(int,int,std::vector<int>&,bool*) const;
+    void adjacency_eigenvalues(std::vector<double>&) const;
   public:
     // The usual public methods for a class
     Graph();
@@ -71,6 +73,7 @@ namespace SYNARMOSMA {
     // A series of const methods to calculate various graph properties
     void core(Graph*,int) const;
     int eccentricity(int) const;
+    void vertex_centrality(std::vector<double>&,double) const;
     bool planar() const;
     bool biconnected() const;
     double cosine_similarity(int,int) const;
