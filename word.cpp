@@ -63,7 +63,9 @@ Word::Word(unsigned int p,const std::string& w)
 Word::Word(unsigned int p,unsigned int n,int m)
 {
   NL = p;
+#ifdef DEBUG
   assert(n < p);
+#endif
   std::pair<unsigned int,int> doublet(n,m);
   content.push_back(doublet);
 }
@@ -144,7 +146,9 @@ void Word::permute(unsigned int n,Word& w) const
   // permutation of *this, that is
   // a_1*a_2*...*a_k -> a_n*a_{n+1}*...*a_k*a_1*a_2*...*a_{n-1}
   w.clear();
+#ifdef DEBUG
   assert(n < content.size());
+#endif
   if (n == 0) {
     w = Word(*this);
     return;
@@ -175,7 +179,9 @@ void Word::initialize(unsigned int n)
 void Word::initialize(unsigned int p,unsigned int n,int m)
 {
   NL = p;
+#ifdef DEBUG
   assert(n < p);
+#endif
   std::pair<unsigned int,int> doublet(n,m);
   content.push_back(doublet);
 }
@@ -184,12 +190,14 @@ void Word::initialize(const std::vector<unsigned int>& base,const std::vector<in
 {
   unsigned int i;
   std::pair<unsigned int,int> doublet;
-
+#ifdef DEBUG
   assert(base.size() == exponent.size());
-
+#endif
   content.clear();
   for(i=0; i<base.size(); ++i) {
+#ifdef DEBUG
     assert(base[i] < NL);
+#endif
     doublet.first = base[i];
     doublet.second = exponent[i];
     content.push_back(doublet);
@@ -327,7 +335,9 @@ Word Word::reduce(int M,const std::set<unsigned int>& trivial_generators,const u
     doublet.second = it->second;
     output.content.push_back(doublet);
   }
+#ifdef DEBUG
   assert(output.legal());
+#endif
   return output;
 }
 

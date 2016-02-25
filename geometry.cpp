@@ -109,8 +109,9 @@ void Geometry::clear()
 
 bool Geometry::consistent() const
 {
+#ifdef DEBUG
   assert(nvertex == (signed) coordinates.size());
-
+#endif
   int i,j;
 
   if (!relational) {
@@ -288,7 +289,9 @@ double Geometry::perceptual_divergence(const double* raxis,double theta,const do
   // a) raxis is a unit vector 
   // b) 0 <= theta < 2*pi
   // c) dimension = 3
+#ifdef DEBUG
   assert(uniform && !relational && background_dimension == 3);  
+#endif
   int i,j;
   double ct,st,d1,xt,q0,temp[3],delta,sum = 0.0;
 
@@ -1275,7 +1278,9 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
   angles.clear();
   // This method supposes that we are working in Euclidean n-space with a 
   // uniform, absolute geometry
+#ifdef DEBUG
   assert(background_dimension > 1 && euclidean && uniform && !relational);
+#endif
   int i,j,k;
   double r,v[background_dimension];
 #ifdef DISCRETE
@@ -1536,8 +1541,9 @@ int Geometry::compute_coordinates(std::vector<double>& x) const
     }
     return edim;
   }
-
+#ifdef DEBUG
   assert(euclidean);
+#endif
   /*
   int k,in1,its = 0;
   double b,lambda,err,err_old = 0.0,delta,sum;
@@ -1707,10 +1713,10 @@ double SYNARMOSMA::geometry_change(const Geometry* g1,const Geometry* g2)
 #else
   double gdelta = 0.0;
 #endif
-
+#ifdef DEBUG
   assert(g1->relational == g2->relational);
   assert(g1->euclidean == g2->euclidean);
-
+#endif
   if (g1->nvertex < g2->nvertex) {
     nva = g1->nvertex;
     arg1 = false;

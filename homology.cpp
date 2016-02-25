@@ -143,7 +143,9 @@ void Homology::deserialize(std::ifstream& s)
 
 void Homology::compute_integral_native(const Nexus* NX)
 {
+#ifdef DEBUG
   assert(field == INT || field == ZZ);
+#endif
   const int dimension = NX->dimension;
   const int nvertex = NX->nvertex;
   int i,j,d,p,v2[2];
@@ -568,7 +570,9 @@ void Homology::compute_gap(const Nexus* NX)
     break;      
   }
   file.close();
+#ifdef DEBUG
   assert(!(hdata.empty()));
+#endif
   // Now we need to parse the line that contains the homology groups' structure
   boost::char_separator<char> sep(", ");
   boost::tokenizer<boost::char_separator<char> > tok(hdata,sep);

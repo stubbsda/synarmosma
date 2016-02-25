@@ -265,7 +265,9 @@ void Graph::vertex_centrality(std::vector<double>& output,double tolerance) cons
   const double beta = 1.0;
 
   adjacency_eigenvalues(sigma);
+#ifdef DEBUG
   assert(!sigma.empty());
+#endif
   alpha = 0.5/sigma[nvertex-1];
   output.clear();
   sigma.clear();
@@ -293,81 +295,72 @@ void Graph::vertex_centrality(std::vector<double>& output,double tolerance) cons
   output = sigma;
 }
 
-void Graph::path_diffusion(int base,int length,std::set<int>& endpoints) const
+int Graph::DFS_bridge(int u,int v,int dcount,int* low,int* pre) const
 {
-  int i,j,hops = 1;
-  bool visited[nvertex];
-  std::set<int> current,next;
-  std::set<int>::const_iterator it,jt;
-
-  for(i=0; i<nvertex; ++i) {
-    visited[i] = false;
-  }
-  visited[base] = true;
-  current.insert(base);
-  do {
-    for(it=current.begin(); it!=current.end(); ++it) {
-      i = *it;
-      for(jt=neighbours[i].begin(); jt!=neighbours[i].end(); ++jt) {
-        j = *jt;
-        if (visited[j] && hops < (length-1)) continue;
-        next.insert(j);
-      }
-    }
-    current = next;
-    for(it=current.begin(); it!=current.end(); ++it) {
-      visited[*it] = true;
-    }
-    next.clear();
-    hops++;
-  } while(hops < length);
-  if (base == 0 && length == 5) {
-    for(i=0; i<nvertex; ++i) {
-      std::cout << i << "  " << visited[i] << std::endl;
-    }
-    std::cout << current.size() << std::endl;
-    std::exit(1);
-  }
-  endpoints = current;
-}
-
-bool Graph::dsearch(int parent,int current,std::vector<int>& path,bool* visited) const
-{
-  int i,v,n;
+  int w,output = 0,dc = dcount + 1;
   std::set<int>::const_iterator it;
 
-  visited[current] = true;
-  path.push_back(current);
-  for(it=neighbours[current].begin(); it!=neighbours[current].end(); ++it) {
-    v = *it;
-    if (!visited[v]) {
-      std::vector<int> npath = path;
-      dsearch(current,v,npath,visited);
+  pre[v] = dc;
+  low[v] = pre[v];
+  for(it=neighbours[v].begin(); it!=neighbours[v].end(); ++it) {
+    w = *it;
+    if (pre[w] == -1) {
+      output += DFS_bridge(v,w,dc,low,pre);
+      low[v] = std::min(low[v],low[w]); 
+      if (low[w] == pre[w]) output++;
     }
-    else if (v != parent) {
-      n = (signed) path.size();
-      for(i=0; i<n; ++i) {
-        if (v == path[i]) {
-          if ((n-i)%2 != 0) return false;
-          /*
-          std::cout << "Found cycle of length " << n-i << " with vertices ";
-          for(int j=i; j<n; ++j) {
-            std::cout << path[j] << "  ";
-          }
-          std::cout << std::endl;
-          */
-        }
+    else if (w != u) {
+      low[v] = std::min(low[v],pre[w]);
+    }
+  }
+
+  return output;
+}
+
+int Graph::DFS_cycle(int u,int v,std::vector<int>& path,bool* visited) const
+{
+  int w,out = 0;
+  std::set<int>::const_iterator it;
+
+  visited[v] = true;
+  path.push_back(v);
+  for(it=neighbours[v].begin(); it!=neighbours[v].end(); ++it) {
+    w = *it;
+    if (!visited[w]) {
+      std::vector<int> npath = path;
+      out = DFS_cycle(v,w,npath,visited);
+    }
+    else if (w != u) {
+      int n = (signed) path.size();
+      for(int i=0; i<n; ++i) {
+        if (w == path[i]) return (n-i);
       }
     }
   }
-  return true;
+  return out;
+}
+
+int Graph::bridge_count() const
+{
+  int i,bcount = 0;
+  int low[nvertex],pre[nvertex];
+
+  for(i=0; i<nvertex; ++i) {
+    low[i] = -1;
+    pre[i] = -1;
+  }
+
+  for(i=0; i<nvertex; ++i) {
+    if (pre[i] == -1) bcount += DFS_bridge(i,i,0,low,pre);
+  }
+  return bcount;
 }
 
 bool Graph::bipartite() const
 {
   // We need to determine if this graph has a cycle of odd length
-  int i; //,l,mlength = (nvertex%2 == 0) ? nvertex - 1: nvertex;
-  bool ocycle,visited[nvertex];
+  int i,length;
+  bool visited[nvertex];
   std::vector<int> path;
   
   for(i=0; i<nvertex; ++i) {
@@ -376,23 +369,11 @@ bool Graph::bipartite() const
 
   for(i=0; i<nvertex; ++i) {
     if (!visited[i]) {
-      ocycle = dsearch(i,i,path,visited);
-      if (ocycle) return false;
+      length = DFS_cycle(i,i,path,visited);
+      if (length%2 != 0) return false;
     }
     path.clear();
   }
-  /*
-  for(l=3; l<mlength; l+=2) {
-    for(i=0; i<nvertex; ++i) {
-      path_diffusion(i,l,paths);
-      for(it=paths.begin(); it!=paths.end(); ++it) {
-        //std::cout << i << "  " << l << "  " << *it << std::endl;
-        if (neighbours[i].count(*it) > 0) return false;
-      }
-      paths.clear(); 
-    }
-  }
-  */
   return true;
 }
 
@@ -1233,43 +1214,6 @@ double Graph::cyclic_resistance() const
   delete A;
  
   return sum;
-}
-
-int Graph::depth_first_search(int u,int v,int dcount,int* low,int* pre) const
-{
-  int w,output = 0,dc = dcount + 1;
-  std::set<int>::const_iterator it;
-
-  pre[v] = dc;
-  low[v] = pre[v];
-  for(it=neighbours[v].begin(); it!=neighbours[v].end(); ++it) {
-    w = *it;
-    if (pre[w] == -1) {
-      output += depth_first_search(v,w,dc,low,pre);
-      low[v] = std::min(low[v],low[w]); 
-      if (low[w] == pre[w]) output++;
-    }
-    else if (w != u) {
-      low[v] = std::min(low[v],pre[w]);
-    }
-  }
-  return output;
-}
-
-int Graph::bridge_count() const
-{
-  int i,bcount = 0;
-  int low[nvertex],pre[nvertex];
-
-  for(i=0; i<nvertex; ++i) {
-    low[i] = -1;
-    pre[i] = -1;
-  }
-
-  for(i=0; i<nvertex; ++i) {
-    if (pre[i] == -1) bcount += depth_first_search(i,i,0,low,pre);
-  }
-  return bcount;
 }
 
 double Graph::cyclicity() const

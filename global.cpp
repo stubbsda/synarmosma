@@ -47,8 +47,9 @@ namespace SYNARMOSMA {
     // A function to generate all the combinations of the elements of S, taken 
     // r at a time.
     const int n = (signed) S.size();
+#ifdef DEBUG
     assert(r <= n);
-
+#endif
     int i;
     std::vector<int> v;
     std::set<int>::const_iterator it;
@@ -139,12 +140,16 @@ namespace SYNARMOSMA {
 
   int parity(const std::vector<int>& v1,const std::vector<int>& v2)
   {
+#ifdef DEBUG
     assert(v1.size() == v2.size());
+#endif
     int i,n = 0;
     for(i=0; i<(signed) v1.size(); ++i) {
       if (v1[i] != v2[i]) n++;
     }
+#ifdef DEBUG
     assert((n % 2) == 0);
+#endif
     n /= 2;
     int output = (n%2 == 0) ? 1 : -1;
     return output;
@@ -152,8 +157,10 @@ namespace SYNARMOSMA {
 
   void cross_product(const std::vector<double>& x,const std::vector<double>& y,std::vector<double>& z)
   {
+#ifdef DEBUG
     assert(x.size() == 3);
     assert(y.size() == 3);
+#endif
     z.clear();
     z.push_back(0.0); z.push_back(0.0); z.push_back(0.0);
     z[0] = x[1]*y[2] - x[2]*y[1];
@@ -205,7 +212,9 @@ namespace SYNARMOSMA {
       p = ((i+1)%2 == 0) ? 1 : -1; 
       // n is the index of vx in the array of faces...
       qt = face_index.find(vx);
+#ifdef DEBUG
       assert(qt != face_index.end());
+#endif
       n = qt->second;
       output[n] = parity*p;
       vx.clear();
@@ -398,7 +407,9 @@ namespace SYNARMOSMA {
     }
     dgetrf_(&n,&n,B,&n,ipiv,&info);
     dgetri_(&n,B,&n,ipiv,work,&lwork,&info);
-    assert(info == 0); 
+#ifdef DEBUG
+    assert(info == 0);
+#endif 
   }
 
   double determinant(const double* A,int n) 
@@ -413,7 +424,9 @@ namespace SYNARMOSMA {
       B[i] = A[i];
     }
     dgetrf_(&n,&n,B,&n,pivots,&info);
+#ifdef DEBUG
     assert(info >= 0);
+#endif
     for(i=0; i<n; ++i) {
       output *= B[n*i+i];
       if (pivots[i] != (1+i)) permuted = !permuted;
@@ -437,9 +450,9 @@ namespace SYNARMOSMA {
     int i,in1,output;
     std::set<int>::const_iterator it,jt;
     bool found = true;
-
+#ifdef DEBUG
     assert((1+v1.size()) == v2.size());
-
+#endif
     for(it=v1.begin(); it!=v1.end(); ++it) {
       in1 = *it;
       jt = std::find(v2.begin(),v2.end(),in1);

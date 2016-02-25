@@ -35,7 +35,9 @@ Variety<kind>::Variety()
 template<class kind>
 Variety<kind>::Variety(unsigned int n)
 {
+#ifdef DEBUG
   assert(n > 0);
+#endif
   nequation = n;
   nvariable = n;
   characteristic = 0;
@@ -47,7 +49,9 @@ namespace SYNARMOSMA
   template<>
   Variety<unsigned int>::Variety(unsigned int n,unsigned int p)
   {
+#ifdef DEBUG
     assert(n > 0 && p > 0);
+#endif
     nequation = n;
     nvariable = n;
     if (!NTL::ProbPrime(p)) {
@@ -63,7 +67,9 @@ namespace SYNARMOSMA
 template<class kind>
 Variety<kind>::Variety(unsigned int n,unsigned int p)
 {
+#ifdef DEBUG
   assert(n > 0 && p == 0);
+#endif
   nequation = n;
   nvariable = n;
   nvariable = p;
@@ -117,7 +123,9 @@ Variety<kind>::~Variety()
 template<class kind>
 void Variety<kind>::allocate()
 {
+#ifdef DEBUG
   assert(nequation > 0);
+#endif
   equations = new std::vector<Monomial<kind> >[nequation];
   initialize();
 }
@@ -139,7 +147,9 @@ void Variety<kind>::initialize()
     for(j=0; j<alpha; ++j) {
       beta = RND.irandom(1,1+nvariable);
       term.coefficient = (characteristic > 0) ? RND.irandom(characteristic) : RND.irandom(-10,10);
+#ifdef DEBUG
       assert(beta <= nvariable);
+#endif
       for(k=0; k<beta; ++k) {
         // What of the case where duo.first is the same number for different iterations
         // of this loop over k? We need to ensure that this never happens...
@@ -506,7 +516,9 @@ namespace SYNARMOSMA {
   template<>
   int Variety<unsigned int>::compute_zeros() const
   {
+#ifdef DEBUG
     assert(characteristic > 0);
+#endif
     unsigned int bdry,nsolution,i,j,k,l,f,in1;
     std::vector<unsigned int> elements,vec;
     bool soln;
@@ -552,7 +564,9 @@ namespace SYNARMOSMA {
 template<class kind>
 int Variety<kind>::compute_zeros() const
 {
+#ifdef DEBUG
   assert(characteristic == 0);
+#endif
   return 0;
 }
 
@@ -575,7 +589,7 @@ void Variety<kind>::find_partial(std::vector<unsigned int>& connected,unsigned i
           handled.insert(in2);
           for(jt=dependencies[in2].begin(); jt!=dependencies[in2].end(); ++jt) {
             next.insert(*jt);
-	        }
+          }
         }
       }
     }
@@ -636,8 +650,10 @@ namespace SYNARMOSMA {
   template<>
   void Variety<unsigned int>::zeta_function(unsigned int k,std::vector<unsigned int>& output) const
   {
+#ifdef DEBUG
     assert(k > 0);
     assert(characteristic > 0);
+#endif
     unsigned int i,j,m,n,l,bdry,in1,f,size,nsolution;
     bool soln,found;
     Monomial<unsigned int> term;
@@ -708,7 +724,9 @@ namespace SYNARMOSMA {
 template<class kind>
 void Variety<kind>::zeta_function(unsigned int k,std::vector<unsigned int>& output) const
 {
+#ifdef DEBUG
   assert(characteristic == 0);
+#endif
 }
 
 
@@ -730,7 +748,9 @@ namespace SYNARMOSMA {
 template<class kind>
 void Variety<kind>::normalize(unsigned int n)
 {
+#ifdef DEBUG
   assert(characteristic == 0);
+#endif
   return;
 }
 
@@ -770,14 +790,18 @@ void Variety<kind>::property_check()
 template<class kind>
 void Variety<kind>::set_remainder_value(unsigned int n,kind r)
 {
+#ifdef DEBUG
   assert(n < nequation);
+#endif
   remainder[n] = r;
 }
 
 template<class kind>
 void Variety<kind>::add_term(unsigned int n,const Monomial<kind>& t)
 {
+#ifdef DEBUG
   assert(n < nequation);
+#endif
   // Have we already seen this term?
   unsigned int i,in1;
   bool found = false;
@@ -802,8 +826,10 @@ void Variety<kind>::add_term(unsigned int n,const Monomial<kind>& t)
 template<class kind>
 void Variety<kind>::add_term(unsigned int n,kind alpha,const std::vector<unsigned int>& xp)
 {
+#ifdef DEBUG
   assert(n < nequation);
   assert(xp.size() == nvariable);
+#endif
   unsigned int i;
   Monomial<kind> term;
   std::pair<unsigned int,unsigned int> duo;

@@ -154,6 +154,7 @@ int Directed_Graph::distance(int u,int v) const
         S.clear();
         S.insert(i); S.insert(j);
         qt = index_table.find(S);
+        if (!edges[qt->second].active) continue;
         rho = edges[qt->second].direction;
         if (i < j && rho == BEFORE) {
           next.insert(j);

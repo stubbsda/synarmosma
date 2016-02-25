@@ -33,8 +33,8 @@ namespace SYNARMOSMA {
     std::vector<Edge> edges;
     hash_map index_table;
 
-    void path_diffusion(int,int,std::set<int>&) const;
-    bool dsearch(int,int,std::vector<int>&,bool*) const;
+    int DFS_bridge(int,int,int,int*,int*) const;
+    int DFS_cycle(int,int,std::vector<int>&,bool*) const;
     void adjacency_eigenvalues(std::vector<double>&) const;
   public:
     // The usual public methods for a class
@@ -82,7 +82,6 @@ namespace SYNARMOSMA {
     double clustering_coefficient(int) const;
     int bridge_count() const;
     bool bipartite() const;
-    int depth_first_search(int,int,int,int*,int*) const;
     double cyclicity() const;
     double connectivity() const;
     int omega() const;
