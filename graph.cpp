@@ -395,19 +395,50 @@ int Graph::eccentricity(int v) const
   return output;  
 }
 
-bool Graph::planar() const
+bool Graph::basic_planarity_test() const
+{
+  // The more edges, the less likely it's planar...
+  if (nvertex > 2 && size() > (3*nvertex - 6)) return false;
+  // If every vertex has degree greater than five, it can't be planar...
+  if (min_degree() > 5) return false;
+  return true;
+}
+
+bool Graph::complex_planarity_test() const
 {
   // Small graphs are always planar...
   if (nvertex <= 2) return true;
-  // The more edges, the less likely it's planar...
-  if (size() > (3*nvertex - 6)) return false;
-  // If every vertex has degree greater than five, it can't be planar...
-  if (min_degree() > 5) return false;
+  // So, build an st index of the graph vertices as a first step...
+  return false;
+}
+
+void Graph::get_planar_components(std::vector<Graph>& output) const
+{
+  // Get all the 2-connected components of the graph
+  output.clear();
+}
+
+bool Graph::planar() const
+{
+  if (!basic_planarity_test()) return false;
   // Now the hard case where we need to do some work
   // to get the answer...
-  bool output = false;
-
-  return output;
+  // First we need to break this graph up into its 2-connected components...
+  std::vector<Graph> elements;
+  get_planar_components(elements);
+  if (elements.empty()) {
+    return complex_planarity_test(); 
+  }
+  else {
+    int i,ncomp = (signed) elements.size();
+    for(i=0; i<ncomp; ++i) {
+      if (!elements[i].basic_planarity_test()) return false;
+    }
+    for(i=0; i<ncomp; ++i) {
+      if (!elements[i].complex_planarity_test()) return false;
+    }
+  }
+  return true;
 }
 
 bool Graph::drop_vertex(int v)
