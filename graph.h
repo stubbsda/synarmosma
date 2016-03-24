@@ -36,9 +36,6 @@ namespace SYNARMOSMA {
     int DFS_bridge(int,int,int,int*,int*) const;
     int DFS_cycle(int,int,std::vector<int>&,bool*) const;
     void adjacency_eigenvalues(std::vector<double>&) const;
-    bool basic_planarity_test() const;
-    bool complex_planarity_test() const;
-    void get_planar_components(std::vector<Graph>&) const;
   public:
     // The usual public methods for a class
     Graph();

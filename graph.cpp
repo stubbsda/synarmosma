@@ -395,50 +395,22 @@ int Graph::eccentricity(int v) const
   return output;  
 }
 
-bool Graph::basic_planarity_test() const
+bool Graph::planar() const
 {
+  assert(connected());
+  // Small graphs are always planar...
+  if (nvertex <= 2) return true;
   // The more edges, the less likely it's planar...
   if (nvertex > 2 && size() > (3*nvertex - 6)) return false;
   // If every vertex has degree greater than five, it can't be planar...
   if (min_degree() > 5) return false;
-  return true;
-}
-
-bool Graph::complex_planarity_test() const
-{
-  // Small graphs are always planar...
-  if (nvertex <= 2) return true;
-  // So, build an st index of the graph vertices as a first step...
-  return false;
-}
-
-void Graph::get_planar_components(std::vector<Graph>& output) const
-{
-  // Get all the 2-connected components of the graph
-  output.clear();
-}
-
-bool Graph::planar() const
-{
-  if (!basic_planarity_test()) return false;
-  // Now the hard case where we need to do some work
-  // to get the answer...
-  // First we need to break this graph up into its 2-connected components...
-  std::vector<Graph> elements;
-  get_planar_components(elements);
-  if (elements.empty()) {
-    return complex_planarity_test(); 
+  int i,vx[2],ne = size();
+  boost::adjacency_list<boost::vecS,boost::vecS,boost::undirectedS,boost::property<boost::vertex_index_t,int> > G(nvertex);
+  for(i=0; i<ne; ++i) {
+    edges[i].get_nodes(vx);
+    boost::add_edge(vx[0],vx[1],G);
   }
-  else {
-    int i,ncomp = (signed) elements.size();
-    for(i=0; i<ncomp; ++i) {
-      if (!elements[i].basic_planarity_test()) return false;
-    }
-    for(i=0; i<ncomp; ++i) {
-      if (!elements[i].complex_planarity_test()) return false;
-    }
-  }
-  return true;
+  return boyer_myrvold_planarity_test(G);
 }
 
 bool Graph::drop_vertex(int v)
@@ -723,9 +695,9 @@ void Graph::katz_centrality(std::vector<double>& output) const
   // We want alpha to be just under the threshold for convergence
   alpha = 0.9*(1.0/w[nvertex-1]);
 
-  delete AD;
-  delete w;
-  delete work;
+  delete[] AD;
+  delete[] w;
+  delete[] work;
 
   do {
     for(i=0; i<nvertex; ++i) {
