@@ -397,7 +397,9 @@ int Graph::eccentricity(int v) const
 
 bool Graph::planar() const
 {
+#ifdef DEBUG
   assert(connected());
+#endif
   // Small graphs are always planar...
   if (nvertex <= 2) return true;
   // The more edges, the less likely it's planar...
