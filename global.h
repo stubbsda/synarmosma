@@ -67,7 +67,6 @@ extern "C" {
 namespace SYNARMOSMA {
   typedef boost::mt19937 base_generator_type;
   typedef boost::unordered_map<std::set<int>,int> hash_map;
-  typedef boost::unordered_map<std::string,int> string_hash;
 
 #ifdef __LP64__
   typedef signed long INT64;

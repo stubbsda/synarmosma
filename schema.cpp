@@ -397,5 +397,32 @@ int Schema::spanning_tree(std::vector<int>& tree_edges) const
   return ntree;
 }
 
+void Schema::compute_all_distances(int** distances) const
+{
+  int i,j,k,delta;
+  std::set<int>::const_iterator it;
+
+  for(i=0; i<nvertex; ++i) {
+    for(j=0; j<nvertex; ++j) {
+      distances[i][j] = -1; //std::numeric_limits<int>::max();
+    }
+    distances[i][i] = 0;
+    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+      distances[i][*it] = 1;
+    }
+  }
+
+  for(k=0; k<nvertex; ++k) {
+    for(i=0; i<nvertex; ++i) {
+      if (distances[i][k] == -1) continue;
+      for(j=0; j<nvertex; ++j) {
+        if (distances[k][j] == -1) continue;
+        delta = distances[i][k] + distances[k][j];
+        //delta += distances[k][j];
+        if (delta < distances[i][j]) distances[i][j] = delta;
+      }
+    }
+  }
+}
 
 
