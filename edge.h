@@ -24,14 +24,13 @@
 
 namespace SYNARMOSMA {
   class Edge {
-   private:
-    bool active;
+   protected:
     double length;
     bool cyclic;
     double flow;
     double capacity;
     RELATION direction;
-    std::set<int> nodes;
+    std::set<int> vertices;
 
     void clear();
     void serialize(std::ofstream&) const;
@@ -43,10 +42,8 @@ namespace SYNARMOSMA {
     Edge(const Edge&);
     ~Edge();
     Edge& operator =(const Edge&);
-    inline void get_nodes(int*) const;
-    inline void set_nodes(int u,int v);
-    inline bool get_activity() const {return active;};
-    inline void set_activity(bool a) {active = a;};
+    inline void get_vertices(int*) const;
+    inline void set_vertices(int u,int v);
     inline RELATION get_direction() const {return direction;};
     inline void set_direction(RELATION rho) {direction = rho;};
     friend class Graph;
@@ -54,23 +51,24 @@ namespace SYNARMOSMA {
     friend class Logic_Graph;
   };
 
-  void Edge::set_nodes(int u,int v) 
+  void Edge::set_vertices(int u,int v) 
   {
 #ifdef DEBUG
     assert(u != v);
 #endif
-    nodes.clear();
-    nodes.insert(u);
-    nodes.insert(v);
+    vertices.clear();
+    vertices.insert(u);
+    vertices.insert(v);
   }
 
-  void Edge::get_nodes(int* vx) const
+  void Edge::get_vertices(int* vx) const
   {
     int i = 0;
     std::set<int>::const_iterator it;
-    for(it=nodes.begin(); it!=nodes.end(); ++it) {
+    for(it=vertices.begin(); it!=vertices.end(); ++it) {
       vx[i] = *it; ++i;
     }
   }
 }
 #endif
+

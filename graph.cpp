@@ -151,14 +151,13 @@ bool Graph::consistent() const
   int i,j,vx[2],nedge = (signed) edges.size();
   std::set<int>::const_iterator it;
   for(i=0; i<nedge; ++i) {
-    if (edges[i].nodes.size() != 2) return false;
+    if (edges[i].vertices.size() != 2) return false;
     j = 0;
-    for(it=edges[i].nodes.begin(); it!=edges[i].nodes.end(); ++it) {
+    for(it=edges[i].vertices.begin(); it!=edges[i].vertices.end(); ++it) {
       vx[j] = *it; ++j;
     }
     if (vx[0] < 0 || vx[0] >= nvertex) return false;
     if (vx[1] < 0 || vx[1] >= nvertex) return false;
-    if (!edges[i].active) continue;
     if (neighbours[vx[0]].count(vx[1]) == 0) return false;
     if (neighbours[vx[1]].count(vx[0]) == 0) return false;
   }
@@ -207,7 +206,7 @@ void Graph::deserialize(std::ifstream& s)
   for(i=0; i<n; ++i) {
     q.deserialize(s);
     edges.push_back(q);
-    index_table[q.nodes] = i;
+    index_table[q.vertices] = i;
   }
 }
 
@@ -384,10 +383,16 @@ int Graph::eccentricity(int v) const
 #endif
 
   int i,delta,output = 0;
+#ifdef _OPENMP
+#pragma omp parallel for default(shared) private(i,delta) reduction(max:output)
+#endif
   for(i=0; i<v; ++i) {
     delta = distance(i,v);
     if (delta > output) output = delta;
   }
+#ifdef _OPENMP
+#pragma omp parallel for default(shared) private(i,delta) reduction(max:output)
+#endif
   for(i=v+1; i<nvertex; ++i) {
     delta = distance(i,v);
     if (delta > output) output = delta;
@@ -409,7 +414,7 @@ bool Graph::planar() const
   int i,vx[2],ne = size();
   boost::adjacency_list<boost::vecS,boost::vecS,boost::undirectedS,boost::property<boost::vertex_index_t,int> > G(nvertex);
   for(i=0; i<ne; ++i) {
-    edges[i].get_nodes(vx);
+    edges[i].get_vertices(vx);
     boost::add_edge(vx[0],vx[1],G);
   }
   return boyer_myrvold_planarity_test(G);
@@ -445,16 +450,15 @@ bool Graph::drop_vertex(int v)
   }
   nvertex--;
   neighbours.erase(neighbours.begin() + v);
-  // In this case we will need to delete the edges containing v, 
-  // since the 
+  // We now need to delete the edges containing v
   index_table.clear();
   for(i=0; i<nedges; ++i) {
-    if (edges[i].nodes.count(v) > 0) {
+    if (edges[i].vertices.count(v) > 0) {
       deletion.push_back(i);
       continue;
     }
     S.clear();
-    for(it=edges[i].nodes.begin(); it!=edges[i].nodes.end(); ++it) {
+    for(it=edges[i].vertices.begin(); it!=edges[i].vertices.end(); ++it) {
       j = *it;
       if (j > v) {
         S.insert(j-1);
@@ -463,14 +467,14 @@ bool Graph::drop_vertex(int v)
         S.insert(j);
       }
     }
-    edges[i].nodes = S;
+    edges[i].vertices = S;
   }
   j = (signed) deletion.size();
   for(i=j-1; i>=0; --i) {
     edges.erase(edges.begin() + deletion[i]);
   }
   for(i=0; i<(signed) edges.size(); ++i) {
-    index_table[edges[i].nodes] = i;
+    index_table[edges[i].vertices] = i;
   }
   return true;
 }
@@ -482,17 +486,12 @@ bool Graph::add_edge(int v,int u)
     neighbours[v].insert(u);
     neighbours[u].insert(v);
     std::set<int> vx; vx.insert(v); vx.insert(u);
-    hash_map::const_iterator qt = index_table.find(vx);
-    if (qt == index_table.end()) {
-      index_table[vx] = (signed) edges.size();
-      edges.push_back(Edge(v,u));
-    }
-    else {
 #ifdef DEBUG
-      assert(!edges[qt->second].active);
+    hash_map::const_iterator qt = index_table.find(vx);
+    assert(qt == index_table.end());
 #endif
-      edges[qt->second].active = true;
-    }
+    index_table[vx] = (signed) edges.size();
+    edges.push_back(Edge(v,u));
     return true;
   }
   return false;
@@ -507,8 +506,14 @@ bool Graph::drop_edge(int v,int u)
   neighbours[v].erase(u);
   std::set<int> vx; vx.insert(u); vx.insert(v);
   hash_map::const_iterator qt = index_table.find(vx);
-  edges[qt->second].active = false;
-
+#ifdef DEBUG
+  assert(qt != index_table.end());
+#endif
+  edges.erase(edges.begin() + qt->second);
+  index_table.clear();
+  for(int i=0; i<(signed) edges.size(); ++i) {
+    index_table[edges[i].vertices] = i;
+  }
   return true;
 }
 
@@ -648,6 +653,12 @@ int Graph::fission_m(int v)
     add_edge(u,*it);
   }
   return u;
+}
+
+void Graph::compute_flow(int,int) 
+{
+
+
 }
 
 void Graph::katz_centrality(std::vector<double>& output) const

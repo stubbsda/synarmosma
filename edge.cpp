@@ -32,8 +32,8 @@ Edge::Edge(int u,int v)
   assert(u != v);
 #endif
   clear();
-  nodes.insert(u);
-  nodes.insert(v);
+  vertices.insert(u);
+  vertices.insert(v);
 }
 
 Edge::Edge(int u,int v,RELATION rho)
@@ -42,8 +42,8 @@ Edge::Edge(int u,int v,RELATION rho)
   assert(u != v);
 #endif
   clear();
-  nodes.insert(u);
-  nodes.insert(v); 
+  vertices.insert(u);
+  vertices.insert(v); 
   direction = rho;
 }
 
@@ -54,11 +54,10 @@ Edge::~Edge()
 
 Edge::Edge(const Edge& source)
 {
-  active = source.active;
   length = source.length;
   flow = source.flow;
   capacity = source.capacity;
-  nodes = source.nodes;
+  vertices = source.vertices;
   cyclic = source.cyclic;
   direction = source.direction;
 }
@@ -67,11 +66,10 @@ Edge& Edge::operator =(const Edge& source)
 {
   if (this == &source) return *this;
 
-  active = source.active;
   length = source.length;
   flow = source.flow;
   capacity = source.capacity;
-  nodes = source.nodes;
+  vertices = source.vertices;
   cyclic = source.cyclic;
   direction = source.direction;
 
@@ -80,9 +78,8 @@ Edge& Edge::operator =(const Edge& source)
 
 void Edge::clear()
 {
-  active = true;
   length = 0.0;
-  nodes.clear();
+  vertices.clear();
   capacity = 0.0;
   flow = 0.0;
   cyclic = false;
@@ -93,11 +90,10 @@ void Edge::serialize(std::ofstream& s) const
 {
   int n;
   std::set<int>::const_iterator it;
-  for(it=nodes.begin(); it!=nodes.end(); ++it) {
+  for(it=vertices.begin(); it!=vertices.end(); ++it) {
     n = *it;
     s.write((char*)(&n),sizeof(int));
   }
-  s.write((char*)(&active),sizeof(bool));
   s.write((char*)(&cyclic),sizeof(bool));
   s.write((char*)(&length),sizeof(double));
   s.write((char*)(&flow),sizeof(double));
@@ -112,10 +108,9 @@ void Edge::deserialize(std::ifstream& s)
   clear();
 
   s.read((char*)(&n),sizeof(int));
-  nodes.insert(n);
+  vertices.insert(n);
   s.read((char*)(&n),sizeof(int));
-  nodes.insert(n);
-  s.read((char*)(&active),sizeof(bool));
+  vertices.insert(n);
   s.read((char*)(&cyclic),sizeof(bool));
   s.read((char*)(&length),sizeof(double));
   s.read((char*)(&flow),sizeof(double));

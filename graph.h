@@ -70,6 +70,8 @@ namespace SYNARMOSMA {
     virtual bool foliation_m(int,int);
     virtual int fission_x(int);
     virtual int fission_m(int);
+    // A method to compute the maximum network flow from a source vertex to a sink vertex
+    virtual void compute_flow(int,int);
     // A series of const methods to calculate various graph properties
     void core(Graph*,int) const;
     int eccentricity(int) const;
@@ -102,20 +104,11 @@ namespace SYNARMOSMA {
     void compute_adjacency_matrix(Binary_Matrix*) const;
     void compute_laplacian(Matrix<double>*) const;
     int genus(std::vector<int>&) const;
-    inline int size() const;
+    inline int size() const {return (signed) edges.size();};
     inline int order() const {return nvertex;};
     virtual void serialize(std::ofstream&) const;
     virtual void deserialize(std::ifstream&);
     friend class Nexus;
   };
-
-  inline int Graph::size() const 
-  {
-    int i,output = 0,n = (signed) edges.size();
-    for(i=0; i<n; ++i) {
-      if (edges[i].active) output++;
-    }
-    return output;
-  }
 }
 #endif

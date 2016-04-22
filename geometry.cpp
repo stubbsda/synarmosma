@@ -394,7 +394,7 @@ void Geometry::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<dou
     distances.push_back(0.0);
 #endif
   }
-#ifdef _OPENMPI
+#ifdef _OPENMP
 #pragma omp parallel for default(shared) private(i,j,k,delta) schedule(dynamic,1)
 #endif
   for(i=0; i<N; ++i) {
@@ -461,7 +461,7 @@ void Geometry::multiple_vertex_addition(int N,double mu,double sigma)
   // We need to set nvertex here before we start calling the compute_index
   // method
 
-#ifdef _OPENMPI
+#ifdef _OPENMP
 #pragma omp parallel for default(shared) private(i,j,k,delta) schedule(dynamic,1)
 #endif
   for(i=0; i<N; ++i) {
@@ -515,7 +515,7 @@ void Geometry::multiple_vertex_addition(const std::vector<std::vector<double> >&
     distances.push_back(0.0);
 #endif
   }
-#ifdef _OPENMPI
+#ifdef _OPENMP
 #pragma omp parallel for default(shared) private(i,j,k,delta) schedule(dynamic,1)
 #endif
   for(i=0; i<nvertex; ++i) {
@@ -1296,7 +1296,7 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
       R.push_back(0.0);
     }
     angles.push_back(R);
-#ifdef _OPENMPI
+#ifdef _OPENMP
 #pragma omp parallel for default(shared) private(i,j,base,v,r)
 #endif
     for(i=0; i<nvertex; ++i) {
@@ -1322,7 +1322,7 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
     }
     angles.push_back(R);
     angles.push_back(R);
-#ifdef _OPENMPI
+#ifdef _OPENMP
 #pragma omp parallel for default(shared) private(i,j,base,v,r)
 #endif
     for(i=0; i<nvertex; ++i) {
@@ -1357,7 +1357,7 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
     for(i=0; i<nm1; ++i) {
       angles.push_back(R);
     }
-#ifdef _OPENMPI
+#ifdef _OPENMP
 #pragma omp parallel for default(shared) private(i,j,k,base,v,r,sum)
 #endif
     for(i=0; i<nvertex; ++i) {
@@ -1479,7 +1479,7 @@ void Geometry::compute_distances()
   }
 
   if (uniform) {
-#ifdef _OPENMPI
+#ifdef _OPENMP
 #pragma omp parallel for default(shared) private(i,j,k,in1,delta) schedule(dynamic,1)
 #endif
     for(i=0; i<nvertex; ++i) {
@@ -1495,7 +1495,7 @@ void Geometry::compute_distances()
   }
   else {
     int n1,n2;
-#ifdef _OPENMPI
+#ifdef _OPENMP
 #pragma omp parallel for default(shared) private(i,j,k,n1,n2,in1,delta) schedule(dynamic,1)
 #endif
     for(i=0; i<nvertex; ++i) {

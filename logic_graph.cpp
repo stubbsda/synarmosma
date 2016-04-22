@@ -122,7 +122,7 @@ void Logic_Graph::deserialize(std::ifstream& s)
   for(i=0; i<n; ++i) {
     q.deserialize(s);
     edges.push_back(q);
-    index_table[q.nodes] = i;
+    index_table[q.vertices] = i;
   }
   logic->deserialize(s);
   compute_logical_breadth();
@@ -170,9 +170,8 @@ double Logic_Graph::rationalize_topology()
 
   do {
     m = RND.irandom(edges.size());
-    if (!edges[m].active) continue;
     its++;
-    edges[m].get_nodes(vx);
+    edges[m].get_vertices(vx);
     n = logic->consistency(vx[0],vx[1],"and");
     // Keep this edge if the bit count is complete...
     if (n == bcount[vx[0]]) continue;

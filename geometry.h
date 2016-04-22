@@ -90,6 +90,7 @@ namespace SYNARMOSMA {
     inline bool get_euclidean() const {return euclidean;};
     inline bool get_relational() const {return relational;};
     inline bool get_uniform() const {return uniform;};
+    inline bool get_memory_type() const {return high_memory;};
     inline void add(int,double);
     inline int dimension() const {return background_dimension;};
     inline RELATION get_temporal_order(int,int) const;

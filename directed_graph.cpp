@@ -118,9 +118,7 @@ int Directed_Graph::directedness() const
   std::vector<Edge>::const_iterator it;
 
   for(it=edges.begin(); it!=edges.end(); ++it) {
-    if (it->active) {
-      if (it->direction == DISPARATE) null++;
-    }
+    if (it->direction == DISPARATE) null++;
   }
   output = size() - null;
   return output;
@@ -154,7 +152,6 @@ int Directed_Graph::distance(int u,int v) const
         S.clear();
         S.insert(i); S.insert(j);
         qt = index_table.find(S);
-        if (!edges[qt->second].active) continue;
         rho = edges[qt->second].direction;
         if (i < j && rho == BEFORE) {
           next.insert(j);
@@ -177,6 +174,60 @@ int Directed_Graph::distance(int u,int v) const
     its++;
   } while(true);
   return l;
+}
+
+void Directed_Graph::compute_distances(edge_hash& output) const
+{
+  int i,j,k,delta;
+  RELATION rho;
+  std::pair<int,int> pr;
+  std::vector<int> distances;
+  std::set<int> S;
+  std::set<int>::const_iterator it;
+  hash_map::const_iterator qt;
+
+  for(i=0; i<nvertex; ++i) {
+    for(j=0; j<nvertex; ++j) {
+      distances.push_back(-1); 
+    }
+  }
+  for(i=0; i<nvertex; ++i) {
+    distances[nvertex*i+i] = 0;
+    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+      j = *it;
+      S.clear();
+      S.insert(i); S.insert(j);
+      qt = index_table.find(S);
+      rho = edges[qt->second].direction;
+      if (i < j && rho == BEFORE) {      
+        distances[nvertex*i+j] = 1;
+      }
+      else if (i > j && rho == AFTER) {
+        distances[nvertex*i+j] = 1;
+      }
+    }
+  }
+
+  for(k=0; k<nvertex; ++k) {
+    for(i=0; i<nvertex; ++i) {
+      if (distances[nvertex*i+k] == -1) continue;
+      for(j=0; j<nvertex; ++j) {
+        if (distances[nvertex*k+j] == -1) continue;
+        delta = distances[nvertex*i+k] + distances[nvertex*k+j];
+        if (delta < distances[nvertex*i+j]) distances[nvertex*i+j] = delta;
+      }
+    }
+  }
+  output.clear();
+  for(i=0; i<nvertex; ++i) {
+    for(j=0; j<nvertex; ++j) {
+      if (i == j) continue;
+      pr.first = i; pr.second = j;
+      output[pr] = distances[nvertex*i+j];
+      pr.first = j; pr.second = i;
+      output[pr] = distances[nvertex*j+i];
+    }
+  }
 }
 
 bool Directed_Graph::add_edge(int u,int v)
@@ -225,7 +276,6 @@ bool Directed_Graph::mutate_edge(int u,int v)
   hash_map::const_iterator qt = index_table.find(S);
   if (qt == index_table.end()) return false;
   int n = qt->second;
-  if (!edges[n].active) return false;
   double alpha = RND.drandom();
   RELATION rho = edges[n].direction;
   if (rho == DISPARATE) {
@@ -261,7 +311,6 @@ bool Directed_Graph::path_connected(int u,int v) const
         S.clear();
         S.insert(i); S.insert(j);
         qt = index_table.find(S);
-        if (!edges[qt->second].active) continue;
         rho = edges[qt->second].direction;
         if ((i < j && rho == BEFORE) || (j < i && rho == AFTER)) next.insert(j);
       }
@@ -293,7 +342,6 @@ bool Directed_Graph::directed_cycle(const std::vector<int>& path,int base,int le
     S.clear();
     S.insert(base); S.insert(v);
     qt = index_table.find(S);
-    if (!edges[qt->second].active) continue;
     rho = edges[qt->second].get_direction();
     if ((base < v && rho == BEFORE) || (v < base && rho == AFTER)) {
       std::vector<int> npath = path;
@@ -317,6 +365,12 @@ bool Directed_Graph::acyclic() const
   return true;
 }
 
+void Directed_Graph::compute_flow(int,int) 
+{
+
+
+}
+
 void Directed_Graph::compute_sinks(std::set<int>& output) const
 {
   int i,j;
@@ -336,7 +390,6 @@ void Directed_Graph::compute_sinks(std::set<int>& output) const
       S.clear();
       S.insert(i); S.insert(j);
       qt = index_table.find(S);
-      if (!edges[qt->second].active) continue;
       rho = edges[qt->second].direction;
       if ((i < j && rho == BEFORE) || (j < i && rho == AFTER)) {
         // If this vertex has an outgoing edge, it isn't a sink...
@@ -367,7 +420,6 @@ void Directed_Graph::compute_sources(std::set<int>& output) const
       S.clear();
       S.insert(i); S.insert(j);
       qt = index_table.find(S);
-      if (!edges[qt->second].active) continue;
       rho = edges[qt->second].direction;
       if ((i < j && rho == AFTER) || (j < i && rho == BEFORE)) {
         // If this vertex has an incoming edge, it isn't a source...
