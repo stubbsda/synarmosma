@@ -655,9 +655,8 @@ int Graph::fission_m(int v)
   return u;
 }
 
-void Graph::compute_flow(int,int) 
+void Graph::compute_flow(int source,int sink) 
 {
-
 
 }
 

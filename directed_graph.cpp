@@ -342,7 +342,7 @@ bool Directed_Graph::directed_cycle(const std::vector<int>& path,int base,int le
     S.clear();
     S.insert(base); S.insert(v);
     qt = index_table.find(S);
-    rho = edges[qt->second].get_direction();
+    rho = edges[qt->second].direction;
     if ((base < v && rho == BEFORE) || (v < base && rho == AFTER)) {
       std::vector<int> npath = path;
       npath.push_back(v);
@@ -365,10 +365,56 @@ bool Directed_Graph::acyclic() const
   return true;
 }
 
-void Directed_Graph::compute_flow(int,int) 
+void Directed_Graph::compute_flow(int source,int sink) 
 {
+  int i;
+  bool valid = false;
+  RELATION rho;
+  std::set<int> S;
+  std::set<int>::const_iterator it;
+  hash_map::const_iterator qt;
+  const int ne = size();
 
-
+  for(i=0; i<ne; ++i) {
+    if (edges[i].direction == DISPARATE) edges[i].capacity = 0.0;
+  }
+  // Next we need to verify that there is at least one outgoing edge with capacity > 0 
+  // for the source and at least one incoming edge with capacity > 0 for the sink
+  for(it=neighbours[source].begin(); it!=neighbours[source].end(); ++it) {
+    S.clear();
+    S.insert(source);
+    S.insert(i);
+    qt = index_table.find(S);
+    if (edges[qt->second].capacity < std::numeric_limits<double>::epsilon()) continue;
+    rho = edges[qt->second].direction;
+    if ((source < i && rho == BEFORE) || (source > i && rho == AFTER)) valid = true;
+    if (valid) break;
+  }
+  if (!valid) {
+    for(i=0; i<ne; ++i) {
+      edges[i].flow = 0.0;
+    }
+    return;
+  }
+  // Now the sink
+  valid = false;
+  for(it=neighbours[source].begin(); it!=neighbours[source].end(); ++it) {
+    S.clear();
+    S.insert(source);
+    S.insert(i);
+    qt = index_table.find(S);
+    if (edges[qt->second].capacity < std::numeric_limits<double>::epsilon()) continue;
+    rho = edges[qt->second].direction;
+    if ((source < i && rho == AFTER) || (source > i && rho == BEFORE)) valid = true;
+    if (valid) break;
+  }
+  if (!valid) {
+    for(i=0; i<ne; ++i) {
+      edges[i].flow = 0.0;
+    }
+    return;
+  }
+  // So we can finally proceed to computing a non-trivial flow on this directed graph
 }
 
 void Directed_Graph::compute_sinks(std::set<int>& output) const

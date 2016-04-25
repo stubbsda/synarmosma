@@ -37,15 +37,12 @@ namespace SYNARMOSMA {
     void deserialize(std::ifstream&);
    public:
     Edge();
-    Edge(int,int);
-    Edge(int,int,RELATION);
+    Edge(int,int,double = 0.0,RELATION = DISPARATE);
     Edge(const Edge&);
     ~Edge();
     Edge& operator =(const Edge&);
     inline void get_vertices(int*) const;
     inline void set_vertices(int u,int v);
-    inline RELATION get_direction() const {return direction;};
-    inline void set_direction(RELATION rho) {direction = rho;};
     friend class Graph;
     friend class Directed_Graph;
     friend class Logic_Graph;

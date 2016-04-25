@@ -89,7 +89,7 @@ namespace SYNARMOSMA {
     void serialize(std::ofstream&) const;
     void deserialize(std::ifstream&);
     void initialize(unsigned int,unsigned int);
-    void set(unsigned int,unsigned int,kind,bool increment=false);
+    void set(unsigned int,unsigned int,kind,bool = false);
     kind get(unsigned int,unsigned int) const;
     void increment(unsigned int,unsigned int,kind);
     bool empty_row(unsigned int) const;

@@ -26,17 +26,7 @@ Edge::Edge()
   clear();
 }
 
-Edge::Edge(int u,int v) 
-{
-#ifdef DEBUG
-  assert(u != v);
-#endif
-  clear();
-  vertices.insert(u);
-  vertices.insert(v);
-}
-
-Edge::Edge(int u,int v,RELATION rho)
+Edge::Edge(int u,int v,double ell,RELATION rho)
 {
 #ifdef DEBUG
   assert(u != v);
@@ -44,6 +34,7 @@ Edge::Edge(int u,int v,RELATION rho)
   clear();
   vertices.insert(u);
   vertices.insert(v); 
+  capacity = ell;
   direction = rho;
 }
 
