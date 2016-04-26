@@ -657,7 +657,50 @@ int Graph::fission_m(int v)
 
 void Graph::compute_flow(int source,int sink) 
 {
+  int i;
+  bool valid = false;
+  std::set<int> S;
+  std::set<int>::const_iterator it;
+  hash_map::const_iterator qt;
+  const int ne = size();
 
+  // Next we need to verify that there is at least one edge with capacity > 0 
+  // for the source and at least one edge with capacity > 0 for the sink
+  for(it=neighbours[source].begin(); it!=neighbours[source].end(); ++it) {
+    S.clear();
+    S.insert(source);
+    S.insert(i);
+    qt = index_table.find(S);
+    if (edges[qt->second].capacity > std::numeric_limits<double>::epsilon()) {
+      valid = true;
+      break;
+    }
+  }
+  if (!valid) {
+    for(i=0; i<ne; ++i) {
+      edges[i].flow = 0.0;
+    }
+    return;
+  }
+  // Now the sink
+  valid = false;
+  for(it=neighbours[source].begin(); it!=neighbours[source].end(); ++it) {
+    S.clear();
+    S.insert(source);
+    S.insert(i);
+    qt = index_table.find(S);
+    if (edges[qt->second].capacity > std::numeric_limits<double>::epsilon()) {
+      valid = true;
+      break;
+    }
+  }
+  if (!valid) {
+    for(i=0; i<ne; ++i) {
+      edges[i].flow = 0.0;
+    }
+    return;
+  }
+  // So we can finally proceed to computing a non-trivial flow on this directed graph
 }
 
 void Graph::katz_centrality(std::vector<double>& output) const
