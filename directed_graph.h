@@ -34,13 +34,12 @@ namespace SYNARMOSMA {
     Directed_Graph(const Directed_Graph&);
     Directed_Graph& operator =(const Directed_Graph&);
     virtual ~Directed_Graph();
-    virtual bool add_edge(int,int);
+    bool add_edge(int,int,double = 0,RELATION = DISPARATE);
     // A method to compute the maximum network flow from a source vertex 
     // to a sink vertex
-    virtual void compute_flow(int,int);
+    virtual double compute_flow(int,int);
     virtual int distance(int,int) const;
     virtual void compute_distances(edge_hash&) const; 
-    bool add_edge(int,int,RELATION);
     bool mutate_edge(int,int);
     int directedness() const;
     bool acyclic() const;

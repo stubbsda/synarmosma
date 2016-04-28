@@ -479,7 +479,7 @@ bool Graph::drop_vertex(int v)
   return true;
 }
 
-bool Graph::add_edge(int v,int u)
+bool Graph::add_edge(int v,int u,double kappa)
 {
   if (u == v) return false;
   if (!connected(v,u)) {
@@ -491,7 +491,7 @@ bool Graph::add_edge(int v,int u)
     assert(qt == index_table.end());
 #endif
     index_table[vx] = (signed) edges.size();
-    edges.push_back(Edge(v,u));
+    edges.push_back(Edge(v,u,kappa));
     return true;
   }
   return false;
@@ -655,7 +655,7 @@ int Graph::fission_m(int v)
   return u;
 }
 
-void Graph::compute_flow(int source,int sink) 
+double Graph::compute_flow(int source,int sink) 
 {
   int i;
   bool valid = false;
@@ -669,7 +669,7 @@ void Graph::compute_flow(int source,int sink)
   for(it=neighbours[source].begin(); it!=neighbours[source].end(); ++it) {
     S.clear();
     S.insert(source);
-    S.insert(i);
+    S.insert(*it);
     qt = index_table.find(S);
     if (edges[qt->second].capacity > std::numeric_limits<double>::epsilon()) {
       valid = true;
@@ -680,14 +680,14 @@ void Graph::compute_flow(int source,int sink)
     for(i=0; i<ne; ++i) {
       edges[i].flow = 0.0;
     }
-    return;
+    return 0.0;
   }
   // Now the sink
   valid = false;
-  for(it=neighbours[source].begin(); it!=neighbours[source].end(); ++it) {
+  for(it=neighbours[sink].begin(); it!=neighbours[sink].end(); ++it) {
     S.clear();
-    S.insert(source);
-    S.insert(i);
+    S.insert(sink);
+    S.insert(*it);
     qt = index_table.find(S);
     if (edges[qt->second].capacity > std::numeric_limits<double>::epsilon()) {
       valid = true;
@@ -698,9 +698,36 @@ void Graph::compute_flow(int source,int sink)
     for(i=0; i<ne; ++i) {
       edges[i].flow = 0.0;
     }
-    return;
+    return 0.0;
   }
   // So we can finally proceed to computing a non-trivial flow on this directed graph
+  int vx[2];
+  std::pair<int,int> pr;
+  edge_hash rgraph;
+  // Create a residual graph and fill the residual graph with
+  // given capacities in the original graph as residual capacities
+  // in residual graph
+  for(i=0; i<ne; ++i) {
+    edges[i].get_vertices(vx);
+    pr.first = vx[0]; pr.second = vx[1];
+    rgraph[pr] = int(10000.0*edges[i].capacity);
+    pr.first = vx[1]; pr.second = vx[0];
+    rgraph[pr] = int(10000.0*edges[i].capacity);
+  }
+  int max_flow = network_flow(rgraph,source,sink,nvertex);
+  for(i=0; i<ne; ++i) {
+    edges[i].flow = 0.0;
+    edges[i].get_vertices(vx);
+    pr.first = vx[0]; pr.second = vx[1];
+    if (rgraph[pr] > 0) {      
+      edges[i].flow = edges[i].capacity - double(rgraph[pr])/10000.0;
+    }
+    pr.first = vx[1]; pr.second = vx[0];
+    if (rgraph[pr] > 0) {
+      edges[i].flow = -(edges[i].capacity - double(rgraph[pr])/10000.0);
+    }
+  }
+  return double(max_flow)/10000.0;
 }
 
 void Graph::katz_centrality(std::vector<double>& output) const

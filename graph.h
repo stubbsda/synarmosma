@@ -50,7 +50,7 @@ namespace SYNARMOSMA {
     // Returns the topological energy of this graph
     virtual double compute_energy() const;
     // A basic operator for adding an edge
-    virtual bool add_edge(int,int);
+    bool add_edge(int,int,double = 0.0);
     // A basic operator for undoing the above edge addition
     virtual bool drop_edge(int,int);
     // A method to handle dropping a vertex, a rather complicated
@@ -71,7 +71,7 @@ namespace SYNARMOSMA {
     virtual int fission_x(int);
     virtual int fission_m(int);
     // A method to compute the maximum network flow from a source vertex to a sink vertex
-    virtual void compute_flow(int,int);
+    virtual double compute_flow(int,int);
     // A series of const methods to calculate various graph properties
     void core(Graph*,int) const;
     int eccentricity(int) const;

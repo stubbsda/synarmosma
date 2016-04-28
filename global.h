@@ -33,6 +33,7 @@
 #include <ctime>
 #include <string>
 #include <limits>
+#include <queue>
 #include <sys/time.h>
 // NTL headers for number theory functionality...
 #include <NTL/ZZ.h>
@@ -139,6 +140,8 @@ namespace SYNARMOSMA {
   bool double_equality(double,double);
   void trim(std::string&);
   void set_wcomponent_values(int,bool);
+  bool bfs(const edge_hash&,int,int,int,int*);
+  int network_flow(edge_hash&,int,int,int);
 
   inline void RGB_intensity(double rho,unsigned char* output)  
   {

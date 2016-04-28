@@ -276,7 +276,7 @@ void Schema::compute_distances(edge_hash& output) const
 
   for(i=0; i<nvertex; ++i) {
     for(j=0; j<nvertex; ++j) {
-      distances[i][j] = -1; //std::numeric_limits<int>::max();
+      distances[i][j] = std::numeric_limits<int>::max();
     }
     distances[i][i] = 0;
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
@@ -286,11 +286,10 @@ void Schema::compute_distances(edge_hash& output) const
 
   for(k=0; k<nvertex; ++k) {
     for(i=0; i<nvertex; ++i) {
-      if (distances[i][k] == -1) continue;
+      if (distances[i][k] == std::numeric_limits<int>::max()) continue;
       for(j=0; j<nvertex; ++j) {
-        if (distances[k][j] == -1) continue;
+        if (distances[k][j] == std::numeric_limits<int>::max()) continue;
         delta = distances[i][k] + distances[k][j];
-        //delta += distances[k][j];
         if (delta < distances[i][j]) distances[i][j] = delta;
       }
     }

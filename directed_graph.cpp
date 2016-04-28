@@ -188,7 +188,7 @@ void Directed_Graph::compute_distances(edge_hash& output) const
 
   for(i=0; i<nvertex; ++i) {
     for(j=0; j<nvertex; ++j) {
-      distances.push_back(-1); 
+      distances.push_back(std::numeric_limits<int>::max()); 
     }
   }
   for(i=0; i<nvertex; ++i) {
@@ -210,9 +210,9 @@ void Directed_Graph::compute_distances(edge_hash& output) const
 
   for(k=0; k<nvertex; ++k) {
     for(i=0; i<nvertex; ++i) {
-      if (distances[nvertex*i+k] == -1) continue;
+      if (distances[nvertex*i+k] == std::numeric_limits<int>::max()) continue;
       for(j=0; j<nvertex; ++j) {
-        if (distances[nvertex*k+j] == -1) continue;
+        if (distances[nvertex*k+j] == std::numeric_limits<int>::max()) continue;
         delta = distances[nvertex*i+k] + distances[nvertex*k+j];
         if (delta < distances[nvertex*i+j]) distances[nvertex*i+j] = delta;
       }
@@ -222,6 +222,7 @@ void Directed_Graph::compute_distances(edge_hash& output) const
   for(i=0; i<nvertex; ++i) {
     for(j=0; j<nvertex; ++j) {
       if (i == j) continue;
+      if (distances[nvertex*i+j] == std::numeric_limits<int>::max()) distances[nvertex*i+j] = -1;
       pr.first = i; pr.second = j;
       output[pr] = distances[nvertex*i+j];
       pr.first = j; pr.second = i;
@@ -230,25 +231,7 @@ void Directed_Graph::compute_distances(edge_hash& output) const
   }
 }
 
-bool Directed_Graph::add_edge(int u,int v)
-{
-  if (!Graph::add_edge(u,v)) return false;
-  RELATION rho = DISPARATE;
-  double alpha = RND.drandom();
-  std::set<int> S;
-  S.insert(u); S.insert(v);
-  hash_map::const_iterator qt = index_table.find(S);
-  if (alpha < 0.15) {
-    rho = BEFORE;
-  }
-  else if (alpha < 0.3) {
-    rho = AFTER;
-  }
-  edges[qt->second].direction = rho;
-  return true;
-}
-
-bool Directed_Graph::add_edge(int u,int v,RELATION rho)
+bool Directed_Graph::add_edge(int u,int v,double ell,RELATION rho)
 {
   if (!Graph::add_edge(u,v)) return false;
   std::set<int> S;
@@ -265,6 +248,7 @@ bool Directed_Graph::add_edge(int u,int v,RELATION rho)
       edges[qt->second].direction = (rho == BEFORE) ? AFTER : BEFORE;
     }
   }
+  edges[qt->second].capacity = ell;
   return true;
 }
 
@@ -365,7 +349,7 @@ bool Directed_Graph::acyclic() const
   return true;
 }
 
-void Directed_Graph::compute_flow(int source,int sink) 
+double Directed_Graph::compute_flow(int source,int sink) 
 {
   int i;
   bool valid = false;
@@ -381,6 +365,7 @@ void Directed_Graph::compute_flow(int source,int sink)
   // Next we need to verify that there is at least one outgoing edge with capacity > 0 
   // for the source and at least one incoming edge with capacity > 0 for the sink
   for(it=neighbours[source].begin(); it!=neighbours[source].end(); ++it) {
+    i = *it;
     S.clear();
     S.insert(source);
     S.insert(i);
@@ -394,27 +379,61 @@ void Directed_Graph::compute_flow(int source,int sink)
     for(i=0; i<ne; ++i) {
       edges[i].flow = 0.0;
     }
-    return;
+    return 0.0;
   }
   // Now the sink
   valid = false;
-  for(it=neighbours[source].begin(); it!=neighbours[source].end(); ++it) {
+  for(it=neighbours[sink].begin(); it!=neighbours[sink].end(); ++it) {
+    i = *it;
     S.clear();
-    S.insert(source);
+    S.insert(sink);
     S.insert(i);
     qt = index_table.find(S);
     if (edges[qt->second].capacity < std::numeric_limits<double>::epsilon()) continue;
     rho = edges[qt->second].direction;
-    if ((source < i && rho == AFTER) || (source > i && rho == BEFORE)) valid = true;
+    if ((sink < i && rho == AFTER) || (sink > i && rho == BEFORE)) valid = true;
     if (valid) break;
   }
   if (!valid) {
     for(i=0; i<ne; ++i) {
       edges[i].flow = 0.0;
     }
-    return;
+    return 0.0;
   }
   // So we can finally proceed to computing a non-trivial flow on this directed graph
+  int vx[2];
+  std::pair<int,int> pr;
+  edge_hash rgraph;
+  edge_hash::const_iterator qtt;
+  // Create a residual graph and fill the residual graph with
+  // given capacities in the original graph as residual capacities
+  // in residual graph
+  for(i=0; i<ne; ++i) {
+    edges[i].get_vertices(vx);
+    if (edges[i].direction == BEFORE) {
+      pr.first = vx[0]; pr.second = vx[1];
+      rgraph[pr] = int(10000.0*edges[i].capacity);
+    }
+    else if (edges[i].direction == AFTER) {
+      pr.first = vx[1]; pr.second = vx[0];
+      rgraph[pr] = int(10000.0*edges[i].capacity);
+    }
+  }
+
+  int max_flow = network_flow(rgraph,source,sink,nvertex);
+  for(i=0; i<ne; ++i) {
+    edges[i].flow = 0.0;
+    edges[i].get_vertices(vx);
+    if (edges[i].direction == BEFORE) {
+      pr.first = vx[0]; pr.second = vx[1]; 
+      edges[i].flow = edges[i].capacity - double(rgraph[pr])/10000.0;
+    }
+    else if (edges[i].direction == AFTER) {
+      pr.first = vx[1]; pr.second = vx[0];
+      edges[i].flow = edges[i].capacity - double(rgraph[pr])/10000.0;
+    }
+  }
+  return double(max_flow)/10000.0;
 }
 
 void Directed_Graph::compute_sinks(std::set<int>& output) const

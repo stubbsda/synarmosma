@@ -490,4 +490,80 @@ namespace SYNARMOSMA {
       if (it == input.end()) output.insert(i);
     }
   }
+
+  bool bfs(const edge_hash& rgraph,int source,int sink,int nvertex,int* parent)
+  {
+    int u,v,kappa;
+    std::pair<int,int> pr;
+    edge_hash::const_iterator qt;
+
+    // Create a visited array and mark all vertices as not visited
+    bool visited[nvertex];
+    for(v=0; v<nvertex; ++v) {
+      visited[v] = false;
+    } 
+    // Create a queue, enqueue source vertex and mark source vertex
+    // as visited
+    std::queue<int> q;
+    q.push(source);
+    visited[source] = true;
+    parent[source] = -1; 
+    // Standard BFS Loop
+    do {
+      u = q.front();
+      q.pop();
+      for(v=0; v<nvertex; ++v) {
+        pr.first = u;
+        pr.second = v;
+        qt = rgraph.find(pr);
+        kappa = (qt == rgraph.end()) ? 0 : qt->second;
+        if (!visited[v] && kappa > 0) {
+          q.push(v);
+          parent[v] = u;
+          visited[v] = true;
+        }
+      }
+    } while(!q.empty()); 
+    // If we reached sink in BFS starting from source, then return
+    // true, else false
+    return(visited[sink] == true);
+  }
+
+  int network_flow(edge_hash& rgraph,int source,int sink,int nvertex)
+  {
+    // An implementation of the Ford-Fulkerson algorithm with breadth-first search 
+    // (the Edmonds-Karp variation) for computing the maximum flow in a network with 
+    // integer capacity and flow
+    int u,v,g,path_flow,parent[nvertex],max_flow = 0;
+    std::pair<int,int> pr;
+    edge_hash::const_iterator qt;
+
+    // Augment the flow while there is path from source to sink
+    while(bfs(rgraph,source,sink,nvertex,parent)) {
+      // Find minimum residual capacity of the edges along the
+      // path filled by BFS or we can say find the maximum flow
+      // through the path found.
+      path_flow = std::numeric_limits<int>::max();
+      for(v=sink; v!=source; v=parent[v]) {
+        u = parent[v];
+        pr.first = u; pr.second = v;
+        qt = rgraph.find(pr);
+        g = (qt == rgraph.end()) ? 0 : qt->second;
+        path_flow = std::min(path_flow,g);
+      }
+      // Update residual capacities of the edges and reverse edges
+      // along the path
+      for(v=sink; v!=source; v=parent[v]) {
+        u = parent[v];
+        pr.first = u; pr.second = v;
+        rgraph[pr] -= path_flow;
+        pr.first = v; pr.second = u;
+        rgraph[pr] += path_flow;
+      }
+      // Add path flow to overall flow
+      max_flow += path_flow;
+    } 
+    // Return the overall flow
+    return max_flow;
+  }
 }

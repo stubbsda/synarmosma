@@ -40,7 +40,7 @@ namespace SYNARMOSMA {
     inline bool connected(int,int) const;
     virtual void clear();
     inline int add_vertex();
-    virtual bool add_edge(int,int);
+    bool add_edge(int,int);
     virtual bool drop_edge(int,int);
     virtual int distance(int,int) const;
     virtual void compute_distances(edge_hash&) const;
