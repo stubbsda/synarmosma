@@ -1101,9 +1101,13 @@ double Graph::inverse_girth() const
   return g;
 }
 
-int Graph::cyclomatic_number() const
+int Graph::circuit_rank() const
 {
-  return (size() - nvertex + 1);
+  int chi = size() - nvertex;
+  if (connected()) return 1 + chi;
+  std::vector<int> components;
+  int n = component_analysis(components);
+  return n + chi;
 }
 
 int Graph::max_degree() const

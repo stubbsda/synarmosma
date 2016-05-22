@@ -93,7 +93,7 @@ namespace SYNARMOSMA {
     double cyclic_resistance() const;
     double entwinement() const;
     double completeness() const;
-    int cyclomatic_number() const;
+    int circuit_rank() const;
     int chromatic_number() const;
     int boundary_nodes() const;
     int max_degree() const;
