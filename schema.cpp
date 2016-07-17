@@ -286,7 +286,7 @@ void Schema::compute_distances(edge_hash& output) const
 
 bool Schema::connected() const
 {
-  int i,n,p,m = 0;
+  int i,n = -1,p,m = 0;
   std::vector<int> ubiquity;
   std::set<int> change,nchange;
   std::set<int>::const_iterator it,jt;
@@ -299,6 +299,7 @@ bool Schema::connected() const
     }
     ubiquity.push_back(0);
   }
+  if (n == -1) return false;
   ubiquity[n] = 1;
   change.insert(n);
 
