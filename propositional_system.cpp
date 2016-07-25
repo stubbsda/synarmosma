@@ -185,15 +185,16 @@ void Propositional_System::compute_internal_logic()
   // The same basic idea as above, fill up the array of edge weights
   // with values but based on propositional logic rather than number
   // theory
-  unsigned int i,j,in1,p,idiv;
+  unsigned int i,j,k,in1,p,idiv;
+  bool out,row_vector[natom];
+  std::vector<std::pair<int,bool> > rvector;
   Binary_Matrix logical_universe(nuniverse,natom);
-  bool rvector[natom],out;
   const unsigned int n = theorems.size();
+
   // Loop through all vertices, if the topology has been modified, then
   // compute its truth value (do the set of propositions of its neighbours,
   // taken as axioms, imply this vertex's proposition as a logical
   // conclusion), which will be used to compute the edge weights
-
   for(i=0; i<nuniverse; ++i) {
     in1 = i;
     for(j=0; j<natom; ++j) {
@@ -207,7 +208,11 @@ void Propositional_System::compute_internal_logic()
   for(i=0; i<n; ++i) {
     truth[i].reset();
     for(j=0; j<nuniverse; ++j) {
-      logical_universe.get_row(j,rvector);
+      logical_universe.get_row(j,row_vector);
+      rvector.clear();
+      for(k=0; k<natom; ++k) {
+        rvector.push_back(std::pair<int,bool>(k,row_vector[k]));
+      }
       out = theorems[i].evaluate(rvector);
       if (out) truth[i].set(j);
     }

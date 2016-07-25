@@ -120,10 +120,10 @@ void Logic_Graph::compute_logical_breadth()
   for(i=0; i<nvertex; ++i) {
     // First count the number of atomic propositions in my own
     // proposition:
-    logic->theorems[i].atoms(atoms);
+    logic->theorems[i].get_atoms(atoms);
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
       in1 = *it;
-      logic->theorems[in1].atoms(current);
+      logic->theorems[in1].get_atoms(current);
       for(jt=current.begin(); jt!=current.end(); ++it) {
         atoms.insert(*it);
       }

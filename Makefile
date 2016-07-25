@@ -66,7 +66,7 @@ binary_matrix.o: binary_matrix.cpp binary_matrix.h global.h
 edge.o: global.h edge.h edge.cpp
 	$(CXX) $(CXX_FLAGS) -c edge.cpp
 
-logic_graph.o: global.h graph.h logic_graph.h logic_graph.cpp
+logic_graph.o: global.h graph.h logic_graph.h proposition.h propositional_system.h logic_graph.cpp
 	$(CXX) $(CXX_FLAGS) -c logic_graph.cpp
 
 polynomial_wrapper.o: global.h rational.h polynomial.h polynomial.cpp polynomial_wrapper.cpp
@@ -78,7 +78,7 @@ variety_wrapper.o: global.h rational.h variety.h variety.cpp variety_wrapper.cpp
 functional_equation_wrapper.o: global.h rational.h variety.h polynomial.h functional_equation.h functional_equation.cpp functional_equation_wrapper.cpp
 	$(CXX) $(CXX_FLAGS) -c functional_equation_wrapper.cpp
 
-propositional_system.o: global.h graph.h logic_graph.h proposition.h propositional_system.h propositional_system.cpp
+propositional_system.o: global.h graph.h proposition.h propositional_system.h propositional_system.cpp
 	$(CXX) $(CXX_FLAGS) -c propositional_system.cpp
 
 multitime.o: global.h multitime.h multitime.cpp

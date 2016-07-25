@@ -63,6 +63,8 @@ namespace SYNARMOSMA {
     int girth() const;
     double inverse_girth() const;
     double clustering_coefficient(int) const;
+    double clustering_coefficient() const;
+    double mean_path_length() const;
     int bridge_count() const;
     bool bipartite() const;
     double cyclicity() const;

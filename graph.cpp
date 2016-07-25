@@ -18,33 +18,32 @@ Graph::Graph(int n) : Schema(n)
 Graph::Graph(int n,std::string& type) : Schema(n)
 {
   int i;
-  std::set<int> vx;
 
   if (type == "complete") {
     // The complete graph on n vertices...
-    int j,nc = 0;
+    int j;
 
     for(i=0; i<n; ++i) {
       for(j=1+i; j<n; ++j) {
-        vx.insert(i); vx.insert(j);
-        index_table[vx] = nc;
-        edges.push_back(Edge(i,j));
-        neighbours[i].insert(j);
-        neighbours[j].insert(i);
-        vx.clear();
-        nc++;
+        add_edge(i,j);
       }
     }
   }
   else if (type == "chain") {
     // A minimally connected graph with n - 1 edges
     for(i=0; i<n-1; ++i) {
-      vx.insert(i); vx.insert(1+i);
-      index_table[vx] = i;
-      neighbours[i].insert(1+i);
-      neighbours[i+1].insert(i);
-      vx.clear();
+      add_edge(i,i+1);
     }
+  }
+  else if (type == "ring") {
+    // Much like the chain model except with a cyclic topology, 
+    // thus a final edge connecting the end of the chain to its 
+    // beginning
+    for(i=0; i<n-1; ++i) {
+      add_edge(i,i+1);
+    }
+    // The final edge that makes it a ring
+    add_edge(0,n-1); 
   }
 }
 
@@ -85,22 +84,14 @@ Graph::Graph(int n,double p) : Schema(n)
 {
   // A constructor that builds a graph with n vertices and p percent of 
   // the number of edges in the complete graph on n vertices, chosen randomly.
-  int i,j,nc = 0;
+  int i,j;
   double alpha;
-  std::set<int> vx;
 
   for(i=0; i<n; ++i) {
     for(j=1+i; j<n; ++j) {
       alpha = RND.drandom();
       if (alpha > p) continue;
-      vx.insert(i);
-      vx.insert(j);
-      index_table[vx] = nc;
-      edges.push_back(Edge(i,j));
-      neighbours[i].insert(j);
-      neighbours[j].insert(i);
-      vx.clear();
-      nc++;
+      add_edge(i,j);
     }
   }
 }
@@ -803,6 +794,29 @@ double Graph::clustering_coefficient(int v) const
   }
   np = n*(n-1)/2;
   return double(nf)/double(np);
+}
+
+double Graph::clustering_coefficient() const
+{
+  double sum = 0.0;
+  for(int i=0; i<nvertex; ++i) {
+    sum += clustering_coefficient(i);
+  }
+  return sum/double(nvertex);
+}
+
+double Graph::mean_path_length() const
+{
+  int i,j;
+  double sum = 0.0,npair = double(nvertex*(nvertex-1)/2);
+
+  for(i=0; i<nvertex; ++i) {
+    for(j=1+i; j<nvertex; ++j) {
+      sum += distance(i,j);
+    }
+  }
+  sum = sum/npair;
+  return sum;
 }
 
 bool Graph::biconnected() const

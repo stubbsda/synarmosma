@@ -99,17 +99,17 @@ bool Proposition::satisfiable() const
 {
   int i,j,l,k,a,p,K = 5;
   std::vector<int> bvalues,fclause;
-  std::set<int> A,ca;
+  std::set<int> atoms,ca;
   std::set<int>::const_iterator it;
 
-  atoms(A);
-  for(it=A.begin(); it!=A.end(); ++it) {
+  get_atoms(atoms);
+  for(it=atoms.begin(); it!=atoms.end(); ++it) {
     bvalues.push_back(*it);
     bvalues.push_back(RND.irandom(2));
   }
-  const int na = (signed) A.size();
+  const int natoms = (signed) atoms.size();
   for(i=0; i<K; ++i) {
-    for(j=0; j<3*na; ++j) {
+    for(j=0; j<3*natoms; ++j) {
       // Now grab an unsatisfied clause of the Boolean
       // formula
       if (evaluate(bvalues,fclause)) return true;
@@ -119,7 +119,7 @@ bool Proposition::satisfiable() const
         if (p >= 0) ca.insert(p);
       }
       a = RND.irandom(ca);
-      for(k=0; k<2*na; k+=2) {
+      for(k=0; k<2*natoms; k+=2) {
         if (bvalues[k] == a) {
           bvalues[k+1] = (bvalues[k+1] + 1)%2;
           break;
@@ -130,12 +130,27 @@ bool Proposition::satisfiable() const
   return false;
 }
 
-bool Proposition::evaluate(const bool* atom_values) const
+void Proposition::mutate()
 {
-  // This method assumes that the Boolean vector has as many elements 
-  // as there are atomic propositions in the proposition. 
-  int i,j,a;
-  bool cvalue,avalue,output = true; 
+  std::set<int> atoms;
+  int nc = clause.size()/(2*Proposition::NP);
+  get_atoms(atoms);
+  clear();
+  initialize(nc,atoms);
+}
+
+void Proposition::mutate(const std::set<int>& atoms)
+{
+  clear();
+  int nc = 1 + RND.irandom(atoms.size()/Proposition::NP); 
+  initialize(nc,atoms);
+}
+
+bool Proposition::evaluate(const std::vector<std::pair<int,bool> >& atom_values) const
+{
+  int i,j,k,a;
+  bool cvalue,found,avalue,output = true; 
+  const int in_size = (signed) atom_values.size();
   const int nc = clause.size()/(2*Proposition::NP);
  
   for(i=0; i<nc; ++i) {
@@ -144,7 +159,15 @@ bool Proposition::evaluate(const bool* atom_values) const
     for(j=0; j<2*Proposition::NP; j+=2) {
       a = clause[2*Proposition::NP*i+j];
       if (a == -1) break;
-      avalue = atom_values[a];
+      found = false;
+      for(k=0; k<in_size; ++k) {
+        if (atom_values[k].first == a) {
+          avalue = atom_values[k].second;
+          found = true;
+          break;
+        }
+      }
+      assert(found);
       if (clause[2*Proposition::NP*i+j+1] == 1) avalue = !avalue;
       cvalue = cvalue || avalue;
     }
@@ -185,14 +208,20 @@ bool Proposition::evaluate(const std::vector<int>& atoms,std::vector<int>& fclau
   return output;
 }
 
-void Proposition::atoms(std::set<int>& A) const
+void Proposition::get_atoms(std::set<int>& atoms) const
 {
-  int i,l = (signed) clause.size();
-  A.clear();
-  for(i=0; i<l; i+=2) {
+  const int l = (signed) clause.size();
+  atoms.clear();
+  for(int i=0; i<l; i+=2) {
     if (clause[i] < 0) continue;
-    A.insert(clause[i]);
+    atoms.insert(clause[i]);
   }
+}
+
+void Proposition::set_atoms(const std::set<int>& atoms)
+{
+  int nc = 1 + RND.irandom(atoms.size()/Proposition::NP);
+  initialize(nc,atoms);
 }
 
 void Proposition::serialize(std::ofstream& s) const
@@ -251,7 +280,7 @@ namespace SYNARMOSMA {
     return s;
   }
 
-  Proposition operator *(const Proposition& P1,const Proposition& P2)
+  Proposition operator &(const Proposition& P1,const Proposition& P2)
   {
     unsigned int i;
     Proposition output = P1;
