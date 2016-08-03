@@ -13,7 +13,6 @@ namespace SYNARMOSMA {
     static const int NP = 5;
    public:
     Proposition();
-    Proposition(int);
     Proposition(const std::set<int>&);
     Proposition(int,const std::set<int>&);
     Proposition(const Proposition&);

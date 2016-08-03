@@ -210,16 +210,26 @@ bool Logic_Graph::fusion(int v,int u)
 
 int Logic_Graph::fission_x(int v)
 {
-  int n = Graph::fission_x(v);
-  logic->theorems.push_back(Proposition(logic->natom));
+  int i,n = Graph::fission_x(v);
+  std::set<int> atoms;
+
+  for(i=0; i<logic->natom; ++i) {
+    atoms.insert(i);
+  }
+  logic->theorems.push_back(Proposition(atoms));
   logic->truth.push_back(boost::dynamic_bitset<>(logic->nuniverse));
   return n;
 }
 
 int Logic_Graph::fission_m(int v)
 {
-  int n = Graph::fission_m(v);
-  logic->theorems.push_back(Proposition(logic->natom));
+  int i,n = Graph::fission_m(v);
+  std::set<int> atoms;
+
+  for(i=0; i<logic->natom; ++i) {
+    atoms.insert(i);
+  }
+  logic->theorems.push_back(Proposition(atoms));
   logic->truth.push_back(boost::dynamic_bitset<>(logic->nuniverse));
   return n;
 }

@@ -8,22 +8,7 @@ const int Proposition::NP;
 
 Proposition::Proposition()
 {
-  int nc;
-  std::set<int> atoms;
-  for(int i=0; i<15; ++i) {
-    atoms.insert(i);
-  }
-  nc = 5 + RND.irandom(2*atoms.size());
-  initialize(nc,atoms);
-}
 
-Proposition::Proposition(int nc)
-{
-  std::set<int> atoms;
-  for(int i=0; i<nc/2; ++i) {
-    atoms.insert(i);
-  }
-  initialize(nc,atoms);
 }
 
 Proposition::Proposition(const std::set<int>& atoms)
@@ -136,12 +121,14 @@ void Proposition::mutate()
   int nc = clause.size()/(2*Proposition::NP);
   get_atoms(atoms);
   clear();
+  if (atoms.empty()) return;
   initialize(nc,atoms);
 }
 
 void Proposition::mutate(const std::set<int>& atoms)
 {
   clear();
+  if (atoms.empty()) return;
   int nc = 1 + RND.irandom(atoms.size()/Proposition::NP); 
   initialize(nc,atoms);
 }

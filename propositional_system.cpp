@@ -106,9 +106,13 @@ void Propositional_System::set_default_values()
 void Propositional_System::initialize(unsigned int n)
 {
   unsigned int i;
+  std::set<int> atoms;
 
   for(i=0; i<n; ++i) {
-    theorems.push_back(Proposition(natom));
+    atoms.insert(i);
+  }
+  for(i=0; i<n; ++i) {
+    theorems.push_back(Proposition(atoms));
   }
   nuniverse = ipow(2,natom);
   for(i=0; i<theorems.size(); ++i) {
