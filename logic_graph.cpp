@@ -210,7 +210,7 @@ bool Logic_Graph::fusion(int v,int u)
 
 int Logic_Graph::fission_x(int v)
 {
-  int i,n = Graph::fission_x(v);
+  unsigned int i,n = Graph::fission_x(v);
   std::set<int> atoms;
 
   for(i=0; i<logic->natom; ++i) {
@@ -223,7 +223,7 @@ int Logic_Graph::fission_x(int v)
 
 int Logic_Graph::fission_m(int v)
 {
-  int i,n = Graph::fission_m(v);
+  unsigned int i,n = Graph::fission_m(v);
   std::set<int> atoms;
 
   for(i=0; i<logic->natom; ++i) {
