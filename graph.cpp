@@ -774,6 +774,21 @@ void Graph::katz_centrality(std::vector<double>& output) const
   output = xnew;
 }
 
+void Graph::tutte_polynomial(Polynomial<int>& tutte) const
+{
+  int i,j;
+  std::set<int>::const_iterator it;
+  Complex_Graph G(nvertex);
+
+  for(i=0; i<nvertex; ++i) {
+    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+      j = *it;
+      if (i > j) continue;
+      G.add_edge(i,j);
+    }
+  } 
+}
+
 double Graph::clustering_coefficient(int v) const
 {
   // This method calculates the percentage of distinct pairs (u,w) 

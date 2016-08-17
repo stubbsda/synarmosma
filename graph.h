@@ -2,6 +2,8 @@
 #include "edge.h"
 #include "matrix.h"
 #include "binary_matrix.h"
+#include "polynomial.h"
+#include "complex_graph.h"
 
 #ifndef _graphh
 #define _graphh
@@ -62,6 +64,7 @@ namespace SYNARMOSMA {
     double cosine_similarity(int,int) const;
     int girth() const;
     double inverse_girth() const;
+    void tutte_polynomial(Polynomial<int>&) const;
     double clustering_coefficient(int) const;
     double clustering_coefficient() const;
     double mean_path_length() const;
