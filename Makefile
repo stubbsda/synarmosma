@@ -90,7 +90,7 @@ multitime.o: global.h multitime.h multitime.cpp
 vertex.o: global.h proposition.h vertex.h vertex.cpp
 	$(CXX) $(CXX_FLAGS) -c vertex.cpp
 
-graph.o: graph.cpp graph.h edge.h schema.h complex_graph.h polynomial.h matrix.h binary_matrix.h global.h
+graph.o: graph.cpp graph.h edge.h schema.h complex_graph.h matrix.h binary_matrix.h global.h
 	$(CXX) $(CXX_FLAGS) -c graph.cpp
 
 geometry.o: geometry.cpp geometry.h global.h 

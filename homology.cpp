@@ -323,7 +323,6 @@ void Homology::compute_native(const Nexus* NX)
     std::vector<int> components;
     betti = NX->component_analysis(components);
   }
-  //sequence.push_back(Group(betti,torsion));
   betti_number.push_back(betti);
   torsion.push_back(null);
 

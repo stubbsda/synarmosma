@@ -774,7 +774,7 @@ void Graph::katz_centrality(std::vector<double>& output) const
   output = xnew;
 }
 
-void Graph::tutte_polynomial(Polynomial<int>& tutte) const
+void Graph::tutte_polynomial(std::vector<Monomial<int> >& tutte) const
 {
   int i,j;
   std::set<int>::const_iterator it;
@@ -787,6 +787,7 @@ void Graph::tutte_polynomial(Polynomial<int>& tutte) const
       G.add_edge(i,j);
     }
   } 
+  tutte.clear();
 }
 
 double Graph::clustering_coefficient(int v) const

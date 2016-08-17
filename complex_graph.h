@@ -6,10 +6,11 @@
 namespace SYNARMOSMA {
   class Complex_Graph {
    private:
-    int n;
+    int nvertex;
     std::vector<int>* neighbours;
 
-    void compute_bridges() const;
+    int compute_bridges(std::vector<int>&) const;
+    int compute_loops() const;
    public:
     Complex_Graph();
     Complex_Graph(int);
