@@ -18,6 +18,7 @@ namespace SYNARMOSMA {
     int DFS_bridge(int,int,int,int*,int*) const;
     int DFS_cycle(int,int,std::vector<int>&,bool*) const;
     void adjacency_eigenvalues(std::vector<double>&) const;
+    void defoliate(const Complex_Graph*,std::vector<Monomial<int> >&) const;
   public:
     // The usual public methods for a class
     Graph();

@@ -774,20 +774,108 @@ void Graph::katz_centrality(std::vector<double>& output) const
   output = xnew;
 }
 
-void Graph::tutte_polynomial(std::vector<Monomial<int> >& tutte) const
+void Graph::defoliate(const Complex_Graph* parent,std::vector<Monomial<int> >& tutte) const
 {
-  int i,j;
+  std::vector<int> cvector;
+  int nb = parent->get_candidates(cvector);
+  if (cvector.empty()) {
+    int nl = parent->get_loops();
+    std::cout << "Recursion complete with " << nb << " bridge(s) and " << nl << " loop(s)." << std::endl;
+    Monomial<int> term;
+    term.coefficient = 1;
+    if (nb > 0) term.exponents.push_back(std::pair<unsigned int,unsigned int>(0,nb));
+    if (nl > 0) term.exponents.push_back(std::pair<unsigned int,unsigned int>(1,nl));
+    tutte.push_back(term);
+    return;
+  }
+  std::cout << nb << "  " << cvector.size()/2 << std::endl;
+  int cd = (signed) cvector.size()/2;
+  int e = RND.irandom(cd);
+  int u = cvector[2*e];
+  int v = cvector[2*e+1];
+  std::cout << "Operating in edge " << u << ":" << v << std::endl;
+  Complex_Graph* c1 = new Complex_Graph(parent->nvertex);
+  for(int i=0; i<parent->nvertex; ++i) {
+    c1->neighbours[i] = parent->neighbours[i];
+  }
+  parent->remove(u,v,c1);
+  defoliate(c1,tutte);
+  delete c1;
+  Complex_Graph* c2 = new Complex_Graph(parent->nvertex);
+  for(int i=0; i<parent->nvertex; ++i) {
+    c2->neighbours[i] = parent->neighbours[i];
+  }
+  parent->contract(u,v,c2);
+  defoliate(c2,tutte);
+  delete c2;
+}
+
+void Graph::tutte_polynomial(std::vector<Monomial<int> >& output) const
+{
+  int i,j,k,cf,nt;
+  unsigned int p,q,p1,p2,base;
+  Monomial<int> term;
   std::set<int>::const_iterator it;
-  Complex_Graph G(nvertex);
+  std::vector<Monomial<int> > tutte;
+  Complex_Graph* G = new Complex_Graph(nvertex);
 
   for(i=0; i<nvertex; ++i) {
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
       j = *it;
       if (i > j) continue;
-      G.add_edge(i,j);
+      G->add_edge(i,j);
     }
-  } 
-  tutte.clear();
+  }
+  defoliate(G,tutte);
+  delete G; 
+  nt = (signed) tutte.size();
+  bool occupied[nt];
+  for(i=0; i<nt; ++i) {
+    occupied[i] = false;
+  }
+  output.clear();
+  for(i=0; i<nt; ++i) {
+    if (!occupied[i]) continue;
+    term = tutte[i];
+    cf = term.coefficient;
+    k = (signed) tutte[i].exponents.size();
+    if (k == 1) {
+      base = tutte[i].exponents[0].first;
+      if (base == 0) {
+        p1 = tutte[i].exponents[0].second; p2 = 0;
+      }
+      else {
+        p1 = 0; p2 = tutte[i].exponents[0].second;
+      }
+    }
+    else {
+      p1 = tutte[i].exponents[0].second;
+      p2 = tutte[i].exponents[1].second;
+    }  
+    for(j=1+i; j<nt; ++j) {
+      k = (signed) tutte[j].exponents.size();
+      if (k == 1) {
+        base = tutte[j].exponents[0].first;
+        if (base == 0) {
+          p = tutte[j].exponents[0].second; q = 0;
+        }
+        else {
+          p = 0; q = tutte[j].exponents[0].second;
+        }
+      }
+      else {
+        p = tutte[j].exponents[0].second;
+        q = tutte[j].exponents[1].second;
+      }
+      if (p1 == p && p2 == q) {
+        cf += 1;
+        occupied[j] = true;
+      }  
+    }
+    occupied[i] = true;
+    term.coefficient = cf;
+    output.push_back(term);
+  }
 }
 
 double Graph::clustering_coefficient(int v) const
