@@ -788,12 +788,10 @@ void Graph::defoliate(const Complex_Graph* parent,std::vector<Monomial<int> >& t
     tutte.push_back(term);
     return;
   }
-  std::cout << nb << "  " << cvector.size()/2 << std::endl;
   int cd = (signed) cvector.size()/2;
   int e = RND.irandom(cd);
   int u = cvector[2*e];
   int v = cvector[2*e+1];
-  std::cout << "Operating in edge " << u << ":" << v << std::endl;
   Complex_Graph* c1 = new Complex_Graph(parent->nvertex);
   for(int i=0; i<parent->nvertex; ++i) {
     c1->neighbours[i] = parent->neighbours[i];

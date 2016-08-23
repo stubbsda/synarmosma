@@ -172,8 +172,13 @@ void Complex_Graph::contract(int u,int v,Complex_Graph* output) const
     n = (signed) neighbours[i].size();
     for(j=0; j<n; ++j) {
       if (neighbours[i][j] == vmax) {
-        if (first) {
-          first = false;
+        if (i == vmin) {
+          if (first) {
+            first = false;
+          }
+          else {
+            nvector.push_back(vmin);
+          }
         }
         else {
           nvector.push_back(vmin);
@@ -190,24 +195,19 @@ void Complex_Graph::contract(int u,int v,Complex_Graph* output) const
     nvector.clear();
   }
   n = (signed) neighbours[vmax].size();
-  first = true;
   for(i=0; i<n; ++i) {
-    if (neighbours[vmax][i] == vmin) {
-      if (first) {
-        first = false;
-      }
-      else {
-        output->neighbours[vmin].push_back(vmin);
-      }
+    j = neighbours[vmax][i];
+    if (j == vmin) {
+      continue;
     }
-    else if (neighbours[vmax][i] == vmax) {
+    else if (j == vmax) {
       output->neighbours[vmin].push_back(vmin);
     }
-    else if (neighbours[vmax][i] > vmax) {
-      output->neighbours[vmin].push_back(neighbours[vmax][i]-1);
+    else if (j > vmax) {
+      output->neighbours[vmin].push_back(j-1);
     }
     else {
-      output->neighbours[vmin].push_back(neighbours[vmax][i]);
+      output->neighbours[vmin].push_back(j);
     }
   }
   for(i=vmax; i<nvertex-1; ++i) {
