@@ -103,7 +103,6 @@ int Complex_Graph::compute_bridges(hash_map& bridge_index) const
   for(i=0; i<nvertex; ++i) {
     if (pre[i] == -1) bcount += DFS_bridge(i,i,0,low,pre,bridge_index);
   }
-  assert(bcount == bridge_index.size());
   return bcount;
 }
 
