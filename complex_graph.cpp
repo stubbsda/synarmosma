@@ -76,7 +76,6 @@ int Complex_Graph::DFS_bridge(int u,int v,int dcount,int* low,int* pre,hash_map&
       output += DFS_bridge(v,w,dc,low,pre,bridge_index);
       low[v] = std::min(low[v],low[w]); 
       if (low[w] == pre[w]) {
-        //std::cout << "Found bridge for edge " << v << ":" << w << std::endl;
         std::set<int> S;
         S.insert(v); S.insert(w);
         bridge_index[S] = output;
