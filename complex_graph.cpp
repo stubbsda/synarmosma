@@ -9,7 +9,9 @@ Complex_Graph::Complex_Graph()
 
 Complex_Graph::Complex_Graph(int order)
 {
+#ifdef DEBUG
   assert(order > 0);
+#endif
   nvertex = order;
   neighbours = new std::vector<int>[nvertex];
 }
@@ -43,23 +45,12 @@ Complex_Graph::~Complex_Graph()
 
 void Complex_Graph::add_edge(int u,int v)
 {
+#ifdef DEBUG
   assert(u >= 0 && u < nvertex);
   assert(v >= 0 && v < nvertex);
+#endif
   neighbours[u].push_back(v);
   neighbours[v].push_back(u);
-}
-
-void Complex_Graph::display() const
-{
-  int i,j,n,k = 0;
-  for(i=0; i<nvertex; ++i) {
-    n = (signed) neighbours[i].size();
-    for(j=0; j<n; ++j) {
-      std::cout << i << ":" << neighbours[i][j] << std::endl;
-      k++;
-    }
-  }
-  std::cout << "This graph has " << nvertex << " vertices and " << k/2 << " edges." << std::endl;
 }
 
 int Complex_Graph::DFS_bridge(int u,int v,int dcount,int* low,int* pre,hash_map& bridge_index) const

@@ -23,7 +23,6 @@ namespace SYNARMOSMA {
     void add_edge(int,int);
     void contract(int,int,Complex_Graph*) const;
     void remove(int,int,Complex_Graph*) const;
-    void display() const;
     friend class Graph;
   };
 
