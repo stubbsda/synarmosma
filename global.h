@@ -23,7 +23,6 @@
 // The Boost library headers...
 #include <boost/tokenizer.hpp>
 #include <boost/date_time.hpp>
-#include <boost/timer/timer.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/unordered_map.hpp>
