@@ -13,7 +13,6 @@ namespace SYNARMOSMA {
 #else
     double energy;
 #endif
-    Proposition theorem;
     std::set<int> posterior,anterior;  
     std::set<int> neighbours;
     std::set<int> entourage;

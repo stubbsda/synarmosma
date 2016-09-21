@@ -14,7 +14,6 @@ Vertex::Vertex(const Vertex& source)
   energy = source.energy;
   neighbours = source.neighbours;
   entourage = source.entourage;
-  theorem = source.theorem;
   incept = source.incept;
   topological_dimension = source.topological_dimension;
   anterior = source.anterior;
@@ -27,7 +26,6 @@ Vertex& Vertex::operator =(const Vertex& source)
   energy = source.energy;
   neighbours = source.neighbours;
   entourage = source.entourage;
-  theorem = source.theorem;
   incept = source.incept;
   topological_dimension = source.topological_dimension;
   anterior = source.anterior;
@@ -53,7 +51,6 @@ void Vertex::clear()
   posterior.clear();
   entourage.clear();
   neighbours.clear();
-  theorem.clear();
 }
 
 void Vertex::serialize(std::ofstream& s) const
@@ -68,7 +65,6 @@ void Vertex::serialize(std::ofstream& s) const
 #else
   s.write((char*)(&energy),sizeof(double));
 #endif
-  theorem.serialize(s);
   n = (signed) anterior.size();
   s.write((char*)(&n),sizeof(int));
   for(it=anterior.begin(); it!=anterior.end(); ++it) {
@@ -108,7 +104,6 @@ void Vertex::deserialize(std::ifstream& s)
 #else
   s.read((char*)(&energy),sizeof(double));
 #endif
-  theorem.deserialize(s);
   s.read((char*)(&n),sizeof(int));
   for(i=0; i<n; ++i) {
     s.read((char*)(&j),sizeof(int));
