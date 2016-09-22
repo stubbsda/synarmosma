@@ -99,6 +99,7 @@ bool Proposition::satisfiable() const
       // formula
       if (evaluate(bvalues,fclause)) return true;
       l = RND.irandom(fclause);
+      //std::cout << NP << "  " << clause.size() << "  " << fclause.size() << "  " << l << std::endl;
       for(k=0; k<2*Proposition::NP; k+=2) {
         p = clause[2*Proposition::NP*l+k];
         if (p >= 0) ca.insert(p);
@@ -172,6 +173,8 @@ bool Proposition::evaluate(const std::vector<int>& atoms,std::vector<int>& fclau
   const int na = (signed) atoms.size();
   const int nc = clause.size()/(2*Proposition::NP);
   bool cvalue,avalue = false,output = true;
+
+  fclause.clear();
   for(i=0; i<nc; ++i) {
     // If a single clause is false, the whole expression is false...
     cvalue = false;
