@@ -99,7 +99,6 @@ bool Proposition::satisfiable() const
       // formula
       if (evaluate(bvalues,fclause)) return true;
       l = RND.irandom(fclause);
-      //std::cout << NP << "  " << clause.size() << "  " << fclause.size() << "  " << l << std::endl;
       for(k=0; k<2*Proposition::NP; k+=2) {
         p = clause[2*Proposition::NP*l+k];
         if (p >= 0) ca.insert(p);
