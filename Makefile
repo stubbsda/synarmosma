@@ -87,7 +87,7 @@ propositional_system.o: global.h graph.h proposition.h propositional_system.h pr
 multitime.o: global.h multitime.h multitime.cpp
 	$(CXX) $(CXX_FLAGS) -c multitime.cpp
 
-vertex.o: global.h proposition.h vertex.h vertex.cpp
+vertex.o: global.h vertex.h vertex.cpp
 	$(CXX) $(CXX_FLAGS) -c vertex.cpp
 
 graph.o: graph.cpp graph.h edge.h schema.h complex_graph.h matrix.h binary_matrix.h global.h

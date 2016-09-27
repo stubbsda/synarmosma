@@ -1,4 +1,4 @@
-#include "proposition.h"
+#include "global.h"
 
 #ifndef _vertexh
 #define _vertexh
