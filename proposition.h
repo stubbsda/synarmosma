@@ -29,6 +29,7 @@ namespace SYNARMOSMA {
     inline void clear() {clause.clear();};
     void serialize(std::ofstream&) const;
     void deserialize(std::ifstream&); 
+    inline int get_size() const {return (signed) clause.size()/(2*NP);}; 
     inline static int get_clause_size() {return NP;};
     friend std::ostream& operator <<(std::ostream&,const Proposition&);
     friend Proposition operator &(const Proposition&,const Proposition&);
