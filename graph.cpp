@@ -774,7 +774,7 @@ void Graph::katz_centrality(std::vector<double>& output) const
   output = xnew;
 }
 
-void Graph::defoliate(const Complex_Graph* parent,std::vector<Monomial<int> >& tutte) const
+void Graph::defoliate(const Pseudograph* parent,std::vector<Monomial<int> >& tutte) const
 {
   std::vector<int> cvector;
   int nb = parent->get_candidates(cvector);
@@ -791,14 +791,14 @@ void Graph::defoliate(const Complex_Graph* parent,std::vector<Monomial<int> >& t
   int e = RND.irandom(cd);
   int u = cvector[2*e];
   int v = cvector[2*e+1];
-  Complex_Graph* c1 = new Complex_Graph(parent->nvertex);
+  Pseudograph* c1 = new Pseudograph(parent->nvertex);
   for(int i=0; i<parent->nvertex; ++i) {
     c1->neighbours[i] = parent->neighbours[i];
   }
   parent->remove(u,v,c1);
   defoliate(c1,tutte);
   delete c1;
-  Complex_Graph* c2 = new Complex_Graph(parent->nvertex);
+  Pseudograph* c2 = new Pseudograph(parent->nvertex);
   for(int i=0; i<parent->nvertex; ++i) {
     c2->neighbours[i] = parent->neighbours[i];
   }
@@ -814,7 +814,7 @@ void Graph::tutte_polynomial(std::vector<Monomial<int> >& output) const
   Monomial<int> term;
   std::set<int>::const_iterator it;
   std::vector<Monomial<int> > tutte;
-  Complex_Graph* G = new Complex_Graph(nvertex);
+  Pseudograph* G = new Pseudograph(nvertex);
 
   for(i=0; i<nvertex; ++i) {
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {

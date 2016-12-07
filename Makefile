@@ -1,7 +1,7 @@
 OBJECTS = global.o random.o cell.o nexus.o schema.o group.o graph.o geometry.o word.o rational.o\
 variety_wrapper.o polynomial_wrapper.o proposition.o propositional_system.o logic_graph.o edge.o\
 vertex.o multitime.o binary_matrix.o matrix_wrapper.o directed_graph.o functional_equation_wrapper.o\
-homology.o homotopy.o poset.o lattice.o complex_graph.o
+homology.o homotopy.o poset.o lattice.o pseudograph.o
 
 CXX_FLAGS += $(OPENMP) -fPIC #-DDISCRETE
 
@@ -66,8 +66,8 @@ binary_matrix.o: binary_matrix.cpp binary_matrix.h global.h
 edge.o: global.h edge.h edge.cpp
 	$(CXX) $(CXX_FLAGS) -c edge.cpp
 
-complex_graph.o: global.h complex_graph.h complex_graph.cpp
-	$(CXX) $(CXX_FLAGS) -c complex_graph.cpp
+pseudograph.o: global.h pseudograph.h pseudograph.cpp
+	$(CXX) $(CXX_FLAGS) -c pseudograph.cpp
 
 logic_graph.o: global.h graph.h logic_graph.h proposition.h propositional_system.h logic_graph.cpp
 	$(CXX) $(CXX_FLAGS) -c logic_graph.cpp
@@ -90,7 +90,7 @@ multitime.o: global.h multitime.h multitime.cpp
 vertex.o: global.h vertex.h vertex.cpp
 	$(CXX) $(CXX_FLAGS) -c vertex.cpp
 
-graph.o: graph.cpp graph.h edge.h schema.h complex_graph.h matrix.h binary_matrix.h global.h
+graph.o: graph.cpp graph.h edge.h schema.h pseudograph.h matrix.h binary_matrix.h global.h
 	$(CXX) $(CXX_FLAGS) -c graph.cpp
 
 geometry.o: geometry.cpp geometry.h global.h 

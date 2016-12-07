@@ -2,7 +2,7 @@
 #include "edge.h"
 #include "matrix.h"
 #include "binary_matrix.h"
-#include "complex_graph.h"
+#include "pseudograph.h"
 
 #ifndef _graphh
 #define _graphh
@@ -18,7 +18,7 @@ namespace SYNARMOSMA {
     int DFS_bridge(int,int,int,int*,int*) const;
     int DFS_cycle(int,int,std::vector<int>&,bool*) const;
     void adjacency_eigenvalues(std::vector<double>&) const;
-    void defoliate(const Complex_Graph*,std::vector<Monomial<int> >&) const;
+    void defoliate(const Pseudograph*,std::vector<Monomial<int> >&) const;
   public:
     // The usual public methods for a class
     Graph();

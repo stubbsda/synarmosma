@@ -1,13 +1,13 @@
-#include "complex_graph.h"
+#include "pseudograph.h"
 
 using namespace SYNARMOSMA;
 
-Complex_Graph::Complex_Graph()
+Pseudograph::Pseudograph()
 {
   nvertex = 0;
 }
 
-Complex_Graph::Complex_Graph(int order)
+Pseudograph::Pseudograph(int order)
 {
 #ifdef DEBUG
   assert(order > 0);
@@ -16,7 +16,7 @@ Complex_Graph::Complex_Graph(int order)
   neighbours = new std::vector<int>[nvertex];
 }
 
-Complex_Graph::Complex_Graph(const Complex_Graph& source)
+Pseudograph::Pseudograph(const Pseudograph& source)
 {
   if (nvertex > 0) delete[] neighbours;
   nvertex = source.nvertex;
@@ -26,7 +26,7 @@ Complex_Graph::Complex_Graph(const Complex_Graph& source)
   }
 }
 
-Complex_Graph& Complex_Graph::operator =(const Complex_Graph& source)
+Pseudograph& Pseudograph::operator =(const Pseudograph& source)
 {
   if (this == &source) return *this;
   if (nvertex > 0) delete[] neighbours;
@@ -38,12 +38,12 @@ Complex_Graph& Complex_Graph::operator =(const Complex_Graph& source)
   return *this;
 }
  
-Complex_Graph::~Complex_Graph()
+Pseudograph::~Pseudograph()
 {
   if (nvertex > 0) delete[] neighbours;
 }
 
-void Complex_Graph::add_edge(int u,int v)
+void Pseudograph::add_edge(int u,int v)
 {
 #ifdef DEBUG
   assert(u >= 0 && u < nvertex);
@@ -53,7 +53,7 @@ void Complex_Graph::add_edge(int u,int v)
   neighbours[v].push_back(u);
 }
 
-int Complex_Graph::DFS_bridge(int u,int v,int dcount,int* low,int* pre,hash_map& bridge_index) const
+int Pseudograph::DFS_bridge(int u,int v,int dcount,int* low,int* pre,hash_map& bridge_index) const
 {
   int w,output = 0,dc = dcount + 1;
   std::vector<int>::const_iterator it;
@@ -80,7 +80,7 @@ int Complex_Graph::DFS_bridge(int u,int v,int dcount,int* low,int* pre,hash_map&
   return output;
 }
 
-int Complex_Graph::compute_bridges(hash_map& bridge_index) const
+int Pseudograph::compute_bridges(hash_map& bridge_index) const
 {
   int i,bcount = 0;
   int low[nvertex],pre[nvertex];
@@ -96,7 +96,7 @@ int Complex_Graph::compute_bridges(hash_map& bridge_index) const
   return bcount;
 }
 
-int Complex_Graph::get_candidates(std::vector<int>& output) const
+int Pseudograph::get_candidates(std::vector<int>& output) const
 {
   // The return value is the number of bridges in this graph, while the 
   // "output" vector is the list of potential edges for contraction or 
@@ -138,7 +138,7 @@ int Complex_Graph::get_candidates(std::vector<int>& output) const
   return nb;
 }
 
-void Complex_Graph::contract(int u,int v,Complex_Graph* output) const
+void Pseudograph::contract(int u,int v,Pseudograph* output) const
 {
   // This involves fusing together two vertices, so the output graph will have 
   // one less edge and one less vertex, which will mean re-indexing all of the 
@@ -205,7 +205,7 @@ void Complex_Graph::contract(int u,int v,Complex_Graph* output) const
   output->nvertex -= 1;
 }
 
-void Complex_Graph::remove(int u,int v,Complex_Graph* output) const
+void Pseudograph::remove(int u,int v,Pseudograph* output) const
 {
   // The much simpler case of removing an edge...
   int i,n = (signed) output->neighbours[u].size();
