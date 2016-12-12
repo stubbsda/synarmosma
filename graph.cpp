@@ -702,6 +702,26 @@ double Graph::compute_flow(int source,int sink)
   return double(max_flow)/10000.0;
 }
 
+void Graph::complement(Graph* G) const
+{
+  int i,j;
+  std::set<int> S;
+  hash_map::const_iterator qt;
+
+  G->clear();
+  for(i=0; i<nvertex; ++i) {
+    G->add_vertex();
+  }
+  for(i=0; i<nvertex; ++i) {
+    for(j=1+i; j<nvertex; ++j) {
+      S.clear();
+      S.insert(i); S.insert(j);
+      qt = index_table.find(S);
+      if (qt == index_table.end()) G->add_edge(i,j);
+    }
+  }
+}
+
 void Graph::katz_centrality(std::vector<double>& output) const
 {
   // A method to compute the Katz centrality of the vertices in the 

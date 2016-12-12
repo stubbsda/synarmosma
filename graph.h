@@ -64,6 +64,7 @@ namespace SYNARMOSMA {
     double cosine_similarity(int,int) const;
     int girth() const;
     double inverse_girth() const;
+    void complement(Graph*) const;
     void tutte_polynomial(std::vector<Monomial<int> >&) const;
     double clustering_coefficient(int) const;
     double clustering_coefficient() const;
