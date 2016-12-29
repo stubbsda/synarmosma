@@ -11,25 +11,24 @@ Directed_Graph::Directed_Graph() : Graph()
 
 Directed_Graph::Directed_Graph(int n) : Graph(n)
 {
-  int i,j,nc = 0;
+  int i,j,d,nc = 0;
   double alpha;
   std::set<int> vx;
-  RELATION rho;
 
   for(i=0; i<n; ++i) {
     for(j=1+i; j<n; ++j) {
       vx.insert(i);
       vx.insert(j);
       index_table[vx] = nc;
-      rho = DISPARATE;
+      d = UNDIRECTED;
       alpha = RND.drandom();
       if (alpha < 0.15) {
-        rho = BEFORE;
+        d = OUTGOING;
       }
       else if (alpha < 0.3) {
-        rho = AFTER;
+        d = INCOMING;
       }      
-      edges.push_back(Edge(i,j,rho));
+      edges.push_back(Edge(i,j,0.0,d));
       neighbours[i].insert(j);
       neighbours[j].insert(i);
       vx.clear();
@@ -40,10 +39,9 @@ Directed_Graph::Directed_Graph(int n) : Graph(n)
 
 Directed_Graph::Directed_Graph(int n,double p) : Graph(n)
 {
-  int i,j,nc = 0;
+  int i,j,d,nc = 0;
   double alpha;
   std::set<int> vx;
-  RELATION rho;
 
   for(i=0; i<n; ++i) {
     for(j=1+i; j<n; ++j) {
@@ -52,15 +50,15 @@ Directed_Graph::Directed_Graph(int n,double p) : Graph(n)
       vx.insert(i);
       vx.insert(j);
       index_table[vx] = nc;
-      rho = DISPARATE;
+      d = UNDIRECTED;
       alpha = RND.drandom();
       if (alpha < 0.15) {
-        rho = BEFORE;
+        d = OUTGOING;
       }
       else if (alpha < 0.3) {
-        rho = AFTER;
+        d = INCOMING;
       }      
-      edges.push_back(Edge(i,j,rho));
+      edges.push_back(Edge(i,j,0.0,d));
       neighbours[i].insert(j);
       neighbours[j].insert(i);
       vx.clear();
@@ -99,7 +97,7 @@ int Directed_Graph::directedness() const
   std::vector<Edge>::const_iterator it;
 
   for(it=edges.begin(); it!=edges.end(); ++it) {
-    if (it->direction == DISPARATE) null++;
+    if (it->direction == UNDIRECTED) null++;
   }
   output = size() - null;
   return output;
@@ -114,7 +112,6 @@ int Directed_Graph::distance(int u,int v) const
 
   int i,j,l = -1,its = 1;
   bool visited[nvertex];
-  RELATION rho;
   std::set<int> S,current,next;
   std::set<int>::const_iterator it,jt;
   hash_map::const_iterator qt;
@@ -133,11 +130,7 @@ int Directed_Graph::distance(int u,int v) const
         S.clear();
         S.insert(i); S.insert(j);
         qt = index_table.find(S);
-        rho = edges[qt->second].direction;
-        if (i < j && rho == BEFORE) {
-          next.insert(j);
-        }
-        else if (i > j && rho == AFTER) {
+        if (edges[qt->second].get_direction(i,j) == OUTGOING) {
           next.insert(j);
         }
       }
@@ -160,7 +153,6 @@ int Directed_Graph::distance(int u,int v) const
 void Directed_Graph::compute_distances(edge_hash& output) const
 {
   int i,j,k,delta;
-  RELATION rho;
   std::pair<int,int> pr;
   std::vector<int> distances;
   std::set<int> S;
@@ -179,11 +171,7 @@ void Directed_Graph::compute_distances(edge_hash& output) const
       S.clear();
       S.insert(i); S.insert(j);
       qt = index_table.find(S);
-      rho = edges[qt->second].direction;
-      if (i < j && rho == BEFORE) {      
-        distances[nvertex*i+j] = 1;
-      }
-      else if (i > j && rho == AFTER) {
+      if (edges[qt->second].get_direction(i,j) == OUTGOING) {      
         distances[nvertex*i+j] = 1;
       }
     }
@@ -212,24 +200,15 @@ void Directed_Graph::compute_distances(edge_hash& output) const
   }
 }
 
-bool Directed_Graph::add_edge(int u,int v,double ell,RELATION rho)
+bool Directed_Graph::add_edge(int u,int v,int d,double ell)
 {
-  if (!Graph::add_edge(u,v)) return false;
-  std::set<int> S;
-  S.insert(u); S.insert(v);
-  hash_map::const_iterator qt = index_table.find(S);
-  if (rho == DISPARATE) { 
-    edges[qt->second].direction = rho;
+  if (!Graph::add_edge(u,v,ell)) return false;
+  if (d != UNDIRECTED) { 
+    std::set<int> S;
+    S.insert(u); S.insert(v);
+    hash_map::const_iterator qt = index_table.find(S);
+    edges[qt->second].direction = (u < v) ? d : -d;
   }
-  else {
-    if (u < v) {
-      edges[qt->second].direction = rho;
-    }
-    else {
-      edges[qt->second].direction = (rho == BEFORE) ? AFTER : BEFORE;
-    }
-  }
-  edges[qt->second].capacity = ell;
   return true;
 }
 
@@ -242,16 +221,16 @@ bool Directed_Graph::mutate_edge(int u,int v)
   if (qt == index_table.end()) return false;
   int n = qt->second;
   double alpha = RND.drandom();
-  RELATION rho = edges[n].direction;
-  if (rho == DISPARATE) {
-    edges[n].direction = (alpha < 0.5) ? BEFORE : AFTER;
+  int d = edges[n].direction;
+  if (d == UNDIRECTED) {
+    edges[n].direction = (alpha < 0.5) ? OUTGOING : INCOMING;
   }
   else {
-    if (rho == BEFORE) {
-      edges[n].direction = (alpha < 0.25) ? AFTER : DISPARATE;
+    if (d == OUTGOING) {
+      edges[n].direction = (alpha < 0.25) ? INCOMING : UNDIRECTED;
     }
     else {
-      edges[n].direction = (alpha < 0.25) ? BEFORE : DISPARATE;
+      edges[n].direction = (alpha < 0.25) ? OUTGOING : UNDIRECTED;
     }
   }
   return true;
@@ -260,30 +239,37 @@ bool Directed_Graph::mutate_edge(int u,int v)
 bool Directed_Graph::path_connected(int u,int v) const
 {
   // Is it possible to get from u to v following the orientation of the graph edges?
-  int i,j;
+  int i,j,visited[nvertex];
   bool output = false;
   std::set<int> current,next,S;
   std::set<int>::const_iterator it,jt;
-  RELATION rho;
   hash_map::const_iterator qt;
 
+  for(i=0; i<nvertex; ++i) {
+    visited[i] = 0;
+  }
+
   current.insert(u);
+  visited[u] = 1;
   do {
     for(it=current.begin(); it!=current.end(); ++it) {
       i = *it;
       for(jt=neighbours[i].begin(); jt!=neighbours[i].end(); ++jt) {
         j = *jt;
+        if (visited[j] == 1) continue;
         S.clear();
         S.insert(i); S.insert(j);
         qt = index_table.find(S);
-        rho = edges[qt->second].direction;
-        if ((i < j && rho == BEFORE) || (j < i && rho == AFTER)) next.insert(j);
+        if (edges[qt->second].get_direction(i,j) == OUTGOING) next.insert(j);
       }
     }
     if (next.empty()) break;
     if (next.count(v) > 0) {
       output = true;
       break;
+    }
+    for(it=next.begin(); it!=next.end(); ++it) {
+      visited[*it] = 1;
     }
     current = next;
     next.clear();
@@ -299,7 +285,6 @@ bool Directed_Graph::directed_cycle(const std::vector<int>& path,int base,int le
   bool out;
   std::set<int> S;
   std::set<int>::const_iterator it;
-  RELATION rho;
   hash_map::const_iterator qt;
 
   for(it=neighbours[base].begin(); it!=neighbours[base].end(); ++it) {
@@ -307,8 +292,7 @@ bool Directed_Graph::directed_cycle(const std::vector<int>& path,int base,int le
     S.clear();
     S.insert(base); S.insert(v);
     qt = index_table.find(S);
-    rho = edges[qt->second].direction;
-    if ((base < v && rho == BEFORE) || (v < base && rho == AFTER)) {
+    if (edges[qt->second].get_direction(base,v) == OUTGOING) {
       std::vector<int> npath = path;
       npath.push_back(v);
       out = directed_cycle(npath,v,length);
@@ -334,14 +318,13 @@ double Directed_Graph::compute_flow(int source,int sink)
 {
   int i;
   bool valid = false;
-  RELATION rho;
   std::set<int> S;
   std::set<int>::const_iterator it;
   hash_map::const_iterator qt;
   const int ne = size();
 
   for(i=0; i<ne; ++i) {
-    if (edges[i].direction == DISPARATE) edges[i].capacity = 0.0;
+    if (edges[i].direction == UNDIRECTED) edges[i].capacity = 0.0;
   }
   // Next we need to verify that there is at least one outgoing edge with capacity > 0 
   // for the source and at least one incoming edge with capacity > 0 for the sink
@@ -352,8 +335,7 @@ double Directed_Graph::compute_flow(int source,int sink)
     S.insert(i);
     qt = index_table.find(S);
     if (edges[qt->second].capacity < std::numeric_limits<double>::epsilon()) continue;
-    rho = edges[qt->second].direction;
-    if ((source < i && rho == BEFORE) || (source > i && rho == AFTER)) valid = true;
+    if (edges[qt->second].get_direction(source,i) == OUTGOING) valid = true;
     if (valid) break;
   }
   if (!valid) {
@@ -371,8 +353,7 @@ double Directed_Graph::compute_flow(int source,int sink)
     S.insert(i);
     qt = index_table.find(S);
     if (edges[qt->second].capacity < std::numeric_limits<double>::epsilon()) continue;
-    rho = edges[qt->second].direction;
-    if ((sink < i && rho == AFTER) || (sink > i && rho == BEFORE)) valid = true;
+    if (edges[qt->second].get_direction(sink,i) == INCOMING) valid = true;
     if (valid) break;
   }
   if (!valid) {
@@ -391,11 +372,11 @@ double Directed_Graph::compute_flow(int source,int sink)
   // in residual graph
   for(i=0; i<ne; ++i) {
     edges[i].get_vertices(vx);
-    if (edges[i].direction == BEFORE) {
+    if (edges[i].direction == OUTGOING) {
       pr.first = vx[0]; pr.second = vx[1];
       rgraph[pr] = int(10000.0*edges[i].capacity);
     }
-    else if (edges[i].direction == AFTER) {
+    else if (edges[i].direction == INCOMING) {
       pr.first = vx[1]; pr.second = vx[0];
       rgraph[pr] = int(10000.0*edges[i].capacity);
     }
@@ -405,11 +386,11 @@ double Directed_Graph::compute_flow(int source,int sink)
   for(i=0; i<ne; ++i) {
     edges[i].flow = 0.0;
     edges[i].get_vertices(vx);
-    if (edges[i].direction == BEFORE) {
+    if (edges[i].direction == OUTGOING) {
       pr.first = vx[0]; pr.second = vx[1]; 
       edges[i].flow = edges[i].capacity - double(rgraph[pr])/10000.0;
     }
-    else if (edges[i].direction == AFTER) {
+    else if (edges[i].direction == INCOMING) {
       pr.first = vx[1]; pr.second = vx[0];
       edges[i].flow = edges[i].capacity - double(rgraph[pr])/10000.0;
     }
@@ -423,7 +404,6 @@ void Directed_Graph::compute_sinks(std::set<int>& output) const
   bool sink;
   std::set<int> S;
   std::set<int>::const_iterator it;
-  RELATION rho;
   hash_map::const_iterator qt;
 
   output.clear();
@@ -436,8 +416,7 @@ void Directed_Graph::compute_sinks(std::set<int>& output) const
       S.clear();
       S.insert(i); S.insert(j);
       qt = index_table.find(S);
-      rho = edges[qt->second].direction;
-      if ((i < j && rho == BEFORE) || (j < i && rho == AFTER)) {
+      if (edges[qt->second].get_direction(i,j) == OUTGOING) {
         // If this vertex has an outgoing edge, it isn't a sink...
         sink = false;
         break;
@@ -453,7 +432,6 @@ void Directed_Graph::compute_sources(std::set<int>& output) const
   bool source;
   std::set<int> S;
   std::set<int>::const_iterator it;
-  RELATION rho;
   hash_map::const_iterator qt;
 
   output.clear();
@@ -466,8 +444,7 @@ void Directed_Graph::compute_sources(std::set<int>& output) const
       S.clear();
       S.insert(i); S.insert(j);
       qt = index_table.find(S);
-      rho = edges[qt->second].direction;
-      if ((i < j && rho == AFTER) || (j < i && rho == BEFORE)) {
+      if (edges[qt->second].get_direction(i,j) == INCOMING) {
         // If this vertex has an incoming edge, it isn't a source...
         source = false;
         break;

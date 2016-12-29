@@ -7,16 +7,22 @@ Edge::Edge()
   clear();
 }
 
-Edge::Edge(int u,int v,double ell,RELATION rho)
+Edge::Edge(int u,int v,double ell,int d)
 {
 #ifdef DEBUG
   assert(u != v);
 #endif
-  clear();
-  vertices.insert(u);
-  vertices.insert(v); 
+  if (u < v) {
+    low = u;
+    high = v;
+    direction = d;
+  }
+  else {
+    low = v;
+    high = u;
+    direction = -d;
+  }
   capacity = ell;
-  direction = rho;
 }
 
 Edge::~Edge()
@@ -29,7 +35,8 @@ Edge::Edge(const Edge& source)
   length = source.length;
   flow = source.flow;
   capacity = source.capacity;
-  vertices = source.vertices;
+  low = source.low;
+  high = source.high;
   cyclic = source.cyclic;
   direction = source.direction;
 }
@@ -41,7 +48,8 @@ Edge& Edge::operator =(const Edge& source)
   length = source.length;
   flow = source.flow;
   capacity = source.capacity;
-  vertices = source.vertices;
+  low = source.low;
+  high = source.high;
   cyclic = source.cyclic;
   direction = source.direction;
 
@@ -50,22 +58,19 @@ Edge& Edge::operator =(const Edge& source)
 
 void Edge::clear()
 {
+  low = -1;
+  high = -1;
   length = 0.0;
-  vertices.clear();
   capacity = 0.0;
   flow = 0.0;
   cyclic = false;
-  direction = DISPARATE;
+  direction = UNDIRECTED;
 }
 
 void Edge::serialize(std::ofstream& s) const
 {
-  int n;
-  std::set<int>::const_iterator it;
-  for(it=vertices.begin(); it!=vertices.end(); ++it) {
-    n = *it;
-    s.write((char*)(&n),sizeof(int));
-  }
+  s.write((char*)(&low),sizeof(int));
+  s.write((char*)(&high),sizeof(int));
   s.write((char*)(&cyclic),sizeof(bool));
   s.write((char*)(&length),sizeof(double));
   s.write((char*)(&flow),sizeof(double));
@@ -75,14 +80,10 @@ void Edge::serialize(std::ofstream& s) const
 
 void Edge::deserialize(std::ifstream& s)
 {
-  int n;
-
   clear();
 
-  s.read((char*)(&n),sizeof(int));
-  vertices.insert(n);
-  s.read((char*)(&n),sizeof(int));
-  vertices.insert(n);
+  s.read((char*)(&low),sizeof(int));
+  s.read((char*)(&high),sizeof(int));
   s.read((char*)(&cyclic),sizeof(bool));
   s.read((char*)(&length),sizeof(double));
   s.read((char*)(&flow),sizeof(double));

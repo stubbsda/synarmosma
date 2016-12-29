@@ -120,14 +120,10 @@ Graph::~Graph()
 bool Graph::consistent() const
 {
   if (!Schema::consistent()) return false;
-  int i,j,vx[2],nedge = (signed) edges.size();
+  int i,vx[2],nedge = (signed) edges.size();
   std::set<int>::const_iterator it;
   for(i=0; i<nedge; ++i) {
-    if (edges[i].vertices.size() != 2) return false;
-    j = 0;
-    for(it=edges[i].vertices.begin(); it!=edges[i].vertices.end(); ++it) {
-      vx[j] = *it; ++j;
-    }
+    edges[i].get_vertices(vx);
     if (vx[0] < 0 || vx[0] >= nvertex) return false;
     if (vx[1] < 0 || vx[1] >= nvertex) return false;
     if (neighbours[vx[0]].count(vx[1]) == 0) return false;
@@ -178,7 +174,9 @@ void Graph::deserialize(std::ifstream& s)
   for(i=0; i<n; ++i) {
     q.deserialize(s);
     edges.push_back(q);
-    index_table[q.vertices] = i;
+    S.clear();
+    S.insert(q.low); S.insert(q.high);
+    index_table[S] = i;
   }
 }
 
@@ -425,28 +423,25 @@ bool Graph::drop_vertex(int v)
   // We now need to delete the edges containing v
   index_table.clear();
   for(i=0; i<nedges; ++i) {
-    if (edges[i].vertices.count(v) > 0) {
+    if (edges[i].low == v || edges[i].high == v) {
       deletion.push_back(i);
       continue;
     }
-    S.clear();
-    for(it=edges[i].vertices.begin(); it!=edges[i].vertices.end(); ++it) {
-      j = *it;
-      if (j > v) {
-        S.insert(j-1);
-      }
-      else {
-        S.insert(j);
-      }
+    if (edges[i].low > v) {
+      edges[i].low -= 1;
     }
-    edges[i].vertices = S;
+    if (edges[i].high > v) {
+      edges[i].high -= 1;
+    }
   }
   j = (signed) deletion.size();
   for(i=j-1; i>=0; --i) {
     edges.erase(edges.begin() + deletion[i]);
   }
   for(i=0; i<(signed) edges.size(); ++i) {
-    index_table[edges[i].vertices] = i;
+    S.clear();
+    S.insert(edges[i].low); S.insert(edges[i].high);
+    index_table[S] = i;
   }
   return true;
 }
@@ -476,7 +471,8 @@ bool Graph::drop_edge(int v,int u)
 
   neighbours[u].erase(v);
   neighbours[v].erase(u);
-  std::set<int> vx; vx.insert(u); vx.insert(v);
+  std::set<int> vx; 
+  vx.insert(u); vx.insert(v);
   hash_map::const_iterator qt = index_table.find(vx);
 #ifdef DEBUG
   assert(qt != index_table.end());
@@ -484,7 +480,9 @@ bool Graph::drop_edge(int v,int u)
   edges.erase(edges.begin() + qt->second);
   index_table.clear();
   for(int i=0; i<(signed) edges.size(); ++i) {
-    index_table[edges[i].vertices] = i;
+    vx.clear();
+    vx.insert(edges[i].low); vx.insert(edges[i].high);
+    index_table[vx] = i;
   }
   return true;
 }

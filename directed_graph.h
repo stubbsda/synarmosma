@@ -15,7 +15,8 @@ namespace SYNARMOSMA {
     Directed_Graph(const Directed_Graph&);
     Directed_Graph& operator =(const Directed_Graph&);
     virtual ~Directed_Graph();
-    bool add_edge(int,int,double = 0,RELATION = DISPARATE);
+    //bool add_edge(int,int,int);
+    bool add_edge(int,int,int,double = 0.0);
     // A method to compute the maximum network flow from a source vertex 
     // to a sink vertex
     virtual double compute_flow(int,int);

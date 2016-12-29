@@ -63,6 +63,10 @@ namespace SYNARMOSMA {
   const double space_quantum = 1e-8;
 #endif
 
+  const int UNDIRECTED = 0;
+  const int OUTGOING = 1;
+  const int INCOMING = -1;
+
   template<unsigned int N>
   struct power_of_two {
     static unsigned int const value = 2*power_of_two<N-1>::value;

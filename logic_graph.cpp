@@ -103,7 +103,9 @@ void Logic_Graph::deserialize(std::ifstream& s)
   for(i=0; i<n; ++i) {
     q.deserialize(s);
     edges.push_back(q);
-    index_table[q.vertices] = i;
+    S.clear();
+    S.insert(q.low); S.insert(q.high);
+    index_table[S] = i;
   }
   logic->deserialize(s);
   compute_logical_breadth();
