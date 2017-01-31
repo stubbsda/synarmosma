@@ -11,6 +11,9 @@ namespace SYNARMOSMA {
   std::ostream& operator <<(std::ostream&,const Polynomial<kind>&);
 
   template<class kind>
+  bool operator ==(const Polynomial<kind>&,const Polynomial<kind>&);
+
+  template<class kind>
   Polynomial<kind> operator +(const Polynomial<kind>&,const Polynomial<kind>&);
 
   template<class kind>
@@ -48,6 +51,7 @@ namespace SYNARMOSMA {
     Polynomial(const Polynomial&);
     Polynomial<unsigned int> reduce(unsigned int);
     kind evaluate(kind);
+    inline unsigned int get_degree() const {return degree;};
     kind get_value(unsigned int) const;
     bool set_value(kind,unsigned int);
     void clear();
@@ -55,6 +59,7 @@ namespace SYNARMOSMA {
     void deserialize(std::ifstream&);
     Polynomial<kind> derivative() const;
     friend std::ostream& operator << <>(std::ostream&,const Polynomial<kind>&);
+    friend bool operator == <>(const Polynomial<kind>&,const Polynomial<kind>&);
     friend Polynomial<kind> operator +<>(const Polynomial<kind>&,const Polynomial<kind>&);
     friend Polynomial<kind> operator *<>(kind,const Polynomial<kind>&);
     friend Polynomial<kind> operator *<>(const Polynomial<kind>&,const Polynomial<kind>&);
@@ -145,6 +150,16 @@ namespace SYNARMOSMA {
       }
     } 	
     return s;
+  }
+
+  template<class kind>
+  bool operator ==(const Polynomial<kind>& p1,const Polynomial<kind>& p2)
+  {
+    if (p1.degree != p2.degree) return false;
+    for(int i=0; i<p1.degree; ++i) {
+      if (p1.terms[i] != p2.terms[i]) return false;
+    }
+    return true;
   }
 
   template<class kind>
