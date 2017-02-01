@@ -11,7 +11,7 @@ int main(int argc,char** argv)
   RND.set_seed(12);
   int i,j,n = 25;
   int d1 = SYNARMOSMA::OUTGOING,d2 = SYNARMOSMA::INCOMING,d3 = SYNARMOSMA::UNDIRECTED;
-  double x,p = 0.15;
+  double p = 0.15;
   std::string type;
   std::vector<double> foo;
   std::pair<int,int> pr;
@@ -92,8 +92,8 @@ int main(int argc,char** argv)
   std::cout << "Testing clustering coefficients..." << std::endl;
   type = "ring";
   SYNARMOSMA::Graph G2(n,type);
-  x = G2.clustering_coefficient();
-  x = G2.mean_path_length();
+  G2.clustering_coefficient();
+  G2.mean_path_length();
   for(i=0; i<n; ++i) {
     if (RND.drandom() < p) {
       G2.drop_edge(i,(i+1)%n);
@@ -104,8 +104,8 @@ int main(int argc,char** argv)
       } while(true);
     }
   }
-  x = G2.clustering_coefficient(); 
-  x = G2.mean_path_length();
+  G2.clustering_coefficient(); 
+  G2.mean_path_length();
 
   std::cout << "Testing directed graphs..." << std::endl;
   SYNARMOSMA::Directed_Graph G3;
@@ -124,7 +124,7 @@ int main(int argc,char** argv)
   G3.add_edge(5,2,d1,3.0);
   G3.add_edge(5,6,d1,11.0);
   assert(G3.bipartite() == 1); 
-  x = G3.entwinement();
+  G3.entwinement();
   assert(G3.eccentricity(3) == 2);
   G3.vertex_centrality(foo,0.000001);
   G3.compute_distances(dmap);
