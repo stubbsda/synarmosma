@@ -93,6 +93,7 @@ namespace SYNARMOSMA {
 
   UINT64 ipow(int,int);
   UINT64 factorial(int);
+  UINT64 binomial(int,int);
   int combinations(const std::set<int>&,int,std::vector<int>&);
   void get_neighbours(int,const std::vector<int>*,int,std::vector<int>&);
   void induced_orientation(int,const std::vector<int>&,int,const hash_map&,int*);
@@ -104,7 +105,6 @@ namespace SYNARMOSMA {
   void convert(unsigned char*,float);
   void compute_smith_normal_form(std::vector<std::pair<int,int> >*,int,int);
   void vertex_difference(int,int,std::vector<double>&);
-  double binomial(int,int);
   double arithmetic_mean(const std::vector<double>&);
   void split(const std::string&,char,std::vector<std::string>&);
   void split(const std::vector<int>&,std::vector<int>&);

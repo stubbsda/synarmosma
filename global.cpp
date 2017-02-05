@@ -286,18 +286,17 @@ namespace SYNARMOSMA {
     return std::sqrt(output);
   }
 
-  double binomial(int n,int k)
+  UINT64 binomial(int n,int k)
   {
-    int i,f,output = n;  
-    for(i=1; i<k; ++i) {
-      output *= (n - i);
+    int i,ulimit = (k < (n-k)) ? k : n - k;
+    UINT64 output,num = 1,den = 1;
+
+    for(i=1; i<=ulimit; ++i) {
+      num *= n + 1 - i;
+      den *= i;
     }
-    f = 1;
-    for(i=2; i<=k; ++i) {
-      f *= i;
-    }
-    output /= f;
-    return double(output);
+    output = num/den;
+    return output;
   }
 
   UINT64 factorial(int x)
