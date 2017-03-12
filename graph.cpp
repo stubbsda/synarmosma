@@ -1422,7 +1422,7 @@ double Graph::cyclic_resistance() const
 double Graph::cyclicity() const
 {
   const int nedge = size();
-  double output = double(nedge - bridge_count())/double(nedge);
+  double output = (nedge == 0) ? 0.0 : double(nedge - bridge_count())/double(nedge);
   return output;
 }
 
