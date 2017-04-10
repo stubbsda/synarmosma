@@ -118,6 +118,7 @@ random.o: random.cpp global.h
 clean:
 	rm -f $(OBJECTS)
 	rm -f *~
+	rm -f unit_test
 	rm -f libsynarmosma.so
 	rm -f $(BIBLIOTHEK)/lib/libsynarmosma.so
 	rm -rf $(BIBLIOTHEK)/include/synarmosma

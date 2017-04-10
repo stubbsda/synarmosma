@@ -11,6 +11,7 @@
 #include <cmath>
 #include <set>
 #include <algorithm>
+#include <unordered_map>
 #include <ctime>
 #include <string>
 #include <limits>
@@ -25,7 +26,6 @@
 #include <boost/date_time.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/unordered_map.hpp>
 #include <boost/dynamic_bitset.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/graph/adjacency_list.hpp>
@@ -47,8 +47,8 @@ extern "C" {
 
 namespace SYNARMOSMA {
   typedef boost::mt19937 base_generator_type;
-  typedef boost::unordered_map<std::set<int>,int> hash_map;
-  typedef boost::unordered_map<std::pair<int,int>,int> edge_hash;
+  typedef std::unordered_map<std::set<int>,int> hash_map;
+  typedef std::unordered_map<std::pair<int,int>,int> edge_hash;
 
 #ifdef __LP64__
   typedef signed long INT64;

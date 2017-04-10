@@ -141,7 +141,7 @@ bool Poset::set_order(unsigned int u,unsigned int v)
 RELATION Poset::get_order(unsigned int u,unsigned int v) const
 {
   if (u == v) return BEFORE;
-  boost::unordered_map<std::pair<unsigned int,unsigned int>,bool>::const_iterator qt;
+  std::unordered_map<std::pair<unsigned int,unsigned int>,bool>::const_iterator qt;
   qt = order.find(std::pair<unsigned int,unsigned int>(u,v));
   if (qt != order.end()) return BEFORE;
   qt = order.find(std::pair<unsigned int,unsigned int>(v,u));
@@ -355,7 +355,7 @@ bool Poset::consistent() const
   // We need to make sure the order relation satisfies the axioms of a 
   // partial order, i.e. reflexive, anti-symmetric and transitive. 
   unsigned int i,j,k;
-  boost::unordered_map<std::pair<unsigned int,unsigned int>,bool>::const_iterator qt;
+  std::unordered_map<std::pair<unsigned int,unsigned int>,bool>::const_iterator qt;
 
   for(i=0; i<N; ++i) {
     // Find every element that is after this one and make sure that all the 
