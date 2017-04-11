@@ -1,7 +1,7 @@
 #include "variety.cpp"
 
-template class Variety<Rational>;
-template class Variety<unsigned int>;
-template class Variety<signed int>;
-template class Variety<NTL::ZZ>;
+template class SYNARMOSMA::Variety<Rational>;
+template class SYNARMOSMA::Variety<unsigned int>;
+template class SYNARMOSMA::Variety<signed int>;
+template class SYNARMOSMA::Variety<NTL::ZZ>;
 
