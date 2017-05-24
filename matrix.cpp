@@ -105,10 +105,16 @@ void Matrix<kind>::display(std::ostream& s) const
 }
 
 namespace SYNARMOSMA {
+  // A divisibility test is meaningless in the context of fields like \mathbb{R} and \mathbb{C}...
   template<>
   bool Matrix<double>::divisible(unsigned int n,unsigned int* out1,unsigned int* out2,double* f) const
   {
-    // A meaningless operation for this kind of matrix...
+    return true;
+  }
+
+  template<>
+  bool Matrix<std::complex<double> >::divisible(unsigned int n,unsigned int* out1,unsigned int* out2,std::complex<double>* f) const
+  {
     return true;
   }
 }
@@ -136,6 +142,26 @@ bool Matrix<kind>::divisible(unsigned int n,unsigned int* out1,unsigned int* out
     }
   }
   return false;
+}
+
+template<class kind>
+void Matrix<kind>::multiply(const std::vector<kind>& b,std::vector<kind>& output) const
+{
+#ifdef DEBUG
+  assert(ncolumn == b.size());
+#endif
+  unsigned int i,j;
+  kind sum;
+
+  output.clear();
+
+  for(i=0; i<nrow; ++i) {
+    sum = Matrix<kind>::zero;
+    for(j=0; j<elements[i].size(); ++j) {
+      sum += elements[i][j].first*b[elements[i][j].second];
+    }
+    output.push_back(sum);
+  }
 }
 
 template<class kind>

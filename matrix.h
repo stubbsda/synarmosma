@@ -53,8 +53,6 @@ namespace SYNARMOSMA {
     void display(std::ostream&) const;
     bool divisible(unsigned int,unsigned int*,unsigned int*,kind*) const;
     void transpose(const Matrix<kind>&);
-    void clear();
-    void clear(bool);
     void write_elements(std::ofstream&) const;
     void read_elements(std::ifstream&);
    public:
@@ -67,6 +65,8 @@ namespace SYNARMOSMA {
     Matrix(unsigned int,unsigned int);
     Matrix(const Matrix<kind>&);
     ~Matrix();
+    void clear();
+    void clear(bool);
     void serialize(std::ofstream&) const;
     void deserialize(std::ifstream&);
     void initialize(unsigned int,unsigned int);
@@ -74,6 +74,7 @@ namespace SYNARMOSMA {
     kind get(unsigned int,unsigned int) const;
     void increment(unsigned int,unsigned int,kind);
     bool empty_row(unsigned int) const;
+    void multiply(const std::vector<kind>&,std::vector<kind>&) const;
     kind get_first_nonzero(unsigned int) const;
     inline int get_nrow() const {return nrow;};
     void get_row(std::vector<kind>&,std::vector<unsigned int>&,int) const;
