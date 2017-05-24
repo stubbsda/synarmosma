@@ -1,7 +1,7 @@
 OBJECTS = global.o random.o cell.o nexus.o schema.o group.o graph.o geometry.o word.o rational.o\
 variety_wrapper.o polynomial_wrapper.o proposition.o propositional_system.o logic_graph.o edge.o\
 vertex.o multitime.o binary_matrix.o matrix_wrapper.o directed_graph.o functional_equation_wrapper.o\
-homology.o homotopy.o poset.o lattice.o pseudograph.o solver.o
+homology.o homotopy.o poset.o lattice.o pseudograph.o solver_wrapper.o
 
 MY_CXX_FLAGS = $(CXX_FLAGS) $(OPENMP) -fPIC #-DDISCRETE
 
@@ -48,6 +48,9 @@ directed_graph.o: directed_graph.cpp directed_graph.h schema.h edge.h global.h
 
 rational.o: global.h rational.h rational.cpp
 	$(CXX) $(MY_CXX_FLAGS) -c rational.cpp
+
+solver_wrapper.o: solver_wrapper.cpp solver.cpp solver.h matrix.h global.h
+	$(CXX) $(MY_CXX_FLAGS) -c solver_wrapper.cpp
 
 matrix_wrapper.o: matrix_wrapper.cpp matrix.cpp matrix.h global.h
 	$(CXX) $(MY_CXX_FLAGS) -c matrix_wrapper.cpp

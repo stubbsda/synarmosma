@@ -1,25 +1,31 @@
 #include "solver.h"
 
-Solver::Solver(int N)
+using namespace SYNARMOSMA;
+
+template<class kind>
+Solver<kind>::Solver(int N)
 {
   set_default_values();
   dim = N;
-  J = new SYNARMOSMA::Matrix<std::complex<double> >(dim);
+  J = new SYNARMOSMA::Matrix<kind>(dim);
 }
 
-Solver::~Solver()
+template<class kind>
+Solver<kind>::~Solver()
 {
   if (dim > 0) delete J;
 }
 
-void Solver::set_default_values()
+template<class kind>
+void Solver<kind>::set_default_values()
 {
   max_its = 100;
   epsilon = 0.00001;
   dim = 0;
 }
 
-std::complex<double> Solver::a1(double t) const
+template<class kind>
+kind Solver<kind>::a1(double t) const
 {
   // The first complement to the homotopy function,
   // s(t) = a1(t)*F(x) + a2(t)*x
@@ -27,11 +33,12 @@ std::complex<double> Solver::a1(double t) const
   // it is continuous and
   // a1(0) = 0
   // a1(1) = 1
-  std::complex<double> output(t,0.0);
+  kind output = t;
   return output;
 }
 
-std::complex<double> Solver::a2(double t) const
+template<class kind>
+kind Solver<kind>::a2(double t) const
 {
   // The second complement to the homotopy function,
   // s(t) = a1(t)*F(x) + a2(t)*x
@@ -39,15 +46,16 @@ std::complex<double> Solver::a2(double t) const
   // it is continuous and
   // a2(0) = 1
   // a2(1) = 0
-  std::complex<double> output(1.0-t,0.0);
+  kind output = 1.0 - t;
   return output;
 }
 
-void Solver::compute_jacobian(const std::vector<std::complex<double> >& x)
+template<class kind>
+void Solver<kind>::compute_jacobian(const std::vector<kind>& x)
 {
   unsigned int i,j;
-  std::complex<double> delta;
-  std::vector<std::complex<double> > w,y1,y2;
+  kind delta;
+  std::vector<kind> w,y1,y2;
 
   J->clear(false);
   F(x,y1);
@@ -63,7 +71,8 @@ void Solver::compute_jacobian(const std::vector<std::complex<double> >& x)
   }
 }
 
-void Solver::linear_solver(const std::vector<std::complex<double> >& x,const std::vector<std::complex<double> >& b,std::vector<std::complex<double> >& xnew) const
+template<class kind>
+void Solver<kind>::linear_solver(const std::vector<kind>& x,const std::vector<kind>& b,std::vector<kind>& xnew) const
 {
 #ifdef LAPACK
 
@@ -74,19 +83,20 @@ void Solver::linear_solver(const std::vector<std::complex<double> >& x,const std
 #endif
 }
 
-bool Solver::forward_step()
+template<class kind>
+bool Solver<kind>::forward_step()
 {
   unsigned int i,its = 0;
   bool success = false;
   double q,norm,dt = 0.05;
-  std::vector<std::complex<double> > x,xnew,y,z;
-  const std::complex<double> w1 = a1(t);
-  const std::complex<double> w2 = a2(t);
+  std::vector<kind> x,xnew,y,z;
+  const kind w1 = a1(t);
+  const kind w2 = a2(t);
 
   for(i=0; i<dim; ++i) {
     x.push_back(c_solution[i]);
-    xnew.push_back(std::complex<double>(0.0,0.0));
-    y.push_back(std::complex<double>(0.0,0.0));
+    xnew.push_back(kind(0.0));
+    y.push_back(kind(0.0));
   }
 
   do {
@@ -129,13 +139,14 @@ bool Solver::forward_step()
   return success;
 }
 
-bool Solver::solve(std::vector<std::complex<double> >& output)
+template<class kind>
+bool Solver<kind>::solve(std::vector<kind>& output)
 {
   unsigned int i;
   bool success;
 
   for(i=0; i<dim; ++i) {
-    c_solution.push_back(std::complex<double>(0.0,0.0));
+    c_solution.push_back(kind(0.0));
   }
   do {
     success = forward_step();
