@@ -74,7 +74,10 @@ namespace SYNARMOSMA {
     kind get(unsigned int,unsigned int) const;
     void increment(unsigned int,unsigned int,kind);
     bool empty_row(unsigned int) const;
+    bool diagonally_dominant() const;
     void multiply(const std::vector<kind>&,std::vector<kind>&) const;
+    void get_diagonal(std::vector<kind>&) const;
+    int gauss_seidel_solver(std::vector<kind>&,const std::vector<kind>&,double,int) const;
     kind get_first_nonzero(unsigned int) const;
     inline int get_nrow() const {return nrow;};
     void get_row(std::vector<kind>&,std::vector<unsigned int>&,int) const;

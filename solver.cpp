@@ -2,6 +2,8 @@
 
 using namespace SYNARMOSMA;
 
+extern Random RND;
+
 template<class kind>
 Solver<kind>::Solver(int N)
 {
@@ -54,20 +56,57 @@ template<class kind>
 void Solver<kind>::compute_jacobian(const std::vector<kind>& x)
 {
   unsigned int i,j;
+  static bool fcall = true;
   kind delta;
+  std::set<unsigned int>::const_iterator it;
   std::vector<kind> w,y1,y2;
 
   J->clear(false);
   F(x,y1);
   w = x;
+  if (fcall) {
+    compute_dependencies();
+    fcall = false;
+  }
+
   for(i=0; i<dim; ++i) {
-    w[i] += epsilon;
-    F(w,y2);
-    for(j=0; j<dim; ++j) {
+    for(it=dependencies[i].begin(); it!=dependencies[i].end(); ++it) {
+      j = *it;
+      w[j] += epsilon;
+      F(w,y2);
       delta = y2[j] - y1[j];
-      if (std::abs(delta) > epsilon) J->set(i,j,delta/epsilon);
+      J->set(i,j,delta/epsilon);
+      w[j] -= epsilon;
     }
-    w[i] -= epsilon;
+  }
+}
+
+template<class kind>
+void Solver<kind>::compute_dependencies()
+{
+  unsigned int i,j;
+  kind delta;
+  std::set<unsigned int> null;
+  std::vector<kind> w,x,y;
+
+  dependencies.clear();
+  for(i=0; i<dim; ++i) {
+    dependencies.push_back(null);
+    delta = RND.drandom(-5.0,5.0);
+    x.push_back(delta);
+    y.push_back(kind(0.0));
+    w.push_back(kind(0.0));
+  }
+
+  F(x,w);
+  for(i=0; i<dim; ++i) {
+    x[i] += kind(10.0);
+    F(x,y);
+    for(j=0; j<dim; ++j) {
+      delta = y[j] - w[j];
+      if (std::abs(delta) > epsilon) dependencies[j].insert(i);
+    }
+    x[i] -= kind(10.0);
   }
 }
 
@@ -79,7 +118,9 @@ void Solver<kind>::linear_solver(const std::vector<kind>& x,const std::vector<ki
 #elif PETSC
 
 #else
-  // Use the native solver
+  // Use the native Gauss-Seidel iterative solver in the Matrix class
+  xnew = x;
+  J->gauss_seidel_solver(xnew,b,epsilon,100);
 #endif
 }
 

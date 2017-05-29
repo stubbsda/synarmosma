@@ -2,6 +2,8 @@
 
 using namespace SYNARMOSMA;
 
+extern Random RND;
+
 template<class kind>
 Matrix<kind>::Matrix()
 {
@@ -162,6 +164,157 @@ void Matrix<kind>::multiply(const std::vector<kind>& b,std::vector<kind>& output
     }
     output.push_back(sum);
   }
+}
+
+namespace SYNARMOSMA {
+  template<>
+  bool Matrix<NTL::ZZ>::diagonally_dominant() const
+  {
+    unsigned int i,j;
+    double sum,d,q;
+
+    for(i=0; i<nrow; ++i) {
+      d = 0.0;
+      sum = 0.0;
+      for(j=0; j<elements[i].size(); ++j) {
+        NTL::conv(elements[i][j].first,q);
+        q = std::abs(q);
+        if (elements[i][j].second == i) {
+          d = q;
+          continue;
+        }
+        sum += q;
+      }
+      if (d < sum) return false;
+    }
+    return true;
+  }
+}
+
+template<class kind>
+bool Matrix<kind>::diagonally_dominant() const
+{
+  unsigned int i,j;
+  double sum,d,q;
+
+  for(i=0; i<nrow; ++i) {
+    d = 0.0;
+    sum = 0.0;
+    for(j=0; j<elements[i].size(); ++j) {
+      q = std::abs(elements[i][j].first);
+      if (elements[i][j].second == i) {
+        d = q;
+        continue;
+      }
+      sum += q;
+    }
+    if (d < sum) return false;
+  }
+  return true;
+}
+
+template<class kind>
+void Matrix<kind>::get_diagonal(std::vector<kind>& diag) const
+{
+  unsigned int i,j;
+  kind d;
+
+  diag.clear();
+
+  for(i=0; i<nrow; ++i) {
+    d = zero;
+    for(j=0; j<elements[i].size(); ++j) {
+      if (elements[i][j].second == i) {
+        d = elements[i][j].first;
+        break;
+      }
+    }
+    diag.push_back(d);
+  }
+}
+
+namespace SYNARMOSMA {
+  // This method only makes sense in the context of a field, so we will create null versions for the int 
+  // and NTL::ZZ instantiations of the class
+  template<>
+  int Matrix<int>::gauss_seidel_solver(std::vector<int>& x,const std::vector<int>& b,double threshold,int max_its) const
+  {
+    return -1;
+  }
+
+  template<>
+  int Matrix<NTL::ZZ>::gauss_seidel_solver(std::vector<NTL::ZZ>& x,const std::vector<NTL::ZZ>& b,double threshold,int max_its) const
+  {
+    return -1;
+  }
+}
+
+template<class kind>
+int Matrix<kind>::gauss_seidel_solver(std::vector<kind>& x,const std::vector<kind>& source,double threshold,int max_its) const
+{
+  unsigned int i,j,its = 0;
+  kind sum;
+  double rho,error,error_new;
+  std::vector<kind> x_new,diagonal;
+
+  get_diagonal(diagonal);
+
+  x.clear();
+  for(i=0; i<nrow; ++i) {
+    x.push_back(-0.5 + RND.drandom());
+    x_new.push_back(0.0);
+  }
+
+  error = 0.0;
+  for(i=0; i<nrow; ++i) {
+    sum = zero;
+    for(j=0; j<elements[i].size(); ++j) {
+      sum += elements[i][j].first*x[elements[i][j].second];
+    }
+    rho = std::abs(sum + diagonal[i]*x[i] - source[i]);
+    error += rho*rho;
+  }
+  error = std::sqrt(error);
+
+#ifdef VERBOSE
+  std::cout << "For iteration " << its << " the solution error of the linear system is " << error << "." << std::endl;  
+#endif
+
+  do {
+    its++;
+#ifdef _OPENMP
+#pragma omp parallel for default(shared) private(i,j,sum)
+#endif
+    for(i=0; i<nrow; ++i) {
+      sum = zero;
+      for(j=0; j<elements[i].size(); ++j) {
+        sum += elements[i][j].first*x[elements[i][j].second];
+      }
+      x_new[i] = (source[i] - sum)/diagonal[i];
+    }
+    error_new = 0.0;
+    for(i=0; i<nrow; ++i) {
+      sum = zero;
+      for(j=0; j<elements[i].size(); ++j) {
+        sum += elements[i][j].first*x_new[elements[i][j].second];
+      }
+      rho = std::abs(sum + diagonal[i]*x_new[i] - source[i]);
+      error_new += rho*rho;
+    }
+    error_new = std::sqrt(error_new);
+#ifdef VERBOSE
+    std::cout << "For iteration " << its << " the solution error of the linear system is " << error_new << "." << std::endl;
+#endif
+    if (error_new < threshold) break;
+    if (error_new > 2.0*error) break;
+    error = error_new;
+    x = x_new;
+    if (its >= max_its) break;
+  } while(true);
+
+  if (its == max_its && !(error < threshold)) return -1;
+  x = x_new;
+  return its;
 }
 
 template<class kind>

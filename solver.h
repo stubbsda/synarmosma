@@ -13,12 +13,13 @@ namespace SYNARMOSMA {
     double epsilon;  
     double t;
     std::vector<kind> c_solution;
-    std::vector<std::set<int> > dependencies;
+    std::vector<std::set<unsigned int> > dependencies;
     Matrix<kind>* J;
 
     bool forward_step();
     void set_default_values();
     void compute_jacobian(const std::vector<kind>&);
+    void compute_dependencies();
     void linear_solver(const std::vector<kind>&,const std::vector<kind>&,std::vector<kind>&) const;
     kind a1(double) const;
     kind a2(double) const;
