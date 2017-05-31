@@ -17,10 +17,11 @@ namespace SYNARMOSMA {
     Matrix<kind>* J;
 
     bool forward_step();
+    bool direct_solver(std::vector<kind>&) const;
     void set_default_values();
     void compute_jacobian(const std::vector<kind>&);
     void compute_dependencies();
-    void linear_solver(const std::vector<kind>&,const std::vector<kind>&,std::vector<kind>&) const;
+    bool linear_solver(const std::vector<kind>&,const std::vector<kind>&,std::vector<kind>&) const;
     kind a1(double) const;
     kind a2(double) const;
     virtual void F(const std::vector<kind>&,std::vector<kind>&) const = 0;

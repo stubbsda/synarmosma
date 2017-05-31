@@ -106,6 +106,25 @@ void Matrix<kind>::display(std::ostream& s) const
   s << std::endl;
 }
 
+template<class kind>
+void Matrix<kind>::convert(kind* A) const
+{
+  // This method supposes that A has already been allocated the appropriate amount
+  // of memory...
+  unsigned int i,j;
+
+  for(i=0; i<nrow; ++i) {
+    for(j=0; j<ncolumn; ++j) {
+      A[nrow*i+j] = zero;
+    }
+  }
+  for(i=0; i<nrow; ++i) {
+    for(j=0; j<elements[i].size(); ++j) {
+      A[nrow*i+elements[i][j].second] = elements[i][j].first;
+    }
+  }  
+}
+
 namespace SYNARMOSMA {
   // A divisibility test is meaningless in the context of fields like \mathbb{R} and \mathbb{C}...
   template<>

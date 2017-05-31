@@ -110,18 +110,62 @@ void Solver<kind>::compute_dependencies()
   }
 }
 
-template<class kind>
-void Solver<kind>::linear_solver(const std::vector<kind>& x,const std::vector<kind>& b,std::vector<kind>& xnew) const
-{
-#ifdef LAPACK
+namespace SYNARMOSMA {
+  template<>
+  bool Solver<double>::direct_solver(std::vector<double>& x) const
+  {
+    int info,one = 1,n = dim;
+    int pivots[dim];
+    double A[dim*dim];
 
+    J->convert(A);
+
+    dgesv_(&n,&one,A,&n,pivots,&x[0],&n,&info);
+
+    if (info != 0) {
+      return false;
+    }
+    else {
+      return true;
+    }
+  }
+
+  template<>
+  bool Solver<std::complex<double> >::direct_solver(std::vector<std::complex<double> >& x) const
+  {
+    int info,one = 1,n = dim;
+    int pivots[dim];
+    std::complex<double> A[dim*dim];
+
+    J->convert(A);
+
+    zgesv_(&n,&one,A,&n,pivots,&x[0],&n,&info);
+
+    if (info != 0) {
+      return false;
+    }
+    else {
+      return true;
+    }
+  }
+}
+
+template<class kind>
+bool Solver<kind>::linear_solver(const std::vector<kind>& x,const std::vector<kind>& b,std::vector<kind>& xnew) const
+{
+  bool success;
+#ifdef LAPACK
+  xnew = b;
+  success = direct_solver(xnew);
 #elif PETSC
 
 #else
   // Use the native Gauss-Seidel iterative solver in the Matrix class
   xnew = x;
-  J->gauss_seidel_solver(xnew,b,epsilon,100);
+  int n = J->gauss_seidel_solver(xnew,b,epsilon,100);
+  success = (n > 0) ? true : false;
 #endif
+  return success;
 }
 
 template<class kind>
@@ -148,7 +192,8 @@ bool Solver<kind>::forward_step()
       y[i] = z[i] - y[i];
     }
     // And solve the linear system J*xnew = b
-    linear_solver(x,y,xnew);
+    success = linear_solver(x,y,xnew);
+    if (!success) break;
     norm = 0.0;
     for(i=0; i<dim; ++i) {
       q = std::abs(xnew[i] - x[i]);
