@@ -24,32 +24,64 @@ void Solver<kind>::set_default_values()
   max_its = 100;
   epsilon = 0.00001;
   dim = 0;
+  nnonzero = 0;
+  method = DIRECT;
 }
 
-template<class kind>
-kind Solver<kind>::a1(double t) const
-{
-  // The first complement to the homotopy function,
-  // s(t) = a1(t)*F(x) + a2(t)*x
-  // We have the conditions on a1(t) (0 <= t <= 1) that 
-  // it is continuous and
-  // a1(0) = 0
-  // a1(1) = 1
-  kind output = t;
-  return output;
-}
+namespace SYNARMOSMA {
+  template<>
+  double Solver<double>::a1(double t) const
+  {
+    // The first complement to the homotopy function,
+    // s(t) = a1(t)*F(x) + a2(t)*x
+    // We have the conditions on a1(t) (0 <= t <= 1) that 
+    // it is continuous and
+    // a1(0) = 0
+    // a1(1) = 1
+    double output = t;
+    return output;
+  }
 
-template<class kind>
-kind Solver<kind>::a2(double t) const
-{
-  // The second complement to the homotopy function,
-  // s(t) = a1(t)*F(x) + a2(t)*x
-  // We have the conditions on a2(t) (0 <= t <= 1) that 
-  // it is continuous and
-  // a2(0) = 1
-  // a2(1) = 0
-  kind output = 1.0 - t;
-  return output;
+  template<>
+  std::complex<double> Solver<std::complex<double> >::a1(double t) const
+  {
+    // The first complement to the homotopy function,
+    // s(t) = a1(t)*F(x) + a2(t)*x
+    // We have the conditions on a1(t) (0 <= t <= 1) that 
+    // it is continuous and
+    // a1(0) = 0
+    // a1(1) = 1
+    std::complex<double> i(0.0,1.0);
+    std::complex<double> output = std::sin(M_PI/2.0*t + 5.0*i*t*(t - 1.0));
+    return output;
+  }
+
+  template<>
+  double Solver<double>::a2(double t) const
+  {
+    // The second complement to the homotopy function,
+    // s(t) = a1(t)*F(x) + a2(t)*x
+    // We have the conditions on a2(t) (0 <= t <= 1) that 
+    // it is continuous and
+    // a2(0) = 1
+    // a2(1) = 0
+    double output = 1.0 - t;
+    return output;
+  }
+
+  template<>
+  std::complex<double> Solver<std::complex<double> >::a2(double t) const
+  {
+    // The second complement to the homotopy function,
+    // s(t) = a1(t)*F(x) + a2(t)*x
+    // We have the conditions on a2(t) (0 <= t <= 1) that 
+    // it is continuous and
+    // a2(0) = 1
+    // a2(1) = 0
+    std::complex<double> i(0.0,1.0);
+    std::complex<double> output = (1.0 - t)*std::exp(10.0*i*t);
+    return output;
+  }
 }
 
 template<class kind>
@@ -154,17 +186,17 @@ template<class kind>
 bool Solver<kind>::linear_solver(const std::vector<kind>& x,const std::vector<kind>& b,std::vector<kind>& xnew) const
 {
   bool success;
-#ifdef LAPACK
-  xnew = b;
-  success = direct_solver(xnew);
-#elif PETSC
-
-#else
-  // Use the native Gauss-Seidel iterative solver in the Matrix class
-  xnew = x;
-  int n = J->gauss_seidel_solver(xnew,b,epsilon,100);
-  success = (n > 0) ? true : false;
-#endif
+  if (method == DIRECT) {
+    // Use the direct LAPACK-based linear solver
+    xnew = b;
+    success = direct_solver(xnew);
+  }
+  else {
+    // Use the native Gauss-Seidel iterative solver in the Matrix class
+    xnew = x;
+    int n = J->gauss_seidel_solver(xnew,b,epsilon,100);
+    success = (n > 0) ? true : false;
+  }
   return success;
 }
 
@@ -234,16 +266,15 @@ bool Solver<kind>::solve(std::vector<kind>& output)
   for(i=0; i<dim; ++i) {
     c_solution.push_back(kind(0.0));
   }
+  output = c_solution;
+
   do {
     success = forward_step();
     if (!success) break;
     if (std::abs(1.0 - t) < epsilon) break;
   } while(true);
-  if (success) {
-    output.clear();
-    for(i=0; i<dim; ++i) {
-      output.push_back(c_solution[i]);
-    }
-  }
+
+  if (success) output = c_solution;
+  
   return success;
 }

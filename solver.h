@@ -4,6 +4,12 @@
 #define _solverh
 
 namespace SYNARMOSMA {
+  enum SOLVER_TYPE
+  {
+    DIRECT,
+    ITERATIVE
+  };
+
   template<class kind>
   class Solver {
    protected:
@@ -12,6 +18,7 @@ namespace SYNARMOSMA {
     unsigned int nnonzero;
     double epsilon;  
     double t;
+    SOLVER_TYPE method;
     std::vector<kind> c_solution;
     std::vector<std::set<unsigned int> > dependencies;
     Matrix<kind>* J;

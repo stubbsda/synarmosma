@@ -3,8 +3,42 @@
 #include "synarmosma/lattice.h"
 #include "synarmosma/polynomial.h"
 #include "synarmosma/directed_graph.h"
+#include "synarmosma/solver.h"
 
 extern SYNARMOSMA::Random RND;
+
+class solver_test : public SYNARMOSMA::Solver<double>
+{
+ private:
+  void F(const std::vector<double>&,std::vector<double>&) const;
+ public:
+  solver_test(int);
+  ~solver_test();  
+}; 
+
+void solver_test::F(const std::vector<double>& x,std::vector<double>& y) const
+{
+  double z;
+
+  y.clear();
+  z = x[0]*x[0] + x[1]*x[1] - + x[2]*x[2]*x[2] - 15.4;
+  y.push_back(z);  
+  z = 2.0 + std::exp(-x[0]*x[1]) + x[2];
+  y.push_back(z);
+  z = std::sin(x[0])*std::sin(x[2]) - 7.5*x[1]*x[1] + 1.44;
+  y.push_back(z);
+}
+
+solver_test::solver_test(int n) : SYNARMOSMA::Solver<double>(n)
+{
+  assert(n == 3);
+}
+
+solver_test::~solver_test()
+{
+
+}
+
 
 int main(int argc,char** argv)
 {
@@ -185,6 +219,11 @@ int main(int argc,char** argv)
   assert(G6.circuit_rank() == 1);
   assert(G6.order() == 3);
   assert(G6.size() == 3);
+
+  std::vector<double> x;
+  solver_test SV(3);
+  bool s_output = SV.solve(x);
+  std::cout << s_output << "  (" << x[0] << "," << x[1] << "," << x[2] << ")" << std::endl; 
   std::cout << "All tests passed successfully!" << std::endl;
   return 0;
 }
