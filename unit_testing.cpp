@@ -23,9 +23,9 @@ void solver_test::F(const std::vector<double>& x,std::vector<double>& y) const
   y.clear();
   z = x[0]*x[0] + x[1]*x[1] - + x[2]*x[2]*x[2] - 15.4;
   y.push_back(z);  
-  z = 2.0 + std::exp(-x[0]*x[1]) + x[2];
+  z = 7.6 - 1.2*std::exp(-x[0]*x[1]) + x[2] + 3.1;
   y.push_back(z);
-  z = std::sin(x[0])*std::sin(x[2]) - 7.5*x[1]*x[1] + 1.44;
+  z = std::sin(x[0])*std::sin(x[2]) - 7.5*x[1]*x[1] + 2.5;
   y.push_back(z);
 }
 

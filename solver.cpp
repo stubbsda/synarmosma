@@ -26,6 +26,7 @@ void Solver<kind>::set_default_values()
   dim = 0;
   nnonzero = 0;
   method = DIRECT;
+  //method = ITERATIVE; 
 }
 
 namespace SYNARMOSMA {
@@ -85,6 +86,25 @@ namespace SYNARMOSMA {
 }
 
 template<class kind>
+void Solver<kind>::homotopy_function(const std::vector<kind>& x,std::vector<kind>& output) const
+{
+  unsigned int i;
+  kind q;
+  std::vector<kind> y;
+  const kind w1 = a1(t);
+  const kind w2 = a2(t);
+
+  F(x,y);
+
+  output.clear();
+
+  for(i=0; i<dim; ++i) {
+    q = w1*y[i] + w2*x[i];
+    output.push_back(q);
+  }
+}
+
+template<class kind>
 void Solver<kind>::compute_jacobian(const std::vector<kind>& x)
 {
   unsigned int i,j;
@@ -94,7 +114,7 @@ void Solver<kind>::compute_jacobian(const std::vector<kind>& x)
   std::vector<kind> w,y1,y2;
 
   J->clear(false);
-  F(x,y1);
+  homotopy_function(x,y1);
   w = x;
   if (fcall) {
     compute_dependencies();
@@ -105,7 +125,7 @@ void Solver<kind>::compute_jacobian(const std::vector<kind>& x)
     for(it=dependencies[i].begin(); it!=dependencies[i].end(); ++it) {
       j = *it;
       w[j] += epsilon;
-      F(w,y2);
+      homotopy_function(w,y2);
       delta = y2[j] - y1[j];
       J->set(i,j,delta/epsilon);
       w[j] -= epsilon;
@@ -130,34 +150,47 @@ void Solver<kind>::compute_dependencies()
     w.push_back(kind(0.0));
   }
 
-  F(x,w);
+  homotopy_function(x,w);
   for(i=0; i<dim; ++i) {
     x[i] += kind(10.0);
-    F(x,y);
+    homotopy_function(x,y);
     for(j=0; j<dim; ++j) {
       delta = y[j] - w[j];
       if (std::abs(delta) > epsilon) dependencies[j].insert(i);
     }
     x[i] -= kind(10.0);
   }
+#ifdef VERBOSE
+  for(i=0; i<dim; ++i) {
+    std::cout << "For equation " << 1+i << " there are " << dependencies[i].size() << " independent variables" << std::endl;
+  }
+#endif
 }
 
 namespace SYNARMOSMA {
   template<>
   bool Solver<double>::direct_solver(std::vector<double>& x) const
   {
+    unsigned int i;
     int info,one = 1,n = dim;
     int pivots[dim];
-    double A[dim*dim];
+    double xin[dim],A[dim*dim];
 
     J->convert(A);
 
-    dgesv_(&n,&one,A,&n,pivots,&x[0],&n,&info);
+    for(i=0; i<dim; ++i) {
+      xin[i] = x[i];
+    }
+
+    dgesv_(&n,&one,A,&n,pivots,xin,&n,&info);
 
     if (info != 0) {
       return false;
     }
     else {
+      for(i=0; i<dim; ++i) {
+        x[i] = xin[i];
+      }
       return true;
     }
   }
@@ -194,6 +227,9 @@ bool Solver<kind>::linear_solver(const std::vector<kind>& x,const std::vector<ki
   else {
     // Use the native Gauss-Seidel iterative solver in the Matrix class
     xnew = x;
+#ifdef VERBOSE
+    std::cout << "Matrix diagonal dominance is " << J->diagonally_dominant() << std::endl;
+#endif
     int n = J->gauss_seidel_solver(xnew,b,epsilon,100);
     success = (n > 0) ? true : false;
   }
@@ -207,14 +243,13 @@ bool Solver<kind>::forward_step()
   bool success = false;
   double q,norm,dt = 0.05;
   std::vector<kind> x,xnew,y,z;
-  const kind w1 = a1(t);
-  const kind w2 = a2(t);
 
   for(i=0; i<dim; ++i) {
     x.push_back(c_solution[i]);
     xnew.push_back(kind(0.0));
     y.push_back(kind(0.0));
   }
+  homotopy_function(x,y);
 
   do {
     compute_jacobian(x);
@@ -225,6 +260,9 @@ bool Solver<kind>::forward_step()
     }
     // And solve the linear system J*xnew = b
     success = linear_solver(x,y,xnew);
+#ifdef VERBOSE
+    std::cout << "Linear solver => " << success << " at " << its << std::endl;
+#endif
     if (!success) break;
     norm = 0.0;
     for(i=0; i<dim; ++i) {
@@ -232,17 +270,25 @@ bool Solver<kind>::forward_step()
       norm += q*q;
       x[i] = xnew[i];  
     }
+    norm = std::sqrt(norm);
     // Check to see if the new solution differs appreciably from 
     // the old one
+#ifdef VERBOSE
+    std::cout << "Difference norm is " << norm << " at " << its << std::endl;
+#endif
     if (std::sqrt(norm) < epsilon) break;
-    F(x,y);
+    homotopy_function(x,y);
     norm = 0.0;
     for(i=0; i<dim; ++i) {
-      q = std::abs(w1*y[i] + w2*x[i]);
+      q = std::abs(y[i]);
       norm += q*q;
     }
+    norm = std::sqrt(norm);
     // Check to see if the new solution in fact solves the nonlinear
     // system
+#ifdef VERBOSE
+    std::cout << "F norm is " << norm << " at " << its << std::endl;
+#endif
     if (norm < epsilon) {
       success = true;
       break;
@@ -267,9 +313,12 @@ bool Solver<kind>::solve(std::vector<kind>& output)
     c_solution.push_back(kind(0.0));
   }
   output = c_solution;
-
+  t += 0.01;
   do {
     success = forward_step();
+#ifdef VERBOSE
+    std::cout << "Homotopy progress: " << t << "  " << success << std::endl;
+#endif
     if (!success) break;
     if (std::abs(1.0 - t) < epsilon) break;
   } while(true);

@@ -290,11 +290,23 @@ int Matrix<kind>::gauss_seidel_solver(std::vector<kind>& x,const std::vector<kin
   std::vector<kind> x_new,diagonal;
 
   get_diagonal(diagonal);
+  for(i=0; i<nrow; ++i) {
+    if (!(std::abs(diagonal[i]) > std::numeric_limits<double>::epsilon())) {
+#ifdef VERBOSE
+      std::cout << "Diagonal element for row " << i << " is zero, exiting!" << std::endl;
+#endif
+      return -1;
+    }
+  }
 
   x.clear();
   for(i=0; i<nrow; ++i) {
     x.push_back(-0.5 + RND.drandom());
     x_new.push_back(0.0);
+  }
+
+  for(i=0; i<nrow; ++i) {
+    std::cout << "Diagonal element of row " << i << " is " << diagonal[i] << std::endl;
   }
 
   error = 0.0;
@@ -338,7 +350,7 @@ int Matrix<kind>::gauss_seidel_solver(std::vector<kind>& x,const std::vector<kin
     std::cout << "For iteration " << its << " the solution error of the linear system is " << error_new << "." << std::endl;
 #endif
     if (error_new < threshold) break;
-    if (error_new > 2.0*error) break;
+    if (error_new > 2.0*error) return -1;
     error = error_new;
     x = x_new;
     if (its >= max_its) break;
