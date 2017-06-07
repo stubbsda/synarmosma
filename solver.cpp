@@ -97,9 +97,8 @@ void Solver<kind>::homotopy_function(const std::vector<kind>& x,std::vector<kind
   F(x,y);
 
   output.clear();
-
   for(i=0; i<dim; ++i) {
-    q = w1*y[i] + w2*x[i];
+    q = w1*y[i] + w2*(x[i] - base_solution[i]);
     output.push_back(q);
   }
 }
@@ -126,11 +125,14 @@ void Solver<kind>::compute_jacobian(const std::vector<kind>& x)
       j = *it;
       w[j] += epsilon;
       homotopy_function(w,y2);
-      delta = y2[j] - y1[j];
+      delta = y2[i] - y1[i];
       J->set(i,j,delta/epsilon);
       w[j] -= epsilon;
     }
   }
+#ifdef VERBOSE
+  //std::cout << *J << std::endl;
+#endif  
 }
 
 template<class kind>
@@ -240,7 +242,7 @@ template<class kind>
 bool Solver<kind>::forward_step()
 {
   unsigned int i,its = 0;
-  bool success = false;
+  bool success,output = false;
   double q,norm,dt = 0.05;
   std::vector<kind> x,xnew,y,z;
 
@@ -268,7 +270,6 @@ bool Solver<kind>::forward_step()
     for(i=0; i<dim; ++i) {
       q = std::abs(xnew[i] - x[i]);
       norm += q*q;
-      x[i] = xnew[i];  
     }
     norm = std::sqrt(norm);
     // Check to see if the new solution differs appreciably from 
@@ -277,6 +278,7 @@ bool Solver<kind>::forward_step()
     std::cout << "Difference norm is " << norm << " at " << its << std::endl;
 #endif
     if (std::sqrt(norm) < epsilon) break;
+    x = xnew;
     homotopy_function(x,y);
     norm = 0.0;
     for(i=0; i<dim; ++i) {
@@ -290,17 +292,18 @@ bool Solver<kind>::forward_step()
     std::cout << "F norm is " << norm << " at " << its << std::endl;
 #endif
     if (norm < epsilon) {
-      success = true;
+      output = true;
       break;
     }
+    its++;
   } while(its <= max_its);
-  if (success) {
+  if (output) {
     for(i=0; i<dim; ++i) {
       c_solution[i] = xnew[i];
     }
     t += dt;
   }
-  return success;
+  return output;
 }
 
 template<class kind>
@@ -308,10 +311,13 @@ bool Solver<kind>::solve(std::vector<kind>& output)
 {
   unsigned int i;
   bool success;
+  double alpha;
 
   for(i=0; i<dim; ++i) {
-    c_solution.push_back(kind(0.0));
+    alpha = -1.0 + 2.0*RND.drandom();
+    base_solution.push_back(kind(alpha));
   }
+  c_solution = base_solution;
   output = c_solution;
   t += 0.01;
   do {

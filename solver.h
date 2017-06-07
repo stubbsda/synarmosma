@@ -19,7 +19,7 @@ namespace SYNARMOSMA {
     double epsilon;  
     double t;
     SOLVER_TYPE method;
-    std::vector<kind> c_solution;
+    std::vector<kind> c_solution,base_solution;
     std::vector<std::set<unsigned int> > dependencies;
     Matrix<kind>* J;
 
