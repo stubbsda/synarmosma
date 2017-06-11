@@ -375,46 +375,6 @@ namespace SYNARMOSMA {
     }
   }
 
-  void invert(const double* A,double* B,int n)
-  {
-    // Invert the size*size matrix A into B
-    int i,info,lwork = n*n;
-    int ipiv[n+1];
-    double work[lwork];
-
-    for(i=0; i<n*n; ++i) {
-      B[i] = A[i];
-    }
-    dgetrf_(&n,&n,B,&n,ipiv,&info);
-    dgetri_(&n,B,&n,ipiv,work,&lwork,&info);
-#ifdef DEBUG
-    assert(info == 0);
-#endif 
-  }
-
-  double determinant(const double* A,int n) 
-  {
-    // A function that calculates the determinant of the n x n matrix A, 
-    // using LAPACK to first compute an LU factorization of A.
-    int i,info,pivots[n];
-    bool permuted = false;
-    double B[n*n],output = 1.0;
-
-    for(i=0; i<n*n; ++i) {
-      B[i] = A[i];
-    }
-    dgetrf_(&n,&n,B,&n,pivots,&info);
-#ifdef DEBUG
-    assert(info >= 0);
-#endif
-    for(i=0; i<n; ++i) {
-      output *= B[n*i+i];
-      if (pivots[i] != (1+i)) permuted = !permuted;
-    }
-    output = (permuted) ? -output : output;
-    return output;  
-  }
-
   int coincidence(const std::set<int>& v1,const std::set<int>& v2)
   {
     // The incidence number concerns the relation between two

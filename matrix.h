@@ -73,7 +73,7 @@ namespace SYNARMOSMA {
     void set(unsigned int,unsigned int,kind,bool = false);
     kind get(unsigned int,unsigned int) const;
     void increment(unsigned int,unsigned int,kind);
-    void convert(kind*) const;
+    void convert(kind*,char) const;
     bool empty_row(unsigned int) const;
     double sparsity() const;
     bool diagonally_dominant() const;

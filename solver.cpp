@@ -25,8 +25,8 @@ void Solver<kind>::set_default_values()
   epsilon = 0.00001;
   dim = 0;
   nnonzero = 0;
-  method = DIRECT;
-  //method = ITERATIVE; 
+  //method = DIRECT;
+  method = ITERATIVE; 
 }
 
 namespace SYNARMOSMA {
@@ -130,9 +130,6 @@ void Solver<kind>::compute_jacobian(const std::vector<kind>& x)
       w[j] -= epsilon;
     }
   }
-#ifdef VERBOSE
-  //std::cout << *J << std::endl;
-#endif  
 }
 
 template<class kind>
@@ -173,28 +170,18 @@ namespace SYNARMOSMA {
   template<>
   bool Solver<double>::direct_solver(std::vector<double>& x) const
   {
-    unsigned int i;
     int info,one = 1,n = dim;
     int pivots[dim];
-    double xin[dim],A[dim*dim];
+    double A[dim*dim];
+    bool output = false;
 
-    J->convert(A);
+    J->convert(A,'c');
 
-    for(i=0; i<dim; ++i) {
-      xin[i] = x[i];
-    }
+    dgesv_(&n,&one,A,&n,pivots,&x[0],&n,&info);
 
-    dgesv_(&n,&one,A,&n,pivots,xin,&n,&info);
+    if (info == 0) output = true;
 
-    if (info != 0) {
-      return false;
-    }
-    else {
-      for(i=0; i<dim; ++i) {
-        x[i] = xin[i];
-      }
-      return true;
-    }
+    return output;
   }
 
   template<>
@@ -203,24 +190,22 @@ namespace SYNARMOSMA {
     int info,one = 1,n = dim;
     int pivots[dim];
     std::complex<double> A[dim*dim];
+    bool output = false;
 
-    J->convert(A);
+    J->convert(A,'c');
 
     zgesv_(&n,&one,A,&n,pivots,&x[0],&n,&info);
 
-    if (info != 0) {
-      return false;
-    }
-    else {
-      return true;
-    }
+    if (info == 0) output = true;
+
+    return output;
   }
 }
 
 template<class kind>
 bool Solver<kind>::linear_solver(const std::vector<kind>& x,const std::vector<kind>& b,std::vector<kind>& xnew) const
 {
-  bool success;
+  bool success = false;
   if (method == DIRECT) {
     // Use the direct LAPACK-based linear solver
     xnew = b;
@@ -228,12 +213,17 @@ bool Solver<kind>::linear_solver(const std::vector<kind>& x,const std::vector<ki
   }
   else {
     // Use the native Gauss-Seidel iterative solver in the Matrix class
-    xnew = x;
 #ifdef VERBOSE
-    std::cout << "Matrix diagonal dominance is " << J->diagonally_dominant() << std::endl;
+    if (J->diagonally_dominant()) {
+      std::cout << "The Jacobian matrix is diagonally dominant." << std::endl;
+    }
+    else {
+      std::cout << "The Jacobian matrix is not diagonally dominant." << std::endl;
+    }
 #endif
+    xnew = x;
     int n = J->gauss_seidel_solver(xnew,b,epsilon,100);
-    success = (n > 0) ? true : false;
+    if (n > 0) success = true;
   }
   return success;
 }
@@ -243,28 +233,32 @@ bool Solver<kind>::forward_step()
 {
   unsigned int i,its = 0;
   bool success,output = false;
-  double q,norm,dt = 0.05;
-  std::vector<kind> x,xnew,y,z;
+  double q,old_norm,norm,dt = 0.05;
+  std::vector<kind> x,xnew,b,y,z;
 
   for(i=0; i<dim; ++i) {
     x.push_back(c_solution[i]);
     xnew.push_back(kind(0.0));
     y.push_back(kind(0.0));
+    b.push_back(kind(0.0));
   }
   homotopy_function(x,y);
+  old_norm = 0.0;
+  for(i=0; i<dim; ++i) {
+    q = std::abs(y[i]);
+    old_norm += q*q;
+  }
+  old_norm = std::sqrt(old_norm);
 
   do {
     compute_jacobian(x);
     // Now compute the rhs of the equation, b = J*x - F(x)
     J->multiply(x,z);
     for(i=0; i<dim; ++i) {
-      y[i] = z[i] - y[i];
+      b[i] = z[i] - y[i];
     }
     // And solve the linear system J*xnew = b
-    success = linear_solver(x,y,xnew);
-#ifdef VERBOSE
-    std::cout << "Linear solver => " << success << " at " << its << std::endl;
-#endif
+    success = linear_solver(x,b,xnew);
     if (!success) break;
     norm = 0.0;
     for(i=0; i<dim; ++i) {
@@ -275,7 +269,7 @@ bool Solver<kind>::forward_step()
     // Check to see if the new solution differs appreciably from 
     // the old one
 #ifdef VERBOSE
-    std::cout << "Difference norm is " << norm << " at " << its << std::endl;
+    std::cout << "Iterative difference is " << norm << " at " << its << std::endl;
 #endif
     if (std::sqrt(norm) < epsilon) break;
     x = xnew;
@@ -289,37 +283,65 @@ bool Solver<kind>::forward_step()
     // Check to see if the new solution in fact solves the nonlinear
     // system
 #ifdef VERBOSE
-    std::cout << "F norm is " << norm << " at " << its << std::endl;
+    std::cout << "Function norm is " << norm << " at " << its << std::endl;
 #endif
     if (norm < epsilon) {
       output = true;
       break;
     }
+    // Diverging, time to exit...
+    if (std::abs(norm/old_norm) > 10.0) break;
+    old_norm = norm;
     its++;
   } while(its <= max_its);
   if (output) {
-    for(i=0; i<dim; ++i) {
-      c_solution[i] = xnew[i];
-    }
+    c_solution = xnew;
     t += dt;
   }
   return output;
 }
 
+namespace SYNARMOSMA {
+  template<>
+  void Solver<double>::initialize_base_solution()
+  {
+    unsigned int i;
+    double alpha;
+
+    base_solution.clear();
+
+    for(i=0; i<dim; ++i) {
+      alpha = -1.0 + 2.0*RND.drandom();
+      base_solution.push_back(alpha);
+    }
+  }
+
+  template<>
+  void Solver<std::complex<double> >::initialize_base_solution()
+  {
+    unsigned int i;
+    double alpha,beta;
+
+    base_solution.clear();
+
+    for(i=0; i<dim; ++i) {
+      alpha = -1.0 + 2.0*RND.drandom();
+      beta = -1.0 + 2.0*RND.drandom();
+      base_solution.push_back(std::complex<double>(alpha,beta));
+    }
+  }
+}
+
 template<class kind>
 bool Solver<kind>::solve(std::vector<kind>& output)
 {
-  unsigned int i;
   bool success;
-  double alpha;
 
-  for(i=0; i<dim; ++i) {
-    alpha = -1.0 + 2.0*RND.drandom();
-    base_solution.push_back(kind(alpha));
-  }
+  initialize_base_solution();
+
   c_solution = base_solution;
   output = c_solution;
-  t += 0.01;
+  t = 0.01;
   do {
     success = forward_step();
 #ifdef VERBOSE

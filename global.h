@@ -45,7 +45,6 @@ extern "C" {
   void dgesv_(int*,int*,double*,int*,int*,double*,int*,int*);
   void zgesv_(int*,int*,std::complex<double>*,int*,int*,std::complex<double>*,int*,int*);
   void dgetri_(int*,double*,int*,int*,double*,int*,int*);
-  void dgetrf_(int*,int*,double*,int*,int*,int*);
 }
 
 namespace SYNARMOSMA {
@@ -102,8 +101,6 @@ namespace SYNARMOSMA {
   void induced_orientation(int,const std::vector<int>&,int,const hash_map&,int*);
   void factorize(long,std::vector<std::pair<long,int> >&);
   int parity(const std::vector<int>&,const std::vector<int>&);
-  void invert(const double*,double*,int);
-  double determinant(const double*,int);
   void convert(unsigned char*,int);
   void convert(unsigned char*,float);
   void compute_smith_normal_form(std::vector<std::pair<int,int> >*,int,int);

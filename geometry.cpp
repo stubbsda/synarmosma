@@ -1621,12 +1621,13 @@ int Geometry::compute_coordinates(std::vector<double>& x) const
   double* work = new double[nwork];
   double* w = new double[nvertex];
 
+  // Put matrices in column-major form...
   for(i=0; i<nvertex; ++i) {
     usable.push_back(0);
     for(j=0; j<nvertex; ++j) {
-      alpha = (j == i) ? 1.0-pfactor : -pfactor;
-      J[nvertex*i+j] = alpha;
-      D[nvertex*i+j] = get_distance(i,j,false); 
+      alpha = (j == i) ? 1.0 - pfactor : -pfactor;
+      J[nvertex*j+i] = alpha;
+      D[nvertex*j+i] = get_distance(i,j,false); 
     }
   }
   // Now form the matrix B = -0.5*J*D2*J

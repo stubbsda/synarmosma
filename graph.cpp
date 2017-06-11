@@ -744,10 +744,11 @@ void Graph::katz_centrality(std::vector<double>& output) const
     AD[i] = 0.0;
   }
 
+  // Column-major form...
   for(i=0; i<nvertex; ++i) {
     for(it=A->elements[i].begin(); it!=A->elements[i].end(); ++it) {
       j = *it;
-      AD[nvertex*i+j] = 1.0;
+      AD[nvertex*j+i] = 1.0;
     }
   }
 
@@ -1302,7 +1303,8 @@ void Graph::adjacency_eigenvalues(std::vector<double>& output) const
   for(i=0; i<nvertex; ++i) {
     for(j=1+i; j<nvertex; ++j) {
       if (connected(i,j)) {
-        AD[nvertex*i+j] = 1.0; AD[nvertex*j+i] = 1.0;
+        AD[nvertex*i+j] = 1.0; 
+        AD[nvertex*j+i] = 1.0;
       }
     }
   }

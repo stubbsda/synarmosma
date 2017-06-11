@@ -107,8 +107,11 @@ void Matrix<kind>::display(std::ostream& s) const
 }
 
 template<class kind>
-void Matrix<kind>::convert(kind* A) const
+void Matrix<kind>::convert(kind* A,char mtype) const
 {
+#ifdef DEBUG
+  assert(mtype == 'r' || mtype == 'c');
+#endif
   // This method supposes that A has already been allocated the appropriate amount
   // of memory...
   unsigned int i,j;
@@ -118,9 +121,20 @@ void Matrix<kind>::convert(kind* A) const
       A[nrow*i+j] = zero;
     }
   }
-  for(i=0; i<nrow; ++i) {
-    for(j=0; j<elements[i].size(); ++j) {
-      A[nrow*i+elements[i][j].second] = elements[i][j].first;
+  if (mtype == 'r') {
+    // Row major format
+    for(i=0; i<nrow; ++i) {
+      for(j=0; j<elements[i].size(); ++j) {
+        A[nrow*i+elements[i][j].second] = elements[i][j].first;
+      }
+    }
+  }
+  else {
+    // Column major format
+    for(i=0; i<nrow; ++i) {
+      for(j=0; j<elements[i].size(); ++j) {
+        A[ncolumn*elements[i][j].second + i] = elements[i][j].first;
+      }
     }
   }  
 }
@@ -284,29 +298,30 @@ namespace SYNARMOSMA {
 template<class kind>
 int Matrix<kind>::gauss_seidel_solver(std::vector<kind>& x,const std::vector<kind>& source,double threshold,int max_its) const
 {
+#ifdef DEBUG
+  assert(x.size() == nrow);
+  assert(source.size() == nrow);
+#endif
   unsigned int i,j,its = 0;
   kind sum;
   double rho,error,error_new;
   std::vector<kind> x_new,diagonal;
 
+  for(i=0; i<nrow; ++i) {
+    x_new.push_back(zero);
+  }
+
   get_diagonal(diagonal);
   for(i=0; i<nrow; ++i) {
+#ifdef VERBOSE
+    std::cout << "Diagonal element of row " << i << " is " << diagonal[i] << std::endl;
+#endif
     if (!(std::abs(diagonal[i]) > std::numeric_limits<double>::epsilon())) {
 #ifdef VERBOSE
-      std::cout << "Diagonal element for row " << i << " is zero, exiting!" << std::endl;
+      std::cout << "Illegal diagonal element value, exiting!" << std::endl;
 #endif
       return -1;
     }
-  }
-
-  x.clear();
-  for(i=0; i<nrow; ++i) {
-    x.push_back(-0.5 + RND.drandom());
-    x_new.push_back(0.0);
-  }
-
-  for(i=0; i<nrow; ++i) {
-    std::cout << "Diagonal element of row " << i << " is " << diagonal[i] << std::endl;
   }
 
   error = 0.0;
@@ -315,13 +330,13 @@ int Matrix<kind>::gauss_seidel_solver(std::vector<kind>& x,const std::vector<kin
     for(j=0; j<elements[i].size(); ++j) {
       sum += elements[i][j].first*x[elements[i][j].second];
     }
-    rho = std::abs(sum + diagonal[i]*x[i] - source[i]);
+    rho = std::abs(sum - source[i]);
     error += rho*rho;
   }
   error = std::sqrt(error);
 
 #ifdef VERBOSE
-  std::cout << "For iteration " << its << " the solution error of the linear system is " << error << "." << std::endl;  
+  std::cout << "For iteration " << its << " the solution error of the linear system is " << error << std::endl;  
 #endif
 
   do {
@@ -332,6 +347,7 @@ int Matrix<kind>::gauss_seidel_solver(std::vector<kind>& x,const std::vector<kin
     for(i=0; i<nrow; ++i) {
       sum = zero;
       for(j=0; j<elements[i].size(); ++j) {
+        if (elements[i][j].second == i) continue;
         sum += elements[i][j].first*x[elements[i][j].second];
       }
       x_new[i] = (source[i] - sum)/diagonal[i];
@@ -342,15 +358,15 @@ int Matrix<kind>::gauss_seidel_solver(std::vector<kind>& x,const std::vector<kin
       for(j=0; j<elements[i].size(); ++j) {
         sum += elements[i][j].first*x_new[elements[i][j].second];
       }
-      rho = std::abs(sum + diagonal[i]*x_new[i] - source[i]);
+      rho = std::abs(sum - source[i]);
       error_new += rho*rho;
     }
     error_new = std::sqrt(error_new);
 #ifdef VERBOSE
-    std::cout << "For iteration " << its << " the solution error of the linear system is " << error_new << "." << std::endl;
+    std::cout << "For iteration " << its << " the solution error of the linear system is " << error_new << std::endl;
 #endif
     if (error_new < threshold) break;
-    if (error_new > 2.0*error) return -1;
+    if (error_new > 2.0*error && error_new > 5.0) return -1;
     error = error_new;
     x = x_new;
     if (its >= max_its) break;
