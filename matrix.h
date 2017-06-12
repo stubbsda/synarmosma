@@ -77,6 +77,7 @@ namespace SYNARMOSMA {
     bool empty_row(unsigned int) const;
     double sparsity() const;
     bool diagonally_dominant() const;
+    kind determinant() const;
     void multiply(const std::vector<kind>&,std::vector<kind>&) const;
     void get_diagonal(std::vector<kind>&) const;
     int gauss_seidel_solver(std::vector<kind>&,const std::vector<kind>&,double,int) const;

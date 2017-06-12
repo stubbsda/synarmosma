@@ -212,6 +212,14 @@ double Matrix<kind>::sparsity() const
   return sigma;
 }
 
+template<class kind>
+kind Matrix<kind>::determinant() const
+{
+  kind output = unity;
+
+  return output;
+}
+
 namespace SYNARMOSMA {
   template<>
   bool Matrix<NTL::ZZ>::diagonally_dominant() const
