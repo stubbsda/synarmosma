@@ -266,6 +266,70 @@ namespace SYNARMOSMA {
     return true;
   }
 
+  int parity(const std::vector<int>& symbols)
+  {
+    const int n = (signed) symbols.size();
+    int i,cpoint = 0,p = 1,length = 0,visited[n];
+
+    for(i=0; i<n; ++i) {
+      visited[i] = 0;
+    }
+    do {
+      for(i=0; i<n; ++i) {
+        if (symbols[i] == cpoint) {
+          if (visited[i] == 0) {
+            visited[i] = 1;
+            cpoint = i;
+            length++;
+          }
+          else {
+            cpoint = -1;
+          }
+          break;
+        }
+      }
+      if (cpoint == -1) {
+        p *= ((length-1)%2 == 0) ? 1 : -1;
+        length = 0;
+        for(i=0; i<n; ++i) {
+          if (visited[i] == 0) cpoint = i;
+        }
+        if (cpoint == -1) break;
+      }
+    } while(true);
+
+    return p;
+  }
+
+  void permute(std::vector<std::vector<int> >& output,std::vector<int>& symbols,const std::vector<int>& rem,int n)
+  {
+    if (rem.size() == 0) {
+      output.push_back(symbols);
+      /*
+      for(int i=0; i<n-1; ++i) {
+        std::cout << symbols[i] << ","; 
+      }
+      std::cout << symbols[n-1] << " and parity is " << parity(symbols) << std::endl;
+      */
+    }
+    else {
+      int i,j;
+      std::vector<int> temp;
+      const int m = (signed) rem.size();
+
+      for(i=0; i<m; ++i) {
+        symbols.push_back(rem[i]);
+        for(j=0; j<m; ++j) {
+          if (j == i) continue;
+          temp.push_back(rem[j]);
+        }
+        permute(output,symbols,temp,n);
+        temp.clear();
+        symbols.pop_back();
+      }
+    }
+  }
+
   double norm(const double* x,int n)
   {
     double out = 0.0;

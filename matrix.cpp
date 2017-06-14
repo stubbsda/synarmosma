@@ -215,7 +215,38 @@ double Matrix<kind>::sparsity() const
 template<class kind>
 kind Matrix<kind>::determinant() const
 {
-  kind output = unity;
+  assert(nrow == ncolumn);
+  unsigned int i,j,k,q;
+  bool found;
+  std::vector<int> symbols,rest;
+  std::vector<std::vector<int> > plist;
+  kind product,output = zero;
+
+  for(i=0; i<nrow; ++i) {
+    rest.push_back(i);
+  }
+  permute(plist,symbols,rest,nrow);
+
+  for(i=0; i<plist.size(); ++i) {
+    product = (parity(plist[i]) == 1) ? unity : neg1;
+    for(j=0; j<nrow; ++j) {
+      q = (unsigned) plist[i][j];
+      // Does the j-th row contain an element in column q?
+      found = false;
+      for(k=0; k<elements[j].size(); ++k) {
+        if (elements[j][k].second == q) {
+          product *= elements[j][k].first;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        product = zero;
+        break;
+      }
+    }
+    output += product;
+  }
 
   return output;
 }

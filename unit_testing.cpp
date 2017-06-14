@@ -220,6 +220,18 @@ int main(int argc,char** argv)
   assert(G6.order() == 3);
   assert(G6.size() == 3);
 
+  SYNARMOSMA::Matrix<double> M(3,3);
+  M.set(0,0,1.5);
+  M.set(0,1,-0.224);
+  M.set(0,2,2.85);
+  M.set(1,0,-7.945);
+  M.set(1,1,10.7332);
+  M.set(1,2,5.431);
+  M.set(2,0,-8.54);
+  M.set(2,1,-4.3895);
+  M.set(2,2,1.9962);
+  assert(std::abs(M.determinant() - 435.362) < 0.0001);
+
   std::vector<double> x;
   solver_test SV(3);
   bool s_output = SV.solve(x);

@@ -97,10 +97,12 @@ namespace SYNARMOSMA {
   UINT64 factorial(int);
   UINT64 binomial(int,int);
   int combinations(const std::set<int>&,int,std::vector<int>&);
+  void permute(std::vector<std::vector<int> >&,std::vector<int>&,const std::vector<int>&,int);
   void get_neighbours(int,const std::vector<int>*,int,std::vector<int>&);
   void induced_orientation(int,const std::vector<int>&,int,const hash_map&,int*);
   void factorize(long,std::vector<std::pair<long,int> >&);
   int parity(const std::vector<int>&,const std::vector<int>&);
+  int parity(const std::vector<int>&);
   void convert(unsigned char*,int);
   void convert(unsigned char*,float);
   void compute_smith_normal_form(std::vector<std::pair<int,int> >*,int,int);
