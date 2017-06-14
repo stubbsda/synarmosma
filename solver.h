@@ -15,7 +15,6 @@ namespace SYNARMOSMA {
    protected:
     unsigned int max_its;
     unsigned int dim;
-    unsigned int nnonzero;
     double epsilon;  
     double t;
     SOLVER_TYPE method;

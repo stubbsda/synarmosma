@@ -268,6 +268,8 @@ namespace SYNARMOSMA {
 
   int parity(const std::vector<int>& symbols)
   {
+    // A function to compute the parity of a permutation of (0,1,...,n-1) by tracing 
+    // the trajectory of each element in the permutation and computing its length  
     const int n = (signed) symbols.size();
     int i,cpoint = 0,p = 1,length = 0,visited[n];
 
@@ -303,14 +305,10 @@ namespace SYNARMOSMA {
 
   void permute(std::vector<std::vector<int> >& output,std::vector<int>& symbols,const std::vector<int>& rem,int n)
   {
+    // A method that computes all n! permutations of the elements of the n-vector "symbols", appending each 
+    // permutation to the array "output".
     if (rem.size() == 0) {
       output.push_back(symbols);
-      /*
-      for(int i=0; i<n-1; ++i) {
-        std::cout << symbols[i] << ","; 
-      }
-      std::cout << symbols[n-1] << " and parity is " << parity(symbols) << std::endl;
-      */
     }
     else {
       int i,j;

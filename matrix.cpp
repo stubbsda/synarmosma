@@ -200,16 +200,14 @@ void Matrix<kind>::multiply(const std::vector<kind>& b,std::vector<kind>& output
 }
 
 template<class kind>
-double Matrix<kind>::sparsity() const
+unsigned int Matrix<kind>::number_nonzero() const
 {
   unsigned int i,nzero = 0;
 
   for(i=0; i<nrow; ++i) {
     nzero += elements[i].size();
   }
-  double sigma = 1.0 - double(nzero)/double(nrow*ncolumn);
-
-  return sigma;
+  return nzero;
 }
 
 template<class kind>

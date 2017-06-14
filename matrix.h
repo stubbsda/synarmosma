@@ -75,7 +75,8 @@ namespace SYNARMOSMA {
     void increment(unsigned int,unsigned int,kind);
     void convert(kind*,char) const;
     bool empty_row(unsigned int) const;
-    double sparsity() const;
+    inline double sparsity() const {return 1.0 - double(number_nonzero())/double(nrow*ncolumn);};
+    unsigned int number_nonzero() const; 
     bool diagonally_dominant() const;
     kind determinant() const;
     void multiply(const std::vector<kind>&,std::vector<kind>&) const;

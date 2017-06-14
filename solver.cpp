@@ -24,7 +24,6 @@ void Solver<kind>::set_default_values()
   max_its = 100;
   epsilon = 0.00001;
   dim = 0;
-  nnonzero = 0;
   //method = DIRECT;
   method = ITERATIVE; 
 }
