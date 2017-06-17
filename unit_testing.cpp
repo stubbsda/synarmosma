@@ -232,10 +232,28 @@ int main(int argc,char** argv)
   M.set(2,2,1.9962);
   assert(std::abs(M.determinant() - 435.362) < 0.0001);
 
+  SYNARMOSMA::Matrix<int> M2(5,5);
+  int alpha;
+  for(i=0; i<5; ++i) {
+    for(j=0; j<5; ++j) {
+      alpha = RND.drandom(-5,5);
+      M2.set(i,j,alpha);
+    }
+  }
+  std::cout << M2.dispersion() << std::endl;
+  std::cout << M2 << std::endl;
+  std::vector<unsigned int> pvector;
+  std::cout << M2.optimize_dominance(pvector) << std::endl;
+  for(i=0; i<5; ++i) {
+    std::cout << 1+i << " --> " << 1 + pvector[i] << std::endl;
+  }
+  std::cout << M2 << std::endl;
+  /*
   std::vector<double> x;
   solver_test SV(3);
   bool s_output = SV.solve(x);
   std::cout << s_output << "  (" << x[0] << "," << x[1] << "," << x[2] << ")" << std::endl; 
+  */
   std::cout << "All tests passed successfully!" << std::endl;
   return 0;
 }

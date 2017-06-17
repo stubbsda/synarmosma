@@ -272,6 +272,46 @@ namespace SYNARMOSMA {
     }
     return true;
   }
+
+  template<>
+  bool Matrix<NTL::ZZ>::diagonally_dominant(unsigned int r) const 
+  {
+    unsigned int i;
+    double d,q,sum = 0.0;
+
+    for(i=0; i<elements[r].size(); ++i) {
+      NTL::conv(elements[r][i].first,q);
+      q = std::abs(q);
+      if (elements[r][i].second == r) {
+        d = q;
+        continue;
+      }
+      sum += q;
+    }
+    if (d < sum) return false;
+
+    return true; 
+  }
+
+  template<>
+  bool Matrix<NTL::ZZ>::diagonally_dominant(unsigned int r,unsigned int c) const 
+  {
+    unsigned int i;
+    double d,q,sum = 0.0;
+
+    for(i=0; i<elements[r].size(); ++i) {
+      NTL::conv(elements[r][i].first,q);
+      q = std::abs(q);
+      if (elements[r][i].second == c) {
+        d = q;
+        continue;
+      }
+      sum += q;
+    }
+    if (d < sum) return false;
+
+    return true; 
+  }
 }
 
 template<class kind>
@@ -294,6 +334,44 @@ bool Matrix<kind>::diagonally_dominant() const
     if (d < sum) return false;
   }
   return true;
+}
+
+template<class kind>
+bool Matrix<kind>::diagonally_dominant(unsigned int r) const 
+{
+  unsigned int i;
+  double d,q,sum = 0.0;
+
+  for(i=0; i<elements[r].size(); ++i) {
+    q = std::abs(elements[r][i].first);
+    if (elements[r][i].second == r) {
+      d = q;
+      continue;
+    }
+    sum += q;
+  }
+  if (d < sum) return false;
+
+  return true; 
+}
+
+template<class kind>
+bool Matrix<kind>::diagonally_dominant(unsigned int r,unsigned int c) const 
+{
+  unsigned int i;
+  double d,q,sum = 0.0;
+
+  for(i=0; i<elements[r].size(); ++i) {
+    q = std::abs(elements[r][i].first);
+    if (elements[r][i].second == c) {
+      d = q;
+      continue;
+    }
+    sum += q;
+  }
+  if (d < sum) return false;
+
+  return true; 
 }
 
 template<class kind>
@@ -770,6 +848,76 @@ void permute(Matrix<kind>& A,unsigned int n,unsigned int m,char type)
     A.elements[n] = A.elements[m];
     A.elements[m] = pr;
   }
+}
+
+template<class kind>
+double Matrix<kind>::dispersion() const
+{
+  // Measures the percentage of rows which do not have a single dominant 
+  // column
+  unsigned int i,j,nc = 0;
+  bool found;
+
+  for(i=0; i<nrow; ++i) {
+    found = false;
+    for(j=0; j<ncolumn; ++j) {
+      if (diagonally_dominant(i,j)) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) nc++;
+  }
+  return double(nc)/double(nrow);
+}
+
+template<class kind>
+bool Matrix<kind>::optimize_dominance(std::vector<unsigned int>& permutation)
+{
+  // A method to permute the matrix rows so that the diagonal dominance of the 
+  // matrix is improved
+  unsigned int i,j,its = 0;
+  bool found,output;
+  std::vector<std::pair<kind,unsigned int> > temp;
+
+  permutation.clear();
+  for(i=0; i<nrow; ++i) {
+    permutation.push_back(i);
+  }
+
+  do {
+    for(i=0; i<nrow; ++i) {
+      if (diagonally_dominant(i)) continue;
+      // This row is a problem, see if there is another row which can be swapped with 
+      // it...
+      found = false;
+      for(j=0; j<i; ++j) {
+        if (diagonally_dominant(j,i)) {
+          temp = elements[i];
+          elements[i] = elements[j];
+          elements[j] = temp;
+          permutation[i] = j;
+          permutation[j] = i;
+          found = true;
+        }
+      }
+      if (found) continue;
+      for(j=1+i; j<nrow; ++j) {
+        if (diagonally_dominant(j,i)) {
+          temp = elements[i];
+          elements[i] = elements[j];
+          elements[j] = temp;
+          permutation[i] = j;
+          permutation[j] = i;
+          found = true;
+        }      
+      }
+    }
+    output = diagonally_dominant();
+    its++;
+    if (output || its > nrow) break;
+  } while(true);
+  return output;
 }
 
 template<class kind>
