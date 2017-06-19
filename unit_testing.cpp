@@ -233,6 +233,7 @@ int main(int argc,char** argv)
   assert(std::abs(M.determinant() - 435.362) < 0.0001);
 
   SYNARMOSMA::Matrix<int> M2(5,5);
+  /*
   int alpha;
   for(i=0; i<5; ++i) {
     for(j=0; j<5; ++j) {
@@ -240,6 +241,25 @@ int main(int argc,char** argv)
       M2.set(i,j,alpha);
     }
   }
+  */
+  M2.set(0,1,-1);
+  M2.set(0,3,10);
+  M2.set(0,4,2);
+
+  M2.set(1,1,1);
+  M2.set(1,3,-2);
+  M2.set(1,4,9);
+
+  M2.set(2,0,9);
+  M2.set(2,3,-2);
+
+  M2.set(3,1,12);
+  M2.set(3,2,-2);
+  M2.set(3,4,1);
+
+  M2.set(4,2,11);
+  M2.set(4,4,2);
+
   std::cout << M2.dispersion() << std::endl;
   std::cout << M2 << std::endl;
   std::vector<unsigned int> pvector;

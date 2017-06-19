@@ -872,20 +872,20 @@ double Matrix<kind>::dispersion() const
 }
 
 template<class kind>
-bool Matrix<kind>::optimize_dominance(std::vector<unsigned int>& permutation)
+bool Matrix<kind>::optimize_dominance(std::vector<unsigned int>& shift)
 {
   // A method to permute the matrix rows so that the diagonal dominance of the 
   // matrix is improved
-  unsigned int i,j,its = 0;
+  unsigned int i,j,q,np,current,next,permutation[nrow],its = 0;
   bool found,output;
   std::vector<std::pair<kind,unsigned int> > temp;
 
-  permutation.clear();
   for(i=0; i<nrow; ++i) {
-    permutation.push_back(i);
+    permutation[i] = i;
   }
 
   do {
+    np = 0;
     for(i=0; i<nrow; ++i) {
       if (diagonally_dominant(i)) continue;
       // This row is a problem, see if there is another row which can be swapped with 
@@ -896,9 +896,11 @@ bool Matrix<kind>::optimize_dominance(std::vector<unsigned int>& permutation)
           temp = elements[i];
           elements[i] = elements[j];
           elements[j] = temp;
-          permutation[i] = j;
-          permutation[j] = i;
+          q = permutation[i];
+          permutation[i] = permutation[j];
+          permutation[j] = q;
           found = true;
+          np++;
         }
       }
       if (found) continue;
@@ -907,16 +909,31 @@ bool Matrix<kind>::optimize_dominance(std::vector<unsigned int>& permutation)
           temp = elements[i];
           elements[i] = elements[j];
           elements[j] = temp;
-          permutation[i] = j;
-          permutation[j] = i;
+          q = permutation[i];
+          permutation[i] = permutation[j];
+          permutation[j] = q;
           found = true;
+          np++;
         }      
       }
     }
     output = diagonally_dominant();
     its++;
-    if (output || its > nrow) break;
+    if (output || its > nrow || np == 0) break;
   } while(true);
+
+  shift.clear();
+  for(i=0; i<nrow; ++i) {
+    current = i;
+    do {
+      next = permutation[current];
+      if (next == i) {
+        shift.push_back(current);
+        break;
+      }
+      current = next;
+    } while(true);
+  }
   return output;
 }
 
