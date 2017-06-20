@@ -398,32 +398,43 @@ namespace SYNARMOSMA {
   // This method only makes sense in the context of a field, so we will create null versions for the int 
   // and NTL::ZZ instantiations of the class
   template<>
-  int Matrix<int>::gauss_seidel_solver(std::vector<int>& x,const std::vector<int>& b,double threshold,int max_its) const
+  int Matrix<int>::gauss_seidel_solver(std::vector<int>& x,const std::vector<int>& b,double threshold,int max_its)
   {
     return -1;
   }
 
   template<>
-  int Matrix<NTL::ZZ>::gauss_seidel_solver(std::vector<NTL::ZZ>& x,const std::vector<NTL::ZZ>& b,double threshold,int max_its) const
+  int Matrix<NTL::ZZ>::gauss_seidel_solver(std::vector<NTL::ZZ>& x,const std::vector<NTL::ZZ>& b,double threshold,int max_its)
   {
     return -1;
   }
 }
 
 template<class kind>
-int Matrix<kind>::gauss_seidel_solver(std::vector<kind>& x,const std::vector<kind>& source,double threshold,int max_its) const
+int Matrix<kind>::gauss_seidel_solver(std::vector<kind>& soln,const std::vector<kind>& source,double threshold,int max_its)
 {
 #ifdef DEBUG
-  assert(x.size() == nrow);
+  assert(soln.size() == nrow);
   assert(source.size() == nrow);
 #endif
   unsigned int i,j,its = 0;
   kind sum;
   double rho,error,error_new;
-  std::vector<kind> x_new,diagonal;
+  std::vector<unsigned int> permutation;
+  std::vector<kind> x_new,diagonal,x = soln,b = source;
 
   for(i=0; i<nrow; ++i) {
     x_new.push_back(zero);
+  }
+
+  if (!diagonally_dominant()) {
+    optimize_dominance(permutation);
+    // Fix the ordering of the source vector and initial guess 
+    // vectors...
+    for(i=0; i<nrow; ++i) {
+      b[permutation[i]] = source[i];
+      x[permutation[i]] = soln[i];
+    }
   }
 
   get_diagonal(diagonal);
@@ -445,7 +456,7 @@ int Matrix<kind>::gauss_seidel_solver(std::vector<kind>& x,const std::vector<kin
     for(j=0; j<elements[i].size(); ++j) {
       sum += elements[i][j].first*x[elements[i][j].second];
     }
-    rho = std::abs(sum - source[i]);
+    rho = std::abs(sum - b[i]);
     error += rho*rho;
   }
   error = std::sqrt(error);
@@ -465,7 +476,7 @@ int Matrix<kind>::gauss_seidel_solver(std::vector<kind>& x,const std::vector<kin
         if (elements[i][j].second == i) continue;
         sum += elements[i][j].first*x[elements[i][j].second];
       }
-      x_new[i] = (source[i] - sum)/diagonal[i];
+      x_new[i] = (b[i] - sum)/diagonal[i];
     }
     error_new = 0.0;
     for(i=0; i<nrow; ++i) {
@@ -473,7 +484,7 @@ int Matrix<kind>::gauss_seidel_solver(std::vector<kind>& x,const std::vector<kin
       for(j=0; j<elements[i].size(); ++j) {
         sum += elements[i][j].first*x_new[elements[i][j].second];
       }
-      rho = std::abs(sum - source[i]);
+      rho = std::abs(sum - b[i]);
       error_new += rho*rho;
     }
     error_new = std::sqrt(error_new);
@@ -488,7 +499,9 @@ int Matrix<kind>::gauss_seidel_solver(std::vector<kind>& x,const std::vector<kin
   } while(true);
 
   if (its == max_its && !(error < threshold)) return -1;
-  x = x_new;
+
+  soln = x_new;
+
   return its;
 }
 

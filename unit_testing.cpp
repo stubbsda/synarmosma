@@ -232,48 +232,49 @@ int main(int argc,char** argv)
   M.set(2,2,1.9962);
   assert(std::abs(M.determinant() - 435.362) < 0.0001);
 
-  SYNARMOSMA::Matrix<int> M2(5,5);
   /*
-  int alpha;
+  SYNARMOSMA::Matrix<double> M2(5,5);
+  std::vector<double> x,b;
+ 
+  b.push_back(0.5);
+  b.push_back(-0.2);
+  b.push_back(7.12);
+  b.push_back(-1.9);
+  b.push_back(-2.6);
+
+  M2.set(0,1,-1.0);
+  M2.set(0,3,10.0);
+  M2.set(0,4,2.0);
+
+  M2.set(1,1,1.0);
+  M2.set(1,3,-2.0);
+  M2.set(1,4,9.0);
+
+  M2.set(2,0,9.0);
+  M2.set(2,3,-2.0);
+
+  M2.set(3,1,12.0);
+  M2.set(3,2,-2.0);
+  M2.set(3,4,1.0);
+
+  M2.set(4,2,11.0);
+  M2.set(4,4,2.0);
+
   for(i=0; i<5; ++i) {
-    for(j=0; j<5; ++j) {
-      alpha = RND.drandom(-5,5);
-      M2.set(i,j,alpha);
-    }
+    x.push_back(2.0*RND.drandom() - 1.0);
+  }
+  M2.gauss_seidel_solver(x,b,0.000001,100);
+
+  for(i=0; i<5; ++i) {
+    std::cout << 1+i << "  " << x[i] << std::endl;
   }
   */
-  M2.set(0,1,-1);
-  M2.set(0,3,10);
-  M2.set(0,4,2);
-
-  M2.set(1,1,1);
-  M2.set(1,3,-2);
-  M2.set(1,4,9);
-
-  M2.set(2,0,9);
-  M2.set(2,3,-2);
-
-  M2.set(3,1,12);
-  M2.set(3,2,-2);
-  M2.set(3,4,1);
-
-  M2.set(4,2,11);
-  M2.set(4,4,2);
-
-  std::cout << M2.dispersion() << std::endl;
-  std::cout << M2 << std::endl;
-  std::vector<unsigned int> pvector;
-  std::cout << M2.optimize_dominance(pvector) << std::endl;
-  for(i=0; i<5; ++i) {
-    std::cout << 1+i << " --> " << 1 + pvector[i] << std::endl;
-  }
-  std::cout << M2 << std::endl;
-  /*
+  
   std::vector<double> x;
   solver_test SV(3);
   bool s_output = SV.solve(x);
   std::cout << s_output << "  (" << x[0] << "," << x[1] << "," << x[2] << ")" << std::endl; 
-  */
+  
   std::cout << "All tests passed successfully!" << std::endl;
   return 0;
 }

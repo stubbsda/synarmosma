@@ -212,14 +212,6 @@ bool Solver<kind>::linear_solver(const std::vector<kind>& x,const std::vector<ki
   }
   else {
     // Use the native Gauss-Seidel iterative solver in the Matrix class
-#ifdef VERBOSE
-    if (J->diagonally_dominant()) {
-      std::cout << "The Jacobian matrix is diagonally dominant." << std::endl;
-    }
-    else {
-      std::cout << "The Jacobian matrix is not diagonally dominant." << std::endl;
-    }
-#endif
     xnew = x;
     int n = J->gauss_seidel_solver(xnew,b,epsilon,100);
     if (n > 0) success = true;
