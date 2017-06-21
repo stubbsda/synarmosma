@@ -428,13 +428,16 @@ int Matrix<kind>::gauss_seidel_solver(std::vector<kind>& soln,const std::vector<
   }
 
   if (!diagonally_dominant()) {
-    optimize_dominance(permutation);
+    j = optimize_dominance(permutation);
     // Fix the ordering of the source vector and initial guess 
     // vectors...
     for(i=0; i<nrow; ++i) {
       b[permutation[i]] = source[i];
       x[permutation[i]] = soln[i];
     }
+#ifdef VERBOSE
+    if (j < nrow) std::cout << "Matrix is not diagonally dominant (" << j << "/" << nrow << "), convergence not guaranteed!" << std::endl;
+#endif
   }
 
   get_diagonal(diagonal);
@@ -885,7 +888,7 @@ double Matrix<kind>::dispersion() const
 }
 
 template<class kind>
-bool Matrix<kind>::optimize_dominance(std::vector<unsigned int>& shift)
+unsigned int Matrix<kind>::optimize_dominance(std::vector<unsigned int>& shift)
 {
   // A method to permute the matrix rows so that the diagonal dominance of the 
   // matrix is improved
@@ -947,7 +950,14 @@ bool Matrix<kind>::optimize_dominance(std::vector<unsigned int>& shift)
       current = next;
     } while(true);
   }
-  return output;
+  if (output) return nrow;
+  // Compute the number of rows that are diagonally dominant and return 
+  // this number
+  j = 0;
+  for(i=0; i<nrow; ++i) {
+    if (diagonally_dominant(i)) j++;
+  }
+  return j;
 }
 
 template<class kind>

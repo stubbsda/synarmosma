@@ -7,8 +7,22 @@ extern Random RND;
 template<class kind>
 Solver<kind>::Solver(int N)
 {
+  assert(N > 0);
   set_default_values();
   dim = N;
+  J = new SYNARMOSMA::Matrix<kind>(dim);
+}
+
+template<class kind>
+Solver<kind>::Solver(int N,double eps,int M,bool htype,bool approx)
+{
+  assert(N > 0 && M > 0 && eps > 0.0);
+  set_default_values();
+  dim = N;
+  epsilon = eps;
+  max_its = M;
+  homotopy = htype;
+  broyden = approx;
   J = new SYNARMOSMA::Matrix<kind>(dim);
 }
 
@@ -24,8 +38,10 @@ void Solver<kind>::set_default_values()
   max_its = 100;
   epsilon = 0.00001;
   dim = 0;
-  //method = DIRECT;
+  homotopy = true;
+  broyden = false;
   method = ITERATIVE; 
+  //method = DIRECT;
 }
 
 namespace SYNARMOSMA {
@@ -226,6 +242,7 @@ bool Solver<kind>::forward_step()
   bool success,output = false;
   double q,old_norm,norm,dt = 0.05;
   std::vector<kind> x,xnew,b,y,z;
+  Matrix<kind> secant(dim);
 
   for(i=0; i<dim; ++i) {
     x.push_back(c_solution[i]);
@@ -240,9 +257,9 @@ bool Solver<kind>::forward_step()
     old_norm += q*q;
   }
   old_norm = std::sqrt(old_norm);
+  compute_jacobian(x);
 
   do {
-    compute_jacobian(x);
     // Now compute the rhs of the equation, b = J*x - F(x)
     J->multiply(x,z);
     for(i=0; i<dim; ++i) {
@@ -284,7 +301,16 @@ bool Solver<kind>::forward_step()
     if (std::abs(norm/old_norm) > 10.0) break;
     old_norm = norm;
     its++;
-  } while(its <= max_its);
+    if (its > max_its) break;
+    if (broyden) {
+      // Use the Broyden approximation to the Jacobian:
+      // J_n = J_{n-1} + 1/norm(\Delta x)^2 * (\Delta F - J_{n-1}\Delta x)\outer \Delta x
+      J->increment(secant);
+    }
+    else {
+      compute_jacobian(x);
+    }
+  } while(true);
   if (output) {
     c_solution = xnew;
     t += dt;
@@ -332,15 +358,25 @@ bool Solver<kind>::solve(std::vector<kind>& output)
 
   c_solution = base_solution;
   output = c_solution;
-  t = 0.01;
-  do {
-    success = forward_step();
+
+  if (homotopy) {
+    t = 0.01;
+    do {
+      success = forward_step();
 #ifdef VERBOSE
-    std::cout << "Homotopy progress: " << t << "  " << success << std::endl;
+      std::cout << "Homotopy progress: " << t << "  " << success << std::endl;
 #endif
-    if (!success) break;
-    if (std::abs(1.0 - t) < epsilon) break;
-  } while(true);
+      if (!success) break;
+      if (std::abs(1.0 - t) < epsilon) break;
+    } while(true);
+  } 
+  else {
+    t = 1.0;
+    c_solution[0] = 3.5;
+    c_solution[1] = -0.5;
+    c_solution[2] = 0.1;
+    success = forward_step();
+  }
 
   if (success) output = c_solution;
   

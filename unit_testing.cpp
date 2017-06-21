@@ -29,7 +29,7 @@ void solver_test::F(const std::vector<double>& x,std::vector<double>& y) const
   y.push_back(z);
 }
 
-solver_test::solver_test(int n) : SYNARMOSMA::Solver<double>(n)
+solver_test::solver_test(int n) : SYNARMOSMA::Solver<double>(n,0.00001,150,false,false)
 {
   assert(n == 3);
 }

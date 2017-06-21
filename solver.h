@@ -4,7 +4,7 @@
 #define _solverh
 
 namespace SYNARMOSMA {
-  enum SOLVER_TYPE
+  enum LINEAR_SOLVER_TYPE
   {
     DIRECT,
     ITERATIVE
@@ -17,7 +17,9 @@ namespace SYNARMOSMA {
     unsigned int dim;
     double epsilon;  
     double t;
-    SOLVER_TYPE method;
+    bool homotopy;
+    bool broyden;
+    LINEAR_SOLVER_TYPE method;
     std::vector<kind> c_solution,base_solution;
     std::vector<std::set<unsigned int> > dependencies;
     Matrix<kind>* J;
@@ -35,6 +37,7 @@ namespace SYNARMOSMA {
     virtual void F(const std::vector<kind>&,std::vector<kind>&) const = 0;
    public:
     Solver(int);
+    Solver(int,double,int,bool,bool);
     ~Solver();
     bool solve(std::vector<kind>&);
   };
