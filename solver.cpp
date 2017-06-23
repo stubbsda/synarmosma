@@ -38,10 +38,9 @@ void Solver<kind>::set_default_values()
   max_its = 100;
   epsilon = 0.00001;
   dim = 0;
-  homotopy = true;
+  homotopy = false;
   broyden = false;
   method = ITERATIVE; 
-  //method = DIRECT;
 }
 
 namespace SYNARMOSMA {
@@ -238,78 +237,98 @@ bool Solver<kind>::linear_solver(const std::vector<kind>& x,const std::vector<ki
 template<class kind>
 bool Solver<kind>::forward_step()
 {
-  unsigned int i,its = 0;
+  unsigned int i,j,its = 0;
   bool success,output = false;
-  double q,old_norm,norm,dt = 0.05;
-  std::vector<kind> x,xnew,b,y,z;
+  double q,old_norm,xnorm,fnorm,pfactor,dt = 0.05;
+  kind p;
+  std::vector<kind> x,xnew,f,fnew,b,fdiff,xdiff,z;
   Matrix<kind> secant(dim);
 
   for(i=0; i<dim; ++i) {
     x.push_back(c_solution[i]);
     xnew.push_back(kind(0.0));
-    y.push_back(kind(0.0));
+    f.push_back(kind(0.0));
+    fnew.push_back(kind(0.0));
+    xdiff.push_back(kind(0.0));
+    fdiff.push_back(kind(0.0));
     b.push_back(kind(0.0));
   }
-  homotopy_function(x,y);
+  homotopy_function(x,f);
   old_norm = 0.0;
   for(i=0; i<dim; ++i) {
-    q = std::abs(y[i]);
+    q = std::abs(f[i]);
     old_norm += q*q;
   }
   old_norm = std::sqrt(old_norm);
   compute_jacobian(x);
-
+#ifdef VERBOSE
+  std::cout << "Initial function norm is " << old_norm << std::endl;
+#endif
   do {
     // Now compute the rhs of the equation, b = J*x - F(x)
     J->multiply(x,z);
     for(i=0; i<dim; ++i) {
-      b[i] = z[i] - y[i];
+      b[i] = z[i] - f[i];
     }
     // And solve the linear system J*xnew = b
     success = linear_solver(x,b,xnew);
     if (!success) break;
-    norm = 0.0;
+    xnorm = 0.0;
     for(i=0; i<dim; ++i) {
-      q = std::abs(xnew[i] - x[i]);
-      norm += q*q;
-    }
-    norm = std::sqrt(norm);
+      xdiff[i] = xnew[i] - x[i];
+      q = std::abs(xdiff[i]);
+      xnorm += q*q;
+    }    
+    xnorm = std::sqrt(xnorm);
     // Check to see if the new solution differs appreciably from 
     // the old one
 #ifdef VERBOSE
-    std::cout << "Iterative difference is " << norm << " at " << its << std::endl;
+    std::cout << "Iterative difference is " << xnorm << " at " << its << std::endl;
 #endif
-    if (std::sqrt(norm) < epsilon) break;
-    x = xnew;
-    homotopy_function(x,y);
-    norm = 0.0;
+    if (std::sqrt(xnorm) < epsilon) break;
+    homotopy_function(xnew,fnew);
+    fnorm = 0.0;
     for(i=0; i<dim; ++i) {
-      q = std::abs(y[i]);
-      norm += q*q;
+      fdiff[i] = fnew[i] - f[i];
+      q = std::abs(fnew[i]);
+      fnorm += q*q;
     }
-    norm = std::sqrt(norm);
+    fnorm = std::sqrt(fnorm);
     // Check to see if the new solution in fact solves the nonlinear
     // system
 #ifdef VERBOSE
-    std::cout << "Function norm is " << norm << " at " << its << std::endl;
+    std::cout << "Function norm is " << fnorm << " at " << its << std::endl;
 #endif
-    if (norm < epsilon) {
+    if (fnorm < epsilon) {
       output = true;
       break;
     }
     // Diverging, time to exit...
-    if (std::abs(norm/old_norm) > 10.0) break;
-    old_norm = norm;
+    if (std::abs(fnorm/old_norm) > 10.0) break;
+    old_norm = fnorm;
     its++;
     if (its > max_its) break;
     if (broyden) {
-      // Use the Broyden approximation to the Jacobian:
-      // J_n = J_{n-1} + 1/norm(\Delta x)^2 * (\Delta F - J_{n-1}\Delta x)\outer \Delta x
+      // Compute the Broyden approximation to the Jacobian and use it:
+      J->multiply(xdiff,z);
+      for(i=0; i<dim; ++i) {
+        z[i] = fdiff[i] - z[i];
+      }
+      pfactor = 1.0/(xnorm*xnorm);
+      secant.clear(false);
+      for(i=0; i<dim; ++i) {
+        for(j=0; j<dim; ++j) {
+          p = z[j]*xdiff[i];
+          if (std::abs(p) > std::numeric_limits<double>::epsilon()) secant.set(i,j,pfactor*p);
+        }
+      }
       J->increment(secant);
     }
     else {
-      compute_jacobian(x);
+      compute_jacobian(xnew);
     }
+    x = xnew;
+    f = fnew;
   } while(true);
   if (output) {
     c_solution = xnew;
@@ -354,10 +373,15 @@ bool Solver<kind>::solve(std::vector<kind>& output)
 {
   bool success;
 
-  initialize_base_solution();
+  if (output.size() == dim) {
+    base_solution = output;
+  }
+  else {
+    initialize_base_solution();
+    output = base_solution;
+  }
 
   c_solution = base_solution;
-  output = c_solution;
 
   if (homotopy) {
     t = 0.01;
@@ -372,9 +396,6 @@ bool Solver<kind>::solve(std::vector<kind>& output)
   } 
   else {
     t = 1.0;
-    c_solution[0] = 3.5;
-    c_solution[1] = -0.5;
-    c_solution[2] = 0.1;
     success = forward_step();
   }
 

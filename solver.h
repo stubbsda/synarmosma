@@ -40,6 +40,10 @@ namespace SYNARMOSMA {
     Solver(int,double,int,bool,bool);
     ~Solver();
     bool solve(std::vector<kind>&);
+    inline void use_iterative() {method = ITERATIVE;};
+    inline void use_direct() {method = DIRECT;};
+    inline void use_homotopy() {homotopy = true;};
+    inline void use_broyden() {broyden = true;};
   };
 }
 #endif

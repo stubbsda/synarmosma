@@ -180,6 +180,31 @@ bool Matrix<kind>::divisible(unsigned int n,unsigned int* out1,unsigned int* out
 }
 
 template<class kind>
+void Matrix<kind>::increment(const Matrix<kind>& arg)
+{
+#ifdef DEBUG
+  assert(nrow == arg.nrow && ncolumn == arg.ncolumn);
+#endif
+  unsigned int i,j,k,n;
+  bool found;
+
+  for(i=0; i<nrow; ++i) {
+    for(j=0; j<arg.elements[i].size(); ++j) {
+      found = false;
+      n = arg.elements[i][j].second;
+      for(k=0; k<elements[i].size(); ++k) {
+        if (elements[i][k].second == n) {
+          elements[i][k].first += arg.elements[i][j].first;
+          found = true;
+          break;
+        }
+      }
+      if (!found) elements[i].push_back(arg.elements[i][j]); 
+    }
+  }
+}
+
+template<class kind>
 void Matrix<kind>::multiply(const std::vector<kind>& b,std::vector<kind>& output) const
 {
 #ifdef DEBUG

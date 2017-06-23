@@ -84,7 +84,7 @@ namespace SYNARMOSMA {
     unsigned int optimize_dominance(std::vector<unsigned int>&);
     kind determinant() const;
     void multiply(const std::vector<kind>&,std::vector<kind>&) const;
-    void increment(const Matrix<kind>);
+    void increment(const Matrix<kind>&);
     void get_diagonal(std::vector<kind>&) const;
     int gauss_seidel_solver(std::vector<kind>&,const std::vector<kind>&,double,int);
     kind get_first_nonzero(unsigned int) const;

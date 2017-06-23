@@ -7,39 +7,6 @@
 
 extern SYNARMOSMA::Random RND;
 
-class solver_test : public SYNARMOSMA::Solver<double>
-{
- private:
-  void F(const std::vector<double>&,std::vector<double>&) const;
- public:
-  solver_test(int);
-  ~solver_test();  
-}; 
-
-void solver_test::F(const std::vector<double>& x,std::vector<double>& y) const
-{
-  double z;
-
-  y.clear();
-  z = x[0]*x[0] + x[1]*x[1] + x[2]*x[2]*x[2] - 15.4;
-  y.push_back(z);  
-  z = 7.6 - 1.2*std::exp(-x[0]*x[1]) + x[2] + 3.1;
-  y.push_back(z);
-  z = std::sin(x[0])*std::sin(x[2]) - 7.5*x[1]*x[1] + 2.5;
-  y.push_back(z);
-}
-
-solver_test::solver_test(int n) : SYNARMOSMA::Solver<double>(n,0.00001,150,false,false)
-{
-  assert(n == 3);
-}
-
-solver_test::~solver_test()
-{
-
-}
-
-
 int main(int argc,char** argv)
 {
   RND.set_seed(12);
@@ -219,61 +186,6 @@ int main(int argc,char** argv)
   assert(G6.circuit_rank() == 1);
   assert(G6.order() == 3);
   assert(G6.size() == 3);
-
-  SYNARMOSMA::Matrix<double> M(3,3);
-  M.set(0,0,1.5);
-  M.set(0,1,-0.224);
-  M.set(0,2,2.85);
-  M.set(1,0,-7.945);
-  M.set(1,1,10.7332);
-  M.set(1,2,5.431);
-  M.set(2,0,-8.54);
-  M.set(2,1,-4.3895);
-  M.set(2,2,1.9962);
-  assert(std::abs(M.determinant() - 435.362) < 0.0001);
-
-  /*
-  SYNARMOSMA::Matrix<double> M2(5,5);
-  std::vector<double> x,b;
- 
-  b.push_back(0.5);
-  b.push_back(-0.2);
-  b.push_back(7.12);
-  b.push_back(-1.9);
-  b.push_back(-2.6);
-
-  M2.set(0,1,-1.0);
-  M2.set(0,3,10.0);
-  M2.set(0,4,2.0);
-
-  M2.set(1,1,1.0);
-  M2.set(1,3,-2.0);
-  M2.set(1,4,9.0);
-
-  M2.set(2,0,9.0);
-  M2.set(2,3,-2.0);
-
-  M2.set(3,1,12.0);
-  M2.set(3,2,-2.0);
-  M2.set(3,4,1.0);
-
-  M2.set(4,2,11.0);
-  M2.set(4,4,2.0);
-
-  for(i=0; i<5; ++i) {
-    x.push_back(2.0*RND.drandom() - 1.0);
-  }
-  M2.gauss_seidel_solver(x,b,0.000001,100);
-
-  for(i=0; i<5; ++i) {
-    std::cout << 1+i << "  " << x[i] << std::endl;
-  }
-  */
-  
-  std::vector<double> x;
-  solver_test SV(3);
-  bool s_output = SV.solve(x);
-  std::cout << s_output << "  (" << x[0] << "," << x[1] << "," << x[2] << ")" << std::endl; 
   
   std::cout << "All tests passed successfully!" << std::endl;
   return 0;
