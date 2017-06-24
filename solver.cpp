@@ -235,32 +235,33 @@ bool Solver<kind>::linear_solver(const std::vector<kind>& x,const std::vector<ki
 }
 
 template<class kind>
-bool Solver<kind>::forward_step()
+int Solver<kind>::forward_step()
 {
   unsigned int i,j,its = 0;
   bool success,output = false;
-  double q,old_norm,xnorm,fnorm,pfactor,dt = 0.05;
+  double q,old_norm,xnorm,fnorm,pfactor;
   kind p;
   std::vector<kind> x,xnew,f,fnew,b,fdiff,xdiff,z;
   Matrix<kind> secant(dim);
 
+  x = c_solution;
   for(i=0; i<dim; ++i) {
-    x.push_back(c_solution[i]);
-    xnew.push_back(kind(0.0));
+    b.push_back(kind(0.0));
     f.push_back(kind(0.0));
     fnew.push_back(kind(0.0));
-    xdiff.push_back(kind(0.0));
+    xnew.push_back(kind(0.0));
     fdiff.push_back(kind(0.0));
-    b.push_back(kind(0.0));
+    xdiff.push_back(kind(0.0));
   }
   homotopy_function(x,f);
+  compute_jacobian(x);
+
   old_norm = 0.0;
   for(i=0; i<dim; ++i) {
     q = std::abs(f[i]);
     old_norm += q*q;
   }
   old_norm = std::sqrt(old_norm);
-  compute_jacobian(x);
 #ifdef VERBOSE
   std::cout << "Initial function norm is " << old_norm << std::endl;
 #endif
@@ -330,11 +331,12 @@ bool Solver<kind>::forward_step()
     x = xnew;
     f = fnew;
   } while(true);
+
   if (output) {
     c_solution = xnew;
-    t += dt;
+    return its;
   }
-  return output;
+  return -1;
 }
 
 namespace SYNARMOSMA {
@@ -371,7 +373,9 @@ namespace SYNARMOSMA {
 template<class kind>
 bool Solver<kind>::solve(std::vector<kind>& output)
 {
-  bool success;
+  int n;
+  double dt = 0.01;
+  bool success = true;
 
   if (output.size() == dim) {
     base_solution = output;
@@ -386,17 +390,37 @@ bool Solver<kind>::solve(std::vector<kind>& output)
   if (homotopy) {
     t = 0.01;
     do {
-      success = forward_step();
+      n = forward_step();
 #ifdef VERBOSE
-      std::cout << "Homotopy progress: " << t << "  " << success << std::endl;
+      std::cout << "Homotopy progress: " << t << "  " << n << std::endl;
 #endif
-      if (!success) break;
-      if (std::abs(1.0 - t) < epsilon) break;
+      if (n > 0 && std::abs(1.0 - t) < epsilon) break;
+      if (n == -1) {
+        dt /= 2.0;
+      }
+      else {
+        if (n < int(0.25*max_its)) {
+          dt *= 2.0;
+        }
+        else if (n > int(0.75*max_its)) {
+          dt /= 2.0;
+        }
+        t += dt;
+      }
+      if (dt < epsilon) {
+#ifdef VERBOSE
+        std::cout << "Homotopy method failed, exiting..." << std::endl;
+#endif
+        success = false;
+        break;
+      }
+      if (t > 1.0) t = 1.0;
     } while(true);
   } 
   else {
     t = 1.0;
-    success = forward_step();
+    n = forward_step();
+    if (n == -1) success = false;
   }
 
   if (success) output = c_solution;

@@ -24,7 +24,7 @@ namespace SYNARMOSMA {
     std::vector<std::set<unsigned int> > dependencies;
     Matrix<kind>* J;
 
-    bool forward_step();
+    int forward_step();
     bool direct_solver(std::vector<kind>&) const;
     void set_default_values();
     void compute_jacobian(const std::vector<kind>&);
