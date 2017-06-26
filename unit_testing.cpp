@@ -3,7 +3,6 @@
 #include "synarmosma/lattice.h"
 #include "synarmosma/polynomial.h"
 #include "synarmosma/directed_graph.h"
-#include "synarmosma/solver.h"
 
 extern SYNARMOSMA::Random RND;
 
@@ -186,7 +185,7 @@ int main(int argc,char** argv)
   assert(G6.circuit_rank() == 1);
   assert(G6.order() == 3);
   assert(G6.size() == 3);
-  
+
   std::cout << "All tests passed successfully!" << std::endl;
   return 0;
 }
