@@ -70,14 +70,15 @@ namespace SYNARMOSMA {
     void serialize(std::ofstream&) const;
     void deserialize(std::ifstream&);
     void initialize(unsigned int,unsigned int);
-    void set(unsigned int,unsigned int,kind,bool = false);
-    kind get(unsigned int,unsigned int) const;
+    inline void set(unsigned int,unsigned int,kind,bool = false);
+    inline kind get(unsigned int,unsigned int) const;
     void increment(unsigned int,unsigned int,kind);
     void convert(kind*,char) const;
     bool empty_row(unsigned int) const;
     inline double sparsity() const {return 1.0 - double(number_nonzero())/double(nrow*ncolumn);};
     unsigned int number_nonzero() const; 
     double dispersion() const;
+    void get_diagonal(std::vector<kind>&) const;
     bool diagonally_dominant() const;
     bool diagonally_dominant(unsigned int) const;
     bool diagonally_dominant(unsigned int,unsigned int) const;
@@ -85,7 +86,7 @@ namespace SYNARMOSMA {
     kind determinant() const;
     void multiply(const std::vector<kind>&,std::vector<kind>&) const;
     void increment(const Matrix<kind>&);
-    void get_diagonal(std::vector<kind>&) const;
+    void homotopy_scaling(kind,kind,Matrix<kind>*) const;
     int gauss_seidel_solver(std::vector<kind>&,const std::vector<kind>&,double,int);
     kind get_first_nonzero(unsigned int) const;
     inline int get_nrow() const {return nrow;};
@@ -130,6 +131,47 @@ namespace SYNARMOSMA {
       if (i < (source.nrow - 1)) os << std::endl;
     }
     return os;
+  }
+
+  template<class kind>
+  kind Matrix<kind>::get(unsigned int n,unsigned int m) const
+  {
+    unsigned int i;
+    kind output = zero;
+
+    if (elements[n].empty()) return output;
+    for(i=0; i<elements[n].size(); ++i) {
+      if (elements[n][i].second == m) {
+        output = elements[n][i].first;
+        break;
+      } 
+    }
+    return output;
+  }
+
+  template<class kind>
+  void Matrix<kind>::set(unsigned int n,unsigned int m,kind v,bool increment)
+  {
+    unsigned int i,q;
+    bool found = false;
+    for(i=0; i<elements[n].size(); ++i) {
+      if (elements[n][i].second == m) {
+        found = true;
+        q = i;
+        break;
+      }
+    }
+    if (found) {
+      if (increment) {
+        elements[n][q].first += v;
+      }
+      else {
+        elements[n][q].first = v;
+      }
+    }
+    else {
+      elements[n].push_back(std::pair<kind,unsigned int>(v,m));
+    }
   }
 }
 #endif

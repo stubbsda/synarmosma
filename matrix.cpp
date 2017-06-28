@@ -180,6 +180,31 @@ bool Matrix<kind>::divisible(unsigned int n,unsigned int* out1,unsigned int* out
 }
 
 template<class kind>
+void Matrix<kind>::homotopy_scaling(kind a1,kind a2,Matrix<kind>* output) const
+{
+  // A method to compute output = a1*A + a2*I...
+#ifdef DEBUG
+  assert(output->nrow == nrow && output->ncolumn == ncolumn);
+#endif
+  unsigned int i,j;
+  bool diagonal;
+
+  output->clear(false);
+  for(i=0; i<nrow; ++i) {
+    diagonal = false;
+    for(j=0; j<elements[i].size(); ++j) {
+      if (elements[i][j].second == i) {
+        diagonal = true;
+        output->set(i,i,a1*elements[i][j].first + a2);
+        continue;
+      }
+      output->set(i,elements[i][j].second,a1*elements[i][j].first);
+    }
+    if (!diagonal) output->set(i,i,a2);
+  }
+}
+
+template<class kind>
 void Matrix<kind>::increment(const Matrix<kind>& arg)
 {
 #ifdef DEBUG
@@ -775,46 +800,6 @@ Matrix<kind>& operator *(const Matrix<kind>& A,const Matrix<kind>& B)
   }
   delete[] BC;
   delete[] BC_row;
-  return output;
-}
-
-template<class kind>
-void Matrix<kind>::set(unsigned int n,unsigned int m,kind v,bool increment)
-{
-  unsigned int i,q;
-  bool found = false;
-  for(i=0; i<elements[n].size(); ++i) {
-    if (elements[n][i].second == m) {
-      found = true;
-      q = i;
-      break;
-    }
-  }
-  if (found) {
-    if (increment) {
-      elements[n][q].first += v;
-    }
-    else {
-      elements[n][q].first = v;
-    }
-  }
-  else {
-    elements[n].push_back(std::pair<kind,unsigned int>(v,m));
-  }
-}
-
-template<class kind>
-kind Matrix<kind>::get(unsigned int n,unsigned int m) const
-{
-  unsigned int i;
-  kind output = zero;
-  if (elements[n].empty()) return output;
-  for(i=0; i<elements[n].size(); ++i) {
-    if (elements[n][i].second == m) {
-      output = elements[n][i].first;
-      break;
-    } 
-  }
   return output;
 }
 

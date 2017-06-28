@@ -33,7 +33,6 @@ namespace SYNARMOSMA {
     kind a1(double) const;
     kind a2(double) const;
     void initialize_base_solution();
-    void homotopy_function(const std::vector<kind>&,std::vector<kind>&) const;
     virtual void F(const std::vector<kind>&,std::vector<kind>&) const = 0;
    public:
     Solver(int);

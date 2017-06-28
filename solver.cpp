@@ -40,6 +40,7 @@ void Solver<kind>::set_default_values()
   dim = 0;
   homotopy = false;
   broyden = false;
+  t = 1.0;
   method = ITERATIVE; 
 }
 
@@ -100,24 +101,6 @@ namespace SYNARMOSMA {
 }
 
 template<class kind>
-void Solver<kind>::homotopy_function(const std::vector<kind>& x,std::vector<kind>& output) const
-{
-  unsigned int i;
-  kind q;
-  std::vector<kind> y;
-  const kind w1 = a1(t);
-  const kind w2 = a2(t);
-
-  F(x,y);
-
-  output.clear();
-  for(i=0; i<dim; ++i) {
-    q = w1*y[i] + w2*(x[i] - base_solution[i]);
-    output.push_back(q);
-  }
-}
-
-template<class kind>
 void Solver<kind>::compute_jacobian(const std::vector<kind>& x)
 {
   unsigned int i,j;
@@ -125,9 +108,9 @@ void Solver<kind>::compute_jacobian(const std::vector<kind>& x)
   kind delta;
   std::set<unsigned int>::const_iterator it;
   std::vector<kind> w,y1,y2;
+  Matrix<kind>* JF = new Matrix<kind>(dim);
 
-  J->clear(false);
-  homotopy_function(x,y1);
+  F(x,y1);
   w = x;
   if (fcall) {
     compute_dependencies();
@@ -138,12 +121,14 @@ void Solver<kind>::compute_jacobian(const std::vector<kind>& x)
     for(it=dependencies[i].begin(); it!=dependencies[i].end(); ++it) {
       j = *it;
       w[j] += epsilon;
-      homotopy_function(w,y2);
+      F(w,y2);
       delta = y2[i] - y1[i];
-      J->set(i,j,delta/epsilon);
+      JF->set(i,j,delta/epsilon);
       w[j] -= epsilon;
     }
   }
+  JF->homotopy_scaling(a1(t),a2(t),J);
+  delete JF;
 }
 
 template<class kind>
@@ -163,10 +148,10 @@ void Solver<kind>::compute_dependencies()
     w.push_back(kind(0.0));
   }
 
-  homotopy_function(x,w);
+  F(x,w);
   for(i=0; i<dim; ++i) {
     x[i] += kind(10.0);
-    homotopy_function(x,y);
+    F(x,y);
     for(j=0; j<dim; ++j) {
       delta = y[j] - w[j];
       if (std::abs(delta) > epsilon) dependencies[j].insert(i);
@@ -253,7 +238,10 @@ int Solver<kind>::forward_step()
     fdiff.push_back(kind(0.0));
     xdiff.push_back(kind(0.0));
   }
-  homotopy_function(x,f);
+  F(x,f);
+  for(i=0; i<dim; ++i) {
+    f[i] = a1(t)*f[i] + a2(t)*(x[i] - base_solution[i]); 
+  }
   compute_jacobian(x);
 
   old_norm = 0.0;
@@ -287,7 +275,10 @@ int Solver<kind>::forward_step()
     std::cout << "Iterative difference is " << xnorm << " at " << its << std::endl;
 #endif
     if (std::sqrt(xnorm) < epsilon) break;
-    homotopy_function(xnew,fnew);
+    F(xnew,fnew);
+    for(i=0; i<dim; ++i) {
+      fnew[i] = a1(t)*fnew[i] + a2(t)*(xnew[i] - base_solution[i]); 
+    }
     fnorm = 0.0;
     for(i=0; i<dim; ++i) {
       fdiff[i] = fnew[i] - f[i];
@@ -418,7 +409,6 @@ bool Solver<kind>::solve(std::vector<kind>& output)
     } while(true);
   } 
   else {
-    t = 1.0;
     n = forward_step();
     if (n == -1) success = false;
   }
