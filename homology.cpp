@@ -2,8 +2,8 @@
 
 using namespace SYNARMOSMA;
 
-extern template NTL::ZZ Matrix<NTL::ZZ>::neg1;
-extern template NTL::ZZ Matrix<NTL::ZZ>::unity; 
+extern template const NTL::ZZ Matrix<NTL::ZZ>::neg1;
+extern template const NTL::ZZ Matrix<NTL::ZZ>::unity; 
 
 Homology::Homology()
 {
