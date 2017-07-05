@@ -274,7 +274,7 @@ int Solver<kind>::forward_step()
 #ifdef VERBOSE
     std::cout << "Iterative difference is " << xnorm << " at " << its << std::endl;
 #endif
-    if (std::sqrt(xnorm) < epsilon) break;
+    if (xnorm < epsilon) break;
     F(xnew,fnew);
     for(i=0; i<dim; ++i) {
       fnew[i] = a1(t)*fnew[i] + a2(t)*(xnew[i] - base_solution[i]); 
@@ -296,7 +296,7 @@ int Solver<kind>::forward_step()
       break;
     }
     // Diverging, time to exit...
-    if (std::abs(fnorm/old_norm) > 10.0) break;
+    if ((fnorm/old_norm) > 10.0) break;
     old_norm = fnorm;
     its++;
     if (its > max_its) break;
@@ -382,14 +382,18 @@ bool Solver<kind>::solve(std::vector<kind>& output)
     t = 0.01;
     do {
       n = forward_step();
-#ifdef VERBOSE
-      std::cout << "Homotopy progress: " << t << "  " << n << std::endl;
-#endif
       if (n > 0 && std::abs(1.0 - t) < epsilon) break;
       if (n == -1) {
+#ifdef VERBOSE
+        std::cout << "Homotopy solver failed at t = " << t << ", halving step size..." << std::endl;
+#endif
         dt /= 2.0;
+        t -= dt;
       }
       else {
+#ifdef VERBOSE
+        std::cout << "Homotopy solver succeeded at t = " << t << " after " << n << " iterations." << std::endl;
+#endif
         if (n < int(0.25*max_its)) {
           dt *= 2.0;
         }

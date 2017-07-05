@@ -318,7 +318,7 @@ namespace SYNARMOSMA {
         }
         sum += q;
       }
-      if (d < sum) return false;
+      if (d < sum || std::abs(d) < std::numeric_limits<double>::epsilon()) return false;
     }
     return true;
   }
@@ -327,7 +327,7 @@ namespace SYNARMOSMA {
   bool Matrix<NTL::ZZ>::diagonally_dominant(unsigned int r) const 
   {
     unsigned int i;
-    double d,q,sum = 0.0;
+    double q,d = 0.0,sum = 0.0;
 
     for(i=0; i<elements[r].size(); ++i) {
       NTL::conv(elements[r][i].first,q);
@@ -338,7 +338,7 @@ namespace SYNARMOSMA {
       }
       sum += q;
     }
-    if (d < sum) return false;
+    if (d < sum || std::abs(d) < std::numeric_limits<double>::epsilon()) return false;
 
     return true; 
   }
@@ -347,7 +347,7 @@ namespace SYNARMOSMA {
   bool Matrix<NTL::ZZ>::diagonally_dominant(unsigned int r,unsigned int c) const 
   {
     unsigned int i;
-    double d,q,sum = 0.0;
+    double q,d = 0.0,sum = 0.0;
 
     for(i=0; i<elements[r].size(); ++i) {
       NTL::conv(elements[r][i].first,q);
@@ -358,7 +358,7 @@ namespace SYNARMOSMA {
       }
       sum += q;
     }
-    if (d < sum) return false;
+    if (d < sum || std::abs(d) < std::numeric_limits<double>::epsilon()) return false;
 
     return true; 
   }
@@ -381,7 +381,7 @@ bool Matrix<kind>::diagonally_dominant() const
       }
       sum += q;
     }
-    if (d < sum) return false;
+    if (d < sum || std::abs(d) < std::numeric_limits<double>::epsilon()) return false;
   }
   return true;
 }
@@ -390,7 +390,7 @@ template<class kind>
 bool Matrix<kind>::diagonally_dominant(unsigned int r) const 
 {
   unsigned int i;
-  double d,q,sum = 0.0;
+  double q,d = 0.0,sum = 0.0;
 
   for(i=0; i<elements[r].size(); ++i) {
     q = std::abs(elements[r][i].first);
@@ -400,7 +400,7 @@ bool Matrix<kind>::diagonally_dominant(unsigned int r) const
     }
     sum += q;
   }
-  if (d < sum) return false;
+  if (d < sum || std::abs(d) < std::numeric_limits<double>::epsilon()) return false;
 
   return true; 
 }
@@ -409,7 +409,7 @@ template<class kind>
 bool Matrix<kind>::diagonally_dominant(unsigned int r,unsigned int c) const 
 {
   unsigned int i;
-  double d,q,sum = 0.0;
+  double q,d = 0.0,sum = 0.0;
 
   for(i=0; i<elements[r].size(); ++i) {
     q = std::abs(elements[r][i].first);
@@ -419,7 +419,7 @@ bool Matrix<kind>::diagonally_dominant(unsigned int r,unsigned int c) const
     }
     sum += q;
   }
-  if (d < sum) return false;
+  if (d < sum || std::abs(d) < std::numeric_limits<double>::epsilon()) return false;
 
   return true; 
 }
@@ -493,9 +493,9 @@ int Matrix<kind>::gauss_seidel_solver(std::vector<kind>& soln,const std::vector<
   get_diagonal(diagonal);
   for(i=0; i<nrow; ++i) {
 #ifdef VERBOSE
-    std::cout << "Diagonal element of row " << i << " is " << diagonal[i] << std::endl;
+    //std::cout << "Diagonal element of row " << i << " is " << diagonal[i] << std::endl;
 #endif
-    if (!(std::abs(diagonal[i]) > std::numeric_limits<double>::epsilon())) {
+    if (std::abs(diagonal[i]) < std::numeric_limits<double>::epsilon()) {
 #ifdef VERBOSE
       std::cout << "Illegal diagonal element value, exiting!" << std::endl;
 #endif
@@ -545,6 +545,7 @@ int Matrix<kind>::gauss_seidel_solver(std::vector<kind>& soln,const std::vector<
     std::cout << "For iteration " << its << " the solution error of the linear system is " << error_new << std::endl;
 #endif
     if (error_new < threshold) break;
+    if (error_new > 10000.0) return -1;
     if (error_new > 2.0*error && error_new > 5.0) return -1;
     error = error_new;
     x = x_new;
@@ -848,33 +849,7 @@ kind Matrix<kind>::get_first_nonzero(unsigned int n) const
   return elements[n][0].first;
 }
 
-namespace SYNARMOSMA {
-template<class kind>
-void permute(Matrix<kind>& A,unsigned int n,unsigned int m,char type)
-{
-  // If (type == c), then column(n) <-> column(m)
-  // If (type == r), then row(n) <-> row(m)
-  unsigned int i,j;
-  std::vector<std::pair<kind,unsigned int> > pr;
 
-  if (type == 'c') {
-    for(i=0; i<A.nrow; ++i) {
-      for(j=0; j<A.elements[i].size(); ++j) {
-        if (A.elements[i][j].second == n) {
-          A.elements[i][j].second = m;
-        }
-        else if (A.elements[i][j].second == m) {
-          A.elements[i][j].second = n;
-        }
-      }
-    }
-  }
-  else {
-    pr = A.elements[n];
-    A.elements[n] = A.elements[m];
-    A.elements[m] = pr;
-  }
-}
 
 template<class kind>
 double Matrix<kind>::dispersion() const
@@ -970,293 +945,312 @@ unsigned int Matrix<kind>::optimize_dominance(std::vector<unsigned int>& shift)
   return j;
 }
 
-template<class kind>
-void invert(Matrix<kind>& A,unsigned int n,char type)
-{
-  // If (type == c), then column(n) -> -1*column(n)
-  // If (type == r), then row(n) -> -1*row(n)
-  unsigned int i,j;
+namespace SYNARMOSMA {
+  template<class kind>
+  void permute(Matrix<kind>& A,unsigned int n,unsigned int m,char type)
+  {
+    // If (type == c), then column(n) <-> column(m)
+    // If (type == r), then row(n) <-> row(m)
+    unsigned int i,j;
+    std::vector<std::pair<kind,unsigned int> > pr;
 
-  if (type == 'c') {
-    for(i=0; i<A.nrow; ++i) {
-      for(j=0; j<A.elements[i].size(); ++j) {
-        if (A.elements[i][j].second == n) A.elements[i][j].first *= Matrix<kind>::neg1;
+    if (type == 'c') {
+      for(i=0; i<A.nrow; ++i) {
+        for(j=0; j<A.elements[i].size(); ++j) {
+          if (A.elements[i][j].second == n) {
+            A.elements[i][j].second = m;
+          }
+          else if (A.elements[i][j].second == m) {
+            A.elements[i][j].second = n;
+          }
+        }
+      }
+    }
+    else {
+      pr = A.elements[n];
+      A.elements[n] = A.elements[m];
+      A.elements[m] = pr;
+    }
+  }
+
+  template<class kind>
+  void invert(Matrix<kind>& A,unsigned int n,char type)
+  {
+    // If (type == c), then column(n) -> -1*column(n)
+    // If (type == r), then row(n) -> -1*row(n)
+    unsigned int i,j;
+
+    if (type == 'c') {
+      for(i=0; i<A.nrow; ++i) {
+        for(j=0; j<A.elements[i].size(); ++j) {
+          if (A.elements[i][j].second == n) A.elements[i][j].first *= Matrix<kind>::neg1;
+        }
+      }
+    }
+    else {
+      for(i=0; i<A.elements[n].size(); ++i) {
+        A.elements[n][i].first *= Matrix<kind>::neg1;
       }
     }
   }
-  else {
-    for(i=0; i<A.elements[n].size(); ++i) {
-      A.elements[n][i].first *= Matrix<kind>::neg1;
-    }
-  }
-}
 
-template<class kind>
-void combine(Matrix<kind>& A,unsigned int n,unsigned int m,const kind& q,char type)
-{
-  // If (type == r), then row(n) -> row(n) + q*row(m)
-  // If (type == c), then column(n) -> column(n) + q*column(m)
-  unsigned int i,j,l = 0;
-  bool found,fd1,fd2;
-  kind wv;
+  template<class kind>
+  void combine(Matrix<kind>& A,unsigned int n,unsigned int m,const kind& q,char type)
+  {
+    // If (type == r), then row(n) -> row(n) + q*row(m)
+    // If (type == c), then column(n) -> column(n) + q*column(m)
+    unsigned int i,j,l = 0;
+    bool found,fd1,fd2;
+    kind wv = Matrix<kind>::zero;
 
-  wv = 0;
-
-  if (type == 'c') {
-    for(i=0; i<A.nrow; ++i) {
-      fd1 = false;
-      fd2 = false;
-      for(j=0; j<A.elements[i].size(); ++j) {
-        if (A.elements[i][j].second == n) {
-          fd1 = true;
-          wv = q*A.elements[i][j].first;
-          if (fd2) break;
+    if (type == 'c') {
+      for(i=0; i<A.nrow; ++i) {
+        fd1 = false;
+        fd2 = false;
+        for(j=0; j<A.elements[i].size(); ++j) {
+          if (A.elements[i][j].second == n) {
+            fd1 = true;
+            wv = q*A.elements[i][j].first;
+            if (fd2) break;
+          }
+          else if (A.elements[i][j].second == m) {
+            fd2 = true;
+            l = j;
+            if (fd1) break;
+          }
         }
-        else if (A.elements[i][j].second == m) {
-          fd2 = true;
-          l = j;
-          if (fd1) break;
-        }
-      }
-      if (!fd1) continue;
-      if (!fd2) {
-        A.elements[i].push_back(std::pair<kind,unsigned int>(wv,m));
-      }
-      else {
-        if (A.elements[i][l].first == -wv) {
-          A.elements[i].erase(A.elements[i].begin() + l);
+        if (!fd1) continue;
+        if (!fd2) {
+          A.elements[i].push_back(std::pair<kind,unsigned int>(wv,m));
         }
         else {
-          A.elements[i][l].first += wv;
+          if (A.elements[i][l].first == -wv) {
+            A.elements[i].erase(A.elements[i].begin() + l);
+          }
+          else {
+            A.elements[i][l].first += wv;
+          }
         }
       }
     }
+    else {
+      for(i=0; i<A.elements[m].size(); ++i) {
+        l = A.elements[m][i].second;
+        found = false;
+        for(j=0; j<A.elements[n].size(); ++j) {
+          if (A.elements[n][j].second == l) {
+            if (A.elements[n][j].first == -q*A.elements[m][i].first) {
+              A.elements[n].erase(A.elements[n].begin() + j);
+            }
+            else {
+              A.elements[n][j].first += q*A.elements[m][i].first;
+            }
+            found = true;
+            break;
+          }
+        }
+        if (!found) A.elements[n].push_back(std::pair<kind,unsigned int>(q*A.elements[m][i].first,l));
+      }
+    }
   }
-  else {
-    for(i=0; i<A.elements[m].size(); ++i) {
-      l = A.elements[m][i].second;
+
+  template<class kind>
+  void pivot_row(Matrix<kind>& A,unsigned int k,unsigned int l)
+  {
+    unsigned int i,j;
+    bool found;
+    kind n,q,d = Matrix<kind>::zero;
+
+    for(i=0; i<A.elements[k].size(); ++i) {
+      if (A.elements[k][i].second == l) {
+        d = A.elements[k][i].first;
+        break;
+      }
+    }
+    for(i=k+1; i<A.nrow; ++i) {
       found = false;
-      for(j=0; j<A.elements[n].size(); ++j) {
-        if (A.elements[n][j].second == l) {
-          if (A.elements[n][j].first == -q*A.elements[m][i].first) {
-            A.elements[n].erase(A.elements[n].begin() + j);
-          }
-          else {
-            A.elements[n][j].first += q*A.elements[m][i].first;
-          }
+      for(j=0; j<A.elements[i].size(); ++j) {
+        if (A.elements[i][j].second == l) {
+          n = A.elements[i][j].first;
           found = true;
           break;
         }
       }
-      if (!found) A.elements[n].push_back(std::pair<kind,unsigned int>(q*A.elements[m][i].first,l));
+      if (!found) continue;
+      q = n/d; 
+      combine(A,i,k,-q,'r');
     }
   }
-}
 
-template<class kind>
-void pivot_row(Matrix<kind>& A,unsigned int k,unsigned int l)
-{
-  unsigned int i,j;
-  kind n,d,q;
-  bool found;
-
-  d = 0;
-
-  for(i=0; i<A.elements[k].size(); ++i) {
-    if (A.elements[k][i].second == l) {
-      d = A.elements[k][i].first;
-      break;
-    }
-  }
-  for(i=k+1; i<A.nrow; ++i) {
-    found = false;
-    for(j=0; j<A.elements[i].size(); ++j) {
-      if (A.elements[i][j].second == l) {
-        n = A.elements[i][j].first;
-        found = true;
-        break;
-      }
-    }
-    if (!found) continue;
-    q = n/d; 
-    combine(A,i,k,-q,'r');
-  }
-}
-
-template<class kind>
-void pivot_column(Matrix<kind>& A,unsigned int k,unsigned int l)
-{
-  unsigned int i,j;
-  kind n,d,q;
-  bool found;
-
-  d = 0;
+  template<class kind>
+  void pivot_column(Matrix<kind>& A,unsigned int k,unsigned int l)
+  {
+    unsigned int i,j;
+    bool found;
+    kind n,q,d = Matrix<kind>::zero;
  
-  for(i=0; i<A.elements[k].size(); ++i) {
-    if (A.elements[k][i].second == l) {
-      d = A.elements[k][i].first;
-      break;
-    }
-  }
-  for(i=l+1; i<A.ncolumn; ++i) {
-    found = false;
-    for(j=0; j<A.elements[k].size(); ++j) {
-      if (A.elements[k][j].second == i) {
-        n = A.elements[k][j].first;
-        found = true;
+    for(i=0; i<A.elements[k].size(); ++i) {
+      if (A.elements[k][i].second == l) {
+        d = A.elements[k][i].first;
         break;
       }
     }
-    if (!found) continue;
-    q = n/d;
-    combine(A,k,i,-q,'c');
-  }
-}
-
-template<class kind>
-void move_minimum(Matrix<kind>& A,unsigned int n)
-{
-  unsigned int i,j,im,jm,istart = 0,ulimit = A.nrow - n;  
-  kind alpha,beta;
-  bool full[ulimit];
-  std::pair<kind,unsigned int>* VY = new std::pair<kind,unsigned int>[ulimit];
-  std::vector<std::pair<kind,unsigned int> > VX;
-
-  alpha = 0;
-
-  for(i=n; i<A.nrow; ++i) {
-    full[i-n] = false;
-    for(j=0; j<A.elements[i].size(); ++j) {
-      if (A.elements[i][j].second >= n) {
-        VX.push_back(A.elements[i][j]);
+    for(i=l+1; i<A.ncolumn; ++i) {
+      found = false;
+      for(j=0; j<A.elements[k].size(); ++j) {
+        if (A.elements[k][j].second == i) {
+          n = A.elements[k][j].first;
+          found = true;
+          break;
+        }
       }
+      if (!found) continue;
+      q = n/d;
+      combine(A,k,i,-q,'c');
     }
-    if (VX.empty()) continue;
-    full[i-n] = true;
-    if (VX[0].first < 0) {
-      alpha = -VX[0].first;
-    }
-    else {
-      alpha = VX[0].first;
-    }
-    jm = VX[0].second;
-    for(j=1; j<VX.size(); ++j) {
-      if (VX[j].first < 0) {
-        beta = -VX[j].first;
+  }
+
+  template<class kind>
+  void move_minimum(Matrix<kind>& A,unsigned int n)
+  {
+    unsigned int i,j,im,jm,istart = 0,ulimit = A.nrow - n;  
+    kind beta,alpha = Matrix<kind>::zero;
+    bool full[ulimit];
+    std::pair<kind,unsigned int>* VY = new std::pair<kind,unsigned int>[ulimit];
+    std::vector<std::pair<kind,unsigned int> > VX;
+
+    for(i=n; i<A.nrow; ++i) {
+      full[i-n] = false;
+      for(j=0; j<A.elements[i].size(); ++j) {
+        if (A.elements[i][j].second >= n) {
+          VX.push_back(A.elements[i][j]);
+        }
+      }
+      if (VX.empty()) continue;
+      full[i-n] = true;
+      if (VX[0].first < 0) {
+        alpha = -VX[0].first;
       }
       else {
-        beta = VX[j].first;
+        alpha = VX[0].first;
       }
+      jm = VX[0].second;
+      for(j=1; j<VX.size(); ++j) {
+        if (VX[j].first < 0) {
+          beta = -VX[j].first;
+        }
+        else {
+          beta = VX[j].first;
+        }
+        if (beta < alpha) {
+          alpha = beta;
+          jm = VX[j].second;
+        }
+      }
+      VY[i-n] = std::pair<kind,unsigned int>(alpha,jm);
+      VX.clear();
+    }
+    for(i=0; i<ulimit; ++i) {
+      if (!full[i]) continue;
+      alpha = VY[i].first;
+      istart = i;
+      break;
+    }
+    im = istart;
+    for(i=istart+1; i<ulimit; ++i) {
+      if (!full[i]) continue;
+      beta = VY[i].first;
       if (beta < alpha) {
         alpha = beta;
-        jm = VX[j].second;
+        im = i;
       }
     }
-    VY[i-n] = std::pair<kind,unsigned int>(alpha,jm);
-    VX.clear();
-  }
-  for(i=0; i<ulimit; ++i) {
-    if (!full[i]) continue;
-    alpha = VY[i].first;
-    istart = i;
-    break;
-  }
-  im = istart;
-  for(i=istart+1; i<ulimit; ++i) {
-    if (!full[i]) continue;
-    beta = VY[i].first;
-    if (beta < alpha) {
-      alpha = beta;
-      im = i;
-    }
-  }
-  jm = VY[im].second;
-  im += n;
-  if (n != im) permute(A,n,im,'r');
-  if (n != jm) permute(A,n,jm,'c');
+    jm = VY[im].second;
+    im += n;
+    if (n != im) permute(A,n,im,'r');
+    if (n != jm) permute(A,n,jm,'c');
 
-  delete[] VY;
-}
+    delete[] VY;
+  }
 
-template<class kind>
-void prepare_matrix(Matrix<kind>& A,unsigned int n)
-{
-  unsigned int i,j,v1,v2;
-  bool jump;
-  kind f;
+  template<class kind>
+  void prepare_matrix(Matrix<kind>& A,unsigned int n)
+  {
+    unsigned int i,j,v1,v2;
+    bool jump;
+    kind f;
 
-  do {
-    move_minimum(A,n);
-    pivot_row(A,n,n);
-    jump = false;
-    for(i=n+1; i<A.nrow; ++i) {
-      for(j=0; j<A.elements[i].size(); ++j) {
-        if (A.elements[i][j].second == n) {
+    do {
+      move_minimum(A,n);
+      pivot_row(A,n,n);
+      jump = false;
+      for(i=n+1; i<A.nrow; ++i) {
+        for(j=0; j<A.elements[i].size(); ++j) {
+          if (A.elements[i][j].second == n) {
+            jump = true;
+            break;
+          }
+        }
+        if (jump) break;
+      }
+      if (jump) continue;
+      pivot_column(A,n,n);
+      jump = false;
+      for(i=0; i<A.elements[n].size(); ++i) {
+        if (A.elements[n][i].second > n) {
           jump = true;
           break;
         }
       }
-      if (jump) break;
-    }
-    if (jump) continue;
-    pivot_column(A,n,n);
-    jump = false;
-    for(i=0; i<A.elements[n].size(); ++i) {
-      if (A.elements[n][i].second > n) {
-        jump = true;
+      if (jump) continue;
+      if (A.divisible(n,&v1,&v2,&f)) {
+        combine(A,v1,n,Matrix<kind>::unity,'r');
+        combine(A,n,v2,-f,'c');
+      }
+      else {
         break;
       }
-    }
-    if (jump) continue;
-    if (A.divisible(n,&v1,&v2,&f)) {
-      combine(A,v1,n,Matrix<kind>::unity,'r');
-      combine(A,n,v2,-f,'c');
-    }
-    else {
-      break;
-    }
-  } while(true);
-}
+    } while(true);
+  }
 
-template<class kind>
-unsigned int normalize(Matrix<kind>& A)
-{
-  if (A.normalized) return 0;
+  template<class kind>
+  unsigned int normalize(Matrix<kind>& A)
+  {
+    if (A.normalized) return 0;
 
-  unsigned int i,j,p = 0,q = 0;
-  kind bt;
-  bool quit;
+    unsigned int i,j,p = 0,q = 0;
+    bool quit;
+    kind bt = Matrix<kind>::zero;
 
-  bt = 0;
-
-  do {
-    p += 1;
-    prepare_matrix(A,p-1);
-    for(i=0; i<A.elements[p-1].size(); ++i) {
-      if (A.elements[p-1][i].second == p-1) {
-        bt = A.elements[p-1][i].first;
-        break;
-      }
-    }
-    if (bt < Matrix<kind>::zero) {
-      invert(A,p-1,'r');
-    }
-    else if (bt == Matrix<kind>::unity) {
-      q += 1;
-    }
-    quit = true;
-    for(i=p; i<A.nrow; ++i) {
-      for(j=0; j<A.elements[i].size(); ++j) {
-        if (A.elements[i][j].second >= p) {
-          quit = false;
+    do {
+      p += 1;
+      prepare_matrix(A,p-1);
+      for(i=0; i<A.elements[p-1].size(); ++i) {
+        if (A.elements[p-1][i].second == (p - 1)) {
+          bt = A.elements[p-1][i].first;
           break;
         }
       }
-      if (!quit) break;
-    }
-    if (quit) break;
-  } while(true);
-  A.normalized = true;
-  return q;
+      if (bt < Matrix<kind>::zero) {
+        invert(A,p-1,'r');
+      }
+      else if (bt == Matrix<kind>::unity) {
+        q += 1;
+      }
+      quit = true;
+      for(i=p; i<A.nrow; ++i) {
+        for(j=0; j<A.elements[i].size(); ++j) {
+          if (A.elements[i][j].second >= p) {
+            quit = false;
+            break;
+          }
+        }
+        if (!quit) break;
+      }
+      if (quit) break;
+    } while(true);
+    A.normalized = true;
+    return q;
+  }
 }
-}
+

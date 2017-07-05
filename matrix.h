@@ -78,6 +78,7 @@ namespace SYNARMOSMA {
     inline double sparsity() const {return 1.0 - double(number_nonzero())/double(nrow*ncolumn);};
     unsigned int number_nonzero() const; 
     double dispersion() const;
+    kind diagonal_element(unsigned int) const;
     void get_diagonal(std::vector<kind>&) const;
     bool diagonally_dominant() const;
     bool diagonally_dominant(unsigned int) const;
