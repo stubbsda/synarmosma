@@ -301,26 +301,58 @@ kind Matrix<kind>::determinant() const
 
 namespace SYNARMOSMA {
   template<>
-  bool Matrix<NTL::ZZ>::diagonally_dominant() const
+  bool Matrix<NTL::ZZ>::diagonally_dominant(bool printout) const
   {
     unsigned int i,j;
     double sum,d,q;
+    bool output = true;
 
-    for(i=0; i<nrow; ++i) {
-      d = 0.0;
-      sum = 0.0;
-      for(j=0; j<elements[i].size(); ++j) {
-        NTL::conv(elements[i][j].first,q);
-        q = std::abs(q);
-        if (elements[i][j].second == i) {
-          d = q;
-          continue;
+#ifndef VERBOSE
+    printout = false;
+#endif
+ 
+    if (printout) {
+      unsigned int nf = 0;
+      for(i=0; i<nrow; ++i) {
+        d = 0.0;
+        sum = 0.0;
+        for(j=0; j<elements[i].size(); ++j) {
+          NTL::conv(elements[i][j].first,q);
+          q = std::abs(q);
+          if (elements[i][j].second == i) {
+            d = q;
+            continue;
+          }
+          sum += q;
         }
-        sum += q;
+        if (d < sum || std::abs(d) < std::numeric_limits<double>::epsilon()) {
+          nf++;
+          output = false;
+        }
+        else {
+          std::cout << "DOMINANT ";
+        }
+        std::cout << 1+i << "  " << d << "  " << sum << "   " << sum/d << std::endl;
       }
-      if (d < sum || std::abs(d) < std::numeric_limits<double>::epsilon()) return false;
+      std::cout << "There are " << nrow - nf << " diagonally dominant rows." << std::endl;
     }
-    return true;
+    else {
+      for(i=0; i<nrow; ++i) {
+        d = 0.0;
+        sum = 0.0;
+        for(j=0; j<elements[i].size(); ++j) {
+          NTL::conv(elements[i][j].first,q);
+          q = std::abs(q);
+          if (elements[i][j].second == i) {
+            d = q;
+            continue;
+          }
+          sum += q;
+        }
+        if (d < sum || std::abs(d) < std::numeric_limits<double>::epsilon()) return false;
+      }
+    }
+    return output;
   }
 
   template<>
@@ -365,25 +397,56 @@ namespace SYNARMOSMA {
 }
 
 template<class kind>
-bool Matrix<kind>::diagonally_dominant() const
+bool Matrix<kind>::diagonally_dominant(bool printout) const
 {
   unsigned int i,j;
   double sum,d,q;
+  bool output = true;
 
-  for(i=0; i<nrow; ++i) {
-    d = 0.0;
-    sum = 0.0;
-    for(j=0; j<elements[i].size(); ++j) {
-      q = std::abs(elements[i][j].first);
-      if (elements[i][j].second == i) {
-        d = q;
-        continue;
+#ifndef VERBOSE
+  printout = false;
+#endif
+
+  if (printout) {
+    unsigned int nf = 0;
+    for(i=0; i<nrow; ++i) {
+      d = 0.0;
+      sum = 0.0;
+      for(j=0; j<elements[i].size(); ++j) {
+        q = std::abs(elements[i][j].first);
+        if (elements[i][j].second == i) {
+          d = q;
+          continue;
+        }
+        sum += q;
       }
-      sum += q;
+      if (d < sum || std::abs(d) < std::numeric_limits<double>::epsilon()) {
+        nf++; 
+        output = false;
+      }
+      else {
+        std::cout << "DOMINANT ";
+      }
+      std::cout << 1+i << "  " << d << "  " << sum << "   " << sum/d << std::endl;
     }
-    if (d < sum || std::abs(d) < std::numeric_limits<double>::epsilon()) return false;
+    std::cout << "There are " << nrow - nf << " diagonally dominant rows." << std::endl;
   }
-  return true;
+  else {
+    for(i=0; i<nrow; ++i) {
+      d = 0.0;
+      sum = 0.0;
+      for(j=0; j<elements[i].size(); ++j) {
+        q = std::abs(elements[i][j].first);
+        if (elements[i][j].second == i) {
+          d = q;
+          continue;
+        }
+        sum += q;
+      }
+      if (d < sum || std::abs(d) < std::numeric_limits<double>::epsilon()) return false;
+    }
+  }
+  return output;
 }
 
 template<class kind>
@@ -477,7 +540,7 @@ int Matrix<kind>::gauss_seidel_solver(std::vector<kind>& soln,const std::vector<
     x_new.push_back(zero);
   }
 
-  if (!diagonally_dominant()) {
+  if (!diagonally_dominant(true)) {
     j = optimize_dominance(permutation);
     // Fix the ordering of the source vector and initial guess 
     // vectors...

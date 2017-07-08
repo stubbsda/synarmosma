@@ -80,7 +80,7 @@ namespace SYNARMOSMA {
     double dispersion() const;
     kind diagonal_element(unsigned int) const;
     void get_diagonal(std::vector<kind>&) const;
-    bool diagonally_dominant() const;
+    bool diagonally_dominant(bool = false) const;
     bool diagonally_dominant(unsigned int) const;
     bool diagonally_dominant(unsigned int,unsigned int) const;
     unsigned int optimize_dominance(std::vector<unsigned int>&);
