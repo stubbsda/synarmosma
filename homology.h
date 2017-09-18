@@ -4,21 +4,20 @@
 #define _homologyh
 
 namespace SYNARMOSMA {
-  enum FIELD 
-  {
-      INT,
-      ZZ,
-      GF2
-  };
-
-  enum METHOD 
-  {
-      GAP,
-      NATIVE
-  };
-
   class Homology {
    private:
+    enum FIELD 
+    {
+        INT,
+        ZZ,
+        GF2
+    };
+
+    enum METHOD 
+    {
+        GAP,
+        NATIVE
+    };
     std::vector<unsigned int> betti_number;
     std::vector<std::vector<unsigned int> > torsion;
     METHOD method;

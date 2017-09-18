@@ -4,15 +4,14 @@
 #define _solverh
 
 namespace SYNARMOSMA {
-  enum LINEAR_SOLVER_TYPE
-  {
-    DIRECT,
-    ITERATIVE
-  };
-
   template<class kind>
   class Solver {
    protected:
+    enum LINEAR_SOLVER_TYPE
+    {
+      DIRECT,
+      ITERATIVE
+    };
     unsigned int max_its;
     unsigned int dim;
     double epsilon;  
