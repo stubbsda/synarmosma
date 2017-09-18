@@ -9,9 +9,10 @@ namespace SYNARMOSMA {
    protected:
     enum LINEAR_SOLVER_TYPE
     {
-      DIRECT,
-      ITERATIVE
+        DIRECT,
+        ITERATIVE
     };
+
     unsigned int max_its;
     unsigned int dim;
     double epsilon;  

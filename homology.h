@@ -5,19 +5,21 @@
 
 namespace SYNARMOSMA {
   class Homology {
-   private:
-    enum FIELD 
+   public:
+    enum FIELD
     {
         INT,
         ZZ,
         GF2
     };
 
-    enum METHOD 
+    enum METHOD
     {
         GAP,
         NATIVE
     };
+
+   private:
     std::vector<unsigned int> betti_number;
     std::vector<std::vector<unsigned int> > torsion;
     METHOD method;
