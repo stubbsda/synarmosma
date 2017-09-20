@@ -145,8 +145,8 @@ RELATION Poset::get_order(unsigned int u,unsigned int v) const
   qt = order.find(std::pair<unsigned int,unsigned int>(u,v));
   if (qt != order.end()) return BEFORE;
   qt = order.find(std::pair<unsigned int,unsigned int>(v,u));
-  if (qt == order.end()) return DISPARATE;
-  return AFTER;
+  if (qt != order.end()) return AFTER;
+  return DISPARATE;
 }
 
 unsigned int Poset::build_chain(std::vector<unsigned int>& chain,unsigned int length) const
