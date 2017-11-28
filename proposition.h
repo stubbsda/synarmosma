@@ -28,7 +28,9 @@ namespace SYNARMOSMA {
     void mutate(const std::set<int>&);
     inline void clear() {clause.clear();};
     void serialize(std::ofstream&) const;
-    void deserialize(std::ifstream&); 
+    void deserialize(std::ifstream&);
+    inline void set_clause(const std::vector<int>& c) {assert(c.size()%NP == 0); clause = c;};
+    inline void get_clause(std::vector<int>& c) const {c = clause;}; 
     inline int get_size() const {return (signed) clause.size()/(2*NP);}; 
     inline static int get_clause_size() {return NP;};
     friend std::ostream& operator <<(std::ostream&,const Proposition&);
