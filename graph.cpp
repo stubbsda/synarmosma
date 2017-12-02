@@ -180,6 +180,29 @@ void Graph::deserialize(std::ifstream& s)
   }
 }
 
+void Graph::compute_surface(const std::set<int>& vx,std::set<int>& surface) const
+{
+  int i,j;
+  std::set<int> S;
+  hash_map::const_iterator qt;
+  std::set<int>::const_iterator it,jt;
+
+  surface.clear();
+  // We want to compute every edge that connects one of the vertices in vx to the 
+  // rest of the graph...
+  for(it=vx.begin(); it!=vx.end(); ++it) {
+    i = *it;
+    for(jt=neighbours[i].begin(); jt!=neighbours[i].end(); ++jt) {
+      j = *jt;
+      if (vx.count(j) > 0) continue;
+      S.clear();
+      S.insert(i); S.insert(j);
+      qt = index_table.find(S);
+      surface.insert(qt->second);
+    }
+  }
+}
+
 void Graph::core(Graph* G,int k) const
 {
   // A method to compute the k-core of the current graph

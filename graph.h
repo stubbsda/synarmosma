@@ -45,6 +45,9 @@ namespace SYNARMOSMA {
     // A method to render the graph topology complete
     int make_complete();
     virtual bool consistent() const;
+    // Given a set of vertices, calculate the set of edges connecting them to the 
+    // rest of the graph, i.e. the "surface" which encloses the volume (the set of vertices)
+    void compute_surface(const std::set<int>&,std::set<int>&) const;
     // Hyphantic operators
     bool stellar_addition(int);
     bool stellar_deletion(int);
