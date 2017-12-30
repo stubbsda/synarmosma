@@ -92,7 +92,7 @@ namespace SYNARMOSMA {
     double return_probability(int,int) const;
     void random_walk(double*,double*,int) const;
     void compute_adjacency_matrix(Binary_Matrix*) const;
-    void compute_laplacian(Matrix<double>*) const;
+    int compute_laplacian(Matrix<double>*) const;
     int genus(std::vector<int>&) const;
     inline int size() const {return (signed) edges.size();};
     inline int order() const {return nvertex;};

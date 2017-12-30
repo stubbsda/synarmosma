@@ -1502,20 +1502,22 @@ int Graph::omega() const
   return int(sum);
 }
 
-void Graph::compute_laplacian(Matrix<double>* L) const
+int Graph::compute_laplacian(Matrix<double>* L) const
 {
-  int i;
+  int i,nzero = 0;
   std::set<int>::const_iterator it;
   const double m_one = -1.0;
 
   L->initialize(nvertex,nvertex);
 
   for(i=0; i<nvertex; ++i) {
-    L->set(i,i,double(neighbours[i].size()));
+    if (neighbours[i].empty()) continue;
+    L->set(i,i,double(neighbours[i].size())); nzero++;
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
-      L->set(i,*it,m_one);
+      L->set(i,*it,m_one); nzero++;
     }
   }
+  return nzero;
 }
 
 int Graph::chromatic_number() const
