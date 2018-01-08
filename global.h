@@ -222,6 +222,7 @@ namespace SYNARMOSMA {
 
     bool brn_allocated;
     bool beta_allocated;
+    bool poisson_allocated;
    public:
     Random();
     ~Random();

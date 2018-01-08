@@ -6,6 +6,7 @@ Random::Random()
 {
   brn_allocated = false;
   beta_allocated = false;
+  poisson_allocated = false;
   uniform = new boost::uniform_real<>(0,1);
   gaussian = new boost::normal_distribution<>;
   VRG = new boost::variate_generator<base_generator_type&,boost::uniform_real<> >(BGT,*uniform);
@@ -16,8 +17,12 @@ Random::~Random()
 {
   delete uniform;
   delete gaussian;
-  delete poisson;
-  delete vpoisson;
+  delete VRG;
+  delete NRG;
+  if (poisson_allocated) {
+    delete poisson;
+    delete vpoisson;
+  }
   if (brn_allocated) {
     delete brn;
     delete vbrn;
@@ -36,6 +41,7 @@ void Random::initialize_poisson(double lambda)
 {
   poisson = new boost::poisson_distribution<>(lambda);
   vpoisson = new boost::variate_generator<base_generator_type&,boost::poisson_distribution<> >(BGT,*poisson);
+  poisson_allocated = true;
 }
 
 void Random::initialize_beta(double a,double b)
