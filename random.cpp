@@ -195,3 +195,33 @@ void Random::shuffle(std::vector<int>& index,int n)
     index[r] = t;
   }
 }
+
+void Random::generate_random_vector(std::vector<double>& x,int n,double a,double b) 
+{
+  x.clear();
+
+  for(int i=0; i<n; ++i) {
+    x.push_back(drandom(a,b));
+  }
+}
+
+void Random::generate_random_vector(std::vector<std::complex<double> >& x,int n,double a,double b,bool nz_imaginary) 
+{
+  std::complex<double> alpha; 
+
+  x.clear();
+
+  if (nz_imaginary) {
+    for(int i=0; i<n; ++i) {
+      alpha = std::complex<double>(drandom(a,b),drandom(a,b));
+      x.push_back(alpha);
+    }
+  }
+  else {
+    for(int i=0; i<n; ++i) {
+      alpha = std::complex<double>(drandom(a,b),0.0);
+      x.push_back(alpha);
+    }
+  }
+}
+

@@ -248,6 +248,8 @@ namespace SYNARMOSMA {
     int irandom(const std::vector<int>&);
     int irandom(int,const std::vector<int>&);
     void shuffle(std::vector<int>&,int);
+    void generate_random_vector(std::vector<double>&,int,double,double);
+    void generate_random_vector(std::vector<std::complex<double> >&,int,double,double,bool = false);
   };
 }
 #endif
