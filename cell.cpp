@@ -102,31 +102,33 @@ void Cell::calculate_faces()
   }
 }
 
-void Cell::serialize(std::ofstream& s) const
+int Cell::serialize(std::ofstream& s) const
 {
-  int n;
+  int n,count = 0;
   std::set<int>::const_iterator it;
 
   n = (signed) vertices.size();
-  s.write((char*)(&n),sizeof(int));
+  s.write((char*)(&n),sizeof(int)); count += sizeof(int);
   for(it=vertices.begin(); it!=vertices.end(); ++it) {
     n = *it;
-    s.write((char*)(&n),sizeof(int));
+    s.write((char*)(&n),sizeof(int)); count += sizeof(int);
   }
+  return count;
 }
 
-void Cell::deserialize(std::ifstream& s)
+int Cell::deserialize(std::ifstream& s)
 {
-  int i,n,m;
+  int i,n,m,count = 0;
 
   clear();
 
-  s.read((char*)(&n),sizeof(int));
+  s.read((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
-    s.read((char*)(&m),sizeof(int));
+    s.read((char*)(&m),sizeof(int)); count += sizeof(int);
     vertices.insert(m);
   }
   calculate_faces();
+  return count;
 }
 
 bool Cell::face(const std::set<int>& f) const

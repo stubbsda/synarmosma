@@ -41,31 +41,35 @@ void Poset::clear()
   order.clear();
 }
 
-void Poset::serialize(std::ofstream& s) const
+int Poset::serialize(std::ofstream& s) const
 {
   unsigned int i,j;
+  int count = 0;
   RELATION rho;
 
-  s.write((char*)(&N),sizeof(int));
+  s.write((char*)(&N),sizeof(int)); count += sizeof(int);
   for(i=0; i<N; ++i) {
     for(j=1+i; j<N; ++j) {
       rho = get_order(i,j);
-      s.write((char*)(&rho),sizeof(int));
+      s.write((char*)(&rho),sizeof(int)); count += sizeof(int);
     }
   }
+
+  return count;
 }
 
-void Poset::deserialize(std::ifstream& s)
+int Poset::deserialize(std::ifstream& s)
 {
   unsigned int i,j;
+  int count = 0;
   RELATION rho;
 
   clear();
 
-  s.read((char*)(&N),sizeof(int));
+  s.read((char*)(&N),sizeof(int)); count += sizeof(int);
   for(i=0; i<N; ++i) {
     for(j=1+i; j<N; ++j) {
-      s.read((char*)(&rho),sizeof(int));
+      s.read((char*)(&rho),sizeof(int)); count += sizeof(int);
       if (rho == BEFORE) {
         set_order(i,j);
       }
@@ -77,6 +81,8 @@ void Poset::deserialize(std::ifstream& s)
 #ifdef DEBUG
   assert(consistent());
 #endif
+
+  return count;
 }
 
 bool Poset::invert_order(unsigned int u,unsigned int v)

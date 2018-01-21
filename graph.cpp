@@ -132,52 +132,54 @@ bool Graph::consistent() const
   return true;
 }
 
-void Graph::serialize(std::ofstream& s) const
+int Graph::serialize(std::ofstream& s) const
 {
-  int i,j,nedge = (signed) edges.size();
+  int i,j,count = 0,nedge = (signed) edges.size();
   std::set<int>::const_iterator it;
 
-  s.write((char*)(&nvertex),sizeof(int));
+  s.write((char*)(&nvertex),sizeof(int)); count += sizeof(int);
   for(i=0; i<nvertex; ++i) {
     j = (signed) neighbours[i].size();
-    s.write((char*)(&j),sizeof(int));
+    s.write((char*)(&j),sizeof(int)); count += sizeof(int);
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
       j = *it;
-      s.write((char*)(&j),sizeof(int));
+      s.write((char*)(&j),sizeof(int)); count += sizeof(int);
     }
   }
-  s.write((char*)(&nedge),sizeof(int));
+  s.write((char*)(&nedge),sizeof(int)); count += sizeof(int);
   for(i=0; i<nedge; ++i) {
-    edges[i].serialize(s);
+    count += edges[i].serialize(s);
   }
+  return count;
 }
 
-void Graph::deserialize(std::ifstream& s)
+int Graph::deserialize(std::ifstream& s)
 {
-  int i,j,k,n;
+  int i,j,k,n,count = 0;
   Edge q;
   std::set<int> S;
 
   clear();
 
-  s.read((char*)(&nvertex),sizeof(int));
+  s.read((char*)(&nvertex),sizeof(int)); count += sizeof(int);
   for(i=0; i<nvertex; ++i) {
-    s.read((char*)(&n),sizeof(int));
+    s.read((char*)(&n),sizeof(int)); count += sizeof(int);
     for(j=0; j<n; ++j) {
-      s.read((char*)(&k),sizeof(int));
+      s.read((char*)(&k),sizeof(int)); count += sizeof(int);
       S.insert(k);
     }
     neighbours.push_back(S);
     S.clear();
   }
-  s.read((char*)(&n),sizeof(int));
+  s.read((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
-    q.deserialize(s);
+    count += q.deserialize(s);
     edges.push_back(q);
     S.clear();
     S.insert(q.low); S.insert(q.high);
     index_table[S] = i;
   }
+  return count;
 }
 
 void Graph::compute_surface(const std::set<int>& vx,std::set<int>& surface) const

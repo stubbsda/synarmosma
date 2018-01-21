@@ -15,8 +15,6 @@ namespace SYNARMOSMA {
     int direction;
 
     void clear();
-    void serialize(std::ofstream&) const;
-    void deserialize(std::ifstream&);
     inline int get_direction(int,int) const;
    public:
     Edge();
@@ -24,6 +22,8 @@ namespace SYNARMOSMA {
     Edge(const Edge&);
     ~Edge();
     Edge& operator =(const Edge&);
+    int serialize(std::ofstream&) const;
+    int deserialize(std::ifstream&);
     inline void get_vertices(int*) const;
     inline void set_vertices(int,int);
     friend class Graph;

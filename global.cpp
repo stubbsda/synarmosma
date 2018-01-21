@@ -89,34 +89,36 @@ namespace SYNARMOSMA {
    }
   } 
 
-  void write_ZZ(std::ofstream& s,const NTL::ZZ& p)
+  int write_ZZ(std::ofstream& s,const NTL::ZZ& p)
   {
-    int i,n = NTL::NumBytes(p);
+    int i,count = 0,n = NTL::NumBytes(p);
     bool neg = (p < 0) ? true : false;
     unsigned char q[n];
 
-    s.write((char*)(&neg),sizeof(bool));
-    s.write((char*)(&n),sizeof(int));    
+    s.write((char*)(&neg),sizeof(bool)); count += sizeof(bool);
+    s.write((char*)(&n),sizeof(int)); count += sizeof(int);   
     NTL::BytesFromZZ(q,p,n);
     for(i=0; i<n; ++i) {
-      s.write((char*)(&q[i]),sizeof(char));
+      s.write((char*)(&q[i]),sizeof(char)); count += sizeof(char);
     } 
+    return count;
   }
 
-  NTL::ZZ read_ZZ(std::ifstream& s)
+  int read_ZZ(std::ifstream& s,NTL::ZZ& p)
   {
-    int i,n;
+    int i,n,count = 0;
     bool neg;
 
-    s.read((char*)(&neg),sizeof(bool));
-    s.read((char*)(&n),sizeof(int));
+    s.read((char*)(&neg),sizeof(bool)); count += sizeof(bool);
+    s.read((char*)(&n),sizeof(int)); count += sizeof(int);
     unsigned char q[n];
     for(i=0; i<n; ++i) {
-      s.read((char*)(&q[i]),sizeof(char));
+      s.read((char*)(&q[i]),sizeof(char)); count += sizeof(char);
     }
-    NTL::ZZ output = NTL::ZZFromBytes(q,n);
-    if (neg) output = -output;
-    return output;
+    p = NTL::ZZFromBytes(q,n);
+    if (neg) p = -p;
+
+    return count;
   }
 
   int parity(const std::vector<int>& v1,const std::vector<int>& v2)

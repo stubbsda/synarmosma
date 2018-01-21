@@ -83,46 +83,50 @@ std::string Homology::write() const
   return sstream.str();
 }
 
-void Homology::serialize(std::ofstream& s) const 
+int Homology::serialize(std::ofstream& s) const 
 {
   unsigned int i,j,k,m,n = betti_number.size();
+  int count = 0;
 
-  s.write((char*)(&field),sizeof(FIELD));
-  s.write((char*)(&method),sizeof(METHOD));
-  s.write((char*)(&n),sizeof(int));
+  s.write((char*)(&field),sizeof(FIELD)); count += sizeof(FIELD);
+  s.write((char*)(&method),sizeof(METHOD)); count += sizeof(METHOD);
+  s.write((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
     m = betti_number[i];
-    s.write((char*)(&m),sizeof(int));
+    s.write((char*)(&m),sizeof(int)); count += sizeof(int);
     m = torsion[i].size();
-    s.write((char*)(&m),sizeof(int));
+    s.write((char*)(&m),sizeof(int)); count += sizeof(int);
     for(j=0; j<m; ++j) {
       k = torsion[i][j];
-      s.write((char*)(&k),sizeof(int));
+      s.write((char*)(&k),sizeof(int)); count += sizeof(int);
     }
   }
+  return count;
 }
 
-void Homology::deserialize(std::ifstream& s)
+int Homology::deserialize(std::ifstream& s)
 {
   unsigned int i,j,k,n,m;
+  int count = 0;
   std::vector<unsigned int> tau;
 
   clear();
 
-  s.read((char*)(&field),sizeof(FIELD));
-  s.read((char*)(&method),sizeof(METHOD));
-  s.read((char*)(&n),sizeof(int));
+  s.read((char*)(&field),sizeof(FIELD)); count += sizeof(FIELD);
+  s.read((char*)(&method),sizeof(METHOD)); count += sizeof(METHOD);
+  s.read((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
-    s.read((char*)(&m),sizeof(int));
+    s.read((char*)(&m),sizeof(int)); count += sizeof(int);
     betti_number.push_back(m);
-    s.read((char*)(&m),sizeof(int));
+    s.read((char*)(&m),sizeof(int)); count += sizeof(int);
     for(j=0; j<m; ++j) {
-      s.read((char*)(&k),sizeof(int));
+      s.read((char*)(&k),sizeof(int)); count += sizeof(int);
       tau.push_back(k);
     }
     torsion.push_back(tau);
     tau.clear();
   }
+  return count;
 } 
 
 void Homology::compute_integral_native(const Nexus* NX)

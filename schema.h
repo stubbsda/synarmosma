@@ -15,8 +15,8 @@ namespace SYNARMOSMA {
     Schema(const Schema&);
     Schema& operator =(const Schema&);
     virtual ~Schema();
-    virtual void serialize(std::ofstream&) const;
-    virtual void deserialize(std::ifstream&);
+    virtual int serialize(std::ofstream&) const;
+    virtual int deserialize(std::ifstream&);
     bool connected() const;
     inline bool connected(int,int) const;
     virtual void clear();

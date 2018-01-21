@@ -33,8 +33,8 @@ namespace SYNARMOSMA {
     void property_check();
     void find_partial(std::vector<unsigned int>&,unsigned int,const std::vector<unsigned int>*) const;
     int compute_zeros() const;
-    void write_equations(std::ofstream&) const;
-    void read_equations(std::ifstream&);
+    int write_equations(std::ofstream&) const;
+    int read_equations(std::ifstream&);
    public:
     Variety();
     Variety(unsigned int);
@@ -42,8 +42,8 @@ namespace SYNARMOSMA {
     Variety(const Variety&);
     Variety& operator =(const Variety&);
     ~Variety();
-    void serialize(std::ofstream&) const;
-    void deserialize(std::ifstream&);
+    int serialize(std::ofstream&) const;
+    int deserialize(std::ifstream&);
     void elaborate();
     void add_term(unsigned int,kind,const std::vector<unsigned int>&);
     void add_term(unsigned int,const Monomial<kind>&);

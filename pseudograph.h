@@ -18,6 +18,8 @@ namespace SYNARMOSMA {
     ~Pseudograph();
     Pseudograph(const Pseudograph&);
     Pseudograph& operator =(const Pseudograph&);
+    int serialize(std::ofstream&) const;
+    int deserialize(std::ifstream&);
     int get_candidates(std::vector<int>&) const;
     inline int get_loops() const;
     void add_edge(int,int);

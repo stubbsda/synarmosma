@@ -42,8 +42,8 @@ namespace SYNARMOSMA {
     ~Geometry();
     void reciprocate();
     void initialize(bool,bool,bool,bool,int);
-    void serialize(std::ofstream&) const;
-    void deserialize(std::ifstream&);
+    int serialize(std::ofstream&) const;
+    int deserialize(std::ifstream&);
     void load(const Geometry*);
     void store(Geometry*) const;
     bool consistent() const;

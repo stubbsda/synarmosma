@@ -70,37 +70,41 @@ void Binary_Matrix::clear()
   delete[] elements;
 }
 
-void Binary_Matrix::serialize(std::ofstream& s) const
+int Binary_Matrix::serialize(std::ofstream& s) const
 {
   unsigned int i,j,n;
+  int count = 0;
 
-  s.write((char*)(&nrow),sizeof(int));
-  s.write((char*)(&ncolumn),sizeof(int));
+  s.write((char*)(&nrow),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&ncolumn),sizeof(int)); count += sizeof(int);
   for(i=0; i<nrow; ++i) {
     n = elements[i].size();
-    s.write((char*)(&n),sizeof(int));
+    s.write((char*)(&n),sizeof(int)); count += sizeof(int);
     for(j=0; j<n; ++j) {
-      s.write((char*)(&elements[i][j]),sizeof(int));
+      s.write((char*)(&elements[i][j]),sizeof(int)); count += sizeof(int);
     }
   }
+  return count;
 }
 
-void Binary_Matrix::deserialize(std::ifstream& s)
+int Binary_Matrix::deserialize(std::ifstream& s)
 {
   unsigned int i,j,k,n;
+  int count = 0;
 
   clear();
 
-  s.read((char*)(&nrow),sizeof(int));
-  s.read((char*)(&ncolumn),sizeof(int));
+  s.read((char*)(&nrow),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&ncolumn),sizeof(int)); count += sizeof(int);
   elements = new std::vector<unsigned int>[nrow];
   for(i=0; i<nrow; ++i) {
-    s.read((char*)(&n),sizeof(int));
+    s.read((char*)(&n),sizeof(int)); count += sizeof(int);
     for(j=0; j<n; ++j) {
-      s.read((char*)(&k),sizeof(int));
+      s.read((char*)(&k),sizeof(int)); count += sizeof(int);
       elements[i].push_back(k);
     }
   }
+  return count;
 }
 
 void Binary_Matrix::get_row(unsigned int n,bool* output) const

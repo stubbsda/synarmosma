@@ -11,8 +11,6 @@ namespace SYNARMOSMA {
 
     void compute_width(unsigned int,unsigned int,std::set<unsigned int>&) const;
     unsigned int build_chain(std::vector<unsigned int>&,unsigned int) const;
-    virtual void serialize(std::ofstream&) const;
-    virtual void deserialize(std::ifstream&);
    public:
     Poset();
     Poset(unsigned int);
@@ -24,6 +22,8 @@ namespace SYNARMOSMA {
     inline void add_element() {N += 1;};
     bool sink(unsigned int) const;
     bool source(unsigned int) const;
+    virtual int serialize(std::ofstream&) const;
+    virtual int deserialize(std::ifstream&);
     void compute_anteriority(unsigned int,std::set<unsigned int>&) const;
     void compute_posteriority(unsigned int,std::set<unsigned int>&) const;
     bool set_order(unsigned int,unsigned int); 

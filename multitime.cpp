@@ -64,37 +64,41 @@ void Multitime::initialize(double alpha)
   }
 }
 
-void Multitime::serialize(std::ofstream& s) const
+int Multitime::serialize(std::ofstream& s) const
 {
   unsigned int i,n = chronos.size();
+  int count = 0;
   bool t;
   double x;
 
-  s.write((char*)(&Multitime::tdimension),sizeof(int));
-  s.write((char*)(&n),sizeof(int));
+  s.write((char*)(&Multitime::tdimension),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
     x = chronos[i].first;
-    s.write((char*)(&x),sizeof(double));
+    s.write((char*)(&x),sizeof(double)); count += sizeof(double);
     t = chronos[i].second;
-    s.write((char*)(&t),sizeof(bool));
+    s.write((char*)(&t),sizeof(bool)); count += sizeof(bool);
   }
+  return count;
 }
 
-void Multitime::deserialize(std::ifstream& s)
+int Multitime::deserialize(std::ifstream& s)
 {
   unsigned int i,n;
+  int count = 0;
   bool t;
   double x;
 
   chronos.clear();
 
-  s.read((char*)(&Multitime::tdimension),sizeof(int));
-  s.read((char*)(&n),sizeof(int));
+  s.read((char*)(&Multitime::tdimension),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
-    s.read((char*)(&x),sizeof(double));
-    s.read((char*)(&t),sizeof(bool));
+    s.read((char*)(&x),sizeof(double)); count += sizeof(double);
+    s.read((char*)(&t),sizeof(bool)); count += sizeof(bool);
     chronos.push_back(std::pair<double,bool>(x,t));
   }
+  return count;
 }
 
 double Multitime::norm() const

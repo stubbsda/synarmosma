@@ -20,8 +20,8 @@ namespace SYNARMOSMA {
     void mutate();
     void clear();
     void compute(const Nexus*);
-    void serialize(std::ofstream&) const;
-    void deserialize(std::ifstream&);
+    int serialize(std::ofstream&) const;
+    int deserialize(std::ifstream&);
     inline double get_fitness() const {return fitness;};
     friend Homotopy operator +(const Homotopy&,const Homotopy&);
     Homotopy& operator =(const Homotopy&);  

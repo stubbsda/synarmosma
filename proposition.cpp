@@ -213,24 +213,29 @@ void Proposition::set_atoms(const std::set<int>& atoms)
   initialize(nc,atoms);
 }
 
-void Proposition::serialize(std::ofstream& s) const
+int Proposition::serialize(std::ofstream& s) const
 {
-  int i,n = clause.size();
-  s.write((char*)(&n),sizeof(int));
+  int i,count = 0,n = clause.size();
+
+  s.write((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
-    s.write((char*)(&clause[i]),sizeof(int));
+    s.write((char*)(&clause[i]),sizeof(int)); count += sizeof(int);
   }
+  return count;
 }
 
-void Proposition::deserialize(std::ifstream& s)
+int Proposition::deserialize(std::ifstream& s)
 {
+  int i,n,l,count = 0;
+
   clear();
-  int i,n,l;
-  s.read((char*)(&n),sizeof(int));
+
+  s.read((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
-    s.read((char*)(&l),sizeof(int));
+    s.read((char*)(&l),sizeof(int)); count += sizeof(int);
     clause.push_back(l);
   }
+  return count;
 }
 
 namespace SYNARMOSMA {

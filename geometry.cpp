@@ -132,23 +132,31 @@ bool Geometry::consistent() const
   return true;
 }
 
-void Geometry::serialize(std::ofstream& s) const
+int Geometry::serialize(std::ofstream& s) const
 {
-  int i,j,n = 0;
+  int i,j,n = 0,count = 0;
+#ifdef DISCRETE
+  INT64 x;
+#else
   double x;
+#endif
 
-  s.write((char*)(&nvertex),sizeof(int));
-  s.write((char*)(&background_dimension),sizeof(int));
-  s.write((char*)(&euclidean),sizeof(bool));
-  s.write((char*)(&relational),sizeof(bool));
-  s.write((char*)(&uniform),sizeof(bool));
-  s.write((char*)(&high_memory),sizeof(bool));
+  s.write((char*)(&nvertex),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&background_dimension),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&euclidean),sizeof(bool)); count += sizeof(bool);
+  s.write((char*)(&relational),sizeof(bool)); count += sizeof(bool);
+  s.write((char*)(&uniform),sizeof(bool)); count += sizeof(bool);
+  s.write((char*)(&high_memory),sizeof(bool)); count += sizeof(bool);
 
   if (relational) {
     for(i=0; i<nvertex; ++i) {
       for(j=1+i; j<nvertex; ++j) {
         x = distances[n];
-        s.write((char*)(&x),sizeof(double));
+#ifdef DISCRETE
+        s.write((char*)(&x),sizeof(INT64)); count += sizeof(INT64);
+#else
+        s.write((char*)(&x),sizeof(double)); count += sizeof(double);
+#endif
         n++;
       }
     }
@@ -158,17 +166,25 @@ void Geometry::serialize(std::ofstream& s) const
       for(i=0; i<nvertex; ++i) {
         for(j=0; j<background_dimension; ++j) {
           x = coordinates[i][j];
-          s.write((char*)(&x),sizeof(double));
+#ifdef DISCRETE
+          s.write((char*)(&x),sizeof(INT64)); count += sizeof(INT64);
+#else
+          s.write((char*)(&x),sizeof(double)); count += sizeof(double);
+#endif
         }
       }
     }
     else {
       for(i=0; i<nvertex; ++i) {
         n = (signed) coordinates[i].size();
-        s.write((char*)(&n),sizeof(int));
+        s.write((char*)(&n),sizeof(int)); count += sizeof(int);
         for(j=0; j<n; ++j) {
           x = coordinates[i][j];
-          s.write((char*)(&x),sizeof(double));
+#ifdef DISCRETE
+          s.write((char*)(&x),sizeof(INT64)); count += sizeof(INT64);
+#else
+          s.write((char*)(&x),sizeof(double)); count += sizeof(double);
+#endif
         }
       }
     }
@@ -176,17 +192,22 @@ void Geometry::serialize(std::ofstream& s) const
       for(i=0; i<nvertex; ++i) {
         for(j=1+i; j<nvertex; ++j) {
           x = distances[n];
-          s.write((char*)(&x),sizeof(double));
+#ifdef DISCRETE
+          s.write((char*)(&x),sizeof(INT64)); count += sizeof(INT64);
+#else
+          s.write((char*)(&x),sizeof(double)); count += sizeof(double);
+#endif
           n++;
         }
       }
     }
   } 
+  return count;
 }
 
-void Geometry::deserialize(std::ifstream& s)
+int Geometry::deserialize(std::ifstream& s)
 {
-  int i,j,n;
+  int i,j,n,count = 0;
 #ifdef DISCRETE
   INT64 x;
 #else
@@ -195,20 +216,20 @@ void Geometry::deserialize(std::ifstream& s)
 
   clear();
 
-  s.read((char*)(&nvertex),sizeof(int));
-  s.read((char*)(&background_dimension),sizeof(int));
-  s.read((char*)(&euclidean),sizeof(bool));
-  s.read((char*)(&relational),sizeof(bool));
-  s.read((char*)(&uniform),sizeof(bool));
-  s.read((char*)(&high_memory),sizeof(bool));
+  s.read((char*)(&nvertex),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&background_dimension),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&euclidean),sizeof(bool)); count += sizeof(bool);
+  s.read((char*)(&relational),sizeof(bool)); count += sizeof(bool);
+  s.read((char*)(&uniform),sizeof(bool)); count += sizeof(bool);
+  s.read((char*)(&high_memory),sizeof(bool)); count += sizeof(bool);
 
   if (relational) {
     for(i=0; i<nvertex; ++i) {
       for(j=1+i; j<nvertex; ++j) {
 #ifdef DISCRETE
-        s.read((char*)(&x),sizeof(INT64));
+        s.read((char*)(&x),sizeof(INT64)); count += sizeof(INT64);
 #else
-        s.read((char*)(&x),sizeof(double));
+        s.read((char*)(&x),sizeof(double)); count += sizeof(double);
 #endif
         distances.push_back(x);
       }
@@ -224,9 +245,9 @@ void Geometry::deserialize(std::ifstream& s)
       for(i=0; i<nvertex; ++i) {
         for(j=0; j<background_dimension; ++j) {
 #ifdef DISCRETE
-          s.read((char*)(&x),sizeof(INT64));
+          s.read((char*)(&x),sizeof(INT64)); count += sizeof(INT64);
 #else           
-          s.read((char*)(&x),sizeof(double));
+          s.read((char*)(&x),sizeof(double)); count += sizeof(double);
 #endif
           xc.push_back(x);
         }
@@ -236,12 +257,12 @@ void Geometry::deserialize(std::ifstream& s)
     }
     else {
       for(i=0; i<nvertex; ++i) {
-        s.read((char*)(&n),sizeof(int));
+        s.read((char*)(&n),sizeof(int)); count += sizeof(int);
         for(j=0; j<n; ++j) {
 #ifdef DISCRETE
-          s.read((char*)(&x),sizeof(INT64));
+          s.read((char*)(&x),sizeof(INT64)); count += sizeof(INT64);
 #else
-          s.read((char*)(&x),sizeof(double));
+          s.read((char*)(&x),sizeof(double)); count += sizeof(double);
 #endif
           xc.push_back(x);
         }
@@ -253,15 +274,16 @@ void Geometry::deserialize(std::ifstream& s)
       for(i=0; i<nvertex; ++i) {
         for(j=1+i; j<nvertex; ++j) {
 #ifdef DISCRETE
-          s.read((char*)(&x),sizeof(INT64));
+          s.read((char*)(&x),sizeof(INT64)); count += sizeof(INT64);
 #else
-          s.read((char*)(&x),sizeof(double));
+          s.read((char*)(&x),sizeof(double)); count += sizeof(double);
 #endif
           distances.push_back(x);
         }
       }
     }
   }
+  return count;
 }
 
 double Geometry::perceptual_divergence(const double* raxis,double theta,const double* translation,const double* observed) const

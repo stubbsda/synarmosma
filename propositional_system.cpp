@@ -121,34 +121,41 @@ void Propositional_System::initialize(unsigned int n)
   compute_internal_logic();
 }
 
-void Propositional_System::serialize(std::ofstream& s) const
+int Propositional_System::serialize(std::ofstream& s) const
 {
   unsigned int i,n = theorems.size();
-  s.write((char*)(&natom),sizeof(int));
-  s.write((char*)(&nuniverse),sizeof(int));
-  s.write((char*)(&n),sizeof(int));
+  int count = 0;
+
+  s.write((char*)(&natom),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&nuniverse),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
-    theorems[i].serialize(s);
+    count += theorems[i].serialize(s);
   }
+  return count;
 }
 
-void Propositional_System::deserialize(std::ifstream& s)
+int Propositional_System::deserialize(std::ifstream& s)
 {
   unsigned int i,n;
+  int count = 0;
   Proposition p;
 
   clear();
-  s.read((char*)(&natom),sizeof(int));
-  s.read((char*)(&nuniverse),sizeof(int));
-  s.read((char*)(&n),sizeof(int));
+
+  s.read((char*)(&natom),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&nuniverse),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
-    p.deserialize(s);
+    count += p.deserialize(s);
     theorems.push_back(p);
   }
   for(i=0; i<n; ++i) {
     truth.push_back(boost::dynamic_bitset<>(nuniverse));
   }
   compute_internal_logic();
+
+  return count;
 }
 
 unsigned int Propositional_System::bit_count(unsigned int i) const

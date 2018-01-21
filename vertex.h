@@ -27,8 +27,8 @@ namespace SYNARMOSMA {
     inline void set_energy(double);
     inline void increment_energy(double);
     inline void nullify_energy();
-    virtual void serialize(std::ofstream&) const;
-    virtual void deserialize(std::ifstream&);
+    virtual int serialize(std::ofstream&) const;
+    virtual int deserialize(std::ifstream&);
     virtual void clear();    
   };
 

@@ -17,8 +17,8 @@ namespace SYNARMOSMA {
     Nexus(const Nexus&);
     Nexus& operator =(const Nexus&);
     virtual ~Nexus();
-    virtual void serialize(std::ofstream&) const;
-    virtual void deserialize(std::ifstream&);
+    virtual int serialize(std::ofstream&) const;
+    virtual int deserialize(std::ifstream&);
     bool orientable() const;
     bool pseudomanifold(bool*) const;
     void surface_construction(int);

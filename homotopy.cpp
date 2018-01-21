@@ -71,29 +71,36 @@ std::string Homotopy::write() const
   return output;
 }
 
-void Homotopy::serialize(std::ofstream& s) const
+int Homotopy::serialize(std::ofstream& s) const
 {
-  int i,n = (signed) sequence.size();
-  s.write((char*)(&n),sizeof(int));
+  unsigned int i,n = sequence.size();
+  int count = 0;
+
+  s.write((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
-    sequence[i].serialize(s);
+    count += sequence[i].serialize(s);
   }
-  s.write((char*)(&fitness),sizeof(double));
+  s.write((char*)(&fitness),sizeof(double)); count += sizeof(double);
+
+  return count;
 }
 
-void Homotopy::deserialize(std::ifstream& s)
+int Homotopy::deserialize(std::ifstream& s)
 {
-  int i,n;
+  unsigned int i,n;
+  int count = 0;
   Group g;
 
   clear();
 
-  s.read((char*)(&n),sizeof(int));
+  s.read((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
-    g.deserialize(s);
+    count += g.deserialize(s);
     sequence.push_back(g);
   }
-  s.read((char*)(&fitness),sizeof(double));
+  s.read((char*)(&fitness),sizeof(double)); count += sizeof(double);
+
+  return count;
 }
 
 Homotopy& Homotopy::operator =(const Homotopy& source)

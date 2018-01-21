@@ -649,91 +649,107 @@ void Matrix<kind>::clear(bool deep)
 
 namespace SYNARMOSMA {
   template<>
-  void Matrix<NTL::ZZ>::write_elements(std::ofstream& s) const
+  int Matrix<NTL::ZZ>::write_elements(std::ofstream& s) const
   {
     unsigned int i,j,k,n;
+    int count = 0;
 
     for(i=0; i<nrow; ++i) {
       n = elements[i].size();
-      s.write((char*)(&n),sizeof(int));
+      s.write((char*)(&n),sizeof(int)); count += sizeof(int);
       for(j=0; j<n; ++j) {        
-        write_ZZ(s,elements[i][j].first);
+        count += write_ZZ(s,elements[i][j].first);
         k = elements[i][j].second;
-        s.write((char*)(&k),sizeof(int));
+        s.write((char*)(&k),sizeof(int)); count += sizeof(int);
       }
     }
+    return count;
   }
 }
 
 template<class kind>
-void Matrix<kind>::write_elements(std::ofstream& s) const
+int Matrix<kind>::write_elements(std::ofstream& s) const
 {
   unsigned int i,j,k,n;
+  int count = 0;
   kind x;
 
   for(i=0; i<nrow; ++i) {
     n = elements[i].size();
-    s.write((char*)(&n),sizeof(int));
+    s.write((char*)(&n),sizeof(int)); count += sizeof(int);
     for(j=0; j<n; ++j) {
       x = elements[i][j].first;
       k = elements[i][j].second;
-      s.write((char*)(&x),sizeof(kind));
-      s.write((char*)(&k),sizeof(int));
+      s.write((char*)(&x),sizeof(kind)); count += sizeof(kind);
+      s.write((char*)(&k),sizeof(int)); count += sizeof(int);
     }
   }
+  return count;
 }
 
 template<class kind>
-void Matrix<kind>::serialize(std::ofstream& s) const
+int Matrix<kind>::serialize(std::ofstream& s) const
 {
-  s.write((char*)(&nrow),sizeof(int));
-  s.write((char*)(&ncolumn),sizeof(int));
-  write_elements(s);
+  int count = 0;
+
+  s.write((char*)(&nrow),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&ncolumn),sizeof(int)); count += sizeof(int);
+  count += write_elements(s);
+
+  return count;
 }
 
 namespace SYNARMOSMA {
   template<>
-  void Matrix<NTL::ZZ>::read_elements(std::ifstream& s)
+  int Matrix<NTL::ZZ>::read_elements(std::ifstream& s)
   {
     unsigned int i,j,k,n;
+    int count = 0;
     NTL::ZZ p;
 
     for(i=0; i<nrow; ++i) {
-      s.read((char*)(&n),sizeof(int));
+      s.read((char*)(&n),sizeof(int)); count += sizeof(int);
       for(j=0; j<n; ++j) {
-        p = read_ZZ(s);
-        s.read((char*)(&k),sizeof(int));
+        count += read_ZZ(s,p);
+        s.read((char*)(&k),sizeof(int)); count += sizeof(int);
         elements[i].push_back(std::pair<NTL::ZZ,unsigned int>(p,k));
       }
     }
+    return count;
   }
 }
 
 template<class kind>
-void Matrix<kind>::read_elements(std::ifstream& s)
+int Matrix<kind>::read_elements(std::ifstream& s)
 {
   unsigned int i,j,k,n;
+  int count = 0;
   kind x;
 
   for(i=0; i<nrow; ++i) {
-    s.read((char*)(&n),sizeof(int));
+    s.read((char*)(&n),sizeof(int)); count += sizeof(int);
     for(j=0; j<n; ++j) {
-      s.read((char*)(&x),sizeof(kind));
-      s.read((char*)(&k),sizeof(int));
+      s.read((char*)(&x),sizeof(kind)); count += sizeof(kind);
+      s.read((char*)(&k),sizeof(int)); count += sizeof(int);
       elements[i].push_back(std::pair<kind,unsigned int>(x,k));
     }
   }
+  return count;
 }
 
 template<class kind>
-void Matrix<kind>::deserialize(std::ifstream& s)
+int Matrix<kind>::deserialize(std::ifstream& s)
 {
+  int count = 0;
+
   clear();
 
-  s.read((char*)(&nrow),sizeof(int));
-  s.read((char*)(&ncolumn),sizeof(int));
+  s.read((char*)(&nrow),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&ncolumn),sizeof(int)); count += sizeof(int);
   elements = new std::vector<std::pair<kind,unsigned int> >[nrow];
-  read_elements(s);
+  count += read_elements(s);
+
+  return count;
 }
 
 template<class kind>

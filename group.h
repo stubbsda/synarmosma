@@ -40,8 +40,8 @@ namespace SYNARMOSMA {
     void clear();
     void create_random();
     bool consistent() const;
-    void serialize(std::ofstream&) const;
-    void deserialize(std::ifstream&);
+    int serialize(std::ofstream&) const;
+    int deserialize(std::ifstream&);
     std::string compact_form() const;
     friend std::ostream& operator <<(std::ostream&,const Group&);
     friend class Homotopy;

@@ -111,8 +111,8 @@ namespace SYNARMOSMA {
   void split(const std::string&,char,std::vector<std::string>&);
   void split(const std::vector<int>&,std::vector<int>&);
   double dmap(double,double);
-  void write_ZZ(std::ofstream&,const NTL::ZZ&);
-  NTL::ZZ read_ZZ(std::ifstream&);
+  int write_ZZ(std::ofstream&,const NTL::ZZ&);
+  int read_ZZ(std::ifstream&,NTL::ZZ&);
   double norm(const double*,int);
   double norm(const std::vector<double>&);
   void cross_product(const std::vector<double>&,const std::vector<double>&,std::vector<double>&);

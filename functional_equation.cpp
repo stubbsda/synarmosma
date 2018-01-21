@@ -285,44 +285,50 @@ void Functional_Equation<kind>::clear()
 }
 
 template<class kind>
-void Functional_Equation<kind>::serialize(std::ofstream& s) const
+int Functional_Equation<kind>::serialize(std::ofstream& s) const
 {
   unsigned int i,j,n;
+  int count = 0;
   Polynomial<kind> p;
   
-  s.write((char*)(&linear),sizeof(bool));
-  s.write((char*)(&homogeneous),sizeof(bool));
+  s.write((char*)(&linear),sizeof(bool)); count += sizeof(bool);
+  s.write((char*)(&homogeneous),sizeof(bool)); count += sizeof(bool);
   n = terms.size();
-  s.write((char*)(&n),sizeof(int));
+  s.write((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
     j = boost::get<2>(terms[i]);
-    s.write((char*)(&j),sizeof(int));
+    s.write((char*)(&j),sizeof(int)); count += sizeof(int);
     p = boost::get<0>(terms[i]);
-    p.serialize(s);
+    count += p.serialize(s);
     p = boost::get<1>(terms[i]);
-    p.serialize(s);
+    count += p.serialize(s);
   }
-  remainder.serialize(s);
+  count += remainder.serialize(s);
+  
+  return count;
 }
 
 template<class kind>
-void Functional_Equation<kind>::deserialize(std::ifstream& s)
+int Functional_Equation<kind>::deserialize(std::ifstream& s)
 {
   unsigned int i,j,n;
+  int count = 0;
   Polynomial<kind> p1,p2;
 
   clear();
 
-  s.read((char*)(&linear),sizeof(bool));
-  s.read((char*)(&homogeneous),sizeof(bool));
-  s.read((char*)(&n),sizeof(int));
+  s.read((char*)(&linear),sizeof(bool)); count += sizeof(bool);
+  s.read((char*)(&homogeneous),sizeof(bool)); count += sizeof(bool);
+  s.read((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
-    s.read((char*)(&j),sizeof(int));
-    p1.deserialize(s);
-    p2.deserialize(s);
+    s.read((char*)(&j),sizeof(int)); count += sizeof(int);
+    count += p1.deserialize(s);
+    count += p2.deserialize(s);
     terms.push_back(boost::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int>(p1,p2,j));
   }
-  remainder.deserialize(s);
+  count += remainder.deserialize(s);
+
+  return count;
 }
 
 template<class kind>

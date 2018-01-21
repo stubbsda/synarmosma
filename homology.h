@@ -44,8 +44,8 @@ namespace SYNARMOSMA {
     void initialize(FIELD,METHOD);
     void clear();
     void compute(const Nexus*);
-    void serialize(std::ofstream&) const;
-    void deserialize(std::ifstream&);
+    int serialize(std::ofstream&) const;
+    int deserialize(std::ifstream&);
   };
 }
 #endif 

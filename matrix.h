@@ -53,8 +53,8 @@ namespace SYNARMOSMA {
     void display(std::ostream&) const;
     bool divisible(unsigned int,unsigned int*,unsigned int*,kind*) const;
     void transpose(const Matrix<kind>&);
-    void write_elements(std::ofstream&) const;
-    void read_elements(std::ifstream&);
+    int write_elements(std::ofstream&) const;
+    int read_elements(std::ifstream&);
    public:
     static const kind zero;
     static const kind neg1;
@@ -67,8 +67,8 @@ namespace SYNARMOSMA {
     ~Matrix();
     void clear();
     void clear(bool);
-    void serialize(std::ofstream&) const;
-    void deserialize(std::ifstream&);
+    int serialize(std::ofstream&) const;
+    int deserialize(std::ifstream&);
     void initialize(unsigned int,unsigned int);
     inline void set(unsigned int,unsigned int,kind,bool = false);
     inline kind get(unsigned int,unsigned int) const;

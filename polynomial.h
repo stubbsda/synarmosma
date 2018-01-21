@@ -37,8 +37,8 @@ namespace SYNARMOSMA {
   
     void initialize();
     void property_check();
-    void write_terms(std::ofstream&) const;
-    void read_terms(std::ifstream&);
+    int write_terms(std::ofstream&) const;
+    int read_terms(std::ifstream&);
    public:
     Polynomial();
     Polynomial(unsigned int);
@@ -55,8 +55,8 @@ namespace SYNARMOSMA {
     kind get_value(unsigned int) const;
     bool set_value(kind,unsigned int);
     void clear();
-    void serialize(std::ofstream&) const;
-    void deserialize(std::ifstream&);
+    int serialize(std::ofstream&) const;
+    int deserialize(std::ifstream&);
     Polynomial<kind> derivative() const;
     friend std::ostream& operator << <>(std::ostream&,const Polynomial<kind>&);
     friend bool operator == <>(const Polynomial<kind>&,const Polynomial<kind>&);

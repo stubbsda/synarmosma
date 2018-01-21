@@ -17,8 +17,8 @@ namespace SYNARMOSMA {
     Binary_Matrix(const Binary_Matrix&);
     Binary_Matrix& operator =(const Binary_Matrix&);
     ~Binary_Matrix();
-    void serialize(std::ofstream&) const;
-    void deserialize(std::ifstream&);
+    int serialize(std::ofstream&) const;
+    int deserialize(std::ifstream&);
     void initialize(unsigned int,unsigned int);
     void get_row(unsigned int,bool*) const;
     bool get(unsigned int,unsigned int) const;

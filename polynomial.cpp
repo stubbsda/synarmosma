@@ -106,100 +106,121 @@ void Polynomial<kind>::clear()
 
 namespace SYNARMOSMA {
   template<>
-  void Polynomial<Rational>::write_terms(std::ofstream& s) const
+  int Polynomial<Rational>::write_terms(std::ofstream& s) const
   {
     unsigned int i;
+    int count = 0;
 
     for(i=0; i<=degree; ++i) {
-      write_ZZ(s,terms[i].numerator());
-      write_ZZ(s,terms[i].denominator());
+      count += write_ZZ(s,terms[i].numerator());
+      count += write_ZZ(s,terms[i].denominator());
     }
+    return count;
   }
 
   template<>
-  void Polynomial<NTL::ZZ>::write_terms(std::ofstream& s) const
+  int Polynomial<NTL::ZZ>::write_terms(std::ofstream& s) const
   {
     unsigned int i;
+    int count = 0;
 
     for(i=0; i<=degree; ++i) {
-      write_ZZ(s,terms[i]);
+      count += write_ZZ(s,terms[i]);
     }
+    return count;
   }
 }
 
 template<class kind>
-void Polynomial<kind>::write_terms(std::ofstream& s) const
+int Polynomial<kind>::write_terms(std::ofstream& s) const
 {
   unsigned int i;
+  int count = 0;
   kind t;
 
   for(i=0; i<=degree; ++i) {
     t = terms[i];
-    s.write((char*)(&t),sizeof(kind));
+    s.write((char*)(&t),sizeof(kind)); count += sizeof(kind);
   }
+  return count;
 }
 
 template<class kind>
-void Polynomial<kind>::serialize(std::ofstream& s) const
+int Polynomial<kind>::serialize(std::ofstream& s) const
 {
-  s.write((char*)(&degree),sizeof(int));
-  s.write((char*)(&characteristic),sizeof(int));
-  s.write((char*)(&homogeneous),sizeof(bool));
-  s.write((char*)(&irreducible),sizeof(bool));
-  s.write((char*)(&normed),sizeof(bool));
-  write_terms(s);
+  int count = 0;
+
+  s.write((char*)(&degree),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&characteristic),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&homogeneous),sizeof(bool)); count += sizeof(bool);
+  s.write((char*)(&irreducible),sizeof(bool)); count += sizeof(bool);
+  s.write((char*)(&normed),sizeof(bool)); count += sizeof(bool);
+  count += write_terms(s);
+
+  return count;
 }
 
 namespace SYNARMOSMA {
   template<>
-  void Polynomial<Rational>::read_terms(std::ifstream& s)
+  int Polynomial<Rational>::read_terms(std::ifstream& s)
   {
     unsigned int i;
+    int count = 0;
     NTL::ZZ t1,t2;
 
     for(i=0; i<=degree; ++i) {
-      t1 = read_ZZ(s);
-      t2 = read_ZZ(s);
+      count += read_ZZ(s,t1);
+      count += read_ZZ(s,t2);
       terms.push_back(Rational(t1,t2));
     }
+    return count;
   }
 
   template<>
-  void Polynomial<NTL::ZZ>::read_terms(std::ifstream& s)
+  int Polynomial<NTL::ZZ>::read_terms(std::ifstream& s)
   {
     unsigned int i;
+    int count = 0;
     NTL::ZZ t;
 
     for(i=0; i<=degree; ++i) {
-      t = read_ZZ(s);
+      count += read_ZZ(s,t);
       terms.push_back(t);
     }
+    return count;
   }
 }
 
 template<class kind>
-void Polynomial<kind>::read_terms(std::ifstream& s)
+int Polynomial<kind>::read_terms(std::ifstream& s)
 {
   unsigned int i;
+  int count = 0;
   kind t;
 
   for(i=0; i<=degree; ++i) {
-    s.read((char*)(&t),sizeof(kind));
+    s.read((char*)(&t),sizeof(kind)); count += sizeof(kind);
     terms.push_back(t);
   }
+
+  return count;
 }
 
 template<class kind>
-void Polynomial<kind>::deserialize(std::ifstream& s)
+int Polynomial<kind>::deserialize(std::ifstream& s)
 {
+  int count = 0;
+
   clear();
 
-  s.read((char*)(&degree),sizeof(int));
-  s.read((char*)(&characteristic),sizeof(int));
-  s.read((char*)(&homogeneous),sizeof(bool));
-  s.read((char*)(&irreducible),sizeof(bool));
-  s.read((char*)(&normed),sizeof(bool));
-  read_terms(s);
+  s.read((char*)(&degree),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&characteristic),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&homogeneous),sizeof(bool)); count += sizeof(bool);
+  s.read((char*)(&irreducible),sizeof(bool)); count += sizeof(bool);
+  s.read((char*)(&normed),sizeof(bool)); count += sizeof(bool);
+  count += read_terms(s);
+
+  return count;
 }
 
 namespace SYNARMOSMA {

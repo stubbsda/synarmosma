@@ -67,27 +67,35 @@ void Edge::clear()
   direction = UNDIRECTED;
 }
 
-void Edge::serialize(std::ofstream& s) const
+int Edge::serialize(std::ofstream& s) const
 {
-  s.write((char*)(&low),sizeof(int));
-  s.write((char*)(&high),sizeof(int));
-  s.write((char*)(&cyclic),sizeof(bool));
-  s.write((char*)(&length),sizeof(double));
-  s.write((char*)(&flow),sizeof(double));
-  s.write((char*)(&capacity),sizeof(double));
-  s.write((char*)(&direction),sizeof(int));
+  int count = 0;
+
+  s.write((char*)(&low),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&high),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&cyclic),sizeof(bool)); count += sizeof(bool);
+  s.write((char*)(&length),sizeof(double)); count += sizeof(double);
+  s.write((char*)(&flow),sizeof(double)); count += sizeof(double);
+  s.write((char*)(&capacity),sizeof(double)); count += sizeof(double);
+  s.write((char*)(&direction),sizeof(int)); count += sizeof(int);
+
+  return count;
 }
 
-void Edge::deserialize(std::ifstream& s)
+int Edge::deserialize(std::ifstream& s)
 {
+  int count = 0;
+
   clear();
 
-  s.read((char*)(&low),sizeof(int));
-  s.read((char*)(&high),sizeof(int));
-  s.read((char*)(&cyclic),sizeof(bool));
-  s.read((char*)(&length),sizeof(double));
-  s.read((char*)(&flow),sizeof(double));
-  s.read((char*)(&capacity),sizeof(double));
-  s.read((char*)(&direction),sizeof(int));
+  s.read((char*)(&low),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&high),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&cyclic),sizeof(bool)); count += sizeof(bool);
+  s.read((char*)(&length),sizeof(double)); count += sizeof(double);
+  s.read((char*)(&flow),sizeof(double)); count += sizeof(double);
+  s.read((char*)(&capacity),sizeof(double)); count += sizeof(double);
+  s.read((char*)(&direction),sizeof(int)); count += sizeof(int);
+
+  return count;
 }
 

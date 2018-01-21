@@ -6,6 +6,7 @@
 namespace SYNARMOSMA {
   class Directed_Graph : public Graph {
    protected:
+    int number_directed;
     bool directed_cycle(const std::vector<int>&,int,int) const;
 
    public:
@@ -15,7 +16,8 @@ namespace SYNARMOSMA {
     Directed_Graph(const Directed_Graph&);
     Directed_Graph& operator =(const Directed_Graph&);
     virtual ~Directed_Graph();
-    //bool add_edge(int,int,int);
+    virtual int serialize(std::ofstream&) const;
+    virtual int deserialize(std::ifstream&);
     bool add_edge(int,int,int,double = 0.0);
     // A method to compute the maximum network flow from a source vertex 
     // to a sink vertex
@@ -23,7 +25,7 @@ namespace SYNARMOSMA {
     virtual int distance(int,int) const;
     virtual void compute_distances(edge_hash&) const; 
     bool mutate_edge(int,int);
-    int directedness() const;
+    void compute_directedness();
     bool acyclic() const;
     bool path_connected(int,int) const;
     void compute_sinks(std::set<int>&) const;

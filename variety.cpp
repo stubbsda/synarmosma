@@ -175,116 +175,127 @@ void Variety<kind>::clear()
 
 namespace SYNARMOSMA {
   template<>
-  void Variety<Rational>::write_equations(std::ofstream& s) const
+  int Variety<Rational>::write_equations(std::ofstream& s) const
   {
     unsigned int i,j,k,l,n,m;
+    int count = 0;
 
     for(i=0; i<nequation; ++i) {
       n = equations[i].size();
-      s.write((char*)(&n),sizeof(int));
+      s.write((char*)(&n),sizeof(int)); count += sizeof(int);
       for(j=0; j<n; ++j) {
-        write_ZZ(s,equations[i][j].coefficient.numerator());
-        write_ZZ(s,equations[i][j].coefficient.denominator());
+        count += write_ZZ(s,equations[i][j].coefficient.numerator());
+        count += write_ZZ(s,equations[i][j].coefficient.denominator());
         m = equations[i][j].exponents.size();
-        s.write((char*)(&m),sizeof(int));
+        s.write((char*)(&m),sizeof(int)); count += sizeof(int);
         for(k=0; k<m; ++k) {
           l = equations[i][j].exponents[k].first;
-          s.write((char*)(&l),sizeof(int));
+          s.write((char*)(&l),sizeof(int)); count += sizeof(int);
           l = equations[i][j].exponents[k].second;
-          s.write((char*)(&l),sizeof(int));
+          s.write((char*)(&l),sizeof(int)); count += sizeof(int);
         }
       }
     }
     for(i=0; i<nequation; ++i) {
-      write_ZZ(s,remainder[i].numerator());
-      write_ZZ(s,remainder[i].denominator());
+      count += write_ZZ(s,remainder[i].numerator());
+      count += write_ZZ(s,remainder[i].denominator());
     }
+    return count;
   }
 
   template<>
-  void Variety<NTL::ZZ>::write_equations(std::ofstream& s) const
+  int Variety<NTL::ZZ>::write_equations(std::ofstream& s) const
   {
     unsigned int i,j,k,l,n,m;
+    int count = 0;
 
     for(i=0; i<nequation; ++i) {
       n = equations[i].size();
-      s.write((char*)(&n),sizeof(int));
+      s.write((char*)(&n),sizeof(int)); count += sizeof(int);
       for(j=0; j<n; ++j) {
         write_ZZ(s,equations[i][j].coefficient);
         m = equations[i][j].exponents.size();
-        s.write((char*)(&m),sizeof(int));
+        s.write((char*)(&m),sizeof(int)); count += sizeof(int);
         for(k=0; k<m; ++k) {
           l = equations[i][j].exponents[k].first;
-          s.write((char*)(&l),sizeof(int));
+          s.write((char*)(&l),sizeof(int)); count += sizeof(int);
           l = equations[i][j].exponents[k].second;
-          s.write((char*)(&l),sizeof(int));
+          s.write((char*)(&l),sizeof(int)); count += sizeof(int);
         }
       }
     }
     for(i=0; i<nequation; ++i) {
-      write_ZZ(s,remainder[i]);
+      count += write_ZZ(s,remainder[i]);
     }
+    return count;
   }
 }
 
 template<class kind>
-void Variety<kind>::write_equations(std::ofstream& s) const
+int Variety<kind>::write_equations(std::ofstream& s) const
 {
   unsigned int i,j,k,l,n,m;
+  int count = 0;
   kind x;
 
   for(i=0; i<nequation; ++i) {
     n = equations[i].size();
-    s.write((char*)(&n),sizeof(int));
+    s.write((char*)(&n),sizeof(int)); count += sizeof(int);
     for(j=0; j<n; ++j) {
       x = equations[i][j].coefficient;
-      s.write((char*)(&x),sizeof(kind));
+      s.write((char*)(&x),sizeof(kind)); count += sizeof(kind);
       m = equations[i][j].exponents.size();
-      s.write((char*)(&m),sizeof(int));
+      s.write((char*)(&m),sizeof(int)); count += sizeof(int);
       for(k=0; k<m; ++k) {
         l = equations[i][j].exponents[k].first;
-        s.write((char*)(&l),sizeof(int));
+        s.write((char*)(&l),sizeof(int)); count += sizeof(int);
         l = equations[i][j].exponents[k].second;
-        s.write((char*)(&l),sizeof(int));
+        s.write((char*)(&l),sizeof(int)); count += sizeof(int);
       }
     }
   }
   for(i=0; i<nequation; ++i) {
     x = remainder[i];
-    s.write((char*)(&x),sizeof(kind));
+    s.write((char*)(&x),sizeof(kind)); count += sizeof(kind);
   }
+  return count;
 }
 
 template<class kind>
-void Variety<kind>::serialize(std::ofstream& s) const
+int Variety<kind>::serialize(std::ofstream& s) const
 {
-  s.write((char*)(&nequation),sizeof(int));
-  s.write((char*)(&nvariable),sizeof(int));
-  s.write((char*)(&characteristic),sizeof(int));
-  s.write((char*)(&linear),sizeof(bool));
-  s.write((char*)(&homogeneous),sizeof(bool));
-  s.write((char*)(&projective),sizeof(bool));
-  write_equations(s);
+  int count = 0;
+
+  s.write((char*)(&nequation),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&nvariable),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&characteristic),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&linear),sizeof(bool)); count += sizeof(bool);
+  s.write((char*)(&homogeneous),sizeof(bool)); count += sizeof(bool);
+  s.write((char*)(&projective),sizeof(bool)); count += sizeof(bool);
+  count += write_equations(s);
+
+  return count;
 }
 
 namespace SYNARMOSMA {
   template<>
-  void Variety<Rational>::read_equations(std::ifstream& s)
+  int Variety<Rational>::read_equations(std::ifstream& s)
   {
     unsigned int i,j,k,l1,l2,n,m;
+    int count = 0;
     NTL::ZZ q1,q2;
     Monomial<Rational> t;
 
     for(i=0; i<nequation; ++i) {
-      s.read((char*)(&n),sizeof(int));
+      s.read((char*)(&n),sizeof(int)); count += sizeof(int);
       for(j=0; j<n; ++j) {
-        q1 = read_ZZ(s);
-        q2 = read_ZZ(s);
+        count += read_ZZ(s,q1);
+        count += read_ZZ(s,q2);
         t.coefficient = Rational(q1,q2);
-        s.read((char*)(&m),sizeof(int));
+        s.read((char*)(&m),sizeof(int)); count += sizeof(int);
         for(k=0; k<m; ++k) {
-          s.read((char*)(&l1),sizeof(int));
-          s.read((char*)(&l2),sizeof(int));
+          s.read((char*)(&l1),sizeof(int)); count += sizeof(int);
+          s.read((char*)(&l2),sizeof(int)); count += sizeof(int);
           t.exponents.push_back(std::pair<unsigned int,unsigned int>(l1,l2));
         }
         equations[i].push_back(t);
@@ -292,27 +303,30 @@ namespace SYNARMOSMA {
       }
     }
     for(i=0; i<nequation; ++i) {
-      q1 = read_ZZ(s);
-      q2 = read_ZZ(s);
+      count += read_ZZ(s,q1);
+      count += read_ZZ(s,q2);
       remainder.push_back(Rational(q1,q2));
     }
+    return count;
   }
 
   template<>
-  void Variety<NTL::ZZ>::read_equations(std::ifstream& s)
+  int Variety<NTL::ZZ>::read_equations(std::ifstream& s)
   {
     unsigned int i,j,k,l1,l2,n,m;
+    int count = 0;
     NTL::ZZ q;
     Monomial<NTL::ZZ> t;
 
     for(i=0; i<nequation; ++i) {
-      s.read((char*)(&n),sizeof(int));
+      s.read((char*)(&n),sizeof(int)); count += sizeof(int);
       for(j=0; j<n; ++j) {
-        t.coefficient = read_ZZ(s);
-        s.read((char*)(&m),sizeof(int));
+        count += read_ZZ(s,q);
+        t.coefficient = q;
+        s.read((char*)(&m),sizeof(int)); count += sizeof(int);
         for(k=0; k<m; ++k) {
-          s.read((char*)(&l1),sizeof(int));
-          s.read((char*)(&l2),sizeof(int));
+          s.read((char*)(&l1),sizeof(int)); count += sizeof(int);
+          s.read((char*)(&l2),sizeof(int)); count += sizeof(int);
           t.exponents.push_back(std::pair<unsigned int,unsigned int>(l1,l2));
         }
         equations[i].push_back(t);
@@ -320,28 +334,30 @@ namespace SYNARMOSMA {
       }
     }
     for(i=0; i<nequation; ++i) {
-      q = read_ZZ(s);
+      count += read_ZZ(s,q);
       remainder.push_back(q);
     }
+    return count;
   }
 }
 
 template<class kind>
-void Variety<kind>::read_equations(std::ifstream& s)
+int Variety<kind>::read_equations(std::ifstream& s)
 {
   unsigned int i,j,k,l1,l2,n,m;
+  int count = 0;
   kind x;
   Monomial<kind> t;
 
   for(i=0; i<nequation; ++i) {
-    s.read((char*)(&n),sizeof(int));
+    s.read((char*)(&n),sizeof(int)); count += sizeof(int);
     for(j=0; j<n; ++j) {
-      s.read((char*)(&x),sizeof(kind));
+      s.read((char*)(&x),sizeof(kind)); count += sizeof(kind);
       t.coefficient = x;
-      s.read((char*)(&m),sizeof(int));
+      s.read((char*)(&m),sizeof(int)); count += sizeof(int);
       for(k=0; k<m; ++k) {
-        s.read((char*)(&l1),sizeof(int));
-        s.read((char*)(&l2),sizeof(int));
+        s.read((char*)(&l1),sizeof(int)); count += sizeof(int);
+        s.read((char*)(&l2),sizeof(int)); count += sizeof(int);
         t.exponents.push_back(std::pair<unsigned int,unsigned int>(l1,l2));
       }
       equations[i].push_back(t);
@@ -349,25 +365,30 @@ void Variety<kind>::read_equations(std::ifstream& s)
     }
   }
   for(i=0; i<nequation; ++i) {
-    s.read((char*)(&x),sizeof(kind));
+    s.read((char*)(&x),sizeof(kind)); count += sizeof(kind);
     remainder.push_back(x);
   }
+  return count;
 }
 
 template<class kind>
-void Variety<kind>::deserialize(std::ifstream& s) 
+int Variety<kind>::deserialize(std::ifstream& s) 
 {
+  int count = 0;
+
   clear();
 
-  s.read((char*)(&nequation),sizeof(int));
-  s.read((char*)(&nvariable),sizeof(int));
-  s.read((char*)(&characteristic),sizeof(int));  
-  s.read((char*)(&linear),sizeof(bool));
-  s.read((char*)(&homogeneous),sizeof(bool));
-  s.read((char*)(&projective),sizeof(bool)); 
+  s.read((char*)(&nequation),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&nvariable),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&characteristic),sizeof(int)); count += sizeof(int); 
+  s.read((char*)(&linear),sizeof(bool)); count += sizeof(bool);
+  s.read((char*)(&homogeneous),sizeof(bool)); count += sizeof(bool);
+  s.read((char*)(&projective),sizeof(bool)); count += sizeof(bool);
  
   equations = new std::vector<Monomial<kind> >[nequation];
-  read_equations(s);
+  count += read_equations(s);
+
+  return count;
 }
 
 template<class kind>

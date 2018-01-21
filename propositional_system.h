@@ -26,8 +26,8 @@ namespace SYNARMOSMA {
     Propositional_System& operator =(const Propositional_System&);
     ~Propositional_System();
     void clear();
-    void serialize(std::ofstream&) const;
-    void deserialize(std::ifstream&);
+    int serialize(std::ofstream&) const;
+    int deserialize(std::ifstream&);
     unsigned int bit_count(unsigned int) const;
     unsigned int consistency(unsigned int,unsigned int,const std::string&) const;
     bool implication(unsigned int,const std::vector<unsigned int>&) const;

@@ -30,8 +30,8 @@ namespace SYNARMOSMA {
     Logic_Graph& operator =(const Logic_Graph&);
     virtual ~Logic_Graph();
     virtual void clear();
-    virtual void serialize(std::ofstream&) const;
-    virtual void deserialize(std::ifstream&);
+    virtual int serialize(std::ofstream&) const;
+    virtual int deserialize(std::ifstream&);
     void create();
   };
 }

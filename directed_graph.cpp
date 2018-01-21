@@ -6,7 +6,7 @@ extern Random RND;
 
 Directed_Graph::Directed_Graph() : Graph() 
 {
-
+  number_directed = 0;
 }
 
 Directed_Graph::Directed_Graph(int n) : Graph(n)
@@ -14,6 +14,8 @@ Directed_Graph::Directed_Graph(int n) : Graph(n)
   int i,j,d,nc = 0;
   double alpha;
   std::set<int> vx;
+
+  number_directed = 0;
 
   for(i=0; i<n; ++i) {
     for(j=1+i; j<n; ++j) {
@@ -24,9 +26,11 @@ Directed_Graph::Directed_Graph(int n) : Graph(n)
       alpha = RND.drandom();
       if (alpha < 0.15) {
         d = OUTGOING;
+        number_directed++;
       }
       else if (alpha < 0.3) {
         d = INCOMING;
+        number_directed++;
       }      
       edges.push_back(Edge(i,j,0.0,d));
       neighbours[i].insert(j);
@@ -43,6 +47,8 @@ Directed_Graph::Directed_Graph(int n,double p) : Graph(n)
   double alpha;
   std::set<int> vx;
 
+  number_directed = 0;
+
   for(i=0; i<n; ++i) {
     for(j=1+i; j<n; ++j) {
       alpha = RND.drandom();
@@ -54,9 +60,11 @@ Directed_Graph::Directed_Graph(int n,double p) : Graph(n)
       alpha = RND.drandom();
       if (alpha < 0.15) {
         d = OUTGOING;
+        number_directed++;
       }
       else if (alpha < 0.3) {
         d = INCOMING;
+        number_directed++;
       }      
       edges.push_back(Edge(i,j,0.0,d));
       neighbours[i].insert(j);
@@ -78,29 +86,87 @@ Directed_Graph::Directed_Graph(const Directed_Graph& source)
   neighbours = source.neighbours;
   edges = source.edges;
   index_table = source.index_table;
+  number_directed = source.number_directed;
 }
 
 Directed_Graph& Directed_Graph::operator =(const Directed_Graph& source) 
 {
   if (this == &source) return *this;
+
   nvertex = source.nvertex;
   neighbours = source.neighbours;
   edges = source.edges;
   index_table = source.index_table;
+  number_directed = source.number_directed;
+
   return *this;
 }
 
-int Directed_Graph::directedness() const
+int Directed_Graph::serialize(std::ofstream& s) const
+{
+  int i,j,count = 0,nedge = (signed) edges.size();
+  std::set<int>::const_iterator it;
+
+  s.write((char*)(&nvertex),sizeof(int)); count += sizeof(int);
+  for(i=0; i<nvertex; ++i) {
+    j = (signed) neighbours[i].size();
+    s.write((char*)(&j),sizeof(int)); count += sizeof(int);
+    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+      j = *it;
+      s.write((char*)(&j),sizeof(int)); count += sizeof(int);
+    }
+  }
+  s.write((char*)(&nedge),sizeof(int)); count += sizeof(int);
+  for(i=0; i<nedge; ++i) {
+    count += edges[i].serialize(s);
+  }
+  s.write((char*)(&number_directed),sizeof(int)); count += sizeof(int);
+
+  return count;
+}
+
+int Directed_Graph::deserialize(std::ifstream& s) 
+{
+  int i,j,k,n,count = 0;
+  Edge q;
+  std::set<int> S;
+
+  clear();
+
+  s.read((char*)(&nvertex),sizeof(int)); count += sizeof(int);
+  for(i=0; i<nvertex; ++i) {
+    s.read((char*)(&n),sizeof(int)); count += sizeof(int);
+    for(j=0; j<n; ++j) {
+      s.read((char*)(&k),sizeof(int)); count += sizeof(int);
+      S.insert(k);
+    }
+    neighbours.push_back(S);
+    S.clear();
+  }
+  s.read((char*)(&n),sizeof(int)); count += sizeof(int);
+  for(i=0; i<n; ++i) {
+    count += q.deserialize(s);
+    edges.push_back(q);
+    S.clear();
+    S.insert(q.low); S.insert(q.high);
+    index_table[S] = i;
+  }
+  s.read((char*)(&number_directed),sizeof(int)); count += sizeof(int);
+
+  return count;
+
+}
+
+void Directed_Graph::compute_directedness() 
 {
   // A method to calculate how many of the edges are directed...
-  int output,null = 0;
+  int null = 0;
   std::vector<Edge>::const_iterator it;
 
   for(it=edges.begin(); it!=edges.end(); ++it) {
     if (it->direction == UNDIRECTED) null++;
   }
-  output = size() - null;
-  return output;
+  number_directed = size() - null;
 }
 
 int Directed_Graph::distance(int u,int v) const

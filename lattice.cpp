@@ -57,44 +57,48 @@ void Lattice::clear()
   atoms.clear();
 }
 
-void Lattice::serialize(std::ofstream& s) const
+int Lattice::serialize(std::ofstream& s) const
 {
   unsigned int i,j;
+  int count = 0;
   std::set<unsigned int>::const_iterator it;
   RELATION rho;
 
-  s.write((char*)(&N),sizeof(int));
-  s.write((char*)(&atomic),sizeof(bool));
-  s.write((char*)(&null),sizeof(int));
-  s.write((char*)(&unity),sizeof(int));
+  s.write((char*)(&N),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&atomic),sizeof(bool)); count += sizeof(bool);
+  s.write((char*)(&null),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&unity),sizeof(int)); count += sizeof(int);
   for(i=0; i<N; ++i) {
     for(j=1+i; j<N; ++j) {
       rho = get_order(i,j);
-      s.write((char*)(&rho),sizeof(int));
+      s.write((char*)(&rho),sizeof(int)); count += sizeof(int);
     }
   }
   j = atoms.size();
-  s.write((char*)(&j),sizeof(int));
+  s.write((char*)(&j),sizeof(int)); count += sizeof(int);
   for(it=atoms.begin(); it!=atoms.end(); ++it) {
     i = *it;
-    s.write((char*)(&i),sizeof(int));
+    s.write((char*)(&i),sizeof(int)); count += sizeof(int);
   }
+
+  return count;
 }
 
-void Lattice::deserialize(std::ifstream& s)
+int Lattice::deserialize(std::ifstream& s)
 {
   unsigned int i,j,k;
+  int count = 0;
   RELATION rho;
 
   clear();
 
-  s.read((char*)(&N),sizeof(int));
-  s.read((char*)(&atomic),sizeof(bool));
-  s.read((char*)(&null),sizeof(int));
-  s.read((char*)(&unity),sizeof(int));
+  s.read((char*)(&N),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&atomic),sizeof(bool)); count += sizeof(bool);
+  s.read((char*)(&null),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&unity),sizeof(int)); count += sizeof(int);
   for(i=0; i<N; ++i) {
     for(j=1+i; j<N; ++j) {
-      s.read((char*)(&rho),sizeof(int));
+      s.read((char*)(&rho),sizeof(int)); count += sizeof(int);
       if (rho == BEFORE) {
         set_order(i,j);
       }
@@ -103,14 +107,16 @@ void Lattice::deserialize(std::ifstream& s)
       }
     }
   }
-  s.read((char*)(&j),sizeof(int));
+  s.read((char*)(&j),sizeof(int)); count += sizeof(int);
   for(i=0; i<j; ++i) {
-    s.read((char*)(&k),sizeof(int));
+    s.read((char*)(&k),sizeof(int)); count += sizeof(int);
     atoms.insert(k);
   }
 #ifdef DEBUG
   assert(consistent());
 #endif
+
+  return count;
 }
 
 

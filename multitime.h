@@ -19,8 +19,8 @@ namespace SYNARMOSMA {
     Multitime(const Multitime&);
     ~Multitime();
     Multitime& operator =(const Multitime&);
-    void serialize(std::ofstream&) const;
-    void deserialize(std::ifstream&);
+    int serialize(std::ofstream&) const;
+    int deserialize(std::ifstream&);
     double norm() const;
     void extract(std::vector<double>&) const;
     friend Multitime operator +(const Multitime&,const Multitime&);

@@ -241,38 +241,40 @@ Word Word::mutate() const
   return output;
 }
 
-void Word::serialize(std::ofstream& s) const
+int Word::serialize(std::ofstream& s) const
 {
   unsigned int i,j,n = content.size();
-  int k;
+  int k,count = 0;
 
-  s.write((char*)(&NL),sizeof(int));
-  s.write((char*)(&n),sizeof(int));
+  s.write((char*)(&NL),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
     j = content[i].first;
-    s.write((char*)(&j),sizeof(int));
+    s.write((char*)(&j),sizeof(int)); count += sizeof(int);
     k = content[i].second;
-    s.write((char*)(&k),sizeof(int));
+    s.write((char*)(&k),sizeof(int)); count += sizeof(int);
   }
+  return count;
 }
 
-void Word::deserialize(std::ifstream& s)
+int Word::deserialize(std::ifstream& s)
 {
   unsigned int i,n,base;
-  int exponent;
+  int exponent,count = 0;
   std::pair<unsigned int,int> doublet;
 
   clear();
 
-  s.read((char*)(&NL),sizeof(int));
-  s.read((char*)(&n),sizeof(int));
+  s.read((char*)(&NL),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
-    s.read((char*)(&base),sizeof(int));
-    s.read((char*)(&exponent),sizeof(int));
+    s.read((char*)(&base),sizeof(int)); count += sizeof(int);
+    s.read((char*)(&exponent),sizeof(int)); count += sizeof(int);
     doublet.first = base;
     doublet.second = exponent;
     content.push_back(doublet);
   }
+  return count;
 }
 
 void Word::free_reduce() 

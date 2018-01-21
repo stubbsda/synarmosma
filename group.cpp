@@ -797,52 +797,57 @@ Group::~Group()
 
 }
 
-void Group::serialize(std::ofstream& s) const
+int Group::serialize(std::ofstream& s) const
 {
   unsigned int i,n = relations.size();
-  s.write((char*)(&ngenerator),sizeof(int));
-  s.write((char*)(&cardinality),sizeof(int));
-  s.write((char*)(&abelian),sizeof(bool));
-  s.write((char*)(&finite),sizeof(bool));
-  s.write((char*)(&solvable),sizeof(bool));
-  s.write((char*)(&free),sizeof(bool));
-  s.write((char*)(&rank),sizeof(int));
+  int count = 0;
+
+  s.write((char*)(&ngenerator),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&cardinality),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&abelian),sizeof(bool)); count += sizeof(bool);
+  s.write((char*)(&finite),sizeof(bool)); count += sizeof(bool);
+  s.write((char*)(&solvable),sizeof(bool)); count += sizeof(bool);
+  s.write((char*)(&free),sizeof(bool)); count += sizeof(bool);
+  s.write((char*)(&rank),sizeof(int)); count += sizeof(int);
   n = torsion.size();
-  s.write((char*)(&n),sizeof(int));
+  s.write((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
-    s.write((char*)(&torsion[i]),sizeof(int));
+    s.write((char*)(&torsion[i]),sizeof(int)); count += sizeof(int);
   }
   n = relations.size();
-  s.write((char*)(&n),sizeof(int));  
+  s.write((char*)(&n),sizeof(int)); count += sizeof(int); 
   for(i=0; i<n; ++i) {
-    relations[i].serialize(s);
+    count += relations[i].serialize(s);
   }
+  return count;
 }
 
-void Group::deserialize(std::ifstream& s)
+int Group::deserialize(std::ifstream& s)
 {
   unsigned int i,j,n;
+  int count = 0;
   Word w(ngenerator);
 
   clear();
 
-  s.read((char*)(&ngenerator),sizeof(int));
-  s.read((char*)(&cardinality),sizeof(int));
-  s.read((char*)(&abelian),sizeof(bool));
-  s.read((char*)(&finite),sizeof(bool));
-  s.read((char*)(&solvable),sizeof(bool));
-  s.read((char*)(&free),sizeof(bool));
-  s.read((char*)(&rank),sizeof(int));
-  s.read((char*)(&n),sizeof(int));
+  s.read((char*)(&ngenerator),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&cardinality),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&abelian),sizeof(bool)); count += sizeof(bool);
+  s.read((char*)(&finite),sizeof(bool)); count += sizeof(bool);
+  s.read((char*)(&solvable),sizeof(bool)); count += sizeof(bool);
+  s.read((char*)(&free),sizeof(bool)); count += sizeof(bool);
+  s.read((char*)(&rank),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
-    s.read((char*)(&j),sizeof(int));
+    s.read((char*)(&j),sizeof(int)); count += sizeof(int);
     torsion.push_back(j);
   }
-  s.read((char*)(&n),sizeof(int));
+  s.read((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
-    w.deserialize(s);
+    count += w.deserialize(s);
     relations.push_back(w);
   }
+  return count;
 }
 
 std::string Group::compact_form() const

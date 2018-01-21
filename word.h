@@ -36,8 +36,8 @@ namespace SYNARMOSMA {
     bool alias() const;
     bool legal() const;
     bool homogeneous() const;
-    void serialize(std::ofstream&) const;
-    void deserialize(std::ifstream&);
+    int serialize(std::ofstream&) const;
+    int deserialize(std::ifstream&);
     void initialize(unsigned int,unsigned int,int);
     void write2screen() const;
     friend bool operator ==(const Word&,const Word&);

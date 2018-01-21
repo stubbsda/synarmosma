@@ -96,8 +96,8 @@ namespace SYNARMOSMA {
     int genus(std::vector<int>&) const;
     inline int size() const {return (signed) edges.size();};
     inline int order() const {return nvertex;};
-    virtual void serialize(std::ofstream&) const;
-    virtual void deserialize(std::ifstream&);
+    virtual int serialize(std::ofstream&) const;
+    virtual int deserialize(std::ifstream&);
     friend class Nexus;
   };
 }
