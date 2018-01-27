@@ -43,6 +43,47 @@ Pseudograph::~Pseudograph()
   if (nvertex > 0) delete[] neighbours;
 }
 
+void Pseudograph::clear()
+{
+  if (nvertex > 0) delete[] neighbours;
+  nvertex = 0;
+}
+
+int Pseudograph::serialize(std::ofstream& s) const
+{
+  int i,j,n,p,count = 0;
+
+  s.write((char*)(&nvertex),sizeof(int)); count += sizeof(int);
+  for(i=0; i<nvertex; ++i) {
+    n = (signed) neighbours[i].size();
+    s.write((char*)(&n),sizeof(int)); count += sizeof(int);
+    for(j=0; j<n; ++j) {
+      p = neighbours[i][j];
+      s.write((char*)(&p),sizeof(int)); count += sizeof(int);
+    }
+  }
+  return count;
+}
+
+int Pseudograph::deserialize(std::ifstream& s) 
+{
+  int i,j,n,p,count = 0;
+
+  clear();
+
+  s.read((char*)(&nvertex),sizeof(int)); count += sizeof(int);
+  neighbours = new std::vector<int>[nvertex];
+  for(i=0; i<nvertex; ++i) {
+    s.read((char*)(&n),sizeof(int)); count += sizeof(int);
+    for(j=0; j<n; ++j) {
+      s.read((char*)(&p),sizeof(int)); count += sizeof(int);
+      neighbours[i].push_back(p);
+    }
+  }
+
+  return count;
+}
+
 void Pseudograph::add_edge(int u,int v)
 {
 #ifdef DEBUG
