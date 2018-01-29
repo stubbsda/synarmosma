@@ -22,7 +22,7 @@ Propositional_System::Propositional_System(unsigned int n,const char* filename)
   set_default_values();
 
   // Open the parameter file
-  std::ifstream s(filename,std::ios_base::in);
+  std::ifstream s(filename,std::ios::in);
   if (s.is_open() == false) {
     // If the file isn't there, print an error message and
     // exit cleanly

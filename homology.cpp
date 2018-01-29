@@ -548,7 +548,7 @@ void Homology::compute_gap(const Nexus* NX)
     std::cerr << "Exiting..." << std::endl;
     std::exit(1);
   }
-  std::ifstream file("homology.dat",std::ios_base::in);
+  std::ifstream file("homology.dat",std::ios::in);
   while(std::getline(file,line)) {
     if (line.empty()) continue;
     schar = line.find("[");

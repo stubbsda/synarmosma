@@ -33,7 +33,7 @@ Functional_Equation<kind>::Functional_Equation(const char* filename)
   std::vector<std::string> alpha,beta,exponents;
   std::vector<unsigned int> bk;
 
-  std::ifstream s(filename,std::ios_base::in);
+  std::ifstream s(filename,std::ios::in);
   if (!s.is_open()) {
     // File doesn't exist, print an error message and die
     std::cerr << "The file " << filename << " cannot be found!" << std::endl;
