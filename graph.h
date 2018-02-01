@@ -9,7 +9,7 @@
 
 namespace SYNARMOSMA {
   // The class Graph itself
-  class Graph : public Schema {
+  class Graph: public Schema {
    protected:
     // The edges
     std::vector<Edge> edges;

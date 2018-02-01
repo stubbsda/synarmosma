@@ -5,7 +5,7 @@
 #define _nexush
 
 namespace SYNARMOSMA {
-  class Nexus : public Schema {
+  class Nexus: public Schema {
    protected:
     int dimension;
     std::vector<Cell>* elements;

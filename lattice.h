@@ -4,7 +4,7 @@
 #define _latticeh
 
 namespace SYNARMOSMA {
-  class Lattice : public Poset {
+  class Lattice: public Poset {
    protected:
     std::set<unsigned int> atoms;
     bool atomic;

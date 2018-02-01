@@ -20,7 +20,7 @@ namespace SYNARMOSMA {
     Edge();
     Edge(int,int,double = 0.0,int = UNDIRECTED);
     Edge(const Edge&);
-    ~Edge();
+    virtual ~Edge();
     Edge& operator =(const Edge&);
     int serialize(std::ofstream&) const;
     int deserialize(std::ifstream&);

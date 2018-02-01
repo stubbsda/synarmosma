@@ -4,7 +4,7 @@
 #define __dgraph
 
 namespace SYNARMOSMA {
-  class Directed_Graph : public Graph {
+  class Directed_Graph: public Graph {
    protected:
     int number_directed;
     bool directed_cycle(const std::vector<int>&,int,int) const;
