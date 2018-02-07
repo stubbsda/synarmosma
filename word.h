@@ -39,7 +39,6 @@ namespace SYNARMOSMA {
     int serialize(std::ofstream&) const;
     int deserialize(std::ifstream&);
     void initialize(unsigned int,unsigned int,int);
-    void write2screen() const;
     friend bool operator ==(const Word&,const Word&);
     friend bool operator !=(const Word&,const Word&);
     friend Word operator *(const Word&,const Word&);

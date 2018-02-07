@@ -16,13 +16,13 @@ namespace SYNARMOSMA {
     Nexus(int);
     Nexus(const Nexus&);
     Nexus& operator =(const Nexus&);
-    virtual ~Nexus();
-    virtual int serialize(std::ofstream&) const;
-    virtual int deserialize(std::ifstream&);
+    ~Nexus() override;
+    int serialize(std::ofstream&) const override;
+    int deserialize(std::ifstream&) override;
     bool orientable() const;
     bool pseudomanifold(bool*) const;
     void surface_construction(int);
-    virtual void clear();
+    void clear() override;
     void initialize(int);
     void initialize(int,int);
     void paste(const std::set<int>&);

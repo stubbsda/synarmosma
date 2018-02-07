@@ -189,21 +189,6 @@ bool Logic_Graph::drop_vertex(int v)
   return false;
 }
 
-bool Logic_Graph::foliation_m(int v,int u)
-{
-  return Graph::foliation_m(v,u);
-}
-
-bool Logic_Graph::foliation_x(int v,int u)
-{
-  return Graph::foliation_x(v,u);
-}
-
-bool Logic_Graph::add_edge(int v,int u)
-{
-  return Graph::add_edge(v,u);
-}
-
 bool Logic_Graph::fusion(int v,int u)
 {
   if (Graph::fusion(v,u)) {

@@ -15,23 +15,19 @@ namespace SYNARMOSMA {
 
     double rationalize_topology();
     void compute_logical_breadth();
-
-    virtual bool fusion(int,int);
-    virtual bool foliation_x(int,int);
-    virtual bool foliation_m(int,int);
-    virtual int fission_x(int);
-    virtual int fission_m(int);
-    virtual bool add_edge(int,int);  
-    virtual bool drop_vertex(int);
+    bool fusion(int,int) override;
+    int fission_x(int) override;
+    int fission_m(int) override;
+    bool drop_vertex(int) override;
    public:
     Logic_Graph();
     Logic_Graph(int);
     Logic_Graph(const Logic_Graph&);
     Logic_Graph& operator =(const Logic_Graph&);
-    virtual ~Logic_Graph();
-    virtual void clear();
-    virtual int serialize(std::ofstream&) const;
-    virtual int deserialize(std::ifstream&);
+    ~Logic_Graph() override;
+    void clear() override;
+    int serialize(std::ofstream&) const override;
+    int deserialize(std::ifstream&) override;
     void create();
   };
 }

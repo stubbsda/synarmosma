@@ -19,7 +19,7 @@ namespace SYNARMOSMA {
     virtual ~Cell();
     Cell& operator =(const Cell&);
     void initialize(int,int);
-    void initialize(const std::set<int>&);
+    virtual void initialize(const std::set<int>&);
     void calculate_faces();
     virtual void clear();
     inline int dimension() const {return (vertices.size() - 1);};

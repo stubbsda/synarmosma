@@ -151,6 +151,7 @@ int main(int argc,char** argv)
   G4.add_edge(2,3,d2);
   G4.add_edge(3,5,d3);
   G4.add_edge(2,5,d3);
+  G4.compute_directedness();
   assert(G4.distance(0,4) == -1);
   assert(G4.distance(0,2) == 2);
   assert(G4.distance(2,3) == -1);
@@ -162,6 +163,7 @@ int main(int argc,char** argv)
   assert(G5.connected());
   std::set<int> S;
   G5.compute_sinks(S);
+  G5.compute_directedness();
   assert(S.size() == 17);
   assert(G5.path_connected(1,7) == 0);
   assert(G5.path_connected(6,11) == 1);

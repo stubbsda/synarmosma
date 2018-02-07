@@ -28,14 +28,14 @@ namespace SYNARMOSMA {
     Graph(int,double);
     Graph(const Graph&);
     Graph& operator =(const Graph&);
-    virtual ~Graph();
-    virtual void clear();
+    ~Graph() override;
+    void clear() override;
     // Returns the topological energy of this graph
     virtual double compute_energy() const;
     // A basic operator for adding an edge
-    bool add_edge(int,int,double = 0.0);
+    bool add_edge(int,int,double = 0.0) override;
     // A basic operator for undoing the above edge addition
-    virtual bool drop_edge(int,int);
+    bool drop_edge(int,int) override;
     // A method to handle dropping a vertex, a rather complicated
     // operation for this class
     virtual bool drop_vertex(int);
@@ -44,7 +44,7 @@ namespace SYNARMOSMA {
     int minimize_topology(int,double,std::vector<double>&);
     // A method to render the graph topology complete
     int make_complete();
-    virtual bool consistent() const;
+    bool consistent() const override;
     // Given a set of vertices, calculate the set of edges connecting them to the 
     // rest of the graph, i.e. the "surface" which encloses the volume (the set of vertices)
     void compute_surface(const std::set<int>&,std::set<int>&) const;
@@ -96,8 +96,8 @@ namespace SYNARMOSMA {
     int genus(std::vector<int>&) const;
     inline int size() const {return (signed) edges.size();};
     inline int order() const {return nvertex;};
-    virtual int serialize(std::ofstream&) const;
-    virtual int deserialize(std::ifstream&);
+    int serialize(std::ofstream&) const override;
+    int deserialize(std::ifstream&) override;
     friend class Nexus;
   };
 }

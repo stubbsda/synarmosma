@@ -18,15 +18,15 @@ namespace SYNARMOSMA {
     Lattice();
     Lattice(unsigned int);
     Lattice(const Lattice&);
-    ~Lattice();
+    ~Lattice() override;
     Lattice& operator =(const Lattice&);
     unsigned int meet(unsigned int,unsigned int) const;
     unsigned int join(unsigned int,unsigned int) const;
-    int serialize(std::ofstream&) const;
-    int deserialize(std::ifstream&);
-    void clear();
+    int serialize(std::ofstream&) const override;
+    int deserialize(std::ifstream&) override;
+    void clear() override;
     inline void add_element() {N += 1;};
-    bool consistent() const;
+    bool consistent() const override;
   };
 }
 #endif

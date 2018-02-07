@@ -30,13 +30,14 @@ Word::Word(unsigned int p,const std::string& w)
 
   NL = p;
   for(i=0; i<w.length(); ++i) {
+    assert(std::isalpha(w[i]));
     for(j=0; j<26; ++j) {
-      if (tolower(w[i]) == alphabet[j]) {
+      if (std::tolower(w[i]) == alphabet[j]) {
         n = j;
         break;
       }
     }
-    e = (isupper(w[i])) ? -1 : 1;
+    e = (std::isupper(w[i])) ? -1 : 1;
     content.push_back(std::pair<unsigned int,int>(n,e));
   }
 }
@@ -394,20 +395,6 @@ namespace SYNARMOSMA {
       output.content.push_back(w2.content[i]);
     }
     return output;
-  }
-
-  void Word::write2screen() const
-  {
-    unsigned int i;
-    char l,alphabet[] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
-    std::string output;
-    
-    for(i=0; i<content.size(); ++i) {
-      l = alphabet[content[i].first];
-      if (content[i].second < 0) l = toupper(l);
-      output += l;
-    }
-    std::cout << output << std::endl;
   }
 
   std::ostream& operator <<(std::ostream& os,const Word& source)
