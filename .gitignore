@@ -1,0 +1,4 @@
+*.o
+libsynarmosma.so
+unit_test
+
