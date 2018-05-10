@@ -530,7 +530,8 @@ int Matrix<kind>::gauss_seidel_solver(std::vector<kind>& soln,const std::vector<
   assert(soln.size() == nrow);
   assert(source.size() == nrow);
 #endif
-  unsigned int i,j,its = 0;
+  unsigned int i,j;
+  int its = 0;
   kind sum;
   double rho,error,error_new;
   std::vector<unsigned int> permutation;
