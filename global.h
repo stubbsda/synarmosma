@@ -48,16 +48,16 @@ extern "C" {
 }
 
 namespace SYNARMOSMA {
-  typedef boost::mt19937 base_generator_type;
-  typedef boost::unordered_map<std::set<int>,int> hash_map;
-  typedef boost::unordered_map<std::pair<int,int>,int> edge_hash;
+  using base_generator_type = boost::mt19937;
+  using hash_map = boost::unordered_map<std::set<int>,int>;
+  using edge_hash = boost::unordered_map<std::pair<int,int>,int>;
 
 #ifdef __LP64__
-  typedef signed long INT64;
-  typedef unsigned long UINT64;
+  using INT64 = signed long;
+  using UINT64 = unsigned long;
 #else
-  typedef signed long long INT64;
-  typedef unsigned long long UINT64;
+  using INT64 = signed long long;
+  using UINT64 = unsigned long long;
 #endif
 
 #ifdef DISCRETE
@@ -86,11 +86,11 @@ namespace SYNARMOSMA {
     std::vector<std::pair<unsigned int,unsigned int> > exponents; 
   };
 
-  enum RELATION
+  enum class Relation
   {
-      BEFORE,
-      AFTER,
-      DISPARATE
+      before,
+      after,
+      disparate
   };
 
   UINT64 ipow(int,int);

@@ -62,7 +62,7 @@ int Lattice::serialize(std::ofstream& s) const
   unsigned int i,j;
   int count = 0;
   std::set<unsigned int>::const_iterator it;
-  RELATION rho;
+  Relation rho;
 
   s.write((char*)(&N),sizeof(int)); count += sizeof(int);
   s.write((char*)(&atomic),sizeof(bool)); count += sizeof(bool);
@@ -88,7 +88,7 @@ int Lattice::deserialize(std::ifstream& s)
 {
   unsigned int i,j,k;
   int count = 0;
-  RELATION rho;
+  Relation rho;
 
   clear();
 
@@ -99,10 +99,10 @@ int Lattice::deserialize(std::ifstream& s)
   for(i=0; i<N; ++i) {
     for(j=1+i; j<N; ++j) {
       s.read((char*)(&rho),sizeof(int)); count += sizeof(int);
-      if (rho == BEFORE) {
+      if (rho == Relation::before) {
         set_order(i,j);
       }
-      else if (rho == AFTER) {
+      else if (rho == Relation::after) {
         set_order(j,i);
       }
     }
@@ -129,7 +129,7 @@ void Lattice::initialize()
     n1 = RND.irandom(N);
     n2 = RND.irandom(N);
     if (n1 == n2) continue;
-    if (get_order(n1,n2) != DISPARATE) continue;
+    if (get_order(n1,n2) != Relation::disparate) continue;
     set_order(n1,n2);
     
     ndelta = 0;
@@ -181,7 +181,7 @@ void Lattice::compute_bounds()
     found = true;
     for(j=0; j<N; ++j) {
       if (i == j) continue;
-      if (get_order(i,j) != BEFORE) {
+      if (get_order(i,j) != Relation::before) {
         found = false;
         break;
       }
@@ -206,7 +206,7 @@ void Lattice::compute_bounds()
     found = true;
     for(j=0; j<N; ++j) {
       if (i == j) continue;
-      if (get_order(i,j) != AFTER) {
+      if (get_order(i,j) != Relation::after) {
         found = false;
         break;
       }
@@ -245,7 +245,7 @@ void Lattice::compute_atoms()
     found = false;
     for(it=atoms.begin(); it!=atoms.end(); ++it) {
       j = *it;
-      if (get_order(j,i) == BEFORE) {
+      if (get_order(j,i) == Relation::before) {
         found = true;
         break;
       }
@@ -265,13 +265,13 @@ unsigned int Lattice::meet(unsigned int x,unsigned int y) const
   bool max;
   std::set<unsigned int> candidates;
   std::set<unsigned int>::const_iterator it,jt;
-  RELATION rho;
+  Relation rho;
   
   for(i=0; i<N; ++i) {
     rho = get_order(i,x);
-    if (rho != BEFORE) continue;
+    if (rho != Relation::before) continue;
     rho = get_order(i,y);
-    if (rho != BEFORE) continue;
+    if (rho != Relation::before) continue;
     candidates.insert(i); 
   }
   // Find which among the candidates is the largest
@@ -282,7 +282,7 @@ unsigned int Lattice::meet(unsigned int x,unsigned int y) const
       j = *jt;
       if (i == j) continue;
       rho = get_order(i,j);
-      if (rho == BEFORE) {
+      if (rho == Relation::before) {
         max = false;
         break;
       }
@@ -300,13 +300,13 @@ unsigned int Lattice::join(unsigned int x,unsigned int y) const
   bool max;
   std::set<unsigned int> candidates;
   std::set<unsigned int>::const_iterator it,jt;
-  RELATION rho;
+  Relation rho;
   
   for(i=0; i<N; ++i) {
     rho = get_order(i,x);
-    if (rho != AFTER && i != x) continue;
+    if (rho != Relation::after && i != x) continue;
     rho = get_order(i,y);
-    if (rho != AFTER && i != y) continue;
+    if (rho != Relation::after && i != y) continue;
     candidates.insert(i); 
   }
 
@@ -318,7 +318,7 @@ unsigned int Lattice::join(unsigned int x,unsigned int y) const
       j = *jt;
       if (i == j) continue;
       rho = get_order(i,j);
-      if (rho == AFTER) {
+      if (rho == Relation::after) {
         max = false;
         break;
       }

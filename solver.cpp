@@ -41,7 +41,7 @@ void Solver<kind>::set_default_values()
   homotopy = false;
   broyden = false;
   t = 1.0;
-  method = ITERATIVE; 
+  method = Linear_Solver::iterative; 
 }
 
 namespace SYNARMOSMA {
@@ -205,7 +205,7 @@ template<class kind>
 bool Solver<kind>::linear_solver(const std::vector<kind>& x,const std::vector<kind>& b,std::vector<kind>& xnew) const
 {
   bool success = false;
-  if (method == DIRECT) {
+  if (method == Linear_Solver::direct) {
     // Use the direct LAPACK-based linear solver
     xnew = b;
     success = direct_solver(xnew);

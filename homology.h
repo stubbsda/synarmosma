@@ -6,24 +6,24 @@
 namespace SYNARMOSMA {
   class Homology {
    public:
-    enum FIELD
+    enum class Field
     {
-        INT,
-        ZZ,
-        GF2
+        int32,
+        multiprecision,
+        mod2
     };
 
-    enum METHOD
+    enum class Method
     {
-        GAP,
-        NATIVE
+        gap,
+        native
     };
 
    private:
     std::vector<unsigned int> betti_number;
     std::vector<std::vector<unsigned int> > torsion;
-    METHOD method;
-    FIELD field;
+    Method method;
+    Field field;
 
     void compute_integral_native(const Nexus*);
     void compute_native(const Nexus*);
@@ -31,17 +31,17 @@ namespace SYNARMOSMA {
   
    public:
     Homology();
-    Homology(FIELD,METHOD);
+    Homology(Field,Method);
     Homology(const Homology&);
     Homology& operator =(const Homology&);
     ~Homology();
     std::string write() const;
-    inline void set_method(METHOD m) {method = m;};
-    inline void set_field(FIELD f) {field = f;};
-    inline METHOD get_method() const {return method;};
-    inline FIELD get_field() const {return field;};
+    inline void set_method(Method m) {method = m;};
+    inline void set_field(Field f) {field = f;};
+    inline Method get_method() const {return method;};
+    inline Field get_field() const {return field;};
     inline void get_betti_numbers(std::vector<unsigned int>& output) const {output = betti_number;}; 
-    void initialize(FIELD,METHOD);
+    void initialize(Field,Method);
     void clear();
     void compute(const Nexus*);
     int serialize(std::ofstream&) const;

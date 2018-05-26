@@ -45,7 +45,7 @@ int Poset::serialize(std::ofstream& s) const
 {
   unsigned int i,j;
   int count = 0;
-  RELATION rho;
+  Relation rho;
 
   s.write((char*)(&N),sizeof(int)); count += sizeof(int);
   for(i=0; i<N; ++i) {
@@ -62,7 +62,7 @@ int Poset::deserialize(std::ifstream& s)
 {
   unsigned int i,j;
   int count = 0;
-  RELATION rho;
+  Relation rho;
 
   clear();
 
@@ -70,10 +70,10 @@ int Poset::deserialize(std::ifstream& s)
   for(i=0; i<N; ++i) {
     for(j=1+i; j<N; ++j) {
       s.read((char*)(&rho),sizeof(int)); count += sizeof(int);
-      if (rho == BEFORE) {
+      if (rho == Relation::before) {
         set_order(i,j);
       }
-      else if (rho == AFTER) {
+      else if (rho == Relation::after) {
         set_order(j,i);
       }
     }
@@ -88,9 +88,9 @@ int Poset::deserialize(std::ifstream& s)
 bool Poset::invert_order(unsigned int u,unsigned int v)
 {
   if (u == v) return false;
-  RELATION rho = get_order(u,v);
-  if (rho == DISPARATE) return false;
-  if (rho == BEFORE) {
+  Relation rho = get_order(u,v);
+  if (rho == Relation::disparate) return false;
+  if (rho == Relation::before) {
     // Inverting order of u < v
     set_order(v,u);
   }
@@ -105,14 +105,14 @@ bool Poset::unset_order(unsigned int u,unsigned int v)
 {
   if (u == v) return false;
   unsigned int i;
-  RELATION rho = get_order(u,v);
-  if (rho == DISPARATE) return false;
-  if (rho == BEFORE) {
+  Relation rho = get_order(u,v);
+  if (rho == Relation::disparate) return false;
+  if (rho == Relation::before) {
     // Removing order of u < v
     order.erase(std::pair<int,int>(u,v));
     for(i=0; i<N; ++i) {
       if (i == u || i == v) continue;
-      if (get_order(u,i) == BEFORE && get_order(i,v) == BEFORE) unset_order(i,v);
+      if (get_order(u,i) == Relation::before && get_order(i,v) == Relation::before) unset_order(i,v);
     }
   }
   else {
@@ -120,7 +120,7 @@ bool Poset::unset_order(unsigned int u,unsigned int v)
     order.erase(std::pair<int,int>(v,u));
     for(i=0; i<N; ++i) {
       if (i == u || i == v) continue;
-      if (get_order(v,i) == BEFORE && get_order(i,u) == BEFORE) unset_order(i,u);
+      if (get_order(v,i) == Relation::before && get_order(i,u) == Relation::before) unset_order(i,u);
     }
   }
   return true;
@@ -130,29 +130,29 @@ bool Poset::set_order(unsigned int u,unsigned int v)
 {
   if (u == v) return false;
   // Check to see if we already have u < v or v < u in this poset
-  RELATION rho = get_order(u,v);
-  if (rho == BEFORE) return false;
+  Relation rho = get_order(u,v);
+  if (rho == Relation::before) return false;
   unsigned int i;
-  if (rho == AFTER) order.erase(std::pair<unsigned int,unsigned int>(v,u));
+  if (rho == Relation::after) order.erase(std::pair<unsigned int,unsigned int>(v,u));
   order[std::pair<unsigned int,unsigned int>(u,v)] = true;
   // Keep the ordering transitive!
   for(i=0; i<N; ++i) {
     if (i == u || i == v) continue;
-    if (get_order(v,i) == BEFORE) set_order(u,i);
-    if (get_order(i,u) == BEFORE) set_order(i,v);
+    if (get_order(v,i) == Relation::before) set_order(u,i);
+    if (get_order(i,u) == Relation::before) set_order(i,v);
   }
   return true;
 }
 
-RELATION Poset::get_order(unsigned int u,unsigned int v) const
+Relation Poset::get_order(unsigned int u,unsigned int v) const
 {
-  if (u == v) return BEFORE;
+  if (u == v) return Relation::before;
   boost::unordered_map<std::pair<unsigned int,unsigned int>,bool>::const_iterator qt;
   qt = order.find(std::pair<unsigned int,unsigned int>(u,v));
-  if (qt != order.end()) return BEFORE;
+  if (qt != order.end()) return Relation::before;
   qt = order.find(std::pair<unsigned int,unsigned int>(v,u));
-  if (qt != order.end()) return AFTER;
-  return DISPARATE;
+  if (qt != order.end()) return Relation::after;
+  return Relation::disparate;
 }
 
 unsigned int Poset::build_chain(std::vector<unsigned int>& chain,unsigned int length) const
@@ -167,7 +167,7 @@ unsigned int Poset::build_chain(std::vector<unsigned int>& chain,unsigned int le
 
     for(i=0; i<N; ++i) {
       if (i == chain[l]) continue;
-      if (get_order(chain[l],i) == BEFORE) {
+      if (get_order(chain[l],i) == Relation::before) {
         nchain.push_back(i);
         output += build_chain(nchain,length);
         nchain = chain;
@@ -189,7 +189,7 @@ unsigned int Poset::chain_number(unsigned int length) const
     for(i=0; i<N; ++i) {
       for(j=0; j<N; ++j) {
         if (i == j) continue;
-        if (get_order(i,j) == BEFORE) nchain++;
+        if (get_order(i,j) == Relation::before) nchain++;
       }
     }
   }
@@ -198,7 +198,7 @@ unsigned int Poset::chain_number(unsigned int length) const
     for(i=0; i<N; ++i) {
       for(j=0; j<N; ++j) {
         if (i == j) continue;
-        if (get_order(i,j) != BEFORE) continue;
+        if (get_order(i,j) != Relation::before) continue;
         compute_width(i,j,sigma);
         nchain += (signed) sigma.size();
       }
@@ -228,8 +228,8 @@ void Poset::compute_width(unsigned int u,unsigned int v,std::set<unsigned int>& 
 
   for(i=0; i<N; ++i) {
     if (i == u || i == v) continue;
-    if (get_order(u,i) != BEFORE) continue;
-    if (get_order(i,v) != BEFORE) continue;
+    if (get_order(u,i) != Relation::before) continue;
+    if (get_order(i,v) != Relation::before) continue;
     slice.insert(i);
   }
 }
@@ -298,13 +298,13 @@ double Poset::totality() const
   // A method to calculate the percentage of pair-wise relationships in this 
   // poset, i.e. how close is this partial order to being a total order?
   unsigned int i,j,norder = 0;
-  RELATION rho;
+  Relation rho;
   const unsigned int ntotal = N*(N-1)/2;
 
   for(i=0; i<N; ++i) {
     for(j=1+i; j<N; ++j) {
       rho = get_order(i,j);
-      if (rho != DISPARATE) norder++;
+      if (rho != Relation::disparate) norder++;
     }
   }
   return double(norder)/double(ntotal);
@@ -314,7 +314,7 @@ bool Poset::covered(unsigned int u,unsigned int v) const
 {
   // A method to determine if u is covered by v
   if (u == v) return false;
-  if (get_order(u,v) != BEFORE) return false;
+  if (get_order(u,v) != Relation::before) return false;
   std::set<unsigned int> sigma;
   compute_width(u,v,sigma);
   return sigma.empty(); 
@@ -342,7 +342,7 @@ void Poset::compute_anteriority(unsigned int n,std::set<unsigned int>& output) c
   output.clear();
   for(i=0; i<N; ++i) {
     if (i == n) continue;
-    if (get_order(i,n) == BEFORE) output.insert(i);
+    if (get_order(i,n) == Relation::before) output.insert(i);
   }
 }
 
@@ -352,7 +352,7 @@ void Poset::compute_posteriority(unsigned int n,std::set<unsigned int>& output) 
   output.clear();
   for(i=0; i<N; ++i) {
     if (i == n) continue;
-    if (get_order(n,i) == BEFORE) output.insert(i);
+    if (get_order(n,i) == Relation::before) output.insert(i);
   }
 }
 
@@ -368,13 +368,13 @@ bool Poset::consistent() const
     // elements after them are also after "i"
     for(j=0; j<N; ++j) {
       if (i == j) continue;
-      if (get_order(i,j) != BEFORE) continue;
-      if (get_order(j,i) != AFTER) return false;
+      if (get_order(i,j) != Relation::before) continue;
+      if (get_order(j,i) != Relation::after) return false;
       for(k=0; k<N; ++k) {
         if (k == j || k == i) continue;
         // So if i < j and j < k, then it must be that i < k
-        if (get_order(j,k) == BEFORE) {
-          if (get_order(i,k) != BEFORE) return false;
+        if (get_order(j,k) == Relation::before) {
+          if (get_order(i,k) != Relation::before) return false;
         }
       }
     }
@@ -401,7 +401,7 @@ void Poset::write_incastrature(const std::string& filename) const
   for(i=0; i<N; ++i) {
     for(j=0; j<N; ++j) {
       if (i == j) continue;
-      if (get_order(i,j) == BEFORE) {
+      if (get_order(i,j) == Relation::before) {
         s << "  \"" << 1+i << "\" -> \"" << 1+j << "\";" << std::endl;
       }
     }

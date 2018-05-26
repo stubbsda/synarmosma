@@ -7,10 +7,10 @@ namespace SYNARMOSMA {
   template<class kind>
   class Solver {
    protected:
-    enum LINEAR_SOLVER_TYPE
+    enum class Linear_Solver
     {
-        DIRECT,
-        ITERATIVE
+        direct,
+        iterative
     };
 
     unsigned int max_its;
@@ -19,7 +19,7 @@ namespace SYNARMOSMA {
     double t;
     bool homotopy;
     bool broyden;
-    LINEAR_SOLVER_TYPE method;
+    Linear_Solver method;
     std::vector<kind> c_solution,base_solution;
     std::vector<std::set<unsigned int> > dependencies;
     Matrix<kind>* J;
@@ -39,8 +39,8 @@ namespace SYNARMOSMA {
     Solver(int,double,int,bool,bool);
     ~Solver();
     bool solve(std::vector<kind>&);
-    inline void use_iterative() {method = ITERATIVE;};
-    inline void use_direct() {method = DIRECT;};
+    inline void use_iterative() {method = Linear_Solver::iterative;};
+    inline void use_direct() {method = Linear_Solver::direct;};
     inline void use_homotopy() {homotopy = true;};
     inline void use_broyden() {broyden = true;};
   };

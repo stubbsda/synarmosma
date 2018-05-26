@@ -10,7 +10,7 @@ Homology::Homology()
 
 }
 
-Homology::Homology(FIELD f,METHOD m)
+Homology::Homology(Field f,Method m)
 {
   field = f;
   method = m;
@@ -88,8 +88,8 @@ int Homology::serialize(std::ofstream& s) const
   unsigned int i,j,k,m,n = betti_number.size();
   int count = 0;
 
-  s.write((char*)(&field),sizeof(FIELD)); count += sizeof(FIELD);
-  s.write((char*)(&method),sizeof(METHOD)); count += sizeof(METHOD);
+  s.write((char*)(&field),sizeof(Field)); count += sizeof(Field);
+  s.write((char*)(&method),sizeof(Method)); count += sizeof(Method);
   s.write((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
     m = betti_number[i];
@@ -112,8 +112,8 @@ int Homology::deserialize(std::ifstream& s)
 
   clear();
 
-  s.read((char*)(&field),sizeof(FIELD)); count += sizeof(FIELD);
-  s.read((char*)(&method),sizeof(METHOD)); count += sizeof(METHOD);
+  s.read((char*)(&field),sizeof(Field)); count += sizeof(Field);
+  s.read((char*)(&method),sizeof(Method)); count += sizeof(Method);
   s.read((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
     s.read((char*)(&m),sizeof(int)); count += sizeof(int);
@@ -132,7 +132,7 @@ int Homology::deserialize(std::ifstream& s)
 void Homology::compute_integral_native(const Nexus* NX)
 {
 #ifdef DEBUG
-  assert(field == INT || field == ZZ);
+  assert(field == Field::int32 || field == Field::multiprecision);
 #endif
   const int dimension = NX->dimension;
   const int nvertex = NX->nvertex;
@@ -152,7 +152,7 @@ void Homology::compute_integral_native(const Nexus* NX)
     torsion.push_back(tgenerators);
   } 
 
-  if (field == INT) {
+  if (field == Field::int32) {
     int alpha;
     Matrix<int>* A = new Matrix<int>(d1,d2);
 
@@ -334,7 +334,7 @@ void Homology::compute_native(const Nexus* NX)
   torsion.push_back(null);
 
   // Now the higher order homology groups...
-  if (field == GF2) {
+  if (field == Field::mod2) {
     // Note that torsion isn't possible in this case - all we need to do is compute the Betti numbers
     int i,j,p,alpha;
     unsigned int r,k,d1 = NX->nvertex,d2 = NX->elements[1].size();
@@ -401,7 +401,7 @@ void Homology::compute_gap(const Nexus* NX)
   betti_number.clear();
   torsion.clear();
 
-  if (field == GF2) {
+  if (field == Field::mod2) {
     // Construct the boundary operator at each dimension and use GAP to 
     // compute the rank of this matrix over GF2...
     unsigned int i,j,d1,d2,r,betti = 1;
@@ -597,7 +597,7 @@ void Homology::compute_gap(const Nexus* NX)
 
 void Homology::compute(const Nexus* NX)
 {
-  if (method == GAP) {
+  if (method == Method::gap) {
     compute_gap(NX);
   }
   else {

@@ -35,7 +35,7 @@ namespace SYNARMOSMA {
     bool covered(unsigned int,unsigned int) const;
     unsigned int chain_number(unsigned int) const;
     void write_incastrature(const std::string&) const;
-    RELATION get_order(unsigned int,unsigned int) const;
+    Relation get_order(unsigned int,unsigned int) const;
     friend class Directed_Graph;
   };
 }
