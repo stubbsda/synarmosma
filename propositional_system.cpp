@@ -246,7 +246,7 @@ void Propositional_System::compute_implication_graph(Directed_Graph* G) const
       if (i == j) continue;
       // p(i) implies p(j)? That means that (!p(j) v p(i)) is always true
       temp = ~truth[j] | p1;
-      if (temp.count() == nuniverse) G->add_edge(i,j,OUTGOING);
+      if (temp.count() == nuniverse) G->add_edge(i,j,Relation::before);
     }
   }
 }

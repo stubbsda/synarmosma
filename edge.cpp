@@ -7,11 +7,12 @@ Edge::Edge()
   clear();
 }
 
-Edge::Edge(int u,int v,double ell,int d)
+Edge::Edge(int u,int v,double ell,Relation d)
 {
 #ifdef DEBUG
   assert(u != v);
 #endif
+  clear();
   if (u < v) {
     low = u;
     high = v;
@@ -20,7 +21,9 @@ Edge::Edge(int u,int v,double ell,int d)
   else {
     low = v;
     high = u;
-    direction = -d;
+    if (d != Relation::disparate) {
+      direction = (d == Relation::before) ? Relation::after : Relation::before;
+    }
   }
   capacity = ell;
 }
@@ -64,7 +67,7 @@ void Edge::clear()
   capacity = 0.0;
   flow = 0.0;
   cyclic = false;
-  direction = UNDIRECTED;
+  direction = Relation::disparate;
 }
 
 int Edge::serialize(std::ofstream& s) const
@@ -77,7 +80,7 @@ int Edge::serialize(std::ofstream& s) const
   s.write((char*)(&length),sizeof(double)); count += sizeof(double);
   s.write((char*)(&flow),sizeof(double)); count += sizeof(double);
   s.write((char*)(&capacity),sizeof(double)); count += sizeof(double);
-  s.write((char*)(&direction),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&direction),sizeof(int)); count += sizeof(Relation);
 
   return count;
 }
@@ -94,7 +97,7 @@ int Edge::deserialize(std::ifstream& s)
   s.read((char*)(&length),sizeof(double)); count += sizeof(double);
   s.read((char*)(&flow),sizeof(double)); count += sizeof(double);
   s.read((char*)(&capacity),sizeof(double)); count += sizeof(double);
-  s.read((char*)(&direction),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&direction),sizeof(int)); count += sizeof(Relation);
 
   return count;
 }

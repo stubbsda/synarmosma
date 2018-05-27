@@ -156,7 +156,8 @@ namespace SYNARMOSMA {
   bool operator ==(const Polynomial<kind>& p1,const Polynomial<kind>& p2)
   {
     if (p1.degree != p2.degree) return false;
-    for(int i=0; i<p1.degree; ++i) {
+    unsigned int i;
+    for(i=0; i<p1.degree; ++i) {
       if (p1.terms[i] != p2.terms[i]) return false;
     }
     return true;

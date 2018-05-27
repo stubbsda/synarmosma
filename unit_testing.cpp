@@ -4,13 +4,13 @@
 #include "synarmosma/polynomial.h"
 #include "synarmosma/directed_graph.h"
 
-extern SYNARMOSMA::Random RND;
+SYNARMOSMA::Random RND;
 
 int main(int argc,char** argv)
 {
   RND.set_seed(12);
   int i,j,n = 25;
-  int d1 = SYNARMOSMA::OUTGOING,d2 = SYNARMOSMA::INCOMING,d3 = SYNARMOSMA::UNDIRECTED;
+  auto d1 = SYNARMOSMA::Relation::before,d2 = SYNARMOSMA::Relation::after,d3 = SYNARMOSMA::Relation::disparate;
   double p = 0.15;
   std::string type;
   std::vector<double> foo;

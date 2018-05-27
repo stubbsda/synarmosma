@@ -8,22 +8,22 @@ namespace SYNARMOSMA {
    protected:
     int low;
     int high;
-    double length;
     bool cyclic;
+    double length;
     double flow;
     double capacity;
-    int direction;
+    Relation direction;
 
     void clear();
-    inline int get_direction(int,int) const;
+    inline Relation get_direction(int,int) const;
    public:
     Edge();
-    Edge(int,int,double = 0.0,int = UNDIRECTED);
+    Edge(int,int,double = 0.0,Relation = Relation::disparate);
     Edge(const Edge&);
     virtual ~Edge();
     Edge& operator =(const Edge&);
-    int serialize(std::ofstream&) const;
-    int deserialize(std::ifstream&);
+    virtual int serialize(std::ofstream&) const;
+    virtual int deserialize(std::ifstream&);
     inline void get_vertices(int*) const;
     inline void set_vertices(int,int);
     friend class Graph;
@@ -49,18 +49,18 @@ namespace SYNARMOSMA {
     vx[0] = low; vx[1] = high;
   }
 
-  int Edge::get_direction(int u,int v) const
+  Relation Edge::get_direction(int u,int v) const
   {
 #ifdef DEBUG
     assert(u == low || u == high);
     assert(v == low || v == high);
 #endif
-    if (direction == UNDIRECTED) return direction;
+    if (direction == Relation::disparate) return direction;
     if (u < v) {
       return direction;
     }
     else {
-      return -direction;
+      return (direction == Relation::before ? Relation::after : Relation::before);
     }
   }
 }

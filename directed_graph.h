@@ -20,7 +20,7 @@ namespace SYNARMOSMA {
     ~Directed_Graph() override;
     int serialize(std::ofstream&) const override;
     int deserialize(std::ifstream&) override;
-    bool add_edge(int,int,int,double = 0.0);
+    bool add_edge(int,int,Relation,double = 0.0);
     // A method to compute the maximum network flow from a source vertex 
     // to a sink vertex
     double compute_flow(int,int) override;

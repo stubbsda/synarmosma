@@ -11,9 +11,10 @@ Directed_Graph::Directed_Graph() : Graph()
 
 Directed_Graph::Directed_Graph(int n) : Graph(n)
 {
-  int i,j,d,nc = 0;
+  int i,j,nc = 0;
   double alpha;
   std::set<int> vx;
+  auto d = Relation::disparate;
 
   number_directed = 0;
 
@@ -22,14 +23,14 @@ Directed_Graph::Directed_Graph(int n) : Graph(n)
       vx.insert(i);
       vx.insert(j);
       index_table[vx] = nc;
-      d = UNDIRECTED;
+      d = Relation::disparate;
       alpha = RND.drandom();
       if (alpha < 0.15) {
-        d = OUTGOING;
+        d = Relation::before;
         number_directed++;
       }
       else if (alpha < 0.3) {
-        d = INCOMING;
+        d = Relation::after;
         number_directed++;
       }      
       edges.push_back(Edge(i,j,0.0,d));
@@ -43,9 +44,10 @@ Directed_Graph::Directed_Graph(int n) : Graph(n)
 
 Directed_Graph::Directed_Graph(int n,double p) : Graph(n)
 {
-  int i,j,d,nc = 0;
+  int i,j,nc = 0;
   double alpha;
   std::set<int> vx;
+  auto d = Relation::disparate;
 
   number_directed = 0;
 
@@ -56,14 +58,14 @@ Directed_Graph::Directed_Graph(int n,double p) : Graph(n)
       vx.insert(i);
       vx.insert(j);
       index_table[vx] = nc;
-      d = UNDIRECTED;
+      d = Relation::disparate;
       alpha = RND.drandom();
       if (alpha < 0.15) {
-        d = OUTGOING;
+        d = Relation::before;
         number_directed++;
       }
       else if (alpha < 0.3) {
-        d = INCOMING;
+        d = Relation::after;
         number_directed++;
       }      
       edges.push_back(Edge(i,j,0.0,d));
@@ -164,7 +166,7 @@ void Directed_Graph::compute_directedness()
   std::vector<Edge>::const_iterator it;
 
   for(it=edges.begin(); it!=edges.end(); ++it) {
-    if (it->direction == UNDIRECTED) null++;
+    if (it->direction == Relation::disparate) null++;
   }
   number_directed = size() - null;
 }
@@ -196,7 +198,7 @@ int Directed_Graph::distance(int u,int v) const
         S.clear();
         S.insert(i); S.insert(j);
         qt = index_table.find(S);
-        if (edges[qt->second].get_direction(i,j) == OUTGOING) {
+        if (edges[qt->second].get_direction(i,j) == Relation::before) {
           next.insert(j);
         }
       }
@@ -237,7 +239,7 @@ void Directed_Graph::compute_distances(edge_hash& output) const
       S.clear();
       S.insert(i); S.insert(j);
       qt = index_table.find(S);
-      if (edges[qt->second].get_direction(i,j) == OUTGOING) {      
+      if (edges[qt->second].get_direction(i,j) == Relation::before) {      
         distances[nvertex*i+j] = 1;
       }
     }
@@ -266,14 +268,19 @@ void Directed_Graph::compute_distances(edge_hash& output) const
   }
 }
 
-bool Directed_Graph::add_edge(int u,int v,int d,double ell)
+bool Directed_Graph::add_edge(int u,int v,Relation d,double ell)
 {
   if (!Graph::add_edge(u,v,ell)) return false;
-  if (d != UNDIRECTED) { 
+  if (d != Relation::disparate) { 
     std::set<int> S;
     S.insert(u); S.insert(v);
     hash_map::const_iterator qt = index_table.find(S);
-    edges[qt->second].direction = (u < v) ? d : -d;
+    if (u < v) {
+      edges[qt->second].direction = d;
+    }
+    else {
+      edges[qt->second].direction = (d == Relation::before ? Relation::after : Relation::before);
+    }
   }
   return true;
 }
@@ -287,16 +294,16 @@ bool Directed_Graph::mutate_edge(int u,int v)
   if (qt == index_table.end()) return false;
   int n = qt->second;
   double alpha = RND.drandom();
-  int d = edges[n].direction;
-  if (d == UNDIRECTED) {
-    edges[n].direction = (alpha < 0.5) ? OUTGOING : INCOMING;
+  auto d = edges[n].direction;
+  if (d == Relation::disparate) {
+    edges[n].direction = (alpha < 0.5) ? Relation::before : Relation::after;
   }
   else {
-    if (d == OUTGOING) {
-      edges[n].direction = (alpha < 0.25) ? INCOMING : UNDIRECTED;
+    if (d == Relation::before) {
+      edges[n].direction = (alpha < 0.25) ? Relation::after : Relation::disparate;
     }
     else {
-      edges[n].direction = (alpha < 0.25) ? OUTGOING : UNDIRECTED;
+      edges[n].direction = (alpha < 0.25) ? Relation::before : Relation::disparate;
     }
   }
   return true;
@@ -326,7 +333,7 @@ bool Directed_Graph::path_connected(int u,int v) const
         S.clear();
         S.insert(i); S.insert(j);
         qt = index_table.find(S);
-        if (edges[qt->second].get_direction(i,j) == OUTGOING) next.insert(j);
+        if (edges[qt->second].get_direction(i,j) == Relation::before) next.insert(j);
       }
     }
     if (next.empty()) break;
@@ -358,7 +365,7 @@ bool Directed_Graph::directed_cycle(const std::vector<int>& path,int base,int le
     S.clear();
     S.insert(base); S.insert(v);
     qt = index_table.find(S);
-    if (edges[qt->second].get_direction(base,v) == OUTGOING) {
+    if (edges[qt->second].get_direction(base,v) == Relation::before) {
       std::vector<int> npath = path;
       npath.push_back(v);
       out = directed_cycle(npath,v,length);
@@ -390,7 +397,7 @@ double Directed_Graph::compute_flow(int source,int sink)
   const int ne = size();
 
   for(i=0; i<ne; ++i) {
-    if (edges[i].direction == UNDIRECTED) edges[i].capacity = 0.0;
+    if (edges[i].direction == Relation::disparate) edges[i].capacity = 0.0;
   }
   // Next we need to verify that there is at least one outgoing edge with capacity > 0 
   // for the source and at least one incoming edge with capacity > 0 for the sink
@@ -401,7 +408,7 @@ double Directed_Graph::compute_flow(int source,int sink)
     S.insert(i);
     qt = index_table.find(S);
     if (edges[qt->second].capacity < std::numeric_limits<double>::epsilon()) continue;
-    if (edges[qt->second].get_direction(source,i) == OUTGOING) valid = true;
+    if (edges[qt->second].get_direction(source,i) == Relation::before) valid = true;
     if (valid) break;
   }
   if (!valid) {
@@ -419,7 +426,7 @@ double Directed_Graph::compute_flow(int source,int sink)
     S.insert(i);
     qt = index_table.find(S);
     if (edges[qt->second].capacity < std::numeric_limits<double>::epsilon()) continue;
-    if (edges[qt->second].get_direction(sink,i) == INCOMING) valid = true;
+    if (edges[qt->second].get_direction(sink,i) == Relation::after) valid = true;
     if (valid) break;
   }
   if (!valid) {
@@ -438,11 +445,11 @@ double Directed_Graph::compute_flow(int source,int sink)
   // in residual graph
   for(i=0; i<ne; ++i) {
     edges[i].get_vertices(vx);
-    if (edges[i].direction == OUTGOING) {
+    if (edges[i].direction == Relation::before) {
       pr.first = vx[0]; pr.second = vx[1];
       rgraph[pr] = int(10000.0*edges[i].capacity);
     }
-    else if (edges[i].direction == INCOMING) {
+    else if (edges[i].direction == Relation::after) {
       pr.first = vx[1]; pr.second = vx[0];
       rgraph[pr] = int(10000.0*edges[i].capacity);
     }
@@ -452,11 +459,11 @@ double Directed_Graph::compute_flow(int source,int sink)
   for(i=0; i<ne; ++i) {
     edges[i].flow = 0.0;
     edges[i].get_vertices(vx);
-    if (edges[i].direction == OUTGOING) {
+    if (edges[i].direction == Relation::before) {
       pr.first = vx[0]; pr.second = vx[1]; 
       edges[i].flow = edges[i].capacity - double(rgraph[pr])/10000.0;
     }
-    else if (edges[i].direction == INCOMING) {
+    else if (edges[i].direction == Relation::after) {
       pr.first = vx[1]; pr.second = vx[0];
       edges[i].flow = edges[i].capacity - double(rgraph[pr])/10000.0;
     }
@@ -482,7 +489,7 @@ void Directed_Graph::compute_sinks(std::set<int>& output) const
       S.clear();
       S.insert(i); S.insert(j);
       qt = index_table.find(S);
-      if (edges[qt->second].get_direction(i,j) == OUTGOING) {
+      if (edges[qt->second].get_direction(i,j) == Relation::before) {
         // If this vertex has an outgoing edge, it isn't a sink...
         sink = false;
         break;
@@ -510,7 +517,7 @@ void Directed_Graph::compute_sources(std::set<int>& output) const
       S.clear();
       S.insert(i); S.insert(j);
       qt = index_table.find(S);
-      if (edges[qt->second].get_direction(i,j) == INCOMING) {
+      if (edges[qt->second].get_direction(i,j) == Relation::after) {
         // If this vertex has an incoming edge, it isn't a source...
         source = false;
         break;

@@ -74,7 +74,7 @@ namespace SYNARMOSMA {
     inline bool get_memory_type() const {return high_memory;};
     inline void add(int,double);
     inline int dimension() const {return background_dimension;};
-    inline int get_temporal_order(int,int) const;
+    inline Relation get_temporal_order(int,int) const;
     inline void set_element(int,double);
     inline double get_argument(const std::vector<double>&,const std::vector<double>&) const;
     inline double get_element(int) const;
@@ -106,10 +106,14 @@ namespace SYNARMOSMA {
     return n;
   }
 
-  int Geometry::get_temporal_order(int u,int v) const 
+  Relation Geometry::get_temporal_order(int u,int v) const 
   {
-    if (relational || euclidean) return UNDIRECTED;
-    int rho = (coordinates[u][0] < coordinates[v][0]) ? OUTGOING : INCOMING;
+    auto rho = Relation::disparate;
+    if (relational || euclidean) return rho;
+    // Check that the interval is timelike...
+    if (get_distance(u,v,true) < -std::numeric_limits<double>::epsilon()) {
+      rho = (coordinates[u][0] < coordinates[v][0]) ? Relation::before : Relation::after;
+    }
     return rho;
   }
 
