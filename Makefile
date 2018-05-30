@@ -16,7 +16,7 @@ MY_LD_FLAGS += $(OPENMP) -shared
 UNAME = $(shell uname)
 
 ifeq ($(UNAME),Darwin)
-  RPATH = -install_name $(BIBLIOTHEK)/lib/libsynarmosma.so
+  MY_LD_FLAGS += -install_name $(BIBLIOTHEK)/lib/libsynarmosma.so
 endif 
 
 ifeq ($(UNAME),Linux)
@@ -34,7 +34,7 @@ install: synarmosma
 	install -p -m 444 *.h $(BIBLIOTHEK)/include/synarmosma/
 
 test: install
-	$(CXX) $(CXX_FLAGS) $(RPATH) -I$(BIBLIOTHEK)/include -L$(BIBLIOTHEK)/lib -o unit_test unit_testing.cpp -lsynarmosma $(LIBS)
+	$(CXX) $(CXX_FLAGS) $(RPATH) $(LD_FLAGS) -I$(BIBLIOTHEK)/include -L$(BIBLIOTHEK)/lib -o unit_test unit_testing.cpp -lsynarmosma $(LIBS)
 	./unit_test
 
 synarmosma: $(OBJECTS) 
