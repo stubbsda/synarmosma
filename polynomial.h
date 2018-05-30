@@ -28,12 +28,12 @@ namespace SYNARMOSMA {
   template<class kind>
   class Polynomial {
    protected:
-    unsigned int degree;
+    unsigned int degree = 0;
     std::vector<kind> terms;
-    bool irreducible;
-    bool homogeneous;
-    bool normed;
-    unsigned int characteristic;
+    bool irreducible = false;
+    bool homogeneous = false;
+    bool normed = false;
+    unsigned int characteristic = 0;
   
     void initialize();
     void property_check();

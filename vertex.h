@@ -6,12 +6,12 @@
 namespace SYNARMOSMA {
   class Vertex {
    protected:
-    int incept;
-    int topological_dimension;
+    int incept = -1;
+    int topological_dimension = 0;
 #ifdef DISCRETE
-    UINT64 energy;
+    UINT64 energy = 0;
 #else
-    double energy;
+    double energy = 0.0;
 #endif
     std::set<int> posterior,anterior;  
     std::set<int> neighbours;

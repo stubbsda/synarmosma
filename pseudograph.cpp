@@ -4,7 +4,7 @@ using namespace SYNARMOSMA;
 
 Pseudograph::Pseudograph()
 {
-  nvertex = 0;
+
 }
 
 Pseudograph::Pseudograph(int order)
@@ -29,12 +29,14 @@ Pseudograph::Pseudograph(const Pseudograph& source)
 Pseudograph& Pseudograph::operator =(const Pseudograph& source)
 {
   if (this == &source) return *this;
+
   if (nvertex > 0) delete[] neighbours;
   nvertex = source.nvertex;
   neighbours = new std::vector<int>[nvertex];
   for(int i=0; i<nvertex; ++i) {
     neighbours[i] = source.neighbours[i];
   }
+
   return *this;
 }
  

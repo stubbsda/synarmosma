@@ -559,7 +559,7 @@ bool Graph::stellar_addition(int v)
 {
   // This only works if this vertex is part of a 3-cycle...
   int n,m,vx[3];
-  std::vector<boost::tuple<int,int,int> > cycles;
+  std::vector<std::tuple<int,int,int> > cycles;
   std::set<int> S = neighbours[v];
   std::set<int>::const_iterator it,jt;
 
@@ -569,16 +569,16 @@ bool Graph::stellar_addition(int v)
       m = *jt;
       if (m == n) continue;
       if (neighbours[n].count(m) > 0) {
-        cycles.push_back(boost::make_tuple(v,n,m));
+        cycles.push_back(std::make_tuple(v,n,m));
         break;
       }
     }
   }
   if (cycles.empty()) return false;
   m = RND.irandom(cycles.size());
-  vx[0] = cycles[m].get<0>();
-  vx[1] = cycles[m].get<1>();
-  vx[2] = cycles[m].get<2>();
+  vx[0] = std::get<0>(cycles[m]);
+  vx[1] = std::get<1>(cycles[m]);
+  vx[2] = std::get<2>(cycles[m]);
   drop_edge(vx[0],vx[1]);
   drop_edge(vx[0],vx[2]);
   drop_edge(vx[1],vx[2]);

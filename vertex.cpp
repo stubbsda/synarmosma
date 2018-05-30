@@ -6,7 +6,7 @@ extern Random RND;
 
 Vertex::Vertex()
 {
-  clear();
+
 }
 
 Vertex::Vertex(const Vertex& source)
@@ -23,6 +23,7 @@ Vertex::Vertex(const Vertex& source)
 Vertex& Vertex::operator =(const Vertex& source)
 {
   if (this == &source)  return *this;
+
   energy = source.energy;
   neighbours = source.neighbours;
   entourage = source.entourage;
@@ -30,6 +31,7 @@ Vertex& Vertex::operator =(const Vertex& source)
   topological_dimension = source.topological_dimension;
   anterior = source.anterior;
   posterior = source.posterior;
+
   return *this;
 }
 

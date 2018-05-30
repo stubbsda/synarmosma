@@ -6,7 +6,7 @@ extern Random RND;
 
 Poset::Poset()
 {
-  N = 0;
+
 }
 
 Poset::Poset(unsigned int n)
@@ -30,8 +30,10 @@ Poset::Poset(const Poset& source)
 Poset& Poset::operator =(const Poset& source) 
 {
   if (this == &source) return *this;
+
   N = source.N;
   order = source.order;
+
   return *this;
 }
 

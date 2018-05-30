@@ -27,10 +27,12 @@ Homology::Homology(const Homology& source)
 Homology& Homology::operator =(const Homology& source)
 {
   if (this == &source) return *this;
+
   betti_number = source.betti_number;
   torsion = source.torsion;
   field = source.field;
   method = source.method;
+
   return *this;
 }
 
@@ -41,6 +43,8 @@ Homology::~Homology()
 
 void Homology::clear()
 {
+  field = Field::int32;
+  method = Method::native;
   betti_number.clear();
   torsion.clear();
 }

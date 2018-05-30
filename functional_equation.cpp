@@ -144,7 +144,7 @@ namespace SYNARMOSMA {
       }
       p2 = Polynomial<Rational>(vx);
 
-      boost::tuple<Polynomial<Rational>,Polynomial<Rational>,unsigned int> trio(p1,p2,degree);
+      std::tuple<Polynomial<Rational>,Polynomial<Rational>,unsigned int> trio(p1,p2,degree);
       terms.push_back(trio);
       vx.clear();
       s1.clear();
@@ -195,7 +195,7 @@ namespace SYNARMOSMA {
 
       vx.clear();
       store.clear();
-      boost::tuple<Polynomial<NTL::ZZ>,Polynomial<NTL::ZZ>,unsigned int> trio(p1,p2,degree);
+      std::tuple<Polynomial<NTL::ZZ>,Polynomial<NTL::ZZ>,unsigned int> trio(p1,p2,degree);
       terms.push_back(trio);
     }
   }
@@ -244,7 +244,7 @@ void Functional_Equation<kind>::analyze_file(std::vector<std::string>& alpha,std
 
     vx.clear();
     store.clear();
-    boost::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int> trio(p1,p2,degree);
+    std::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int> trio(p1,p2,degree);
     terms.push_back(trio);
   }
 }
@@ -296,11 +296,11 @@ int Functional_Equation<kind>::serialize(std::ofstream& s) const
   n = terms.size();
   s.write((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
-    j = boost::get<2>(terms[i]);
+    j = std::get<2>(terms[i]);
     s.write((char*)(&j),sizeof(int)); count += sizeof(int);
-    p = boost::get<0>(terms[i]);
+    p = std::get<0>(terms[i]);
     count += p.serialize(s);
-    p = boost::get<1>(terms[i]);
+    p = std::get<1>(terms[i]);
     count += p.serialize(s);
   }
   count += remainder.serialize(s);
@@ -324,7 +324,7 @@ int Functional_Equation<kind>::deserialize(std::ifstream& s)
     s.read((char*)(&j),sizeof(int)); count += sizeof(int);
     count += p1.deserialize(s);
     count += p2.deserialize(s);
-    terms.push_back(boost::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int>(p1,p2,j));
+    terms.push_back(std::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int>(p1,p2,j));
   }
   count += remainder.deserialize(s);
 
@@ -338,7 +338,7 @@ void Functional_Equation<kind>::initialize(unsigned int n)
   for(i=1; i<n; ++i) {
     Polynomial<kind> alpha,beta;
     if (!linear) m = 1 + RND.irandom(8);
-    boost::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int> triple(alpha,beta,m);
+    std::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int> triple(alpha,beta,m);
     terms.push_back(triple);
   }
   if (!homogeneous) {
@@ -360,7 +360,7 @@ namespace SYNARMOSMA
     long q;
     NTL::ZZ z;
     std::pair<unsigned int,unsigned int> duo;
-    boost::tuple<Polynomial<NTL::ZZ>,Polynomial<NTL::ZZ>,unsigned int> trio;
+    std::tuple<Polynomial<NTL::ZZ>,Polynomial<NTL::ZZ>,unsigned int> trio;
     Variety<unsigned int> output(p,p);
     Polynomial<NTL::ZZ> py;
     Monomial<unsigned int> term;
@@ -372,20 +372,20 @@ namespace SYNARMOSMA
       for(j=0; j<terms.size(); ++j) {
         trio = terms[j];
         // First convert alpha(p) to an element of GF(p)
-        py = boost::get<0>(trio);
+        py = std::get<0>(trio);
         NTL::conv(q,py.evaluate(z));
         in1 = (unsigned int) q;
         in1 = in1 % p;
         if (in1 == 0) continue;
         term.coefficient = in1;
         // Next we need to convert beta(p) to an element of GF(p)
-        py = boost::get<1>(trio);
+        py = std::get<1>(trio);
         NTL::conv(q,py.evaluate(z));
         in1 = (unsigned int) q;
         in1 = in1 % p;
         duo.first = in1;
         // Finally we have to find out the exponent 
-        duo.second = boost::get<2>(trio);
+        duo.second = std::get<2>(trio);
         term.exponents.push_back(duo);
         output.add_term(i,term);
         term.exponents.clear();
@@ -405,7 +405,7 @@ Variety<unsigned int> Functional_Equation<kind>::reduce(unsigned int p)
 {
   unsigned int i,j,in1;
   std::pair<unsigned int,unsigned int> duo;
-  boost::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int> trio;
+  std::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int> trio;
   Variety<unsigned int> output(p,p);
   Polynomial<kind> py;
   Monomial<unsigned int> term;
@@ -416,15 +416,15 @@ Variety<unsigned int> Functional_Equation<kind>::reduce(unsigned int p)
     for(j=0; j<terms.size(); ++j) {
       trio = terms[j];
       // First convert alpha(p) to an element of GF(p)
-      py = boost::get<0>(trio);
+      py = std::get<0>(trio);
       in1 = convert(py.evaluate(i),p);
       if (in1 == 0) continue;
       term.coefficient = in1;
       // Next we need to convert beta(p) to an element of GF(p)
-      py = boost::get<1>(trio);
+      py = std::get<1>(trio);
       duo.first = convert(py.evaluate(i),p);
       // Finally we have to find out the exponent 
-      duo.second = boost::get<2>(trio);
+      duo.second = std::get<2>(trio);
       term.exponents.push_back(duo);
       output.add_term(i,term);
       term.exponents.clear();

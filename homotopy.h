@@ -7,8 +7,8 @@
 namespace SYNARMOSMA {
   class Homotopy {
    private:
+    double fitness = 0.0;
     std::vector<Group> sequence;
-    double fitness;
 
     void compute_fitness();
    public:

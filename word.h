@@ -8,11 +8,11 @@ namespace SYNARMOSMA {
    private:
     std::vector<std::pair<unsigned int,int> > content;
     // The number of letters in the alphabet for words in a group presentation
-    unsigned int NL;
+    unsigned int NL = 0;
 
     void initialize(unsigned int);
     void initialize(const std::vector<unsigned int>&,const std::vector<int>&);
-    inline void clear() {content.clear();};
+    inline void clear() {NL = 0; content.clear();};
    public:
     Word();
     Word(unsigned int);

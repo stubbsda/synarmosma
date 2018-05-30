@@ -6,7 +6,7 @@
 namespace SYNARMOSMA {
   class Poset {
    protected:
-    unsigned int N;
+    unsigned int N = 0;
     boost::unordered_map<std::pair<unsigned int,unsigned int>,bool> order;
 
     void compute_width(unsigned int,unsigned int,std::set<unsigned int>&) const;

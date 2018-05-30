@@ -6,7 +6,7 @@
 namespace SYNARMOSMA {
   class Schema {
    protected:
-    int nvertex;
+    int nvertex = 0;
     std::vector<std::set<int> > neighbours;
 
    public:

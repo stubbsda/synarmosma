@@ -4,7 +4,7 @@ using namespace SYNARMOSMA;
 
 Edge::Edge()
 {
-  clear();
+
 }
 
 Edge::Edge(int u,int v,double ell,Relation d)
@@ -12,7 +12,7 @@ Edge::Edge(int u,int v,double ell,Relation d)
 #ifdef DEBUG
   assert(u != v);
 #endif
-  clear();
+
   if (u < v) {
     low = u;
     high = v;

@@ -4,12 +4,11 @@ using namespace SYNARMOSMA;
 
 Schema::Schema()
 {
-  nvertex = 0;
+
 }
 
 Schema::Schema(int n)
 {
-  nvertex = 0;
   for(int i=0; i<n; ++i) {
     add_vertex();
   }
@@ -24,8 +23,10 @@ Schema::Schema(const Schema& source)
 Schema& Schema::operator =(const Schema& source)
 {
   if (this == &source) return *this;
+
   nvertex = source.nvertex;
   neighbours = source.neighbours;
+
   return *this;
 }
 

@@ -17,12 +17,12 @@ namespace SYNARMOSMA {
    protected:
     std::vector<Monomial<kind> >* equations;
     std::vector<kind> remainder;
-    unsigned int nequation;
-    unsigned int nvariable;
-    unsigned int characteristic;
-    bool linear;
-    bool homogeneous;
-    bool projective;
+    unsigned int nequation = 0;
+    unsigned int nvariable = 0;
+    unsigned int characteristic = 0;
+    bool linear = false;
+    bool homogeneous = false;
+    bool projective = false;
     // Each element of this list contains the independent variables upon 
     // which this equation in the (algebraic) variety depends
     std::vector<std::set<unsigned int> > dependencies;

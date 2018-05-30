@@ -3,9 +3,9 @@
 SYNARMOSMA::Random RND;
 
 namespace SYNARMOSMA {
-  bool tuple_predicate(const boost::tuple<int,int,double>& lhs,const boost::tuple<int,int,double>& rhs)
+  bool tuple_predicate(const std::tuple<int,int,double>& lhs,const std::tuple<int,int,double>& rhs)
   {
-    return lhs.get<2>() < rhs.get<2>();
+    return std::get<2>(lhs) < std::get<2>(rhs);
   }
 
   bool pair_predicate_dbl(const std::pair<int,double>& lhs,const std::pair<int,double>& rhs)

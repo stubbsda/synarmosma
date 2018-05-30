@@ -6,13 +6,13 @@
 namespace SYNARMOSMA {
   class Edge {
    protected:
-    int low;
-    int high;
-    bool cyclic;
-    double length;
-    double flow;
-    double capacity;
-    Relation direction;
+    int low = -1;
+    int high = -1;
+    bool cyclic = false;
+    double length = 0.0;
+    double flow = 0.0;
+    double capacity = 0.0;
+    Relation direction = Relation::disparate;
 
     void clear();
     inline Relation get_direction(int,int) const;

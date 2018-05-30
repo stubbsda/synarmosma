@@ -6,7 +6,7 @@ extern Random RND;
 
 Word::Word()
 {
-  NL = 0;
+
 }
 
 Word::Word(unsigned int p)
@@ -61,8 +61,10 @@ Word::Word(const Word& source)
 Word& Word::operator =(const Word& source)
 {
   if (this == &source) return *this;
+
   content = source.content;
   NL = source.NL;
+
   return *this;
 }
 

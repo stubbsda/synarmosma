@@ -6,7 +6,7 @@
 namespace SYNARMOSMA {
   class Pseudograph {
    private:
-    int nvertex;
+    int nvertex = 0;
     std::vector<int>* neighbours;
 
     int DFS_bridge(int,int,int,int*,int*,hash_map&) const;

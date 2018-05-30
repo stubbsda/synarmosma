@@ -15,6 +15,7 @@
 #include <ctime>
 #include <string>
 #include <limits>
+#include <tuple>
 #include <queue>
 #include <sys/time.h>
 // NTL headers for number theory functionality...
@@ -24,7 +25,6 @@
 // The Boost library headers...
 #include <boost/tokenizer.hpp>
 #include <boost/date_time.hpp>
-#include <boost/tuple/tuple.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/dynamic_bitset.hpp>
@@ -102,7 +102,7 @@ namespace SYNARMOSMA {
   double norm(const double*,int);
   double norm(const std::vector<double>&);
   void cross_product(const std::vector<double>&,const std::vector<double>&,std::vector<double>&);
-  bool tuple_predicate(const boost::tuple<int,int,double>&,const boost::tuple<int,int,double>&);
+  bool tuple_predicate(const std::tuple<int,int,double>&,const std::tuple<int,int,double>&);
   bool pair_predicate_dbl(const std::pair<int,double>&,const std::pair<int,double>&);
   bool pair_predicate_int(const std::pair<int,int>&,const std::pair<int,int>&);
   int element(const std::set<int>&);

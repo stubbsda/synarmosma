@@ -6,7 +6,7 @@ extern Random RND;
 
 Homotopy::Homotopy()
 {
-  fitness = 0.0;
+
 }
 
 Homotopy::Homotopy(const Homotopy& source)
@@ -31,14 +31,15 @@ Homotopy::~Homotopy()
 
 void Homotopy::clear()
 {
-  sequence.clear();
   fitness = 0.0;
+  sequence.clear();
 }
 
 void Homotopy::compute_fitness()
 {
   unsigned int i;
   double temp,sum = 0.0;
+
   for(i=0; i<sequence.size(); ++i) {
     temp = std::exp(-std::pow(double(sequence[i].ngenerator)-3.0,2))+ std::pow(std::sin(double(sequence[i].relations.size())),2);
     sum += temp;
@@ -50,6 +51,7 @@ void Homotopy::mutate()
 {
   unsigned int n = RND.irandom(1,sequence.size());
   Group g;
+
   if (n > 1) g = g.abelianize(); 
   sequence[n] = g;
   compute_fitness();

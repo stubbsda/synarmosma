@@ -7,7 +7,6 @@ extern Random RND;
 template<class kind>
 Polynomial<kind>::Polynomial()
 {
-  characteristic = 0;
   degree = RND.irandom(5,10);
   initialize();
 }
@@ -15,7 +14,6 @@ Polynomial<kind>::Polynomial()
 template<class kind>
 Polynomial<kind>::Polynomial(unsigned int n)
 {
-  characteristic = 0;
   degree = n;
   initialize();
 }
@@ -49,14 +47,11 @@ Polynomial<kind>::Polynomial(const std::vector<kind>& t)
 {
   unsigned int i;
 
-  characteristic = 0;
   degree = t.size() - 1;
   for(i=0; i<t.size(); ++i) {
     terms.push_back(t[i]);
   }
-  irreducible = false;
-  homogeneous = false;
-  normed = false;
+
   property_check();
 }
 
@@ -241,8 +236,6 @@ namespace SYNARMOSMA {
     } while(flag);
     terms.push_back(test);
 
-    normed = false;
-    homogeneous = false;
     irreducible = true;
     property_check();
   }
@@ -272,8 +265,6 @@ void Polynomial<kind>::initialize()
     }
     terms.push_back(RND.irandom(1,characteristic-1));
   }
-  normed = false;
-  homogeneous = false;
   irreducible = true;
   property_check();
 }

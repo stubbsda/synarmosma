@@ -22,8 +22,8 @@ namespace SYNARMOSMA {
    private:
     std::vector<unsigned int> betti_number;
     std::vector<std::vector<unsigned int> > torsion;
-    Method method;
-    Field field;
+    Method method = Method::native;
+    Field field = Field::int32;
 
     void compute_integral_native(const Nexus*);
     void compute_native(const Nexus*);

@@ -79,6 +79,7 @@ template<class kind>
 Variety<kind>& Variety<kind>::operator =(const Variety<kind>& source)
 {
   if (this == &source) return *this;
+
   if (nequation > 0) delete[] equations;
   unsigned int i;
   remainder = source.remainder;
@@ -92,6 +93,7 @@ Variety<kind>& Variety<kind>::operator =(const Variety<kind>& source)
   for(i=0; i<nequation; ++i) {
     equations[i] = source.equations[i];
   }
+
   return *this;
 }
 
@@ -171,6 +173,11 @@ void Variety<kind>::clear()
   remainder.clear();
   if (nequation > 0) delete[] equations;
   nequation = 0;
+  nvariable = 0;
+  characteristic = 0;
+  linear = false;
+  homogeneous = false;
+  projective = false;
 }
 
 namespace SYNARMOSMA {
@@ -385,8 +392,10 @@ int Variety<kind>::deserialize(std::ifstream& s)
   s.read((char*)(&homogeneous),sizeof(bool)); count += sizeof(bool);
   s.read((char*)(&projective),sizeof(bool)); count += sizeof(bool);
  
-  equations = new std::vector<Monomial<kind> >[nequation];
-  count += read_equations(s);
+  if (nequation > 0) {
+    equations = new std::vector<Monomial<kind> >[nequation];
+    count += read_equations(s);
+  }
 
   return count;
 }

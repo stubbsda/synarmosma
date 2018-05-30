@@ -6,7 +6,7 @@ extern Random RND;
 
 Group::Group()
 {
-  clear();
+
 }
 
 Group::Group(const std::string& name,unsigned int n)
@@ -568,8 +568,6 @@ void Group::initialize(unsigned int r,const std::vector<unsigned int>& torsion)
   // \begin{equation*} 
   // G = \mathbb{Z}^r \oplus \mathbb{Z}_{t_1} \oplus \dotsb \oplus \mathbb{Z}_{t_s}
   // \end{equation*}
-  clear();
-
   unsigned int i,j;
 
   rank = r;
@@ -604,8 +602,6 @@ void Group::initialize(unsigned int r,const std::vector<unsigned int>& torsion)
 
 void Group::initialize(unsigned int n,const std::vector<Word>& R)
 {
-  clear();
-
   ngenerator = n;
   relations = R;
   reduce();

@@ -7,16 +7,16 @@ namespace SYNARMOSMA {
   // A class for a combinatorial group presentation
   class Group {
    protected:
-    unsigned int ngenerator;
-    std::vector<Word> relations;
-    bool abelian;
-    bool finite;
-    bool solvable;
-    bool free;
-    bool braid;
-    unsigned int cardinality;
-    unsigned int rank;
+    unsigned int ngenerator = 0;
+    unsigned int cardinality = 0;
+    unsigned int rank = 0;
+    bool abelian = false;
+    bool finite = false;
+    bool solvable = false;
+    bool free = false;
+    bool braid = false;
     std::vector<unsigned int> torsion;
+    std::vector<Word> relations;
 
     void allocate(unsigned int);
     void compute_rank();

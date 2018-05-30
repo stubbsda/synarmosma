@@ -15,10 +15,10 @@ namespace SYNARMOSMA {
   class Functional_Equation {
    protected:
     // We need a triple from Boost!
-    std::vector<boost::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int> > terms;
+    std::vector<std::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int> > terms;
     Polynomial<kind> remainder;
-    bool linear;
-    bool homogeneous;
+    bool linear = false;
+    bool homogeneous = false;
    
     void initialize(unsigned int);
     void analyze_file(std::vector<std::string>&,std::vector<std::string>&,std::vector<std::string>&);
@@ -40,10 +40,10 @@ namespace SYNARMOSMA {
   std::ostream& operator <<(std::ostream& s,const Functional_Equation<kind>& source)
   {
     unsigned int i;
-    boost::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int> trio;
+    std::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int> trio;
     for(i=0; i<source.terms.size(); ++i) {
       trio = source.terms[i];
-      s << "(" << boost::get<0>(trio) << ")*F(" << boost::get<1>(trio) << ")^" << boost::get<2>(trio) << " +" << std::endl; 
+      s << "(" << std::get<0>(trio) << ")*F(" << std::get<1>(trio) << ")^" << std::get<2>(trio) << " +" << std::endl; 
     }
     s << source.remainder << " = 0";
     return s;
