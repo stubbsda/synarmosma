@@ -9,12 +9,11 @@ namespace SYNARMOSMA {
   class Propositional_System {
    protected:
     std::vector<Proposition> theorems;
-    unsigned int natom;
-    unsigned int nuniverse;
+    unsigned int natom = 10;
+    unsigned int nuniverse = 0;
     std::vector<boost::dynamic_bitset<> > truth;
 
     void compute_internal_logic();
-    void set_default_values();
     void initialize(unsigned int);
   
    public:

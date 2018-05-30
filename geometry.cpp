@@ -6,7 +6,7 @@ extern Random RND;
 
 Geometry::Geometry()
 {
-  set_default_values();
+
 }
 
 Geometry::Geometry(const Geometry& source)
@@ -52,17 +52,6 @@ Geometry& Geometry::operator =(const Geometry& source)
 Geometry::~Geometry()
 {
   clear();
-}
-
-void Geometry::set_default_values()
-{
-  vperturb = -1;
-  nvertex = 0;
-  euclidean = true;
-  relational = false;
-  uniform = true;
-  high_memory = true;
-  background_dimension = 3;
 }
 
 void Geometry::initialize(bool type,bool model,bool flat,bool hmemory,int D)

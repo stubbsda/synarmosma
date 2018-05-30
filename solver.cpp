@@ -8,7 +8,7 @@ template<class kind>
 Solver<kind>::Solver(int N)
 {
   assert(N > 0);
-  set_default_values();
+
   dim = N;
   J = new SYNARMOSMA::Matrix<kind>(dim);
 }
@@ -17,7 +17,7 @@ template<class kind>
 Solver<kind>::Solver(int N,double eps,int M,bool htype,bool approx)
 {
   assert(N > 0 && M > 0 && eps > 0.0);
-  set_default_values();
+
   dim = N;
   epsilon = eps;
   max_its = M;
@@ -30,18 +30,6 @@ template<class kind>
 Solver<kind>::~Solver()
 {
   if (dim > 0) delete J;
-}
-
-template<class kind>
-void Solver<kind>::set_default_values()
-{
-  max_its = 100;
-  epsilon = 0.00001;
-  dim = 0;
-  homotopy = false;
-  broyden = false;
-  t = 1.0;
-  method = Linear_Solver::iterative; 
 }
 
 namespace SYNARMOSMA {

@@ -9,8 +9,8 @@ namespace SYNARMOSMA {
 
   class Geometry {
    protected:
-    int nvertex;
-    int vperturb;
+    int nvertex = 0;
+    int vperturb = -1;
 #ifdef DISCRETE
     std::vector<INT64> original;
     std::vector<INT64> distances;
@@ -21,18 +21,17 @@ namespace SYNARMOSMA {
     std::vector<std::vector<double> > coordinates;
 #endif
     // Whether the geometry is Euclidean or Lorentzian
-    bool euclidean;
+    bool euclidean = true;
     // Whether the geometry is based on a relational or absolute model of space
-    bool relational;
+    bool relational = false;
     // Whether the geometry is dimensionally uniform
-    bool uniform;
+    bool uniform = true;
     // Whether to fill the "distances" vector (only makes sense when relational = false)
-    bool high_memory;
+    bool high_memory = true;
     // The asymptotic "flat space" dimension
-    int background_dimension; 
+    int background_dimension = 3; 
 
     void clear();
-    void set_default_values();
     double perceptual_divergence(const double*,double,const double*,const double*) const;
     inline int compute_index(int,int) const;
    public:

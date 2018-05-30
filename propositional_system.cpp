@@ -4,13 +4,11 @@ using namespace SYNARMOSMA;
 
 Propositional_System::Propositional_System()
 {
-  set_default_values();
   initialize(100);
 }
 
 Propositional_System::Propositional_System(unsigned int n)
 {
-  set_default_values();
   initialize(n);
 }
 
@@ -18,8 +16,6 @@ Propositional_System::Propositional_System(unsigned int n,const char* filename)
 {
   unsigned int i,eq_point;
   std::string line,name,value;
-
-  set_default_values();
 
   // Open the parameter file
   std::ifstream s(filename,std::ios::in);
@@ -62,7 +58,6 @@ Propositional_System::Propositional_System(unsigned int n,const char* filename)
 Propositional_System::Propositional_System(unsigned int n,unsigned int m)
 {
   // n = number of axioms und m = number of atoms
-  set_default_values();
   natom = m;
   initialize(n);
 }
@@ -78,10 +73,12 @@ Propositional_System::Propositional_System(const Propositional_System& source)
 Propositional_System& Propositional_System::operator =(const Propositional_System& source)
 {
   if (this == &source) return *this;
+
   theorems = source.theorems;
   natom = source.natom;
   nuniverse = source.nuniverse;
   truth = source.truth;
+
   return *this;
 }
 
@@ -96,11 +93,6 @@ void Propositional_System::clear()
   natom = 0;
   nuniverse = 0;
   truth.clear();
-}
-
-void Propositional_System::set_default_values()
-{
-  natom = 10;
 }
 
 void Propositional_System::initialize(unsigned int n)

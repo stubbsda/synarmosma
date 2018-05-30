@@ -13,20 +13,19 @@ namespace SYNARMOSMA {
         iterative
     };
 
-    unsigned int max_its;
-    unsigned int dim;
-    double epsilon;  
-    double t;
-    bool homotopy;
-    bool broyden;
-    Linear_Solver method;
+    unsigned int max_its = 100;
+    unsigned int dim = 0;
+    double epsilon = 0.00001;  
+    double t = 1.0;
+    bool homotopy = false;
+    bool broyden = false;
+    Linear_Solver method = Linear_Solver::iterative;
     std::vector<kind> c_solution,base_solution;
     std::vector<std::set<unsigned int> > dependencies;
     Matrix<kind>* J;
 
     int forward_step();
     bool direct_solver(std::vector<kind>&) const;
-    void set_default_values();
     void compute_jacobian(const std::vector<kind>&);
     void compute_dependencies();
     bool linear_solver(const std::vector<kind>&,const std::vector<kind>&,std::vector<kind>&) const;
