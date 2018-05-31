@@ -159,18 +159,6 @@ int main(int argc,char** argv)
   assert(G4.directedness() == 3); 
   assert(G4.size() == 8);
   
-  SYNARMOSMA::Directed_Graph G5(25,0.25);
-  assert(G5.connected());
-  std::set<int> S;
-  G5.compute_sinks(S);
-  G5.compute_directedness();
-  std::cout << S.size() << std::endl;
-  //assert(S.size() == 17);
-  assert(G5.path_connected(1,7) == 0);
-  assert(G5.path_connected(6,11) == 1);
-  assert(G5.path_connected(9,14) == 0);
-  assert(G5.directedness() == 11);
-  
   std::cout << "Testing undirected graphs..." << std::endl;
   type = "complete";
   SYNARMOSMA::Graph G6(3,type);
