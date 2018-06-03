@@ -636,9 +636,9 @@ void Matrix<kind>::clear(bool deep)
 {
   normalized = false;
   if (deep) {
+    if (nrow > 0) delete[] elements;
     nrow = 0;
     ncolumn = 0;
-    delete[] elements;
   }
   else {
     unsigned int i;
@@ -760,7 +760,7 @@ void Matrix<kind>::initialize(unsigned int n,unsigned int m)
     clear(false);
   }
   else {
-    clear(true);
+    if (nrow > 0) clear(true);
     nrow = n;
     elements = new std::vector<std::pair<kind,unsigned int> >[nrow];
   }
