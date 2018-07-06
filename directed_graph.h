@@ -29,8 +29,12 @@ namespace SYNARMOSMA {
     bool mutate_edge(int,int);
     void compute_directedness();
     inline int directedness() const {return number_directed;};
+    // Every edge is directed and there are no cycles...
+    bool DAG() const {return (acyclic() && number_directed == size());};
     bool acyclic() const;
-    bool path_connected(int,int) const;
+    bool singly_connected() const;
+    int maximum_parents() const;
+    bool path_connected(int u,int v) const {return (distance(u,v) > -1);};
     void compute_sinks(std::set<int>&) const;
     void compute_sources(std::set<int>&) const;
     friend class Propositional_System;

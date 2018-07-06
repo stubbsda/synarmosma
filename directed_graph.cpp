@@ -171,6 +171,84 @@ void Directed_Graph::compute_directedness()
   number_directed = size() - null;
 }
 
+int Directed_Graph::maximum_parents() const
+{
+  // Find the maximum number of parents over the entire set of vertices of this directed 
+  // graph...
+  int i,j,nparents,max_parents = -1;
+  std::set<int> S;
+  std::set<int>::const_iterator jt;
+  hash_map::const_iterator qt;
+
+  for(i=0; i<nvertex; ++i) {
+    nparents = 0;
+    for(jt=neighbours[i].begin(); jt!=neighbours[i].end(); ++jt) {
+      j = *jt;
+      S.clear();
+      S.insert(i); S.insert(j);
+      qt = index_table.find(S);
+      // Does this edge point from j to i?
+      if (edges[qt->second].get_direction(j,i) == Relation::before) nparents++;
+    }
+    if (nparents > max_parents) max_parents = nparents;    
+  }
+
+  return max_parents;
+}
+
+bool Directed_Graph::singly_connected() const
+{
+  // This method tests whether or not for every pair of vertices i and j in the graph, there is 
+  // no more than one path leading from i to j.
+  int i,j,k,u,v,npath;
+  bool visited[nvertex];
+  std::set<int> S,current,next;
+  std::set<int>::const_iterator it,jt;
+  hash_map::const_iterator qt;
+
+  for(i=0; i<nvertex; ++i) {
+    for(j=0; j<nvertex; ++j) {
+      if (i == j) continue;
+      // Check if it is possible to get from i to j 
+      for(k=0; k<nvertex; ++k) {
+        visited[k] = false;
+      }
+      npath = 0;
+      current.clear();
+      next.clear();
+      current.insert(i);
+      visited[i] = true;
+      do {
+        for(it=current.begin(); it!=current.end(); ++it) {
+          u = *it;
+          for(jt=neighbours[i].begin(); jt!=neighbours[i].end(); ++jt) {
+            v = *jt;
+            if (visited[v]) continue;
+            S.clear();
+            S.insert(u); S.insert(v);
+            qt = index_table.find(S);
+            if (edges[qt->second].get_direction(u,v) == Relation::before) next.insert(v);
+          }
+        }
+        if (next.empty()) break;
+        current.clear();
+        for(it=next.begin(); it!=next.end(); ++it) {
+          if (*it == j) {
+            npath++;
+          }
+          else {
+            visited[*it] = true;
+            current.insert(*it);
+          }
+        }
+        next.clear();
+      } while(true);
+      if (npath > 1) return false;
+    }
+  }
+  return true;
+}
+
 int Directed_Graph::distance(int u,int v) const
 {
   // A method to calculate the topological distance from 
@@ -178,7 +256,7 @@ int Directed_Graph::distance(int u,int v) const
   // get from u to v.
   if (u == v) return 0;
 
-  int i,j,l = -1,its = 1;
+  int i,j,delta = -1,its = 1;
   bool visited[nvertex];
   std::set<int> S,current,next;
   std::set<int>::const_iterator it,jt;
@@ -198,14 +276,12 @@ int Directed_Graph::distance(int u,int v) const
         S.clear();
         S.insert(i); S.insert(j);
         qt = index_table.find(S);
-        if (edges[qt->second].get_direction(i,j) == Relation::before) {
-          next.insert(j);
-        }
+        if (edges[qt->second].get_direction(i,j) == Relation::before) next.insert(j);
       }
     }
     if (next.empty()) break;
     if (next.count(v) > 0) {
-      l = its;
+      delta = its;
       break;
     }
     for(it=next.begin(); it!=next.end(); ++it) {
@@ -215,7 +291,8 @@ int Directed_Graph::distance(int u,int v) const
     next.clear();
     its++;
   } while(true);
-  return l;
+
+  return delta;
 }
 
 void Directed_Graph::compute_distances(edge_hash& output) const
@@ -307,47 +384,6 @@ bool Directed_Graph::mutate_edge(int u,int v)
     }
   }
   return true;
-}
-
-bool Directed_Graph::path_connected(int u,int v) const
-{
-  // Is it possible to get from u to v following the orientation of the graph edges?
-  int i,j,visited[nvertex];
-  bool output = false;
-  std::set<int> current,next,S;
-  std::set<int>::const_iterator it,jt;
-  hash_map::const_iterator qt;
-
-  for(i=0; i<nvertex; ++i) {
-    visited[i] = 0;
-  }
-
-  current.insert(u);
-  visited[u] = 1;
-  do {
-    for(it=current.begin(); it!=current.end(); ++it) {
-      i = *it;
-      for(jt=neighbours[i].begin(); jt!=neighbours[i].end(); ++jt) {
-        j = *jt;
-        if (visited[j] == 1) continue;
-        S.clear();
-        S.insert(i); S.insert(j);
-        qt = index_table.find(S);
-        if (edges[qt->second].get_direction(i,j) == Relation::before) next.insert(j);
-      }
-    }
-    if (next.empty()) break;
-    if (next.count(v) > 0) {
-      output = true;
-      break;
-    }
-    for(it=next.begin(); it!=next.end(); ++it) {
-      visited[*it] = 1;
-    }
-    current = next;
-    next.clear();
-  } while(true);
-  return output;
 }
 
 bool Directed_Graph::directed_cycle(const std::vector<int>& path,int base,int length) const
