@@ -221,7 +221,7 @@ bool Directed_Graph::singly_connected() const
       do {
         for(it=current.begin(); it!=current.end(); ++it) {
           u = *it;
-          for(jt=neighbours[i].begin(); jt!=neighbours[i].end(); ++jt) {
+          for(jt=neighbours[u].begin(); jt!=neighbours[u].end(); ++jt) {
             v = *jt;
             if (visited[v]) continue;
             S.clear();

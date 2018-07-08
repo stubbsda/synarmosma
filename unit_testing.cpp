@@ -124,6 +124,9 @@ int main(int argc,char** argv)
   G3.add_edge(5,2,d1,3.0);
   G3.add_edge(5,6,d1,11.0);
   assert(G3.bipartite() == 1); 
+  assert(G3.maximum_parents() == 3);
+  assert(!G3.DAG());
+  assert(!G3.singly_connected());
   G3.entwinement();
   assert(G3.eccentricity(3) == 2);
   G3.vertex_centrality(foo,0.000001);
