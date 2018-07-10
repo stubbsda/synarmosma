@@ -11,14 +11,15 @@ namespace SYNARMOSMA {
     unsigned int NL = 0;
 
     void initialize(unsigned int);
+    void initialize(unsigned int,unsigned int,int);
     void initialize(const std::vector<unsigned int>&,const std::vector<int>&);
     inline void clear() {NL = 0; content.clear();};
    public:
     Word();
-    Word(unsigned int);
-    Word(unsigned int,const std::string&);
-    Word(unsigned int,unsigned int);
-    Word(unsigned int,unsigned int,int);
+    Word(int);
+    Word(int,const std::string&);
+    Word(int,int);
+    Word(int,int,int);
     Word(const Word&);
     Word& operator =(const Word&);
     ~Word();
@@ -26,19 +27,18 @@ namespace SYNARMOSMA {
     Word invert() const;
     Word mutate() const;
     Word normalize() const;
-    Word swap(unsigned int,unsigned int,bool) const;
+    Word swap(int,int,bool) const;
     void free_reduce();
     Word reduce(int,const std::set<unsigned int>&,const unsigned int*) const;
     inline unsigned int length() const {return content.size();};
     inline bool empty() const {return content.empty();};
-    void permute(unsigned int,Word&) const;
+    void permute(int,Word&) const;
     bool trivial() const;
     bool alias() const;
     bool legal() const;
     bool homogeneous() const;
     int serialize(std::ofstream&) const;
     int deserialize(std::ifstream&);
-    void initialize(unsigned int,unsigned int,int);
     friend bool operator ==(const Word&,const Word&);
     friend bool operator !=(const Word&,const Word&);
     friend Word operator *(const Word&,const Word&);

@@ -9,26 +9,29 @@ Word::Word()
 
 }
 
-Word::Word(unsigned int p)
+Word::Word(int p)
 {
-  NL = p;
+  assert(p > 0);
+  NL = (unsigned) p;
   unsigned int n = 4 + RND.irandom(20);
   initialize(n);
 }
 
-Word::Word(unsigned int p,unsigned int n)
+Word::Word(int p,int n)
 {
-  NL = p;
-  initialize(n);
+  assert(p > 0 && n > 0);
+  NL = (unsigned) p;
+  initialize((unsigned) n);
 }
 
-Word::Word(unsigned int p,const std::string& w)
+Word::Word(int p,const std::string& w)
 {
+  assert(p > 0);
   unsigned int i,j,n;
   int e;
   char alphabet[] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
 
-  NL = p;
+  NL = (unsigned) p;
   for(i=0; i<w.length(); ++i) {
     assert(std::isalpha(w[i]));
     for(j=0; j<26; ++j) {
@@ -42,13 +45,15 @@ Word::Word(unsigned int p,const std::string& w)
   }
 }
 
-Word::Word(unsigned int p,unsigned int n,int m)
+Word::Word(int p,int n,int m)
 {
-  NL = p;
+  assert(p > 0 && n > 0);
+
+  NL = (unsigned) p;
 #ifdef DEBUG
   assert(n < p);
 #endif
-  std::pair<unsigned int,int> doublet(n,m);
+  std::pair<unsigned int,int> doublet((unsigned) n,m);
   content.push_back(doublet);
 }
 
@@ -124,11 +129,13 @@ bool Word::homogeneous() const
   return true;
 }
 
-void Word::permute(unsigned int n,Word& w) const
+void Word::permute(int n,Word& w) const
 {
   // This method will create the word formed by the cyclic
   // permutation of *this, that is
   // a_1*a_2*...*a_k -> a_n*a_{n+1}*...*a_k*a_1*a_2*...*a_{n-1}
+  assert(n >= 0);
+
   w.clear();
 #ifdef DEBUG
   assert(n < content.size());
@@ -137,11 +144,10 @@ void Word::permute(unsigned int n,Word& w) const
     w = Word(*this);
     return;
   }
-  unsigned int i;
-  for(i=n; i<content.size(); ++i) {
+  for(int i=n; i<(signed) content.size(); ++i) {
     w.content.push_back(content[i]);
   }
-  for(i=0; i<n; ++i) {
+  for(int i=0; i<n; ++i) {
     w.content.push_back(content[i]);
   }
 }
@@ -207,8 +213,9 @@ Word Word::invert() const
   return output;
 }
 
-Word Word::swap(unsigned int p,unsigned int q,bool inv) const
+Word Word::swap(int p,int q,bool inv) const
 {
+  assert(p >= 0 && q >= 0);
   unsigned int i,n = content.size();
   Word output(0);
   std::pair<unsigned int,int> doublet;
@@ -216,11 +223,11 @@ Word Word::swap(unsigned int p,unsigned int q,bool inv) const
   for(i=0; i<n; ++i) {
     doublet.first = content[i].first;
     doublet.second = content[i].second;
-    if (doublet.first == q) {
-      doublet.first = p;
+    if (doublet.first == (unsigned) q) {
+      doublet.first = (unsigned) p;
       if (inv) doublet.second *= -1;
     }
-    else if (doublet.first > q) {
+    else if (doublet.first > (unsigned) q) {
       doublet.first -= 1;
     }
     output.content.push_back(doublet);

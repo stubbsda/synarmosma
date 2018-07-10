@@ -7,13 +7,15 @@ Propositional_System::Propositional_System()
   initialize(100);
 }
 
-Propositional_System::Propositional_System(unsigned int n)
+Propositional_System::Propositional_System(int n)
 {
+  assert(n >= 0);
   initialize(n);
 }
 
-Propositional_System::Propositional_System(unsigned int n,const char* filename)
+Propositional_System::Propositional_System(int n,const char* filename)
 {
+  assert(n >= 0);
   unsigned int i,eq_point;
   std::string line,name,value;
 
@@ -55,9 +57,10 @@ Propositional_System::Propositional_System(unsigned int n,const char* filename)
   initialize(n);
 }
 
-Propositional_System::Propositional_System(unsigned int n,unsigned int m)
+Propositional_System::Propositional_System(int n,int m)
 {
   // n = number of axioms und m = number of atoms
+  assert(n >= 0 && m >= 0);
   natom = m;
   initialize(n);
 }
@@ -95,9 +98,9 @@ void Propositional_System::clear()
   truth.clear();
 }
 
-void Propositional_System::initialize(unsigned int n)
+void Propositional_System::initialize(int n)
 {
-  unsigned int i;
+  int i;
   std::set<int> atoms;
 
   for(i=0; i<n; ++i) {
@@ -107,7 +110,7 @@ void Propositional_System::initialize(unsigned int n)
     theorems.push_back(Proposition(atoms));
   }
   nuniverse = ipow(2,natom);
-  for(i=0; i<theorems.size(); ++i) {
+  for(i=0; i<(signed) theorems.size(); ++i) {
     truth.push_back(boost::dynamic_bitset<>(nuniverse));
   }
   compute_internal_logic();
@@ -150,13 +153,9 @@ int Propositional_System::deserialize(std::ifstream& s)
   return count;
 }
 
-unsigned int Propositional_System::bit_count(unsigned int i) const
+int Propositional_System::consistency(int i,int j,const std::string& op) const
 {
-  return truth[i].count();
-}
-
-unsigned int Propositional_System::consistency(unsigned int i,unsigned int j,const std::string& op) const
-{
+  assert(i >= 0 && j >= 0);
   boost::dynamic_bitset<> temp(nuniverse);
   if (op == "and") {
     temp = truth[i] & truth[j];
@@ -170,12 +169,13 @@ unsigned int Propositional_System::consistency(unsigned int i,unsigned int j,con
   return temp.count();
 }
 
-bool Propositional_System::implication(unsigned int in1,const std::vector<unsigned int>& axioms) const
+bool Propositional_System::implication(int n,const std::vector<unsigned int>& axioms) const
 {
+  assert(n >= 0);
   unsigned int i;
   boost::dynamic_bitset<> temp(nuniverse);
 
-  temp = truth[in1];
+  temp = truth[n];
   for(i=0; i<axioms.size(); ++i) {
     temp |= ~truth[axioms[i]];
   }
@@ -226,9 +226,9 @@ void Propositional_System::compute_implication_graph(Directed_Graph* G) const
 {
   // This method must determine which propositions imply other propositions among
   // our collection, "theorems".
-  unsigned int i,j;
+  int i,j;
   boost::dynamic_bitset<> temp(nuniverse),p1(nuniverse);
-  const unsigned int nnode = theorems.size();
+  const int nnode = (signed) theorems.size();
 
   G->clear();
 

@@ -8,13 +8,13 @@ Rational::Rational()
   d = 1;
 }
 
-Rational::Rational(signed int x)
+Rational::Rational(int x)
 {
   n = NTL::to_ZZ(x);
   d = 1;
 }
 
-Rational::Rational(signed int x,signed int y)
+Rational::Rational(int x,int y)
 {
   n = NTL::to_ZZ(x);
   d = NTL::to_ZZ(y);
@@ -232,14 +232,16 @@ namespace SYNARMOSMA {
     return a;
   }
 
-  unsigned int convert(const Rational& q,unsigned int p)
+  int convert(const Rational& q,int p)
   {
     // Here we have to use the relation q = r/s => s*q = r, i.e. 
     // we would like to find out which element q of GF(p) satisfies 
     // this equation.
     // First we will convert r and s from Z to Z/p...
-    unsigned int i,output = 0;
+    int i,output = 0;
     NTL::ZZ r,s,in1;
+
+    assert(p > 0);
 
     r = q.numerator() % p;
     if (q.denominator() == 1) {

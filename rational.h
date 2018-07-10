@@ -16,8 +16,8 @@ namespace SYNARMOSMA {
     void invert();
    public:
     Rational();
-    Rational(signed int); 
-    Rational(signed int,signed int);
+    Rational(int); 
+    Rational(int,int);
     Rational(const NTL::ZZ&,const NTL::ZZ&);
     Rational& operator =(const Rational&);
     Rational operator -();
@@ -43,7 +43,7 @@ namespace SYNARMOSMA {
     friend std::ostream& operator <<(std::ostream&,const Rational&);
   };
 
-  unsigned int convert(const Rational&,unsigned int);
+  int convert(const Rational&,int);
   Rational qdiv(const Rational&,const Rational&);
 }
 #endif 

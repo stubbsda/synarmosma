@@ -12,7 +12,7 @@ Lattice::Lattice() : Poset()
   initialize();
 }
 
-Lattice::Lattice(unsigned int n) : Poset(n)
+Lattice::Lattice(int n) : Poset(n)
 {
   atomic = false;
   null = 0;
@@ -59,9 +59,8 @@ void Lattice::clear()
 
 int Lattice::serialize(std::ofstream& s) const
 {
-  unsigned int i,j;
-  int count = 0;
-  std::set<unsigned int>::const_iterator it;
+  int i,j,count = 0;
+  std::set<int>::const_iterator it;
   Relation rho;
 
   s.write((char*)(&N),sizeof(int)); count += sizeof(int);
@@ -86,8 +85,7 @@ int Lattice::serialize(std::ofstream& s) const
 
 int Lattice::deserialize(std::ifstream& s)
 {
-  unsigned int i,j,k;
-  int count = 0;
+  int i,j,k,count = 0;
   Relation rho;
 
   clear();
@@ -123,7 +121,7 @@ int Lattice::deserialize(std::ifstream& s)
 void Lattice::initialize()
 {
   if (N < 2) return; 
-  unsigned int i,j,n1,n2,delta = 2*N*(N-1),ndelta;
+  int i,j,n1,n2,delta = 2*N*(N-1),ndelta;
 
   do {
     n1 = RND.irandom(N);
@@ -156,7 +154,7 @@ void Lattice::initialize()
 bool Lattice::consistent() const
 {
   // In a lattice every pair of elements must have a meet and join, so...
-  unsigned int i,j;
+  int i,j;
 
   for(i=0; i<N; ++i) {
     for(j=0; j<N; ++j) {
@@ -172,7 +170,7 @@ void Lattice::compute_bounds()
 {
   // This method computes the null and identity elements for this lattice using a 
   // brute force technique
-  unsigned int i,j;
+  int i,j;
   bool found,nfound;
   
   // We begin by finding the 0 element, i.e. the element of the lattice such that 0 <= x for all x
@@ -228,9 +226,9 @@ void Lattice::compute_bounds()
 
 void Lattice::compute_atoms()
 {
-  unsigned int i,j;
+  int i,j;
   bool found;
-  std::set<unsigned int>::const_iterator it;
+  std::set<int>::const_iterator it;
 
   atoms.clear();
   for(i=0; i<N; ++i) {
@@ -257,14 +255,14 @@ void Lattice::compute_atoms()
   }
 }
 
-unsigned int Lattice::meet(unsigned int x,unsigned int y) const
+int Lattice::meet(int x,int y) const
 {
   // Find the element w in L such that w <= x and w <= y, while any other 
   // z in L satisfying these relations is such that z <= w.
-  unsigned int i,j,rvalue = N;
+  int i,j,rvalue = N;
   bool max;
-  std::set<unsigned int> candidates;
-  std::set<unsigned int>::const_iterator it,jt;
+  std::set<int> candidates;
+  std::set<int>::const_iterator it,jt;
   Relation rho;
   
   for(i=0; i<N; ++i) {
@@ -292,14 +290,14 @@ unsigned int Lattice::meet(unsigned int x,unsigned int y) const
   return rvalue;
 }
 
-unsigned int Lattice::join(unsigned int x,unsigned int y) const
+int Lattice::join(int x,int y) const
 {
   // Find the element w in L such that x <= w and y <= w, while any other 
   // z in L satisfying these relations is such that w <= z.
-  unsigned int i,j,rvalue = N;
+  int i,j,rvalue = N;
   bool max;
-  std::set<unsigned int> candidates;
-  std::set<unsigned int>::const_iterator it,jt;
+  std::set<int> candidates;
+  std::set<int>::const_iterator it,jt;
   Relation rho;
   
   for(i=0; i<N; ++i) {

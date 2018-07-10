@@ -9,7 +9,7 @@ Group::Group()
 
 }
 
-Group::Group(const std::string& name,unsigned int n)
+Group::Group(const std::string& name,int n)
 {
 #ifdef DEBUG
   assert(n > 0);
@@ -247,13 +247,15 @@ Group::Group(const std::string& name,unsigned int n)
   }
 }
 
-Group::Group(unsigned int r,const std::vector<unsigned int>& torsion)
+Group::Group(int r,const std::vector<unsigned int>& torsion)
 {
+  assert(r >= 0);
   initialize(r,torsion);
 } 
 
-Group::Group(unsigned int n)
+Group::Group(int n)
 {
+  assert(n >= 0);
   // The free group on n generators
   ngenerator = n;
   if (n == 0) {
@@ -273,17 +275,19 @@ Group::Group(unsigned int n)
   }
 } 
 
-Group::Group(unsigned int n,const std::vector<Word>& R)
+Group::Group(int n,const std::vector<Word>& R)
 {
+  assert(n >= 0);
   initialize(n,R);
 }
 
-Group::Group(unsigned int n,unsigned int m)
+Group::Group(int n,int m)
 {
-  ngenerator = n;
+  assert(n >= 0 && m >= 0);
+  ngenerator = (unsigned) n;
   if (m > 0) {
     free = false;
-    allocate(m);
+    allocate((unsigned) m);
   }
 }
 
@@ -304,7 +308,7 @@ void Group::create_random()
   allocate(m);
 }
 
-unsigned int Group::implied_generators() const
+int Group::implied_generators() const
 {
   // This method computes the number of distinct 
   // generators in the various relations
@@ -319,8 +323,7 @@ unsigned int Group::implied_generators() const
       glabels.insert(n);
     }
   }
-  n = glabels.size();
-  return n;
+  return (signed) glabels.size();
 }
 
 bool Group::consistent() const
@@ -556,7 +559,7 @@ void Group::reduce()
   }
 }
 
-void Group::initialize(unsigned int r,const std::vector<unsigned int>& torsion)
+void Group::initialize(int r,const std::vector<unsigned int>& torsion)
 {
   // The constructor for a finitely generated abelian group, whose presentation 
   // is thus of the form
@@ -568,9 +571,10 @@ void Group::initialize(unsigned int r,const std::vector<unsigned int>& torsion)
   // \begin{equation*} 
   // G = \mathbb{Z}^r \oplus \mathbb{Z}_{t_1} \oplus \dotsb \oplus \mathbb{Z}_{t_s}
   // \end{equation*}
+  assert(r >= 0);
   unsigned int i,j;
 
-  rank = r;
+  rank = (unsigned) r;
   abelian = true;
   solvable = true;
   free = false;
@@ -600,9 +604,10 @@ void Group::initialize(unsigned int r,const std::vector<unsigned int>& torsion)
   }
 }
 
-void Group::initialize(unsigned int n,const std::vector<Word>& R)
+void Group::initialize(int n,const std::vector<Word>& R)
 {
-  ngenerator = n;
+  assert(n >= 0);
+  ngenerator = (unsigned) n;
   relations = R;
   reduce();
   if (ngenerator == 0) {

@@ -19,8 +19,9 @@ Functional_Equation<kind>::Functional_Equation()
 }
 
 template<class kind>
-Functional_Equation<kind>::Functional_Equation(unsigned int n)
+Functional_Equation<kind>::Functional_Equation(int n)
 {
+  assert(n > 0);
   initialize(n);
 }
 
@@ -332,9 +333,11 @@ int Functional_Equation<kind>::deserialize(std::ifstream& s)
 }
 
 template<class kind>
-void Functional_Equation<kind>::initialize(unsigned int n)
+void Functional_Equation<kind>::initialize(int n)
 {
-  unsigned int i,m = 1;
+  assert(n > 0);
+  int i;
+  unsigned int m = 1;
   for(i=1; i<n; ++i) {
     Polynomial<kind> alpha,beta;
     if (!linear) m = 1 + RND.irandom(8);
@@ -350,8 +353,9 @@ void Functional_Equation<kind>::initialize(unsigned int n)
 namespace SYNARMOSMA
 {
   template<>
-  Variety<unsigned int> Functional_Equation<NTL::ZZ>::reduce(unsigned int p)
+  Variety<unsigned int> Functional_Equation<NTL::ZZ>::reduce(int p)
   {
+    assert(p > 0);
     if (!NTL::ProbPrime(p)) {
       std::cerr << "A functional equation can only be reduced over a prime!" << std::endl;
       std::exit(1);
@@ -401,8 +405,9 @@ namespace SYNARMOSMA
 }
 
 template<class kind>
-Variety<unsigned int> Functional_Equation<kind>::reduce(unsigned int p)
+Variety<unsigned int> Functional_Equation<kind>::reduce(int p)
 {
+  assert(p > 0);
   unsigned int i,j,in1;
   std::pair<unsigned int,unsigned int> duo;
   std::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int> trio;

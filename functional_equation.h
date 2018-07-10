@@ -20,11 +20,11 @@ namespace SYNARMOSMA {
     bool linear = false;
     bool homogeneous = false;
    
-    void initialize(unsigned int);
+    void initialize(int);
     void analyze_file(std::vector<std::string>&,std::vector<std::string>&,std::vector<std::string>&);
    public:
     Functional_Equation();
-    Functional_Equation(unsigned int);
+    Functional_Equation(int);
     Functional_Equation(const char*);
     Functional_Equation(const Functional_Equation&);
     Functional_Equation& operator =(const Functional_Equation&);
@@ -32,7 +32,7 @@ namespace SYNARMOSMA {
     void clear();
     int serialize(std::ofstream&) const;
     int deserialize(std::ifstream&);
-    Variety<unsigned int> reduce(unsigned int);  
+    Variety<unsigned int> reduce(int);  
     friend std::ostream& operator << <>(std::ostream& s,const Functional_Equation<kind>&);
   };
 

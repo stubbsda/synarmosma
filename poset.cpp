@@ -9,7 +9,7 @@ Poset::Poset()
 
 }
 
-Poset::Poset(unsigned int n)
+Poset::Poset(int n)
 {
   // We begin by assuming that every pair of points is 
   // disparate, so the hash map is empty
@@ -45,7 +45,7 @@ void Poset::clear()
 
 int Poset::serialize(std::ofstream& s) const
 {
-  unsigned int i,j;
+  int i,j;
   int count = 0;
   Relation rho;
 
@@ -62,7 +62,7 @@ int Poset::serialize(std::ofstream& s) const
 
 int Poset::deserialize(std::ifstream& s)
 {
-  unsigned int i,j;
+  int i,j;
   int count = 0;
   Relation rho;
 
@@ -87,7 +87,7 @@ int Poset::deserialize(std::ifstream& s)
   return count;
 }
 
-bool Poset::invert_order(unsigned int u,unsigned int v)
+bool Poset::invert_order(int u,int v)
 {
   if (u == v) return false;
   Relation rho = get_order(u,v);
@@ -103,10 +103,10 @@ bool Poset::invert_order(unsigned int u,unsigned int v)
   return true;
 }
 
-bool Poset::unset_order(unsigned int u,unsigned int v)
+bool Poset::unset_order(int u,int v)
 {
   if (u == v) return false;
-  unsigned int i;
+  int i;
   Relation rho = get_order(u,v);
   if (rho == Relation::disparate) return false;
   if (rho == Relation::before) {
@@ -128,15 +128,15 @@ bool Poset::unset_order(unsigned int u,unsigned int v)
   return true;
 }
 
-bool Poset::set_order(unsigned int u,unsigned int v)
+bool Poset::set_order(int u,int v)
 {
   if (u == v) return false;
   // Check to see if we already have u < v or v < u in this poset
   Relation rho = get_order(u,v);
   if (rho == Relation::before) return false;
-  unsigned int i;
-  if (rho == Relation::after) order.erase(std::pair<unsigned int,unsigned int>(v,u));
-  order[std::pair<unsigned int,unsigned int>(u,v)] = true;
+  int i;
+  if (rho == Relation::after) order.erase(std::pair<int,int>(v,u));
+  order[std::pair<int,int>(u,v)] = true;
   // Keep the ordering transitive!
   for(i=0; i<N; ++i) {
     if (i == u || i == v) continue;
@@ -146,26 +146,26 @@ bool Poset::set_order(unsigned int u,unsigned int v)
   return true;
 }
 
-Relation Poset::get_order(unsigned int u,unsigned int v) const
+Relation Poset::get_order(int u,int v) const
 {
   if (u == v) return Relation::before;
-  boost::unordered_map<std::pair<unsigned int,unsigned int>,bool>::const_iterator qt;
-  qt = order.find(std::pair<unsigned int,unsigned int>(u,v));
+  boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt;
+  qt = order.find(std::pair<int,int>(u,v));
   if (qt != order.end()) return Relation::before;
-  qt = order.find(std::pair<unsigned int,unsigned int>(v,u));
+  qt = order.find(std::pair<int,int>(v,u));
   if (qt != order.end()) return Relation::after;
   return Relation::disparate;
 }
 
-unsigned int Poset::build_chain(std::vector<unsigned int>& chain,unsigned int length) const
+int Poset::build_chain(std::vector<int>& chain,int length) const
 {
-  unsigned int l = chain.size(),output = 0;
+  int l = chain.size(),output = 0;
   if (l == length) {
     output = 1;
   }
   else {
-    unsigned int i;
-    std::vector<unsigned int> nchain = chain;
+    int i;
+    std::vector<int> nchain = chain;
 
     for(i=0; i<N; ++i) {
       if (i == chain[l]) continue;
@@ -179,12 +179,12 @@ unsigned int Poset::build_chain(std::vector<unsigned int>& chain,unsigned int le
   return output;
 }
 
-unsigned int Poset::chain_number(unsigned int length) const
+int Poset::chain_number(int length) const
 {
   // Compute the number of chains of a given length in this poset 
   if (length == 0 || length == 1) return 0;
-  unsigned int i,j,nchain = 0;
-  std::set<unsigned int> sigma;
+  int i,j,nchain = 0;
+  std::set<int> sigma;
 
   if (length == 2) {
     // The easiest case
@@ -208,7 +208,7 @@ unsigned int Poset::chain_number(unsigned int length) const
   }
   else {
     // The general case, rather complicated so we use recursion to do it
-    std::vector<unsigned int> chain;
+    std::vector<int> chain;
    
     for(i=0; i<N; ++i) {
       chain.push_back(i);
@@ -219,12 +219,12 @@ unsigned int Poset::chain_number(unsigned int length) const
   return nchain;
 }
 
-void Poset::compute_width(unsigned int u,unsigned int v,std::set<unsigned int>& slice) const
+void Poset::compute_width(int u,int v,std::set<int>& slice) const
 {
 #ifdef DEBUG
   assert(u != v);
 #endif
-  unsigned int i;
+  int i;
 
   slice.clear();
 
@@ -236,16 +236,16 @@ void Poset::compute_width(unsigned int u,unsigned int v,std::set<unsigned int>& 
   }
 }
 
-void Poset::power_set(unsigned int n)
+void Poset::power_set(int n)
 {
   // A method that builds a poset based on the inclusion relation for 
   // the power set on n elements.
   int k = 0;
   bool inclusion;
-  unsigned int i,j,stack[1+n];
-  std::set<unsigned int> S;
-  std::set<unsigned int>::const_iterator it;
-  std::vector<std::set<unsigned int> > powerset;
+  int i,j,stack[1+n];
+  std::set<int> S;
+  std::set<int>::const_iterator it;
+  std::vector<std::set<int> > powerset;
 
   clear();
   N = ipow(2,n);
@@ -299,9 +299,9 @@ double Poset::totality() const
 {
   // A method to calculate the percentage of pair-wise relationships in this 
   // poset, i.e. how close is this partial order to being a total order?
-  unsigned int i,j,norder = 0;
+  int i,j,norder = 0;
   Relation rho;
-  const unsigned int ntotal = N*(N-1)/2;
+  const int ntotal = N*(N-1)/2;
 
   for(i=0; i<N; ++i) {
     for(j=1+i; j<N; ++j) {
@@ -312,35 +312,35 @@ double Poset::totality() const
   return double(norder)/double(ntotal);
 }
 
-bool Poset::covered(unsigned int u,unsigned int v) const
+bool Poset::covered(int u,int v) const
 {
   // A method to determine if u is covered by v
   if (u == v) return false;
   if (get_order(u,v) != Relation::before) return false;
-  std::set<unsigned int> sigma;
+  std::set<int> sigma;
   compute_width(u,v,sigma);
   return sigma.empty(); 
 }
 
-bool Poset::sink(unsigned int n) const
+bool Poset::sink(int n) const
 {
   // This is an element whose posteriority is null
-  std::set<unsigned int> S;
+  std::set<int> S;
   compute_posteriority(n,S);
   return S.empty();
 }
 
-bool Poset::source(unsigned int n) const
+bool Poset::source(int n) const
 {
   // This is an element whose anteriority is null
-  std::set<unsigned int> S;
+  std::set<int> S;
   compute_anteriority(n,S);
   return S.empty();
 }
 
-void Poset::compute_anteriority(unsigned int n,std::set<unsigned int>& output) const
+void Poset::compute_anteriority(int n,std::set<int>& output) const
 {
-  unsigned int i;
+  int i;
   output.clear();
   for(i=0; i<N; ++i) {
     if (i == n) continue;
@@ -348,9 +348,9 @@ void Poset::compute_anteriority(unsigned int n,std::set<unsigned int>& output) c
   }
 }
 
-void Poset::compute_posteriority(unsigned int n,std::set<unsigned int>& output) const
+void Poset::compute_posteriority(int n,std::set<int>& output) const
 {
-  unsigned int i;
+  int i;
   output.clear();
   for(i=0; i<N; ++i) {
     if (i == n) continue;
@@ -362,8 +362,8 @@ bool Poset::consistent() const
 {
   // We need to make sure the order relation satisfies the axioms of a 
   // partial order, i.e. reflexive, anti-symmetric and transitive. 
-  unsigned int i,j,k;
-  boost::unordered_map<std::pair<unsigned int,unsigned int>,bool>::const_iterator qt;
+  int i,j,k;
+  boost::unordered_map<std::pair<int,int>,bool>::const_iterator qt;
 
   for(i=0; i<N; ++i) {
     // Find every element that is after this one and make sure that all the 
@@ -390,7 +390,7 @@ void Poset::write_incastrature(const std::string& filename) const
   // complex's simplicial structure, with the diagram stored in the
   // PDF "hasse.pdf"; the method assumes that the Graphviz library
   // has been installed on the system.
-  unsigned int i,j;
+  int i,j;
 
   std::ofstream s(filename.c_str(),std::ios::trunc);
 
@@ -415,9 +415,9 @@ void Poset::write_incastrature(const std::string& filename) const
 void Poset::construct_ordering(double lambda)
 {
   // A method to impose a random order on the poset 
-  unsigned int u,v,n = 0;
+  int u,v,n = 0;
   double percent = 0.0;
-  const unsigned int M = (N*(N-1))/2;
+  const int M = (N*(N-1))/2;
 
   do {
     u = RND.irandom(N);
