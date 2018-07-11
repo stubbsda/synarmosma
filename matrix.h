@@ -20,25 +20,25 @@ namespace SYNARMOSMA {
   Matrix<kind>& operator +(const Matrix<kind>&,const Matrix<kind>&);
 
   template<class kind>
-  void permute(Matrix<kind>&,unsigned int,unsigned int,char);
+  void permute(Matrix<kind>&,int,int,char);
 
   template<class kind>
-  void invert(Matrix<kind>&,unsigned int,char);
+  void invert(Matrix<kind>&,int,char);
 
   template<class kind>
-  void combine(Matrix<kind>&,unsigned int,unsigned int,const kind&,char);
+  void combine(Matrix<kind>&,int,int,const kind&,char);
 
   template<class kind>
-  void pivot_row(Matrix<kind>&,unsigned int,unsigned int);
+  void pivot_row(Matrix<kind>&,int,int);
 
   template<class kind>
-  void pivot_column(Matrix<kind>&,unsigned int,unsigned int);
+  void pivot_column(Matrix<kind>&,int,int);
 
   template<class kind>
-  void move_minimum(Matrix<kind>&,unsigned int);
+  void move_minimum(Matrix<kind>&,int);
 
   template<class kind>
-  void prepare_matrix(Matrix<kind>&,unsigned int);
+  void prepare_matrix(Matrix<kind>&,int);
 
   template<class kind>
   unsigned int normalize(Matrix<kind>&);
@@ -51,7 +51,7 @@ namespace SYNARMOSMA {
     bool normalized;
 
     void display(std::ostream&) const;
-    bool divisible(unsigned int,unsigned int*,unsigned int*,kind*) const;
+    bool divisible(int,unsigned int*,unsigned int*,kind*) const;
     void transpose(const Matrix<kind>&);
     int write_elements(std::ofstream&) const;
     int read_elements(std::ifstream&);
@@ -61,45 +61,45 @@ namespace SYNARMOSMA {
     static const kind unity;
 
     Matrix();
-    Matrix(unsigned int);
-    Matrix(unsigned int,unsigned int);
+    Matrix(int);
+    Matrix(int,int);
     Matrix(const Matrix<kind>&);
     ~Matrix();
     void clear();
     void clear(bool);
     int serialize(std::ofstream&) const;
     int deserialize(std::ifstream&);
-    void initialize(unsigned int,unsigned int);
-    inline void set(unsigned int,unsigned int,kind,bool = false);
-    inline kind get(unsigned int,unsigned int) const;
-    void increment(unsigned int,unsigned int,kind);
+    void initialize(int,int);
+    inline void set(int,int,kind,bool = false);
+    inline kind get(int,int) const;
+    void increment(int,int,kind);
     void convert(kind*,char) const;
-    bool empty_row(unsigned int) const;
+    bool empty_row(int) const;
     inline double sparsity() const {return 1.0 - double(number_nonzero())/double(nrow*ncolumn);};
-    unsigned int number_nonzero() const; 
+    int number_nonzero() const; 
     double dispersion() const;
-    kind diagonal_element(unsigned int) const;
+    kind diagonal_element(int) const;
     void get_diagonal(std::vector<kind>&) const;
-    bool diagonally_dominant(bool = false) const;
-    bool diagonally_dominant(unsigned int) const;
-    bool diagonally_dominant(unsigned int,unsigned int) const;
-    unsigned int optimize_dominance(std::vector<unsigned int>&);
+    bool diagonally_dominant() const;
+    bool diagonally_dominant(int) const;
+    bool diagonally_dominant(int,int) const;
+    int optimize_dominance(std::vector<unsigned int>&);
     kind determinant() const;
     void multiply(const std::vector<kind>&,std::vector<kind>&) const;
     void increment(const Matrix<kind>&);
     void homotopy_scaling(kind,kind,Matrix<kind>*) const;
     int gauss_seidel_solver(std::vector<kind>&,const std::vector<kind>&,double,int);
-    kind get_first_nonzero(unsigned int) const;
+    kind get_first_nonzero(int) const;
     inline int get_nrow() const {return nrow;};
     void get_row(std::vector<kind>&,std::vector<unsigned int>&,int) const;
     Matrix<kind>& operator =(const Matrix<kind>&);
-    friend void permute<>(Matrix<kind>&,unsigned int,unsigned int,char);
-    friend void invert<>(Matrix<kind>&,unsigned int,char);
-    friend void combine<>(Matrix<kind>&,unsigned int,unsigned int,const kind&,char);
-    friend void pivot_row<>(Matrix<kind>&,unsigned int,unsigned int);
-    friend void pivot_column<>(Matrix<kind>&,unsigned int,unsigned int);
-    friend void move_minimum<>(Matrix<kind>&,unsigned int);
-    friend void prepare_matrix<>(Matrix<kind>&,unsigned int);
+    friend void permute<>(Matrix<kind>&,int,int,char);
+    friend void invert<>(Matrix<kind>&,int,char);
+    friend void combine<>(Matrix<kind>&,int,int,const kind&,char);
+    friend void pivot_row<>(Matrix<kind>&,int,int);
+    friend void pivot_column<>(Matrix<kind>&,int,int);
+    friend void move_minimum<>(Matrix<kind>&,int);
+    friend void prepare_matrix<>(Matrix<kind>&,int);
     friend unsigned int normalize<>(Matrix<kind>&);
     friend std::ostream& operator << <>(std::ostream&,const Matrix<kind>&);
   };
@@ -135,8 +135,9 @@ namespace SYNARMOSMA {
   }
 
   template<class kind>
-  kind Matrix<kind>::get(unsigned int n,unsigned int m) const
+  kind Matrix<kind>::get(int n,int m) const
   {
+    assert(n >= 0 && m >= 0);
     unsigned int i;
     kind output = zero;
 
@@ -151,8 +152,9 @@ namespace SYNARMOSMA {
   }
 
   template<class kind>
-  void Matrix<kind>::set(unsigned int n,unsigned int m,kind v,bool increment)
+  void Matrix<kind>::set(int n,int m,kind v,bool increment)
   {
+    assert(n >= 0 && m >= 0);
     unsigned int i,q;
     bool found = false;
     for(i=0; i<elements[n].size(); ++i) {

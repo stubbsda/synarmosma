@@ -212,7 +212,7 @@ namespace SYNARMOSMA {
    public:
     Random();
     ~Random();
-    inline void set_seed(unsigned int x) {s = x; BGT.seed(s);};
+    inline void set_seed(int x) {assert(x >= 0); s = x; BGT.seed(s);};
     inline void increment_seed() {s++; BGT.seed(s);};
     inline void decrement_seed() {s--; BGT.seed(s);};
     inline unsigned int get_seed() const {return s;};

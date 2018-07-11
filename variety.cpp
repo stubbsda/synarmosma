@@ -14,7 +14,7 @@ Variety<kind>::Variety()
 }
 
 template<class kind>
-Variety<kind>::Variety(unsigned int n)
+Variety<kind>::Variety(int n)
 {
 #ifdef DEBUG
   assert(n > 0);
@@ -28,7 +28,7 @@ Variety<kind>::Variety(unsigned int n)
 namespace SYNARMOSMA 
 {
   template<>
-  Variety<unsigned int>::Variety(unsigned int n,unsigned int p)
+  Variety<unsigned int>::Variety(int n,int p)
   {
 #ifdef DEBUG
     assert(n > 0 && p > 0);
@@ -46,7 +46,7 @@ namespace SYNARMOSMA
 }
 
 template<class kind>
-Variety<kind>::Variety(unsigned int n,unsigned int p)
+Variety<kind>::Variety(int n,int p)
 {
 #ifdef DEBUG
   assert(n > 0 && p == 0);
@@ -582,8 +582,9 @@ int Variety<kind>::compute_zeros() const
 }
 
 template<class kind>
-void Variety<kind>::find_partial(std::vector<unsigned int>& connected,unsigned int first,const std::vector<unsigned int>* dual_system) const
+void Variety<kind>::find_partial(std::vector<unsigned int>& connected,int first,const std::vector<unsigned int>* dual_system) const
 {
+  assert(first >= 0);
   unsigned int i,in1,in2;
   bool done = false;
   std::set<unsigned int>::const_iterator it,jt;
@@ -659,7 +660,7 @@ int Variety<kind>::compute_dependencies(std::vector<unsigned int>& component) co
 
 namespace SYNARMOSMA {
   template<>
-  void Variety<unsigned int>::zeta_function(unsigned int k,std::vector<unsigned int>& output) const
+  void Variety<unsigned int>::zeta_function(int k,std::vector<unsigned int>& output) const
   {
 #ifdef DEBUG
     assert(k > 0);
@@ -733,9 +734,10 @@ namespace SYNARMOSMA {
 }
 
 template<class kind>
-void Variety<kind>::zeta_function(unsigned int k,std::vector<unsigned int>& output) const
+void Variety<kind>::zeta_function(int k,std::vector<unsigned int>& output) const
 {
 #ifdef DEBUG
+  assert(k > 0);
   assert(characteristic == 0);
 #endif
 }
@@ -743,8 +745,9 @@ void Variety<kind>::zeta_function(unsigned int k,std::vector<unsigned int>& outp
 
 namespace SYNARMOSMA {
   template<>
-  void Variety<unsigned int>::normalize(unsigned int n)
+  void Variety<unsigned int>::normalize(int n)
   {
+    assert(n >= 0);
     if (characteristic == 0) return;
     unsigned int i,in1;
  
@@ -757,9 +760,10 @@ namespace SYNARMOSMA {
 }
 
 template<class kind>
-void Variety<kind>::normalize(unsigned int n)
+void Variety<kind>::normalize(int n)
 {
 #ifdef DEBUG
+  assert(n >= 0);
   assert(characteristic == 0);
 #endif
   return;
@@ -799,19 +803,19 @@ void Variety<kind>::property_check()
 }
 
 template<class kind>
-void Variety<kind>::set_remainder_value(unsigned int n,kind r)
+void Variety<kind>::set_remainder_value(int n,kind r)
 {
 #ifdef DEBUG
-  assert(n < nequation);
+  assert(n >= 0 && n < nequation);
 #endif
   remainder[n] = r;
 }
 
 template<class kind>
-void Variety<kind>::add_term(unsigned int n,const Monomial<kind>& t)
+void Variety<kind>::add_term(int n,const Monomial<kind>& t)
 {
 #ifdef DEBUG
-  assert(n < nequation);
+  assert(n >= 0 && n < nequation);
 #endif
   // Have we already seen this term?
   unsigned int i,in1;
@@ -835,10 +839,10 @@ void Variety<kind>::add_term(unsigned int n,const Monomial<kind>& t)
 }
 
 template<class kind>
-void Variety<kind>::add_term(unsigned int n,kind alpha,const std::vector<unsigned int>& xp)
+void Variety<kind>::add_term(int n,kind alpha,const std::vector<unsigned int>& xp)
 {
 #ifdef DEBUG
-  assert(n < nequation);
+  assert(n >= 0 && n < nequation);
   assert(xp.size() == nvariable);
 #endif
   unsigned int i;

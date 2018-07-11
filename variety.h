@@ -29,28 +29,28 @@ namespace SYNARMOSMA {
   
     void allocate();
     void initialize();
-    void normalize(unsigned int);
+    void normalize(int);
     void property_check();
-    void find_partial(std::vector<unsigned int>&,unsigned int,const std::vector<unsigned int>*) const;
+    void find_partial(std::vector<unsigned int>&,int,const std::vector<unsigned int>*) const;
     int compute_zeros() const;
     int write_equations(std::ofstream&) const;
     int read_equations(std::ifstream&);
    public:
     Variety();
-    Variety(unsigned int);
-    Variety(unsigned int,unsigned int);
+    Variety(int);
+    Variety(int,int);
     Variety(const Variety&);
     Variety& operator =(const Variety&);
     ~Variety();
     int serialize(std::ofstream&) const;
     int deserialize(std::ifstream&);
     void elaborate();
-    void add_term(unsigned int,kind,const std::vector<unsigned int>&);
-    void add_term(unsigned int,const Monomial<kind>&);
-    void set_remainder_value(unsigned int,kind);
+    void add_term(int,kind,const std::vector<unsigned int>&);
+    void add_term(int,const Monomial<kind>&);
+    void set_remainder_value(int,kind);
     void make_projective();
     void clear();
-    void zeta_function(unsigned int,std::vector<unsigned int>&) const;
+    void zeta_function(int,std::vector<unsigned int>&) const;
     int compute_dependencies(std::vector<unsigned int>&) const;
     friend std::ostream& operator << <>(std::ostream&,const Variety<kind>&);
   };

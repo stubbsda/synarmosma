@@ -9,15 +9,17 @@ Binary_Matrix::Binary_Matrix()
   elements = new std::vector<unsigned int>[nrow];
 }
 
-Binary_Matrix::Binary_Matrix(unsigned int n)
+Binary_Matrix::Binary_Matrix(int n)
 {
+  assert(n > 0);
   nrow = n;
   ncolumn = n;
   elements = new std::vector<unsigned int>[nrow];
 }
 
-Binary_Matrix::Binary_Matrix(unsigned int n,unsigned int m)
+Binary_Matrix::Binary_Matrix(int n,int m)
 {
+  assert(n > 0 && m > 0);
   nrow = n;
   ncolumn = m;
   elements = new std::vector<unsigned int>[nrow];
@@ -55,8 +57,9 @@ Binary_Matrix::~Binary_Matrix()
   delete[] elements;
 }
 
-void Binary_Matrix::initialize(unsigned int n,unsigned int m)
+void Binary_Matrix::initialize(int n,int m)
 {
+  assert(n > 0 && m > 0);
   delete[] elements;
   nrow = n;
   ncolumn = m;
@@ -107,8 +110,9 @@ int Binary_Matrix::deserialize(std::ifstream& s)
   return count;
 }
 
-void Binary_Matrix::get_row(unsigned int n,bool* output) const
+void Binary_Matrix::get_row(int n,bool* output) const
 {
+  assert(n >= 0);
   unsigned int i;
   std::vector<unsigned int>::const_iterator it;
 
@@ -120,26 +124,29 @@ void Binary_Matrix::get_row(unsigned int n,bool* output) const
   }
 }
 
-bool Binary_Matrix::get(unsigned int i,unsigned int j) const
+bool Binary_Matrix::get(int i,int j) const
 {
+  assert(i >= 0 && i >= 0);
   std::vector<unsigned int>::const_iterator it = std::find(elements[i].begin(),elements[i].end(),j);
   bool output = (it == elements[i].end()) ? false : true; 
   return output;
 }
 
-void Binary_Matrix::set(unsigned int i,unsigned int j) 
+void Binary_Matrix::set(int i,int j) 
 {
+  assert(i >= 0 && i >= 0);
   std::vector<unsigned int>::const_iterator it = std::find(elements[i].begin(),elements[i].end(),j);
   if (it == elements[i].end()) elements[i].push_back(j);
 }
 
-void Binary_Matrix::unset(unsigned int i,unsigned int j)
+void Binary_Matrix::unset(int i,int j)
 {
+  assert(i >= 0 && i >= 0);
   std::vector<unsigned int>::const_iterator it = std::find(elements[i].begin(),elements[i].end(),j);
   if (it != elements[i].end()) elements[i].erase(elements[i].begin() + *it); 
 }
 
-unsigned int Binary_Matrix::rank() const
+int Binary_Matrix::rank() const
 {
   unsigned int i,j,k,r = 0;
   bool found;
@@ -199,7 +206,7 @@ unsigned int Binary_Matrix::rank() const
       r++;      
     }
   }
-  return r;
+  return (signed) r;
 }
 
 namespace SYNARMOSMA {
