@@ -29,11 +29,11 @@ namespace SYNARMOSMA {
   class Polynomial {
    protected:
     unsigned int degree = 0;
+    unsigned int characteristic = 0;
     std::vector<kind> terms;
     bool irreducible = false;
     bool homogeneous = false;
     bool normed = false;
-    unsigned int characteristic = 0;
   
     void initialize();
     void property_check();
@@ -41,19 +41,19 @@ namespace SYNARMOSMA {
     int read_terms(std::ifstream&);
    public:
     Polynomial();
-    Polynomial(unsigned int);
-    Polynomial(unsigned int,unsigned int);
+    Polynomial(int);
+    Polynomial(int,int);
     Polynomial(const std::vector<kind>&);
-    Polynomial(const std::vector<kind>&,unsigned int);
+    Polynomial(const std::vector<kind>&,int);
     ~Polynomial();
     Polynomial& operator =(const Polynomial&);
     Polynomial& operator -(const Polynomial&);
     Polynomial(const Polynomial&);
-    Polynomial<unsigned int> reduce(unsigned int);
+    Polynomial<unsigned int> reduce(int);
     kind evaluate(kind);
-    inline unsigned int get_degree() const {return degree;};
-    kind get_value(unsigned int) const;
-    bool set_value(kind,unsigned int);
+    inline int get_degree() const {return degree;};
+    kind get_value(int) const;
+    bool set_value(kind,int);
     void clear();
     int serialize(std::ofstream&) const;
     int deserialize(std::ifstream&);

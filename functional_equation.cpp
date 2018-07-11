@@ -360,7 +360,7 @@ namespace SYNARMOSMA
       std::cerr << "A functional equation can only be reduced over a prime!" << std::endl;
       std::exit(1);
     }
-    unsigned int i,j,in1;
+    unsigned int j,in1;
     long q;
     NTL::ZZ z;
     std::pair<unsigned int,unsigned int> duo;
@@ -371,7 +371,7 @@ namespace SYNARMOSMA
 
     output.clear();
 
-    for(i=0; i<p; ++i) {
+    for(int i=0; i<p; ++i) {
       z = NTL::to_ZZ(long(i));
       for(j=0; j<terms.size(); ++j) {
         trio = terms[j];
@@ -408,7 +408,7 @@ template<class kind>
 Variety<unsigned int> Functional_Equation<kind>::reduce(int p)
 {
   assert(p > 0);
-  unsigned int i,j,in1;
+  unsigned int j,in1;
   std::pair<unsigned int,unsigned int> duo;
   std::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int> trio;
   Variety<unsigned int> output(p,p);
@@ -417,7 +417,7 @@ Variety<unsigned int> Functional_Equation<kind>::reduce(int p)
 
   output.clear();
 
-  for(i=0; i<p; ++i) {
+  for(int i=0; i<p; ++i) {
     for(j=0; j<terms.size(); ++j) {
       trio = terms[j];
       // First convert alpha(p) to an element of GF(p)

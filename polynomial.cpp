@@ -12,15 +12,17 @@ Polynomial<kind>::Polynomial()
 }
 
 template<class kind>
-Polynomial<kind>::Polynomial(unsigned int n)
+Polynomial<kind>::Polynomial(int n)
 {
+  assert(n > 0);
   degree = n;
   initialize();
 }
 
 template<class kind>
-Polynomial<kind>::Polynomial(unsigned int n,unsigned int p)
+Polynomial<kind>::Polynomial(int n,int p)
 {
+  assert(n > 0 && p > 0);
   characteristic = p;
   degree = n;
   initialize();
@@ -56,8 +58,9 @@ Polynomial<kind>::Polynomial(const std::vector<kind>& t)
 }
 
 template<class kind>
-Polynomial<kind>::Polynomial(const std::vector<kind>& t,unsigned int p)
+Polynomial<kind>::Polynomial(const std::vector<kind>& t,int p)
 {
+  assert(p > 0);
   unsigned int i;
 
   characteristic = p;
@@ -285,16 +288,17 @@ Polynomial<kind>& Polynomial<kind>::operator =(const Polynomial<kind>& source)
 }
 
 template<class kind>
-kind Polynomial<kind>::get_value(unsigned int i) const
+kind Polynomial<kind>::get_value(int n) const
 {
-  return terms[i];
+  assert(n >= 0 && n <= (signed) degree);
+  return terms[n];
 }
 
 template<class kind>
-bool Polynomial<kind>::set_value(kind x,unsigned int i)
+bool Polynomial<kind>::set_value(kind x,int n)
 {
-  if (i <= degree) {
-    terms[i] = x;
+  if (n >= 0 && n <= (signed) degree) {
+    terms[n] = x;
     property_check();
     return true;
   }
@@ -305,6 +309,7 @@ namespace SYNARMOSMA {
   template<>
   unsigned int Polynomial<unsigned int>::evaluate(unsigned int x)
   {
+    assert(x >= 0);
     if (x > characteristic) {
       std::cerr << "Cannot evaluate this argument!" << std::endl;
       std::exit(1);
@@ -370,22 +375,25 @@ Polynomial<kind> Polynomial<kind>::derivative() const
 
 namespace SYNARMOSMA {
   template <>
-  Polynomial<unsigned int> Polynomial<std::complex<double> >::reduce(unsigned int p)
+  Polynomial<unsigned int> Polynomial<std::complex<double> >::reduce(int p)
   {
+    assert(p >= 0);
     Polynomial<unsigned int> output(degree);
     return output;
   }
 
   template<>
-  Polynomial<unsigned int> Polynomial<double>::reduce(unsigned int p)
+  Polynomial<unsigned int> Polynomial<double>::reduce(int p)
   {
+    assert(p >= 0);
     Polynomial<unsigned int> output(degree);
     return output;
   }
 
   template<>
-  Polynomial<unsigned int> Polynomial<NTL::ZZ>::reduce(unsigned int p)
+  Polynomial<unsigned int> Polynomial<NTL::ZZ>::reduce(int p)
   {
+    assert(p >= 0);
     unsigned int i;
     long temp;
     NTL::ZZ q,base = NTL::to_ZZ(p);
@@ -402,8 +410,9 @@ namespace SYNARMOSMA {
 }
 
 template<class kind>
-Polynomial<unsigned int> Polynomial<kind>::reduce(unsigned int p)
+Polynomial<unsigned int> Polynomial<kind>::reduce(int p)
 {
+  assert(p >= 0);
   unsigned int i;
   std::vector<unsigned int> nterms;
 

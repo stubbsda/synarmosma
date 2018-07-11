@@ -138,7 +138,7 @@ void Word::permute(int n,Word& w) const
 
   w.clear();
 #ifdef DEBUG
-  assert(n < content.size());
+  assert(n < (signed) content.size());
 #endif
   if (n == 0) {
     w = Word(*this);

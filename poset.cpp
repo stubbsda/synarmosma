@@ -264,7 +264,7 @@ void Poset::power_set(int n)
 
     if (k == 0) break;
     S.clear();
-    for(i=1; i<=(unsigned) k; ++i) {
+    for(i=1; i<=k; ++i) {
       S.insert(stack[i]);
     }
     powerset.push_back(S);
