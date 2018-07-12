@@ -138,12 +138,12 @@ namespace SYNARMOSMA {
   kind Matrix<kind>::get(int n,int m) const
   {
     assert(n >= 0 && m >= 0);
-    unsigned int i;
+    unsigned int i,mu = m;
     kind output = zero;
 
     if (elements[n].empty()) return output;
     for(i=0; i<elements[n].size(); ++i) {
-      if (elements[n][i].second == m) {
+      if (elements[n][i].second == mu) {
         output = elements[n][i].first;
         break;
       } 
@@ -155,10 +155,10 @@ namespace SYNARMOSMA {
   void Matrix<kind>::set(int n,int m,kind v,bool increment)
   {
     assert(n >= 0 && m >= 0);
-    unsigned int i,q;
+    unsigned int i,q,mu = m;
     bool found = false;
     for(i=0; i<elements[n].size(); ++i) {
-      if (elements[n][i].second == m) {
+      if (elements[n][i].second == mu) {
         found = true;
         q = i;
         break;

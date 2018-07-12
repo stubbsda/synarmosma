@@ -162,16 +162,16 @@ template<class kind>
 bool Matrix<kind>::divisible(int n,unsigned int* out1,unsigned int* out2,kind* f) const
 {
   assert(n >= 0);
-  unsigned int i,j;
+  unsigned int i,j,nu = n;
   kind b1,b2 = Matrix<kind>::zero;
 
   for(i=0; i<elements[n].size(); ++i) {
-    if (elements[n][i].second == n) b2 = elements[n][i].first;
+    if (elements[n][i].second == nu) b2 = elements[n][i].first;
   }
   if (b2 == Matrix<kind>::zero) return false;
   for(i=n+1; i<nrow; ++i) {
     for(j=0; j<elements[i].size(); ++j) {
-      if (elements[i][j].second <= n) continue;
+      if (elements[i][j].second <= nu) continue;
       b1 = elements[i][j].first;
       if ((b1 % b2) != 0) {
         *out1 = i;
@@ -359,13 +359,13 @@ namespace SYNARMOSMA {
   bool Matrix<NTL::ZZ>::diagonally_dominant(int r) const 
   {
     assert(r >= 0);
-    unsigned int i;
+    unsigned int i,ru = r;
     double q,d = 0.0,sum = 0.0;
 
     for(i=0; i<elements[r].size(); ++i) {
       NTL::conv(elements[r][i].first,q);
       q = std::abs(q);
-      if (elements[r][i].second == r) {
+      if (elements[r][i].second == ru) {
         d = q;
         continue;
       }
@@ -380,13 +380,13 @@ namespace SYNARMOSMA {
   bool Matrix<NTL::ZZ>::diagonally_dominant(int r,int c) const 
   {
     assert(r >= 0 && c >= 0);
-    unsigned int i;
+    unsigned int i,cu = c;
     double q,d = 0.0,sum = 0.0;
 
     for(i=0; i<elements[r].size(); ++i) {
       NTL::conv(elements[r][i].first,q);
       q = std::abs(q);
-      if (elements[r][i].second == c) {
+      if (elements[r][i].second == cu) {
         d = q;
         continue;
       }
@@ -450,12 +450,12 @@ template<class kind>
 bool Matrix<kind>::diagonally_dominant(int r) const 
 {
   assert(r >= 0);
-  unsigned int i;
+  unsigned int i,ru = r;
   double q,d = 0.0,sum = 0.0;
 
   for(i=0; i<elements[r].size(); ++i) {
     q = std::abs(elements[r][i].first);
-    if (elements[r][i].second == r) {
+    if (elements[r][i].second == ru) {
       d = q;
       continue;
     }
@@ -470,12 +470,12 @@ template<class kind>
 bool Matrix<kind>::diagonally_dominant(int r,int c) const 
 {
   assert(r >= 0 && c >= 0);
-  unsigned int i;
+  unsigned int i,cu = c;
   double q,d = 0.0,sum = 0.0;
 
   for(i=0; i<elements[r].size(); ++i) {
     q = std::abs(elements[r][i].first);
-    if (elements[r][i].second == c) {
+    if (elements[r][i].second == cu) {
       d = q;
       continue;
     }
@@ -756,7 +756,7 @@ template<class kind>
 void Matrix<kind>::initialize(int n,int m)
 {
   assert(n > 0 && m > 0);
-  if (nrow == n) {
+  if ((signed) nrow == n) {
     clear(false);
   }
   else {
@@ -888,10 +888,10 @@ template<class kind>
 void Matrix<kind>::increment(int n,int m,kind v)
 {
   assert(n >= 0 && m >= 0);
-  unsigned int i,q;
+  unsigned int i,q,mu = m;
   bool found = false;
   for(i=0; i<elements[n].size(); ++i) {
-    if (elements[n][i].second == m) {
+    if (elements[n][i].second == mu) {
       found = true;
       q = i;
       break;
@@ -1033,17 +1033,17 @@ namespace SYNARMOSMA {
     // If (type == c), then column(n) <-> column(m)
     // If (type == r), then row(n) <-> row(m)
     assert(n >= 0 && m >= 0);
-    unsigned int i,j;
+    unsigned int i,j,nu = n,mu = m;
     std::vector<std::pair<kind,unsigned int> > pr;
 
     if (type == 'c') {
       for(i=0; i<A.nrow; ++i) {
         for(j=0; j<A.elements[i].size(); ++j) {
-          if (A.elements[i][j].second == n) {
-            A.elements[i][j].second = m;
+          if (A.elements[i][j].second == nu) {
+            A.elements[i][j].second = mu;
           }
-          else if (A.elements[i][j].second == m) {
-            A.elements[i][j].second = n;
+          else if (A.elements[i][j].second == mu) {
+            A.elements[i][j].second = nu;
           }
         }
       }
@@ -1066,7 +1066,7 @@ namespace SYNARMOSMA {
     if (type == 'c') {
       for(i=0; i<A.nrow; ++i) {
         for(j=0; j<A.elements[i].size(); ++j) {
-          if (A.elements[i][j].second == n) A.elements[i][j].first *= Matrix<kind>::neg1;
+          if ((signed) A.elements[i][j].second == n) A.elements[i][j].first *= Matrix<kind>::neg1;
         }
       }
     }
@@ -1083,7 +1083,7 @@ namespace SYNARMOSMA {
     // If (type == r), then row(n) -> row(n) + q*row(m)
     // If (type == c), then column(n) -> column(n) + q*column(m)
     assert(n >= 0 && m >= 0);
-    unsigned int i,j,l = 0;
+    unsigned int i,j,l = 0,nu = n,mu = m;
     bool found,fd1,fd2;
     kind wv = Matrix<kind>::zero;
 
@@ -1092,12 +1092,12 @@ namespace SYNARMOSMA {
         fd1 = false;
         fd2 = false;
         for(j=0; j<A.elements[i].size(); ++j) {
-          if (A.elements[i][j].second == n) {
+          if (A.elements[i][j].second == nu) {
             fd1 = true;
             wv = q*A.elements[i][j].first;
             if (fd2) break;
           }
-          else if (A.elements[i][j].second == m) {
+          else if (A.elements[i][j].second == mu) {
             fd2 = true;
             l = j;
             if (fd1) break;
@@ -1142,12 +1142,12 @@ namespace SYNARMOSMA {
   void pivot_row(Matrix<kind>& A,int k,int l)
   {
     assert(k >= 0 && l >= 0);
-    unsigned int i,j;
+    unsigned int i,j,lu = l;
     bool found;
     kind n,q,d = Matrix<kind>::zero;
 
     for(i=0; i<A.elements[k].size(); ++i) {
-      if (A.elements[k][i].second == l) {
+      if (A.elements[k][i].second == lu) {
         d = A.elements[k][i].first;
         break;
       }
@@ -1155,7 +1155,7 @@ namespace SYNARMOSMA {
     for(i=k+1; i<A.nrow; ++i) {
       found = false;
       for(j=0; j<A.elements[i].size(); ++j) {
-        if (A.elements[i][j].second == l) {
+        if (A.elements[i][j].second == lu) {
           n = A.elements[i][j].first;
           found = true;
           break;
@@ -1171,12 +1171,12 @@ namespace SYNARMOSMA {
   void pivot_column(Matrix<kind>& A,int k,int l)
   {
     assert(k >= 0 && l >= 0);
-    unsigned int i,j;
+    unsigned int i,j,lu = l;
     bool found;
     kind n,q,d = Matrix<kind>::zero;
  
     for(i=0; i<A.elements[k].size(); ++i) {
-      if (A.elements[k][i].second == l) {
+      if (A.elements[k][i].second == lu) {
         d = A.elements[k][i].first;
         break;
       }
@@ -1200,7 +1200,7 @@ namespace SYNARMOSMA {
   void move_minimum(Matrix<kind>& A,int n)
   {
     assert(n >= 0);
-    unsigned int i,j,im,jm,istart = 0,ulimit = A.nrow - n;  
+    unsigned int i,j,im,jm,nu = n,istart = 0,ulimit = A.nrow - n;  
     kind beta,alpha = Matrix<kind>::zero;
     bool full[ulimit];
     std::pair<kind,unsigned int>* VY = new std::pair<kind,unsigned int>[ulimit];
@@ -1209,7 +1209,7 @@ namespace SYNARMOSMA {
     for(i=n; i<A.nrow; ++i) {
       full[i-n] = false;
       for(j=0; j<A.elements[i].size(); ++j) {
-        if (A.elements[i][j].second >= n) {
+        if (A.elements[i][j].second >= nu) {
           VX.push_back(A.elements[i][j]);
         }
       }
@@ -1254,8 +1254,8 @@ namespace SYNARMOSMA {
     }
     jm = VY[im].second;
     im += n;
-    if (n != im) permute(A,n,im,'r');
-    if (n != jm) permute(A,n,jm,'c');
+    if (n != (signed) im) permute(A,n,im,'r');
+    if (n != (signed) jm) permute(A,n,jm,'c');
 
     delete[] VY;
   }
@@ -1264,7 +1264,7 @@ namespace SYNARMOSMA {
   void prepare_matrix(Matrix<kind>& A,int n)
   {
     assert(n >= 0);
-    unsigned int i,j,v1,v2;
+    unsigned int i,j,v1,v2,nu = n;
     bool jump;
     kind f;
 
@@ -1274,7 +1274,7 @@ namespace SYNARMOSMA {
       jump = false;
       for(i=n+1; i<A.nrow; ++i) {
         for(j=0; j<A.elements[i].size(); ++j) {
-          if (A.elements[i][j].second == n) {
+          if (A.elements[i][j].second == nu) {
             jump = true;
             break;
           }
@@ -1285,7 +1285,7 @@ namespace SYNARMOSMA {
       pivot_column(A,n,n);
       jump = false;
       for(i=0; i<A.elements[n].size(); ++i) {
-        if (A.elements[n][i].second > n) {
+        if (A.elements[n][i].second > nu) {
           jump = true;
           break;
         }

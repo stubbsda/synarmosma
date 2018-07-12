@@ -666,7 +666,7 @@ namespace SYNARMOSMA {
     assert(k > 0);
     assert(characteristic > 0);
 #endif
-    unsigned int i,j,m,n,l,bdry,in1,f,size,nsolution;
+    unsigned int i,j,m,n,l,bdry,in1,f,size,nsolution,ku = k;
     bool soln,found;
     Monomial<unsigned int> term;
 
@@ -677,7 +677,7 @@ namespace SYNARMOSMA {
     output.push_back(compute_zeros()); 
 
     // Now we need to calculate the case $k > 1$ 
-    for(n=2; n<=k; ++n) {
+    for(n=2; n<=ku; ++n) {
       size = ipow(characteristic,n);
 
       NTL::ZZ_pX P;
@@ -806,7 +806,7 @@ template<class kind>
 void Variety<kind>::set_remainder_value(int n,kind r)
 {
 #ifdef DEBUG
-  assert(n >= 0 && n < nequation);
+  assert(n >= 0 && n < (signed) nequation);
 #endif
   remainder[n] = r;
 }
@@ -815,7 +815,7 @@ template<class kind>
 void Variety<kind>::add_term(int n,const Monomial<kind>& t)
 {
 #ifdef DEBUG
-  assert(n >= 0 && n < nequation);
+  assert(n >= 0 && n < (signed) nequation);
 #endif
   // Have we already seen this term?
   unsigned int i,in1;
@@ -842,7 +842,7 @@ template<class kind>
 void Variety<kind>::add_term(int n,kind alpha,const std::vector<unsigned int>& xp)
 {
 #ifdef DEBUG
-  assert(n >= 0 && n < nequation);
+  assert(n >= 0 && n < (signed) nequation);
   assert(xp.size() == nvariable);
 #endif
   unsigned int i;
