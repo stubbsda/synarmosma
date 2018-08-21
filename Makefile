@@ -25,7 +25,7 @@ endif
 
 MY_LD_FLAGS += $(RPATH)
 
-LIBS = $(LAPACK) $(BOOST_SYSTEM) -lntl -lm 
+LIBS = $(LAPACK) $(BOOST_SYSTEM) -lntl -lgmp -lm 
 
 install: synarmosma
 	mkdir -p $(BIBLIOTHEK)/lib
