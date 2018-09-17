@@ -13,14 +13,16 @@ namespace SYNARMOSMA {
 #else
     double energy = 0.0;
 #endif
-    std::set<int> posterior,anterior;  
+    std::set<int> posterior,anterior;
     std::set<int> neighbours;
+    /// This property is a set of the index of all of the edges (as stored by the
+    /// super class) which contain this vertex as an endpoint.
     std::set<int> entourage;
 
    public:
     Vertex();
     Vertex(const Vertex&);
-    virtual ~Vertex();  
+    virtual ~Vertex();
     Vertex& operator =(const Vertex&);
     inline bool zero_energy() const;
     inline double get_energy() const;
@@ -29,7 +31,7 @@ namespace SYNARMOSMA {
     inline void nullify_energy();
     virtual int serialize(std::ofstream&) const;
     virtual int deserialize(std::ifstream&);
-    virtual void clear();    
+    virtual void clear();
   };
 
   bool Vertex::zero_energy() const
