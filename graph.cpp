@@ -1314,11 +1314,12 @@ void Graph::adjacency_eigenvalues(std::vector<double>& output) const
   int i,j,info,nv = nvertex,nwork = 3*nvertex - 1;
   char jtype = 'N';
   char uplo = 'U';
- 
+  double AD[nvertex*nvertex],w[nvertex],work[nwork];
+  /*
   double* AD = new double[nvertex*nvertex];
   double* w = new double[nvertex];
   double* work = new double[nwork];
-
+  */
   output.clear();
 
   for(i=0; i<nvertex*nvertex; ++i) {
@@ -1344,10 +1345,11 @@ void Graph::adjacency_eigenvalues(std::vector<double>& output) const
       output.push_back(w[i]);
     }
   }
-
+  /*
   delete[] AD;
   delete[] w;
   delete[] work;
+  */
 }
 
 double Graph::entwinement() const
