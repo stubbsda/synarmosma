@@ -29,7 +29,7 @@ namespace SYNARMOSMA {
     Word normalize() const;
     Word swap(int,int,bool) const;
     void free_reduce();
-    Word reduce(int,const std::set<unsigned int>&,const unsigned int*) const;
+    Word reduce(unsigned int,const std::set<unsigned int>&,const unsigned int*) const;
     inline unsigned int length() const {return content.size();};
     inline bool empty() const {return content.empty();};
     void permute(int,Word&) const;

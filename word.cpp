@@ -19,9 +19,9 @@ Word::Word(int p)
 
 Word::Word(int p,int n)
 {
-  assert(p > 0 && n > 0);
+  assert(p > 0);
   NL = (unsigned) p;
-  initialize((unsigned) n);
+  if (n > 0) initialize((unsigned) n);
 }
 
 Word::Word(int p,const std::string& w)
@@ -217,7 +217,7 @@ Word Word::swap(int p,int q,bool inv) const
 {
   assert(p >= 0 && q >= 0);
   unsigned int i,n = content.size();
-  Word output(0);
+  Word output(NL);
   std::pair<unsigned int,int> doublet;
 
   for(i=0; i<n; ++i) {
@@ -237,7 +237,7 @@ Word Word::swap(int p,int q,bool inv) const
 
 Word Word::mutate() const
 {
-  Word output(0);
+  Word output(NL);
   std::pair<unsigned int,int> doublet;
   int n = RND.irandom(content.size());
 
@@ -316,16 +316,21 @@ void Word::free_reduce()
   } while(true);
 }
 
-Word Word::reduce(int M,const std::set<unsigned int>& trivial_generators,const unsigned int* offset) const
+Word Word::reduce(unsigned int M,const std::set<unsigned int>& trivial_generators,const unsigned int* offset) const
 {
+  assert(M > 0);
   Word output(M,0);
   std::pair<unsigned int,int> doublet;
   std::vector<std::pair<unsigned int,int> >::const_iterator it;
-
+  output.content.clear();
   for(it=content.begin(); it!=content.end(); ++it) {
     if (trivial_generators.count(it->first) == 1) continue;
     doublet.first = offset[it->first];
     doublet.second = it->second;
+    if (doublet.first >= M) {
+      std::cout << doublet.first << "  " << M << std::endl;
+      std::exit(1);
+    }
     output.content.push_back(doublet);
   }
 #ifdef DEBUG
@@ -336,6 +341,7 @@ Word Word::reduce(int M,const std::set<unsigned int>& trivial_generators,const u
 
 Word Word::normalize() const
 {
+  assert(NL > 0);
   unsigned int i = 0;
   const unsigned int n = content.size();
   std::pair<unsigned int,int> doublet;
@@ -364,6 +370,10 @@ Word Word::normalize() const
       i += 1;
     }
   } while(true);
+
+#ifdef DEBUG
+  assert(output.legal());
+#endif
   return output;
 }
 

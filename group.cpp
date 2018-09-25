@@ -278,6 +278,14 @@ Group::Group(int n)
 Group::Group(int n,const std::vector<Word>& R)
 {
   assert(n >= 0);
+  if (n == 0) {
+    assert(R.empty());
+  }
+  else {
+    for(int i=0; i<(signed) R.size(); ++i) {
+      assert(R[i].NL == (unsigned) n);
+    }
+  }
   initialize(n,R);
 }
 
@@ -444,6 +452,7 @@ bool Group::equivalent(const Word& w1,const Word& w2) const
 void Group::reduce()
 {
   if (relations.empty()) return;
+  assert(ngenerator > 0);
 
   unsigned int i,j,p,q,offset[ngenerator],n = 0;
   bool inv,reduction = false,change = false;
@@ -472,7 +481,9 @@ void Group::reduce()
     n++;  
   }
   ngenerator -= trivial_generators.size();
-
+#ifdef DEBUG
+  assert(n == ngenerator);
+#endif  
   for(i=0; i<new_relations.size(); ++i) {
     w = new_relations[i].reduce(ngenerator,trivial_generators,offset);
     relations.push_back(w.normalize());
@@ -581,7 +592,7 @@ void Group::initialize(int r,const std::vector<unsigned int>& torsion)
   finite = (rank > 0) ? false : true;
   ngenerator = rank + torsion.size();
   Word w(ngenerator);
-  w.clear();
+  w.content.clear();
   for(i=0; i<rank; ++i) {
     for(j=i+1; j<rank; ++j) {
       w.content.push_back(std::pair<int,int>(i,1));
@@ -589,7 +600,7 @@ void Group::initialize(int r,const std::vector<unsigned int>& torsion)
       w.content.push_back(std::pair<int,int>(i,-1));
       w.content.push_back(std::pair<int,int>(j,-1));
       relations.push_back(w);
-      w.clear();
+      w.content.clear();
     }
   }
   if (rank == 0) cardinality = 0;
@@ -607,15 +618,20 @@ void Group::initialize(int r,const std::vector<unsigned int>& torsion)
 void Group::initialize(int n,const std::vector<Word>& R)
 {
   assert(n >= 0);
+  if (n == 0) assert(R.empty());
+
   ngenerator = (unsigned) n;
   relations = R;
-  reduce();
+ 
   if (ngenerator == 0) {
     abelian = true;
     cardinality = 1;
     finite = true;
     solvable = true;
     free = true;
+  }
+  else {
+    reduce();
   }
 }
 

@@ -119,7 +119,6 @@ void Homotopy::compute(const Nexus* NX)
 {
   int i,j,q,r,ngen,n1,n2,n3,e1,e2,nf,vx[3],ntree;
   bool found;
-  Word w(0);
   std::vector<int> tree_edges,generator,s1,s2;
   std::vector<Word> relations;
   const int ne = (signed) NX->elements[1].size();
@@ -156,8 +155,9 @@ void Homotopy::compute(const Nexus* NX)
     }
   }
   ngen = (signed) generator.size()/2;
+  Word w(ngen);
   for(i=0; i<nr; ++i) {
-    w.clear();
+    w.content.clear();
     NX->elements[2][s2[i]].get_vertices(vx);
 
     nf = 0;

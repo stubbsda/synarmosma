@@ -1620,6 +1620,7 @@ int Geometry::compute_coordinates(std::vector<double>& x) const
     its++;
   } while(its <= M);
   */
+  assert(nvertex > 1);
   int info,nv = nvertex,nwork = 3*nvertex - 1;
   char jtype='V',tsp='N',uplo='U';
   double zero = 0.0,alpha = 1.0;

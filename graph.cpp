@@ -751,6 +751,7 @@ void Graph::katz_centrality(std::vector<double>& output) const
   // graph - we first need to compute the adjacency matrix and its 
   // largest eigenvalue, then we use a recursive process in order to 
   // compute the vector of centrality values.
+  assert(nvertex > 1);
   int i,info,nv = nvertex,nwork = 3*nvertex - 1;
   unsigned int j;
   char jtype = 'N';
