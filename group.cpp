@@ -481,12 +481,16 @@ void Group::reduce()
     n++;  
   }
   ngenerator -= trivial_generators.size();
-#ifdef DEBUG
-  assert(n == ngenerator);
-#endif  
-  for(i=0; i<new_relations.size(); ++i) {
-    w = new_relations[i].reduce(ngenerator,trivial_generators,offset);
-    relations.push_back(w.normalize());
+
+  if (trivial_generators.empty()) {
+    // Nothing to do in this case...
+    relations = new_relations;
+  }
+  else {
+    for(i=0; i<new_relations.size(); ++i) {
+      w = new_relations[i].reduce(ngenerator,trivial_generators,offset);
+      relations.push_back(w.normalize());
+    }
   }
   new_relations.clear();
 

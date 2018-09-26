@@ -322,15 +322,11 @@ Word Word::reduce(unsigned int M,const std::set<unsigned int>& trivial_generator
   Word output(M,0);
   std::pair<unsigned int,int> doublet;
   std::vector<std::pair<unsigned int,int> >::const_iterator it;
-  output.content.clear();
+
   for(it=content.begin(); it!=content.end(); ++it) {
     if (trivial_generators.count(it->first) == 1) continue;
     doublet.first = offset[it->first];
     doublet.second = it->second;
-    if (doublet.first >= M) {
-      std::cout << doublet.first << "  " << M << std::endl;
-      std::exit(1);
-    }
     output.content.push_back(doublet);
   }
 #ifdef DEBUG

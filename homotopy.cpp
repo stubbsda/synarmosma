@@ -125,6 +125,8 @@ void Homotopy::compute(const Nexus* NX)
   const int nr = (NX->dimension > 1) ? (signed) NX->elements[2].size() : 0;
 
   sequence.clear();
+  // Sanity check...
+  if (!NX->connected()) return;
 
   // First we need to calculate a spanning tree for the 1-skeleton of this complex...
   ntree = NX->spanning_tree(tree_edges);
@@ -135,7 +137,7 @@ void Homotopy::compute(const Nexus* NX)
     s2.push_back(i);
   }
 
-  // In princple, this is a group with ngenerators = nedges - ntree/2 and nrelations = ntriangles but we
+  // In principle, this is a group with ngenerators = nedges - ntree/2 and nrelations = ntriangles but we
   // can ignore those 2-simplices all of whose edges are in the spanning tree
   for(i=0; i<ne; ++i) {
     NX->elements[1][s1[i]].get_vertices(vx);
