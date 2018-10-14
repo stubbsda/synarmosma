@@ -45,6 +45,31 @@ Graph::Graph(int n,std::string& type) : Schema(n)
     // The final edge that makes it a ring
     add_edge(0,n-1); 
   }
+  else if (type == "petersen") {
+    // The Petersen graph, with 10 vertices and 15 edges
+    add_edge(0,1);
+    add_edge(0,4);
+    add_edge(0,5);
+
+    add_edge(1,2);
+    add_edge(1,6);
+   
+    add_edge(2,3);
+    add_edge(2,7);
+
+    add_edge(3,4);
+    add_edge(3,8);
+  
+    add_edge(4,9);
+
+    add_edge(5,7);
+    add_edge(5,8);
+
+    add_edge(6,8);
+    add_edge(6,9);
+        
+    add_edge(7,9);
+  }
 }
 
 Graph::Graph(int n,int c) : Schema(n)
@@ -1290,6 +1315,36 @@ double Graph::completeness() const
   return output;
 }
 
+double Graph::algebraic_connectivity() const
+{
+#ifdef DEBUG
+  assert(connected() && nvertex > 1);
+#endif
+  int i,j,info,nv = nvertex,nwork = 3*nvertex - 1;
+  char jtype = 'N';
+  char uplo = 'U';
+  double A[nvertex*nvertex],w[nvertex],work[nwork],output = 0.0;  
+
+  for(i=0; i<nvertex*nvertex; ++i) {
+    A[i] = 0.0;
+  }
+
+  for(i=0; i<nvertex; ++i) {
+    A[(nvertex+1)*i] = double(neighbours[i].size());
+    for(j=1+i; j<nvertex; ++j) {
+      if (connected(i,j)) {
+        A[nvertex*i+j] = -1.0; 
+        A[nvertex*j+i] = -1.0;
+      }
+    }
+  }
+
+  dsyev_(&jtype,&uplo,&nv,A,&nv,w,work,&nwork,&info);
+  if (info == 0) output = w[1];
+  
+  return output;
+}
+
 void Graph::compute_adjacency_matrix(Binary_Matrix* A) const
 {
   int i,j;
@@ -1316,11 +1371,7 @@ void Graph::adjacency_eigenvalues(std::vector<double>& output) const
   char jtype = 'N';
   char uplo = 'U';
   double AD[nvertex*nvertex],w[nvertex],work[nwork];
-  /*
-  double* AD = new double[nvertex*nvertex];
-  double* w = new double[nvertex];
-  double* work = new double[nwork];
-  */
+
   output.clear();
 
   for(i=0; i<nvertex*nvertex; ++i) {
@@ -1346,11 +1397,6 @@ void Graph::adjacency_eigenvalues(std::vector<double>& output) const
       output.push_back(w[i]);
     }
   }
-  /*
-  delete[] AD;
-  delete[] w;
-  delete[] work;
-  */
 }
 
 double Graph::entwinement() const

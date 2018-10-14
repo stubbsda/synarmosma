@@ -77,6 +77,7 @@ namespace SYNARMOSMA {
     double cyclicity() const;
     double connectivity() const;
     int omega() const;
+    double algebraic_connectivity() const;
     void katz_centrality(std::vector<double>&) const;
     void degree_distribution(bool,std::vector<double>&) const;
     double percolation(bool) const;

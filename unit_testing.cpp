@@ -45,18 +45,9 @@ int main(int argc,char** argv)
   assert(P.consistent());
  
   // The Petersen graph
+  std::string name = "petersen";
   std::cout << "Testing Tutte polynomial computation..." << std::endl;
-  SYNARMOSMA::Graph G(10);
-  // Outer pentagon
-  G.add_edge(0,1); G.add_edge(0,4); G.add_edge(0,5);
-  G.add_edge(1,2); G.add_edge(1,6);
-  G.add_edge(2,3); G.add_edge(2,7);
-  G.add_edge(3,4); G.add_edge(3,8);
-  G.add_edge(4,9);
-  // Inner pentagram
-  G.add_edge(5,7); G.add_edge(5,8);
-  G.add_edge(6,8); G.add_edge(6,9);
-  G.add_edge(7,9);
+  SYNARMOSMA::Graph G(10,name);
   std::vector<SYNARMOSMA::Monomial<int> > output;
   G.tutte_polynomial(output);
   for(i=0; i<(signed) output.size(); ++i) {
