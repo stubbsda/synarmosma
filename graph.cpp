@@ -15,6 +15,42 @@ Graph::Graph(int n) : Schema(n)
   // A graph with n vertices but no edges...
 }
 
+Graph::Graph(std::string& type)
+{
+  if (type == "petersen") {
+    // The Petersen graph, with 10 vertices and 15 edges
+    for(int i=0; i<10; ++i) {
+      add_vertex();
+    }
+    add_edge(0,1);
+    add_edge(0,4);
+    add_edge(0,5);
+
+    add_edge(1,2);
+    add_edge(1,6);
+   
+    add_edge(2,3);
+    add_edge(2,7);
+
+    add_edge(3,4);
+    add_edge(3,8);
+  
+    add_edge(4,9);
+
+    add_edge(5,7);
+    add_edge(5,8);
+
+    add_edge(6,8);
+    add_edge(6,9);
+        
+    add_edge(7,9);
+  }
+  else {
+    std::cerr << "Unrecognized graph type, exiting!" << std::endl;
+    std::exit(1);
+  }
+}
+
 Graph::Graph(int n,std::string& type) : Schema(n)
 {
   int i;
@@ -45,30 +81,26 @@ Graph::Graph(int n,std::string& type) : Schema(n)
     // The final edge that makes it a ring
     add_edge(0,n-1); 
   }
-  else if (type == "petersen") {
-    // The Petersen graph, with 10 vertices and 15 edges
-    add_edge(0,1);
-    add_edge(0,4);
-    add_edge(0,5);
+  else if (type == "connected") {
+    // Create a random connected graph on n vertices - we keep adding 
+    // random edges until the graph is connected
+    assert(n > 1);
 
-    add_edge(1,2);
-    add_edge(1,6);
-   
-    add_edge(2,3);
-    add_edge(2,7);
+    int u,v;
 
-    add_edge(3,4);
-    add_edge(3,8);
-  
-    add_edge(4,9);
-
-    add_edge(5,7);
-    add_edge(5,8);
-
-    add_edge(6,8);
-    add_edge(6,9);
-        
-    add_edge(7,9);
+    do {
+      do {
+        u = RND.irandom(n);
+        v = RND.irandom(n);
+        if (u != v) break;
+      } while(true);
+      if (!add_edge(u,v)) continue;
+      if (connected()) break;
+    } while(true);
+  }
+  else {
+    std::cerr << "Unrecognized graph type, exiting!" << std::endl;
+    std::exit(1);
   }
 }
 
@@ -1557,7 +1589,6 @@ int Graph::compute_laplacian(Matrix<double>* L) const
 {
   int i,nzero = 0;
   std::set<int>::const_iterator it;
-  const double m_one = -1.0;
 
   L->initialize(nvertex,nvertex);
 
@@ -1565,7 +1596,24 @@ int Graph::compute_laplacian(Matrix<double>* L) const
     if (neighbours[i].empty()) continue;
     L->set(i,i,double(neighbours[i].size())); nzero++;
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
-      L->set(i,*it,m_one); nzero++;
+      L->set(i,*it,-1.0); nzero++;
+    }
+  }
+  return nzero;
+}
+
+int Graph::compute_deformed_laplacian(std::complex<double> s,Matrix<std::complex<double> >* L) const
+{
+  int i,nzero = 0;
+  std::set<int>::const_iterator it;
+
+  L->initialize(nvertex,nvertex);
+
+  for(i=0; i<nvertex; ++i) {
+    if (neighbours[i].empty()) continue;
+    L->set(i,i,1.0 + s*s*double(neighbours[i].size() - 1)); nzero++;
+    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+      L->set(i,*it,-s); nzero++;
     }
   }
   return nzero;

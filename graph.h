@@ -23,6 +23,7 @@ namespace SYNARMOSMA {
     // The usual public methods for a class
     Graph();
     Graph(int);
+    Graph(std::string&);
     Graph(int,std::string&);
     Graph(int,int);
     Graph(int,double);
@@ -93,6 +94,7 @@ namespace SYNARMOSMA {
     double return_probability(int,int) const;
     void random_walk(double*,double*,int) const;
     void compute_adjacency_matrix(Binary_Matrix*) const;
+    int compute_deformed_laplacian(std::complex<double>,Matrix<std::complex<double> >*) const;
     int compute_laplacian(Matrix<double>*) const;
     int genus(std::vector<int>&) const;
     inline int size() const {return (signed) edges.size();};

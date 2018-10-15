@@ -47,7 +47,7 @@ int main(int argc,char** argv)
   // The Petersen graph
   std::string name = "petersen";
   std::cout << "Testing Tutte polynomial computation..." << std::endl;
-  SYNARMOSMA::Graph G(10,name);
+  SYNARMOSMA::Graph G(name);
   std::vector<SYNARMOSMA::Monomial<int> > output;
   G.tutte_polynomial(output);
   for(i=0; i<(signed) output.size(); ++i) {
