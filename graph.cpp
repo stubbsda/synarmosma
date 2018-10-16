@@ -17,7 +17,8 @@ Graph::Graph(int n) : Schema(n)
 
 Graph::Graph(std::string& type)
 {
-  if (type == "petersen") {
+  boost::to_upper(type);
+  if (type == "PETERSEN") {
     // The Petersen graph, with 10 vertices and 15 edges
     for(int i=0; i<10; ++i) {
       add_vertex();
@@ -55,7 +56,8 @@ Graph::Graph(int n,std::string& type) : Schema(n)
 {
   int i;
 
-  if (type == "complete") {
+  boost::to_upper(type);
+  if (type == "COMPLETE") {
     // The complete graph on n vertices...
     int j;
 
@@ -65,13 +67,13 @@ Graph::Graph(int n,std::string& type) : Schema(n)
       }
     }
   }
-  else if (type == "chain") {
+  else if (type == "CHAIN") {
     // A minimally connected graph with n - 1 edges
     for(i=0; i<n-1; ++i) {
       add_edge(i,i+1);
     }
   }
-  else if (type == "ring") {
+  else if (type == "RING") {
     // Much like the chain model except with a cyclic topology, 
     // thus a final edge connecting the end of the chain to its 
     // beginning
@@ -81,7 +83,7 @@ Graph::Graph(int n,std::string& type) : Schema(n)
     // The final edge that makes it a ring
     add_edge(0,n-1); 
   }
-  else if (type == "connected") {
+  else if (type == "CONNECTED") {
     // Create a random connected graph on n vertices - we keep adding 
     // random edges until the graph is connected
     assert(n > 1);

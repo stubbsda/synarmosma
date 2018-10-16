@@ -647,7 +647,7 @@ int Geometry::vertex_order(int n,int m) const
   return output;
 }
 
-void Geometry::create(int n,const std::string& type)
+void Geometry::create(int n,std::string& type)
 {
   if (!relational) {
     std::cerr << "Illegal geometric method call (initialize) for absolute model!" << std::endl;
@@ -657,6 +657,7 @@ void Geometry::create(int n,const std::string& type)
   distances.clear();
 
   int i,j;
+  boost::to_upper(type);
   if (type == "CARTESIAN") {
     nvertex = ipow(n,background_dimension);
     if (!high_memory) return;

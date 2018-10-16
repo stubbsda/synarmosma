@@ -153,18 +153,24 @@ int Propositional_System::deserialize(std::ifstream& s)
   return count;
 }
 
-int Propositional_System::consistency(int i,int j,const std::string& op) const
+int Propositional_System::consistency(int i,int j,std::string& type) const
 {
   assert(i >= 0 && j >= 0);
   boost::dynamic_bitset<> temp(nuniverse);
-  if (op == "and") {
+
+  boost::to_upper(type);
+  if (type == "AND") {
     temp = truth[i] & truth[j];
   }
-  else if (op == "xor") {
+  else if (type == "OR") {
+    temp = truth[i] | truth[j];
+  }
+  else if (type == "XOR") {
     temp = truth[i] ^ truth[j];
   }
   else {
-    temp = truth[i] | truth[j];
+    std::cerr << "Error - unknown Boolean operator, exiting!" << std::endl;
+    std::exit(1);
   }
   return temp.count();
 }

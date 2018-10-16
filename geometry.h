@@ -46,7 +46,7 @@ namespace SYNARMOSMA {
     void load(const Geometry*);
     void store(Geometry*) const;
     bool consistent() const;
-    void create(int,const std::string&);
+    void create(int,std::string&);
     void vertex_addition(int,double mutation=1.0);
     void vertex_addition(const std::set<int>&);
     inline void vertex_addition(const std::vector<double>&);

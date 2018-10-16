@@ -27,7 +27,7 @@ namespace SYNARMOSMA {
     int serialize(std::ofstream&) const;
     int deserialize(std::ifstream&);
     inline int bit_count(int n) const {return truth[n].count();};
-    int consistency(int,int,const std::string&) const;
+    int consistency(int,int,std::string&) const;
     bool implication(int,const std::vector<unsigned int>&) const;
     void compute_implication_graph(Directed_Graph*) const;
     friend class Logic_Graph;

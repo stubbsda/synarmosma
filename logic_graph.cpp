@@ -145,6 +145,7 @@ double Logic_Graph::rationalize_topology()
   // edges to verify that the proposition of the antecedent vertex
   // implies the propositions of its descendent vertex neighbours
   int i,m,n,vx[2],rsum,its = 0;
+  std::string op = "AND";
   std::vector<int> bcount;
   std::set<int>::const_iterator it;
   const int N = order()/2;
@@ -159,7 +160,7 @@ double Logic_Graph::rationalize_topology()
     m = RND.irandom(edges.size());
     its++;
     edges[m].get_vertices(vx);
-    n = logic->consistency(vx[0],vx[1],"and");
+    n = logic->consistency(vx[0],vx[1],op);
     // Keep this edge if the bit count is complete...
     if (n == bcount[vx[0]]) continue;
     // If not, drop it
@@ -172,7 +173,7 @@ double Logic_Graph::rationalize_topology()
   for(i=0; i<nvertex; ++i) {
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
       m = *it;
-      n = logic->consistency(i,m,"and");
+      n = logic->consistency(i,m,op);
       rsum += (bcount[i] - n);
     }
   }
