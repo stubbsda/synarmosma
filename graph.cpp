@@ -15,11 +15,103 @@ Graph::Graph(int n) : Schema(n)
   // A graph with n vertices but no edges...
 }
 
-Graph::Graph(std::string& type)
+Graph::Graph(std::string& name)
 {
-  boost::to_upper(type);
-  if (type == "PETERSEN") {
-    // The Petersen graph, with 10 vertices and 15 edges
+  // An assortment of "named" graphs...
+  boost::to_upper(name);
+  if (name == "DÜRER") {
+    for(int i=0; i<12; ++i) {
+      add_vertex();
+    }
+    add_edge(0,2);
+    add_edge(0,4);
+    add_edge(0,6);
+
+    add_edge(1,3);
+    add_edge(1,5);
+    add_edge(1,7);
+
+    add_edge(2,4);
+    add_edge(2,8);
+
+    add_edge(3,5);
+    add_edge(3,9);
+
+    add_edge(4,10);
+
+    add_edge(5,11);
+
+    add_edge(6,7);
+    add_edge(6,11);
+
+    add_edge(7,8);
+
+    add_edge(8,9);
+
+    add_edge(9,10);
+
+    add_edge(10,11);
+  }
+  else if (name == "GOLOMB") {
+    for(int i=0; i<10; ++i) {
+      add_vertex();
+    }
+    add_edge(0,1);
+    add_edge(0,5);
+    add_edge(0,6);
+
+    add_edge(1,2);
+    add_edge(1,6);
+    add_edge(1,7);
+
+    add_edge(2,3);
+    add_edge(2,6);
+
+    add_edge(3,4);
+    add_edge(3,6);
+    add_edge(3,8);
+
+    add_edge(4,5);
+    add_edge(4,6);
+
+    add_edge(5,6);
+    add_edge(5,9);
+
+    add_edge(7,8);
+    add_edge(7,9);
+    add_edge(8,9);
+  }
+  else if (name == "HERSCHEL") {
+    for(int i=0; i<11; ++i) {
+      add_vertex();
+    }
+    add_edge(0,1);
+    add_edge(0,7);
+    add_edge(0,8);
+    add_edge(0,10);
+
+    add_edge(1,2);
+    add_edge(1,9);
+
+    add_edge(2,3);
+    add_edge(2,10);
+
+    add_edge(3,4);
+    add_edge(3,9);
+
+    add_edge(4,5);
+    add_edge(4,8);
+    add_edge(4,10);
+
+    add_edge(5,6);
+    add_edge(5,9);
+
+    add_edge(6,7);
+    add_edge(6,8);
+
+    add_edge(7,9);
+  }
+  else if (name == "PETERSEN") {
     for(int i=0; i<10; ++i) {
       add_vertex();
     }
@@ -46,8 +138,21 @@ Graph::Graph(std::string& type)
         
     add_edge(7,9);
   }
+  else if (name == "WAGNER") {
+    for(int i=0; i<8; ++i) {
+      add_vertex();
+    }
+    for(int i=0; i<7; ++i) {
+      add_edge(i,i+1);
+    }
+    add_edge(0,7);
+
+    for(int i=0; i<4; ++i) {
+      add_edge(i,i+4);
+    }
+  }
   else {
-    std::cerr << "Unrecognized graph type, exiting!" << std::endl;
+    std::cerr << "Unrecognized graph name, exiting!" << std::endl;
     std::exit(1);
   }
 }
@@ -73,14 +178,14 @@ Graph::Graph(int n,std::string& type) : Schema(n)
       add_edge(i,i+1);
     }
   }
-  else if (type == "RING") {
+  else if (type == "CYCLIC") {
     // Much like the chain model except with a cyclic topology, 
     // thus a final edge connecting the end of the chain to its 
     // beginning
     for(i=0; i<n-1; ++i) {
       add_edge(i,i+1);
     }
-    // The final edge that makes it a ring
+    // The final edge that makes it cyclic
     add_edge(0,n-1); 
   }
   else if (type == "CONNECTED") {

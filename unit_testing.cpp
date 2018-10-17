@@ -12,7 +12,7 @@ int main(int argc,char** argv)
   int i,j,n = 25;
   auto d1 = SYNARMOSMA::Relation::before,d2 = SYNARMOSMA::Relation::after,d3 = SYNARMOSMA::Relation::disparate;
   double p = 0.15;
-  std::string type;
+  std::string type,name;
   std::vector<double> foo;
   std::pair<int,int> pr;
   SYNARMOSMA::edge_hash dmap;
@@ -45,7 +45,7 @@ int main(int argc,char** argv)
   assert(P.consistent());
  
   // The Petersen graph
-  std::string name = "petersen";
+  name = "petersen";
   std::cout << "Testing Tutte polynomial computation..." << std::endl;
   SYNARMOSMA::Graph G(name);
   std::vector<SYNARMOSMA::Monomial<int> > output;
@@ -81,7 +81,7 @@ int main(int argc,char** argv)
   delete CG2;
 
   std::cout << "Testing clustering coefficients..." << std::endl;
-  type = "ring";
+  type = "cyclic";
   SYNARMOSMA::Graph G2(n,type);
   G2.clustering_coefficient();
   G2.mean_path_length();
