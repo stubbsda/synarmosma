@@ -469,10 +469,7 @@ void Homology::compute_gap(const Nexus* NX)
       s << "RankMat(A);" << std::endl;
       s << "quit;" << std::endl;
       s.close();
-      if (std::system("gap -b < input.gap > homology.dat") != 0) {
-        std::cerr << "Unable to execute the GAP software in Nexus::compute_homology, exiting..." << std::endl;
-        std::exit(1);
-      }
+      if (std::system("gap -b < input.gap > homology.dat") != 0) throw std::runtime_error("Error in GAP execution!");
       // Now get the value of the matrix rank...
       std::ifstream file("homology.dat");
       while(std::getline(file,line)) {
@@ -547,11 +544,7 @@ void Homology::compute_gap(const Nexus* NX)
   s << "SCHomology(complex);" << std::endl;
   s << "quit;" << std::endl;
   s.close();
-  if (std::system("gap -b < input.gap > homology.dat") != 0) {
-    std::cerr << "Error in executing the GAP software in Nexus::compute_homology - are GAP and its simpcomp package installed?" << std::endl;
-    std::cerr << "Exiting..." << std::endl;
-    std::exit(1);
-  }
+  if (std::system("gap -b < input.gap > homology.dat") != 0) throw std::runtime_error("Error in GAP execution!");
   std::ifstream file("homology.dat",std::ios::in);
   while(std::getline(file,line)) {
     if (line.empty()) continue;

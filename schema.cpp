@@ -151,10 +151,7 @@ bool Schema::consistent() const
       if (in1 >= nvertex) return false;
       // If this neighbour vertex is local, then check to see if it too lists
       // i as a neighbour
-      if (neighbours[in1].count(i) != 1) {
-        std::cerr << "Schema inconsistent at " << i << " and " << in1 << std::endl;
-        std::exit(1);
-      }
+      if (neighbours[in1].count(i) != 1) throw std::runtime_error("Inconsistent neighbour lists!");
     }
   }
   return true;

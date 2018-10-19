@@ -89,6 +89,8 @@ namespace SYNARMOSMA {
   {
 #ifdef DEBUG
     assert(v1 != v2);
+    assert(v1 >= 0 && v1 < nvertex);
+    assert(v2 >= 0 && v2 < nvertex);
 #endif
     int n;
     if (v1 < v2) {
@@ -142,9 +144,8 @@ namespace SYNARMOSMA {
         if (kt == n) return coordinates[i][j];
         kt++;
      }
-    }   
-    std::cerr << "Error: Geometry element not found!" << std::endl;
-    std::exit(1);
+    }
+    throw std::invalid_argument("Missing element in Geometry::get_element method!");
   }
 
   void Geometry::set_element(int n,double alpha)
@@ -161,6 +162,7 @@ namespace SYNARMOSMA {
         kt++;
       }
     }
+    throw std::invalid_argument("Missing element in Geometry::set_element method!");
   }
 
   void Geometry::add(int n,double alpha)
@@ -177,14 +179,12 @@ namespace SYNARMOSMA {
         kt++;
       }
     }
+    throw std::invalid_argument("Missing element in Geometry::add method!");
   }
 
   void Geometry::vertex_addition(const std::vector<double>& x)
   {
-    if (relational) {
-      std::cerr << "Illegal geometric method call for relational model!" << std::endl;
-      std::exit(1);
-    }
+    if (relational) throw std::runtime_error("Illegal geometric method (vertex_addition) call for relational model!");
 #ifdef DEBUG
     assert((signed) x.size() >= background_dimension);
 #endif
@@ -262,10 +262,7 @@ namespace SYNARMOSMA {
 
   void Geometry::get_coordinates(int v,std::vector<double>& x) const
   {
-    if (relational) {
-      std::cerr << "Illegal geometric method call for relational model!" << std::endl;
-      std::exit(1);
-    }
+    if (relational) throw std::runtime_error("Illegal geometric method (get_coordinates) call for relational model!");
 #ifdef DISCRETE
     x.clear();
     for(int i=0; i<(signed) coordinates[v].size(); ++i) {
@@ -278,10 +275,7 @@ namespace SYNARMOSMA {
 
   void Geometry::set_coordinates(int v,const std::vector<double>& x)
   {
-    if (relational) {
-      std::cerr << "Illegal geometric method call for relational model!" << std::endl;
-      std::exit(1);
-    }
+    if (relational) throw std::runtime_error("Illegal geometric method (set_coordinates) call for relational model!");
 #ifdef DEBUG
     assert((signed) x.size() >= background_dimension);
 #endif
@@ -311,10 +305,7 @@ namespace SYNARMOSMA {
 
   double Geometry::get_distance(int v,const std::vector<double>& x,bool lorentzian) const 
   {
-    if (relational) {
-      std::cerr << "Illegal geometric method call for relational model!" << std::endl;
-      std::exit(1);
-    }
+    if (relational) throw std::runtime_error("Illegal geometric method (get_distance) call for relational model!");
 #ifdef DEBUG
     assert((signed) x.size() >= background_dimension);
 #endif

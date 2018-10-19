@@ -641,10 +641,7 @@ void Group::initialize(int n,const std::vector<Word>& R)
 
 void Group::compute_rank()
 {
-  if (!abelian) {
-    std::cerr << "Error: Rank is undefined for a non-abelian group!" << std::endl;
-    return;
-  }
+  if (!abelian) throw std::runtime_error("Rank is undefined for a non-abelian group!");
   if (finite) {
     rank = 0;
     return;

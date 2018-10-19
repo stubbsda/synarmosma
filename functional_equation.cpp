@@ -34,42 +34,42 @@ Functional_Equation<kind>::Functional_Equation(const char* filename)
   std::vector<std::string> alpha,beta,exponents;
   std::vector<unsigned int> bk;
 
-  std::ifstream s(filename,std::ios::in);
-  if (!s.is_open()) {
-    // File doesn't exist, print an error message and die
-    std::cerr << "The file " << filename << " cannot be found!" << std::endl;
-    std::exit(1);
+  std::ifstream s;
+  s.exceptions(std::ifstream::badbit);
+  try {
+    s.open(filename,std::ios::in);
+
+    // Loop through all lines in the parameter file
+    while(std::getline(s,line)) {
+      // If it's an empty line, continue
+      if (line.empty()) continue;
+      // If the line begins with a #, ignore it
+      if (line[0] == '#') continue;
+      if (first) {
+        // We need to determine the field of this equation 
+        trim(line);
+        first = false;
+        continue;
+      }
+      // Find the position of the colons
+      for(i=0; i<line.length(); ++i) {
+        if (line[i] == ':') bk.push_back(i);
+      }
+      assert(bk.size() == 2);
+      store = line.substr(0,bk[0]);
+      trim(store);
+      alpha.push_back(store);
+      store = line.substr(bk[0]+1,bk[1]-1);
+      trim(store);
+      beta.push_back(store);
+      store = line.substr(bk[1]+1,line.length());
+      trim(store);
+      exponents.push_back(store);
+      bk.clear();
+    }
   }
-  // Loop through all lines in the parameter file
-  while(std::getline(s,line)) {
-    // If it's an empty line, continue
-    if (line.empty()) continue;
-    // If the line begins with a #, ignore it
-    if (line[0] == '#') continue;
-    if (first) {
-      // We need to determine the field of this equation 
-      trim(line);
-      first = false;
-      continue;
-    }
-    // Find the position of the colons
-    for(i=0; i<line.length(); ++i) {
-      if (line[i] == ':') bk.push_back(i);
-    }
-    if (bk.size() != 2) {
-      std::cerr << "The file format is incorrect at line " << line << std::endl;
-      std::exit(1);
-    }
-    store = line.substr(0,bk[0]);
-    trim(store);
-    alpha.push_back(store);
-    store = line.substr(bk[0]+1,bk[1]-1);
-    trim(store);
-    beta.push_back(store);
-    store = line.substr(bk[1]+1,line.length());
-    trim(store);
-    exponents.push_back(store);
-    bk.clear();
+  catch (const std::ifstream::failure& e) {
+    std::cout << "Error in opening or reading the " << filename << " file!" << std::endl;
   }
   s.close();
 
@@ -356,10 +356,7 @@ namespace SYNARMOSMA
   Variety<unsigned int> Functional_Equation<NTL::ZZ>::reduce(int p)
   {
     assert(p > 0);
-    if (!NTL::ProbPrime(p)) {
-      std::cerr << "A functional equation can only be reduced over a prime!" << std::endl;
-      std::exit(1);
-    }
+    if (!NTL::ProbPrime(p)) throw std::invalid_argument("Functional equation must be reduced over a prime!");
     unsigned int j,in1;
     long q;
     NTL::ZZ z;

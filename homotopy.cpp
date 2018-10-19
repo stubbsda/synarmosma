@@ -259,10 +259,7 @@ void Homotopy::compute(const Nexus* NX)
 namespace SYNARMOSMA {
   Homotopy operator +(const Homotopy& h1,const Homotopy& h2)
   {
-    if (h1.sequence.size() != h2.sequence.size()) {
-      std::cerr << "These two homotopy sequences cannot be added: they don't have the same length!" << std::endl;
-      std::exit(1);
-    }
+    if (h1.sequence.size() != h2.sequence.size()) throw std::invalid_argument("Homotopy sequences of unequal length cannot be added!");
     unsigned int i,bisection = 1 + RND.irandom(h1.sequence.size()-1);
     Homotopy output;
 

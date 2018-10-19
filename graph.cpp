@@ -152,8 +152,7 @@ Graph::Graph(std::string& name)
     }
   }
   else {
-    std::cerr << "Unrecognized graph name, exiting!" << std::endl;
-    std::exit(1);
+    throw std::invalid_argument("Unrecognized graph name!");
   }
 }
 
@@ -206,8 +205,7 @@ Graph::Graph(int n,std::string& type) : Schema(n)
     } while(true);
   }
   else {
-    std::cerr << "Unrecognized graph type, exiting!" << std::endl;
-    std::exit(1);
+    throw std::invalid_argument("Unrecognized graph type!");
   }
 }
 

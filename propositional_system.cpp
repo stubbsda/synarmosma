@@ -20,40 +20,43 @@ Propositional_System::Propositional_System(int n,const char* filename)
   std::string line,name,value;
 
   // Open the parameter file
-  std::ifstream s(filename,std::ios::in);
-  if (s.is_open() == false) {
-    // If the file isn't there, print an error message and
-    // exit cleanly
-    std::cerr << "The file " << filename << " cannot be found!" << std::endl;
-    std::exit(1);
-  }
+  std::ifstream s;
+  s.exceptions(std::ifstream::badbit);
+  try {
+    s.open(filename,std::ios::in);
 
-  while(std::getline(s,line)) {
-    // If it's an empty line, continue
-    if (line.empty()) continue;
-    // If the line begins with a #, ignore it
-    if (line[0] == '#') continue;
-    // Find the position of the equals sign
-    eq_point = 0;
-    for(i=0; i<line.length(); ++i) {
-      if (line[i] == '=') {
-        eq_point = i;
-        break;
+    while(std::getline(s,line)) {
+      // If it's an empty line, continue
+      if (line.empty()) continue;
+      // If the line begins with a #, ignore it
+      if (line[0] == '#') continue;
+      // Find the position of the equals sign
+      eq_point = 0;
+      for(i=0; i<line.length(); ++i) {
+        if (line[i] == '=') {
+          eq_point = i;
+          break;
+        }
+      }
+      // If there's no equals sign in this line, continue
+      if (eq_point < 1) continue;
+      name = line.substr(0,eq_point-1);
+      trim(name);
+      value = line.substr(eq_point+1,line.length());
+      trim(value);
+      // Now that we have the parameter name, see if it matches
+      // any of the known parameters. If so, read in the value and
+      // assign it
+      if (name == "naxiom") {
+        natom = boost::lexical_cast<int>(value);
       }
     }
-    // If there's no equals sign in this line, continue
-    if (eq_point < 1) continue;
-    name = line.substr(0,eq_point-1);
-    trim(name);
-    value = line.substr(eq_point+1,line.length());
-    trim(value);
-    // Now that we have the parameter name, see if it matches
-    // any of the known parameters. If so, read in the value and
-    // assign it
-    if (name == "naxiom") {
-      natom = boost::lexical_cast<int>(value);
-    }
   }
+  catch (const std::ifstream::failure& e) {
+    std::cout << "Error in opening or reading the " << filename << " file!" << std::endl;
+  }
+  s.close();
+
   initialize(n);
 }
 
@@ -169,8 +172,7 @@ int Propositional_System::consistency(int i,int j,std::string& type) const
     temp = truth[i] ^ truth[j];
   }
   else {
-    std::cerr << "Error - unknown Boolean operator, exiting!" << std::endl;
-    std::exit(1);
+    throw std::invalid_argument("Unknown Boolean operator!");
   }
   return temp.count();
 }

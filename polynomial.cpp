@@ -309,11 +309,7 @@ namespace SYNARMOSMA {
   template<>
   unsigned int Polynomial<unsigned int>::evaluate(unsigned int x)
   {
-    assert(x >= 0);
-    if (x > characteristic) {
-      std::cerr << "Cannot evaluate this argument!" << std::endl;
-      std::exit(1);
-    }
+    if (x >= characteristic) throw std::invalid_argument("Argument exceeds field characteristic!");
     int i;
     unsigned int y = 0;
     for(i=degree; i>=0; --i) {

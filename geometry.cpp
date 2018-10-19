@@ -649,10 +649,7 @@ int Geometry::vertex_order(int n,int m) const
 
 void Geometry::create(int n,std::string& type)
 {
-  if (!relational) {
-    std::cerr << "Illegal geometric method call (initialize) for absolute model!" << std::endl;
-    std::exit(1);
-  }
+  if (!relational) throw std::runtime_error("Illegal geometric method (initialize) call for absolute model!");
 
   distances.clear();
 
@@ -792,17 +789,14 @@ void Geometry::create(int n,std::string& type)
     }
   }
   else {
-    std::cerr << "Illegal spatial type in Geometry::initialize!" << std::endl;
-    std::exit(1);
+    throw std::invalid_argument("Unrecognized spatial type in Geometry class!");
   }
 }
 
 void Geometry::vertex_difference(int n,int m,std::vector<double>& delta) const
 {
-  if (relational) {
-    std::cerr << "Illegal geometric method call (vertex_difference) for relational model!" << std::endl;
-    std::exit(1);
-  }
+  if (relational) throw std::runtime_error("Illegal geometric method (vertex_difference) call for relational model!");
+
   int i;
 
   delta.clear();
@@ -1650,10 +1644,7 @@ int Geometry::compute_coordinates(std::vector<double>& x) const
   dgemm_(&tsp,&tsp,&nv,&nv,&nv,&alpha,A,&nv,J,&nv,&zero,B,&nv);
   // Now compute the eigenvalues and eigenvectors of B
   dsyev_(&jtype,&uplo,&nv,B,&nv,w,work,&nwork,&info);
-  if (info != 0) {
-    std::cerr << "Error in coordinate calculation, exiting..." << std::endl;
-    std::exit(1);
-  }
+  if (info != 0) throw std::runtime_error("Error in coordinate calculation!");
   for(i=0; i<nvertex; ++i) {
     if (w[i] > 0.01) {
       edim++;

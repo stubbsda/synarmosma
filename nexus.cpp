@@ -383,10 +383,7 @@ void Nexus::compute_entourages()
     for(j=0; j<ns; ++j) {
       for(k=0; k<1+i; ++k) {
         qt = index_table[i-1].find(elements[i][j].faces[k]);
-        if (qt == index_table[i-1].end()) {
-          std::cerr << "Entourage error: " << i << "  " << j << "  " << make_key(elements[i][j].vertices) << "  "<< make_key(elements[i][j].faces[k]) << std::endl;
-          std::exit(1);
-        }
+        if (qt == index_table[i-1].end()) throw std::runtime_error("Missing entourage element!");
         elements[i-1][qt->second].entourage.insert(j);
       }
     }

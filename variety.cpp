@@ -35,10 +35,7 @@ namespace SYNARMOSMA
 #endif
     nequation = n;
     nvariable = n;
-    if (!NTL::ProbPrime(p)) {
-      std::cerr << "The field characteristic must be a prime!" << std::endl;
-      std::exit(1);
-    }
+    if (!NTL::ProbPrime(p)) throw std::invalid_argument("Field characteristic must be prime!");
     nvariable = p;
     characteristic = p;
     allocate();
