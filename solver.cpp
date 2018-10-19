@@ -192,7 +192,7 @@ namespace SYNARMOSMA {
 template<class kind>
 bool Solver<kind>::linear_solver(const std::vector<kind>& x,const std::vector<kind>& b,std::vector<kind>& xnew) const
 {
-  bool success = false;
+  bool success = true;
   if (method == Linear_Solver::direct) {
     // Use the direct LAPACK-based linear solver
     xnew = b;
@@ -201,8 +201,12 @@ bool Solver<kind>::linear_solver(const std::vector<kind>& x,const std::vector<ki
   else {
     // Use the native Gauss-Seidel iterative solver in the Matrix class
     xnew = x;
-    int n = J->gauss_seidel_solver(xnew,b,epsilon,100);
-    if (n > 0) success = true;
+    try {
+      J->gauss_seidel_solver(xnew,b,epsilon,100);
+    }
+    catch (std::runtime_error& e) {
+      success = false;
+    }
   }
   return success;
 }
@@ -283,8 +287,8 @@ int Solver<kind>::forward_step()
       output = true;
       break;
     }
-    // Diverging, time to exit...
-    if ((fnorm/old_norm) > 10.0) break;
+    // Diverging, time to break out of the principal loop...
+    if ((fnorm/old_norm) > 10.0) throw std::runtime_error("Newton-Raphson iterations are diverging!");
     old_norm = fnorm;
     its++;
     if (its > max_its) break;
@@ -311,11 +315,10 @@ int Solver<kind>::forward_step()
     f = fnew;
   } while(true);
 
-  if (output) {
-    c_solution = xnew;
-    return its;
-  }
-  return -1;
+  if (!output) throw std::runtime_error("Newton-Raphson solver failed to converge!");
+
+  c_solution = xnew;
+  return its;
 }
 
 namespace SYNARMOSMA {
@@ -367,42 +370,56 @@ bool Solver<kind>::solve(std::vector<kind>& output)
   c_solution = base_solution;
 
   if (homotopy) {
+    bool converged = false;
     t = 0.01;
     do {
-      n = forward_step();
-      if (n > 0 && std::abs(1.0 - t) < epsilon) break;
-      if (n == -1) {
+      try {
+        n = forward_step();
+      }
+      catch (std::runtime_error& e) {
 #ifdef VERBOSE
         std::cout << "Homotopy solver failed at t = " << t << ", halving step size..." << std::endl;
 #endif
         dt /= 2.0;
         t -= dt;
       }
-      else {
+      if (n > 0) {
+        if (std::abs(1.0 - t) < epsilon) {
 #ifdef VERBOSE
-        std::cout << "Homotopy solver succeeded at t = " << t << " after " << n << " iterations." << std::endl;
+          std::cout << "Homotopy solver has converged, exiting..." << std::endl;
 #endif
-        if (n < int(0.25*max_its)) {
-          dt *= 2.0;
+          converged = true;
         }
-        else if (n > int(0.75*max_its)) {
-          dt /= 2.0;
+        else {
+#ifdef VERBOSE
+          std::cout << "Homotopy solver succeeded at t = " << t << " after " << n << " iterations." << std::endl;
+#endif
+          if (n < int(0.25*max_its)) {
+            dt *= 2.0;
+          }
+          else if (n > int(0.75*max_its)) {
+            dt /= 2.0;
+          }
+          t += dt;
         }
-        t += dt;
       }
       if (dt < epsilon) {
 #ifdef VERBOSE
-        std::cout << "Homotopy method failed, exiting..." << std::endl;
+        std::cout << "Homotopy method has failed, exiting..." << std::endl;
 #endif
         success = false;
         break;
       }
       if (t > 1.0) t = 1.0;
-    } while(true);
+    } while(!converged);
   } 
   else {
-    n = forward_step();
-    if (n == -1) success = false;
+    try {
+      n = forward_step();
+    }
+    catch (std::runtime_error& e) {
+      success = false;
+    }
   }
 
   if (success) output = c_solution;

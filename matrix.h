@@ -88,7 +88,7 @@ namespace SYNARMOSMA {
     void multiply(const std::vector<kind>&,std::vector<kind>&) const;
     void increment(const Matrix<kind>&);
     void homotopy_scaling(kind,kind,Matrix<kind>*) const;
-    int gauss_seidel_solver(std::vector<kind>&,const std::vector<kind>&,double,int);
+    void gauss_seidel_solver(std::vector<kind>&,const std::vector<kind>&,double,int);
     kind get_first_nonzero(int) const;
     inline int get_nrow() const {return nrow;};
     void get_row(std::vector<kind>&,std::vector<unsigned int>&,int) const;

@@ -510,20 +510,20 @@ namespace SYNARMOSMA {
   // This method only makes sense in the context of a field, so we will create null versions for the int 
   // and NTL::ZZ instantiations of the class
   template<>
-  int Matrix<int>::gauss_seidel_solver(std::vector<int>& x,const std::vector<int>& b,double threshold,int max_its)
+  void Matrix<int>::gauss_seidel_solver(std::vector<int>& x,const std::vector<int>& b,double threshold,int max_its)
   {
-    return -1;
+    throw std::runtime_error("Cannot use Gauss-Seidel solver over a ring!");
   }
 
   template<>
-  int Matrix<NTL::ZZ>::gauss_seidel_solver(std::vector<NTL::ZZ>& x,const std::vector<NTL::ZZ>& b,double threshold,int max_its)
+  void Matrix<NTL::ZZ>::gauss_seidel_solver(std::vector<NTL::ZZ>& x,const std::vector<NTL::ZZ>& b,double threshold,int max_its)
   {
-    return -1;
+    throw std::runtime_error("Cannot use Gauss-Seidel solver over a ring!");
   }
 }
 
 template<class kind>
-int Matrix<kind>::gauss_seidel_solver(std::vector<kind>& soln,const std::vector<kind>& source,double threshold,int max_its)
+void Matrix<kind>::gauss_seidel_solver(std::vector<kind>& soln,const std::vector<kind>& source,double threshold,int max_its)
 {
 #ifdef DEBUG
   assert(soln.size() == nrow);
@@ -555,15 +555,7 @@ int Matrix<kind>::gauss_seidel_solver(std::vector<kind>& soln,const std::vector<
 
   get_diagonal(diagonal);
   for(i=0; i<nrow; ++i) {
-#ifdef VERBOSE
-    //std::cout << "Diagonal element of row " << i << " is " << diagonal[i] << std::endl;
-#endif
-    if (std::abs(diagonal[i]) < std::numeric_limits<double>::epsilon()) {
-#ifdef VERBOSE
-      std::cout << "Illegal diagonal element value, exiting!" << std::endl;
-#endif
-      return -1;
-    }
+    if (std::abs(diagonal[i]) < std::numeric_limits<double>::epsilon()) throw std::runtime_error("Diagonal element is zero!");
   }
 
   error = 0.0;
@@ -608,18 +600,16 @@ int Matrix<kind>::gauss_seidel_solver(std::vector<kind>& soln,const std::vector<
     std::cout << "For iteration " << its << " the solution error of the linear system is " << error_new << std::endl;
 #endif
     if (error_new < threshold) break;
-    if (error_new > 10000.0) return -1;
-    if (error_new > 2.0*error && error_new > 5.0) return -1;
+    if (error_new > 10000.0) throw std::runtime_error("Iterations are diverging!");
+    if (error_new > 2.0*error && error_new > 5.0) throw std::runtime_error("Iterations are diverging!");
     error = error_new;
     x = x_new;
     if (its >= max_its) break;
   } while(true);
 
-  if (its == max_its && !(error < threshold)) return -1;
+  if (its == max_its && !(error < threshold)) throw std::runtime_error("Failed to converge after maximum iterations!");
 
   soln = x_new;
-
-  return its;
 }
 
 template<class kind>
