@@ -55,7 +55,9 @@ Functional_Equation<kind>::Functional_Equation(const char* filename)
       for(i=0; i<line.length(); ++i) {
         if (line[i] == ':') bk.push_back(i);
       }
+#ifdef DEBUG
       assert(bk.size() == 2);
+#endif
       store = line.substr(0,bk[0]);
       trim(store);
       alpha.push_back(store);
