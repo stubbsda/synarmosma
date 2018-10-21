@@ -249,6 +249,52 @@ bool Directed_Graph::singly_connected() const
   return true;
 }
 
+bool Directed_Graph::connected() const
+{
+  int i,n = -1,p,m = 0;
+  std::vector<int> ubiquity;
+  std::set<int> S,change,nchange;
+  std::set<int>::const_iterator it,jt;
+  hash_map::const_iterator qt;
+
+  for(i=0; i<nvertex; ++i) {
+    p = (signed) neighbours[i].size();
+    if (p > m) {
+      m = p;
+      n = i;
+    }
+    ubiquity.push_back(0);
+  }
+  if (n == -1) return false;
+  ubiquity[n] = 1;
+  change.insert(n);
+
+  do {
+    for(it=change.begin(); it!=change.end(); ++it) {
+      i = *it;
+      for(jt=neighbours[i].begin(); jt!=neighbours[i].end(); ++jt) {
+        n = *jt;
+        if (ubiquity[n] == 1) continue;
+        S.clear();
+        S.insert(i); S.insert(n);
+        qt = index_table.find(S);
+        if (edges[qt->second].get_direction(i,n) == Relation::before) nchange.insert(n);
+      }
+    }
+    if (nchange.empty()) break;
+    for(it=nchange.begin(); it!=nchange.end(); ++it) {
+      ubiquity[*it] = 1;
+    }
+    change = nchange;
+    nchange.clear();
+  } while(true);
+  for(i=0; i<nvertex; ++i) {
+    if (ubiquity[i] == 0) return false;
+  }
+
+  return true;
+}
+
 int Directed_Graph::distance(int u,int v) const
 {
   // A method to calculate the topological distance from 

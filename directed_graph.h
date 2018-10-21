@@ -26,6 +26,7 @@ namespace SYNARMOSMA {
     double compute_flow(int,int) override;
     int distance(int,int) const override;
     void compute_distances(edge_hash&) const override; 
+    bool connected() const override;
     bool mutate_edge(int,int);
     void compute_directedness();
     inline int directedness() const {return number_directed;};

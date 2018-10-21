@@ -4,10 +4,16 @@
 #define _mtimeh
 
 namespace SYNARMOSMA {
+  /// A class representing the concept of a dynamic multi-dimensional time.
   class Multitime {
    protected:
+    /// This vector represents the value of the time in each of its dimensions, 
+    /// along with a Boolean that indicates whether this temporal dimension is 
+    /// currently active.
     std::vector<std::pair<double,bool> > chronos; 
-    // Not too Aristotelian, perhaps?
+    /// This property sets the length of the vector chronos and is so the maximum 
+    /// number of possible temporal dimensions; currently set to the conventional 
+    /// value of unity.
     static const unsigned int tdimension = 1;
 
     void clear();

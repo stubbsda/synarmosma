@@ -17,7 +17,7 @@ namespace SYNARMOSMA {
     virtual ~Schema();
     virtual int serialize(std::ofstream&) const;
     virtual int deserialize(std::ifstream&);
-    bool connected() const;
+    virtual bool connected() const;
     inline bool connected(int,int) const;
     virtual void clear();
     inline int add_vertex();
