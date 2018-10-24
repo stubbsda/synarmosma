@@ -37,17 +37,29 @@ namespace SYNARMOSMA {
     std::set<int> entourage;
 
    public:
+    /// The default constructor that sets all properties to their default value.
     Vertex();
+    /// Standard copy constructor for this class.
     Vertex(const Vertex&);
+    /// Standard destructor for this class, virtual since the class is expected to have sub-classes.
     virtual ~Vertex();
+    /// The assignment operator that copies over all class properties from the source to the target.
     Vertex& operator =(const Vertex&);
+    /// This method tests if the energy property of this instance is zero.
     inline bool zero_energy() const;
+    /// This returns the energy of the vertex as a double precision number regardless of the storage format (UINT64 or double).
     inline double get_energy() const;
+    /// This method sets the energy value using a double, which if DISCRETE is then divided by the energy quantum to get an unsigned 64 bit integer.
     inline void set_energy(double);
+    /// This method increments the energy value using a double, which if DISCRETE is then divided by the energy quantum to get an unsigned 64 bit integer that can be added to the current value.
     inline void increment_energy(double);
+    /// This method sets the energy property equal to zero.
     inline void nullify_energy();
+    /// This method writes the instance properties to a binary disk file and returns the number of bytes written to the file.
     virtual int serialize(std::ofstream&) const;
+    /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
     virtual int deserialize(std::ifstream&);
+    /// This method restores all the properties of the instance to their initialization value.
     virtual void clear();
   };
 
@@ -72,9 +84,7 @@ namespace SYNARMOSMA {
 
   void Vertex::increment_energy(double E)
   {
-#ifdef DEBUG
-    assert(E > std::numeric_limits<double>::epsilon());
-#endif
+    if (E <= std::numeric_limits<double>::epsilon()) throw std::invalid_argument("Vertex::increment_energy argument must be greater than zero!");
 #ifdef DISCRETE
     energy += UINT64(E/energy_quantum);
 #else
@@ -84,9 +94,7 @@ namespace SYNARMOSMA {
 
   void Vertex::set_energy(double E)
   {
-#ifdef DEBUG
-    assert(E > std::numeric_limits<double>::epsilon());
-#endif
+    if (E <= std::numeric_limits<double>::epsilon()) throw std::invalid_argument("Vertex::set_energy argument must be greater than zero!");
 #ifdef DISCRETE
     energy = UINT64(E/energy_quantum);
 #else
