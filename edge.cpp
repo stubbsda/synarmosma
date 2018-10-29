@@ -9,9 +9,7 @@ Edge::Edge()
 
 Edge::Edge(int u,int v,double ell,Relation d)
 {
-#ifdef DEBUG
-  assert(u != v);
-#endif
+  if (u == v) throw std::invalid_argument("The Edge class cannot be used for self-loops!");
 
   if (u < v) {
     low = u;

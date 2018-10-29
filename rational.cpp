@@ -16,6 +16,7 @@ Rational::Rational(int x)
 
 Rational::Rational(int x,int y)
 {
+  if (y == 0) throw std::invalid_argument("The denominator of a rational cannot be zero!");
   n = NTL::to_ZZ(x);
   d = NTL::to_ZZ(y);
   normalize();
@@ -23,6 +24,7 @@ Rational::Rational(int x,int y)
 
 Rational::Rational(const NTL::ZZ& x,const NTL::ZZ& y)
 {
+  if (y == 0) throw std::invalid_argument("The denominator of a rational cannot be zero!");
   n = x;
   d = y;
   normalize();
@@ -38,9 +40,11 @@ Rational::Rational(const Rational& source)
 Rational& Rational::operator =(const Rational& source)
 {
   if (this == &source) return *this;
+
   n = source.n;
   d = source.d;
   height = source.height;
+
   return *this;
 }
 
@@ -58,18 +62,9 @@ Rational::~Rational()
 
 }
 
-NTL::ZZ Rational::numerator() const
-{
-  return n;
-}
-
-NTL::ZZ Rational::denominator() const
-{
-  return d;
-}
-
 void Rational::invert()
 {
+  if (n == 0) throw std::runtime_error("Cannot invert a rational equal to zero!");
   NTL::ZZ temp = n;
   n = d;
   d = temp;
@@ -130,6 +125,7 @@ namespace SYNARMOSMA {
 
   Rational operator /(const Rational& r1,const Rational& r2)
   {
+    if (r2.n == 0) throw std::invalid_argument("Cannot divide by a rational equal to zero!");
     Rational output(0);
     output.n = r1.n*r2.d;
     output.d = r1.d*r2.n;
@@ -227,11 +223,6 @@ namespace SYNARMOSMA {
     return false;
   }
 
-  Rational qdiv(const Rational& a,const Rational& b)
-  {
-    return a;
-  }
-
   int convert(const Rational& q,int p)
   {
     // Here we have to use the relation q = r/s => s*q = r, i.e. 
@@ -241,7 +232,7 @@ namespace SYNARMOSMA {
     int i,output = 0;
     NTL::ZZ r,s,in1;
 
-    assert(p > 0);
+    if (!NTL::ProbPrime(p)) throw std::invalid_argument("Field characteristic must be prime!");
 
     r = q.numerator() % p;
     if (q.denominator() == 1) {

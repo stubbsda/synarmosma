@@ -3,16 +3,20 @@
 #ifndef _rationalh
 #define _rationalh
 
-// A class for rational numbers, i.e. a number of the form n/d where 
-// n and d are whole numbers. We assume that d is always greater 
-// than zero.
 namespace SYNARMOSMA {  
+  /// A class for rational numbers, i.e. a number of the form n/d where n and d are whole numbers; we assume that d is always greater than zero.
   class Rational {
    private:
-    NTL::ZZ d,n;
+    /// The numerator of a rational number, stored as a multi-precision integer using the NTL::ZZ type.
+    NTL::ZZ n;
+    /// The denominator of a rational number, stored as a multi-precision integer using the NTL::ZZ type.
+    NTL::ZZ d;
+    /// The height of this rational number, defined to be log(abs(n)) when n >= d, otherwise log(abs(d)).
     double height;
   
+    /// This method makes the numerator and denominator coprime and computes the height property of this instance.
     void normalize();
+    /// Turns the rational q into its reciprocal 1/q, i.e. n => d', d => n'.
     void invert();
    public:
     Rational();
@@ -23,8 +27,8 @@ namespace SYNARMOSMA {
     Rational operator -();
     Rational(const Rational&);
     ~Rational();
-    NTL::ZZ numerator() const;
-    NTL::ZZ denominator() const;
+    inline NTL::ZZ numerator() const {return n;};
+    inline NTL::ZZ denominator() const {return d;};
     friend Rational operator -(const Rational&);
     friend Rational operator +(const Rational&,const Rational&);
     friend Rational operator -(const Rational&,const Rational&);
@@ -44,6 +48,5 @@ namespace SYNARMOSMA {
   };
 
   int convert(const Rational&,int);
-  Rational qdiv(const Rational&,const Rational&);
 }
 #endif 
