@@ -4,14 +4,13 @@ using namespace SYNARMOSMA;
 
 Rational::Rational()
 {
-  n = 0;
-  d = 1;
+
 }
 
 Rational::Rational(int x)
 {
   n = NTL::to_ZZ(x);
-  d = 1;
+  compute_height();
 }
 
 Rational::Rational(int x,int y)
@@ -68,18 +67,22 @@ void Rational::invert()
   NTL::ZZ temp = n;
   n = d;
   d = temp;
+  compute_height();
 }
 
 void Rational::normalize()
 {
-  // This method will make n and d coprime.
-  NTL::ZZ c;
-  c = NTL::GCD(n,d);
-  if (c != 1) {
+  // This method will normalize the sign of n and d, make n and d co-prime and finally compute the height.
+  if (d < 0) {
+    n = -n;
+    d = -d;
+  }
+  NTL::ZZ c = NTL::GCD(NTL::abs(n),NTL::abs(d));
+  if (c > 1) {
     n = n/c;
     d = d/c;
   }
-  height = (NTL::abs(n) > NTL::abs(d)) ? NTL::log(NTL::abs(n)) : NTL::log(NTL::abs(d));
+  compute_height();
 }
 
 namespace SYNARMOSMA {
@@ -234,8 +237,8 @@ namespace SYNARMOSMA {
 
     if (!NTL::ProbPrime(p)) throw std::invalid_argument("Field characteristic must be prime!");
 
-    r = q.numerator() % p;
-    if (q.denominator() == 1) {
+    r = q.get_numerator() % p;
+    if (q.get_denominator() == 1) {
       for(i=0; i<p; ++i) {
         if (r == i) {
           output = i;
@@ -244,7 +247,7 @@ namespace SYNARMOSMA {
       }
       return output;
     }
-    s = q.denominator() % p;
+    s = q.get_denominator() % p;
     // This method isn't very efficient but it works.
     for(i=0; i<p; ++i) {
       in1 = s*i;

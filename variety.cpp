@@ -188,8 +188,8 @@ namespace SYNARMOSMA {
       n = equations[i].size();
       s.write((char*)(&n),sizeof(int)); count += sizeof(int);
       for(j=0; j<n; ++j) {
-        count += write_ZZ(s,equations[i][j].coefficient.numerator());
-        count += write_ZZ(s,equations[i][j].coefficient.denominator());
+        count += write_ZZ(s,equations[i][j].coefficient.get_numerator());
+        count += write_ZZ(s,equations[i][j].coefficient.get_denominator());
         m = equations[i][j].exponents.size();
         s.write((char*)(&m),sizeof(int)); count += sizeof(int);
         for(k=0; k<m; ++k) {
@@ -201,8 +201,8 @@ namespace SYNARMOSMA {
       }
     }
     for(i=0; i<nequation; ++i) {
-      count += write_ZZ(s,remainder[i].numerator());
-      count += write_ZZ(s,remainder[i].denominator());
+      count += write_ZZ(s,remainder[i].get_numerator());
+      count += write_ZZ(s,remainder[i].get_denominator());
     }
     return count;
   }

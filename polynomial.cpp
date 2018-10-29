@@ -110,8 +110,8 @@ namespace SYNARMOSMA {
     int count = 0;
 
     for(i=0; i<=degree; ++i) {
-      count += write_ZZ(s,terms[i].numerator());
-      count += write_ZZ(s,terms[i].denominator());
+      count += write_ZZ(s,terms[i].get_numerator());
+      count += write_ZZ(s,terms[i].get_denominator());
     }
     return count;
   }
