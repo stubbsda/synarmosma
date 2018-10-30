@@ -4,6 +4,7 @@
 #define _poseth
 
 namespace SYNARMOSMA {
+  /// A class representing a partially ordered set (poset), considered as non-negative integers, along with a hash map that specifies the order (if any) between elements.
   class Poset {
    protected:
     int N = 0;

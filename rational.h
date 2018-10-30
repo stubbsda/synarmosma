@@ -4,7 +4,7 @@
 #define _rationalh
 
 namespace SYNARMOSMA {  
-  /// A class for rational numbers, i.e. a number of the form n/d where n and d are whole numbers; the rational number is stored in normalized form, where n and d are co-prime and d > 0.
+  /// A class representing rational numbers, i.e. a number of the form n/d where n and d are whole numbers; the rational number is stored in normalized form, where n and d are co-prime and d > 0.
   class Rational {
    private:
     /// The numerator of a rational number, stored as a multi-precision integer using 
@@ -55,18 +55,30 @@ namespace SYNARMOSMA {
     /// This method implements the multiplication operator for two instances of the Rational class.
     friend Rational operator *(const Rational&,const Rational&);
     /// This method implements the division operator for two instances of the Rational class.
-    friend Rational operator /(const Rational&,const Rational&); 
+    friend Rational operator /(const Rational&,const Rational&);
+    /// One of a set of overloaded Boolean operators for the Rational class, testing order relations among rationals and integers. 
     friend bool operator ==(const Rational&,const Rational&);
+    /// One of a set of overloaded Boolean operators for the Rational class, testing order relations among rationals and integers.
     friend bool operator ==(const Rational&,int);
+    /// One of a set of overloaded Boolean operators for the Rational class, testing order relations among rationals and integers.
     friend bool operator !=(const Rational&,const Rational&);
+    /// One of a set of overloaded Boolean operators for the Rational class, testing order relations among rationals and integers.
     friend bool operator !=(const Rational&,int);
+    /// One of a set of overloaded Boolean operators for the Rational class, testing order relations among rationals and integers.
     friend bool operator <=(const Rational&,const Rational&);
+    /// One of a set of overloaded Boolean operators for the Rational class, testing order relations among rationals and integers.
     friend bool operator <=(const Rational&,int);
+    /// One of a set of overloaded Boolean operators for the Rational class, testing order relations among rationals and integers.
     friend bool operator >=(const Rational&,const Rational&);
+    /// One of a set of overloaded Boolean operators for the Rational class, testing order relations among rationals and integers.
     friend bool operator >=(const Rational&,int);
+    /// One of a set of overloaded Boolean operators for the Rational class, testing order relations among rationals and integers.
     friend bool operator <(const Rational&,const Rational&);
+    /// One of a set of overloaded Boolean operators for the Rational class, testing order relations among rationals and integers.
     friend bool operator <(const Rational&,int);
+    /// One of a set of overloaded Boolean operators for the Rational class, testing order relations among rationals and integers.
     friend bool operator >(const Rational&,const Rational&);
+    /// One of a set of overloaded Boolean operators for the Rational class, testing order relations among rationals and integers.
     friend bool operator >(const Rational&,int);
     /// This method overrides the ostream operator so as to do a pretty print of an instance of the class.
     friend std::ostream& operator <<(std::ostream&,const Rational&);

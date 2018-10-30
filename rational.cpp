@@ -158,6 +158,15 @@ namespace SYNARMOSMA {
     return ((r1.n*r2.d) >= (r2.n*r1.d));
   }
 
+  bool operator >=(const Rational& r1,int alpha)
+  {
+    Rational r2(alpha);
+    if (r1.d == r2.d) {
+      return (r1.n >= r2.n);
+    }
+    return ((r1.n*r2.d) >= (r2.n*r1.d));
+  }
+
   bool operator >(const Rational& r1,const Rational& r2)
   {
     if (r1.d == r2.d) {
@@ -194,6 +203,15 @@ namespace SYNARMOSMA {
 
   bool operator <=(const Rational& r1,const Rational& r2)
   {
+    if (r1.d == r2.d) {
+      return (r1.n <= r2.n);
+    }
+    return ((r1.n*r2.d) <= (r2.n*r1.d));
+  }
+
+  bool operator <=(const Rational& r1,int alpha)
+  {
+    Rational r2(alpha);
     if (r1.d == r2.d) {
       return (r1.n <= r2.n);
     }
