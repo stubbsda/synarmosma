@@ -14,7 +14,9 @@ namespace SYNARMOSMA {
     /// of the poset; if x ~ y, then std::pair<x,y> is true.  
     boost::unordered_map<std::pair<int,int>,bool> order;
 
+    /// This method accepts two elements x and y and computes the elements of the poset which lie between them, z such that x ~ z and z ~ y, and which are inserted in the method's third argument. 
     void compute_width(int,int,std::set<int>&) const;
+    /// This recursive method constructs all chains of length equal to the method's second argument, storing them in the first argument and returning the number of such chains that are found in the poset; the method assumes that the first element of the chain has already been added.
     int build_chain(std::vector<int>&,int) const;
    public:
     /// The default constructor which does nothing.
@@ -53,11 +55,15 @@ namespace SYNARMOSMA {
     bool invert_order(int,int);
     /// This method constructs a random partial order on the set with a totality greater than or equal to the method's argument.
     void construct_ordering(double);
+    /// This method builds a poset based on the inclusion relation of the power set of {0,1,...,n-1} elements, where n is the method's argument.
     void power_set(int);
     /// This method calculates the percentage of the N*(N-1)/2 distinct pairs (x,y) with x < y such that x ~ y, i.e. how close this partial order comes to being a total order.
     double totality() const;
+    /// This method accepts two elements x and y and determines if y covers x, i.e. x ~ y and there exists no z in the poset such that x ~ z and z ~ y; when x = y or the relation x ~ y isn't true, it returns false. 
     bool covered(int,int) const;
+    /// This method computes the number of chains of length equal to the argument, where a chain is a set of m elements x1,...,xm which satisfy x1 ~ x2 ~ ... ~ xm.
     int chain_number(int) const;
+    /// This method writes to a GraphViz DOT file the directed graph that corresponds to the poset, i.e. a graph on N vertices with an edge from x to y when x ~ y.
     void write_incastrature(const std::string&) const;
     /// This method accepts two elements x and y of the poset and returns "before" if x ~ y, "after" if x ~ y and "disparate" otherwise. 
     Relation get_order(int,int) const;

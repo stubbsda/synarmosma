@@ -159,7 +159,10 @@ Relation Poset::get_order(int u,int v) const
 
 int Poset::build_chain(std::vector<int>& chain,int length) const
 {
-  int l = chain.size(),output = 0;
+#ifdef DEBUG
+  assert(!chain.empty());
+#endif
+  int l = (signed) chain.size(),output = 0;
   if (l == length) {
     output = 1;
   }
@@ -182,6 +185,7 @@ int Poset::build_chain(std::vector<int>& chain,int length) const
 int Poset::chain_number(int length) const
 {
   // Compute the number of chains of a given length in this poset 
+  if (length < 0) throw std::invalid_argument("The length of the chain in the Poset class must be non-negative!");
   if (length == 0 || length == 1) return 0;
   int i,j,nchain = 0;
   std::set<int> sigma;

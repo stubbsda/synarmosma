@@ -48,6 +48,8 @@ int main(int argc,char** argv)
   name = "petersen";
   std::cout << "Testing Tutte polynomial computation..." << std::endl;
   SYNARMOSMA::Graph G(name);
+  G.entwinement();
+  G.vertex_centrality(foo,0.000001);
   std::vector<SYNARMOSMA::Monomial<int> > output;
   G.tutte_polynomial(output);
   for(i=0; i<(signed) output.size(); ++i) {
@@ -118,9 +120,7 @@ int main(int argc,char** argv)
   assert(G3.maximum_parents() == 3);
   assert(!G3.DAG());
   assert(!G3.singly_connected());
-  G3.entwinement();
   assert(G3.eccentricity(3) == 2);
-  G3.vertex_centrality(foo,0.000001);
   G3.compute_distances(dmap);
   pr.first = 0; pr.second = 6;
   qt = dmap.find(pr);
