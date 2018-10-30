@@ -106,13 +106,13 @@ bool Poset::invert_order(int u,int v)
 bool Poset::unset_order(int u,int v)
 {
   if (u == v) return false;
-  int i;
+
   Relation rho = get_order(u,v);
   if (rho == Relation::disparate) return false;
   if (rho == Relation::before) {
     // Removing order of u < v
     order.erase(std::pair<int,int>(u,v));
-    for(i=0; i<N; ++i) {
+    for(int i=0; i<N; ++i) {
       if (i == u || i == v) continue;
       if (get_order(u,i) == Relation::before && get_order(i,v) == Relation::before) unset_order(i,v);
     }
@@ -120,7 +120,7 @@ bool Poset::unset_order(int u,int v)
   else {
     // Removing order of v < u
     order.erase(std::pair<int,int>(v,u));
-    for(i=0; i<N; ++i) {
+    for(int i=0; i<N; ++i) {
       if (i == u || i == v) continue;
       if (get_order(v,i) == Relation::before && get_order(i,u) == Relation::before) unset_order(i,u);
     }
@@ -134,11 +134,11 @@ bool Poset::set_order(int u,int v)
   // Check to see if we already have u < v or v < u in this poset
   Relation rho = get_order(u,v);
   if (rho == Relation::before) return false;
-  int i;
+
   if (rho == Relation::after) order.erase(std::pair<int,int>(v,u));
   order[std::pair<int,int>(u,v)] = true;
   // Keep the ordering transitive!
-  for(i=0; i<N; ++i) {
+  for(int i=0; i<N; ++i) {
     if (i == u || i == v) continue;
     if (get_order(v,i) == Relation::before) set_order(u,i);
     if (get_order(i,u) == Relation::before) set_order(i,v);
@@ -221,14 +221,11 @@ int Poset::chain_number(int length) const
 
 void Poset::compute_width(int u,int v,std::set<int>& slice) const
 {
-#ifdef DEBUG
-  assert(u != v);
-#endif
-  int i;
+  if (u == v) throw std::invalid_argument("The two elements in Poset::compute_width must be distinct!");
 
   slice.clear();
 
-  for(i=0; i<N; ++i) {
+  for(int i=0; i<N; ++i) {
     if (i == u || i == v) continue;
     if (get_order(u,i) != Relation::before) continue;
     if (get_order(i,v) != Relation::before) continue;
@@ -415,20 +412,18 @@ void Poset::write_incastrature(const std::string& filename) const
 void Poset::construct_ordering(double lambda)
 {
   // A method to impose a random order on the poset 
-  int u,v,n = 0;
-  double percent = 0.0;
-  const int M = (N*(N-1))/2;
+  if (N < 2) throw std::runtime_error("Cannot construct order on a poset with fewer than two elements!");
+  if (lambda < 0.0 || lambda > 1.0) throw std::invalid_argument("The desired poset totality must be between 0 and 1!");
+  int u,v;
+  double p = 0.0;
 
   do {
     u = RND.irandom(N);
     v = RND.irandom(N);
-    if (set_order(u,v)) {
+    if (set_order(u,v)) p = totality();
+  } while(p < lambda);
 #ifdef DEBUG
-      assert(consistent());
+  assert(consistent());
 #endif
-      n++;
-      percent = double(order.size())/double(M);
-    }
-  } while(percent < lambda);
 }
 
