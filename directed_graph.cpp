@@ -171,6 +171,44 @@ void Directed_Graph::compute_directedness()
   number_directed = size() - null;
 }
 
+void Directed_Graph::write2disk(const std::string& filename) const
+{
+  int i,j;
+  Relation rho;
+  std::set<int> S;
+  std::set<int>::const_iterator it;
+  hash_map::const_iterator qt;
+
+  std::ofstream s(filename,std::ios::trunc);
+
+  s << "digraph G {" << std::endl;
+  // First all the elements in the poset...
+  for(i=0; i<nvertex; ++i) {
+    s << "  \"" << 1+i << "\";" << std::endl;
+  }
+  // Now the directed edges induced by the poset's ordering...
+  for(i=0; i<nvertex; ++i) {
+    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+      j = *it;
+      S.clear();
+      S.insert(i); S.insert(j);
+      qt = index_table.find(S);
+      rho = edges[qt->second].get_direction(i,j);
+      if (rho == Relation::before) {
+        s << "  \"" << 1+i << "\" -> \"" << 1+j << "\";" << std::endl;
+      }
+      else if (rho == Relation::after) {
+        s << "  \"" << 1+j << "\" -> \"" << 1+i << "\";" << std::endl;
+      }
+      else {
+        s << "  \"" << 1+i << "\" -- \"" << 1+j << "\";" << std::endl;
+      }
+    }
+  }
+  s << "}" << std::endl;
+  s.close();
+}
+
 int Directed_Graph::maximum_parents() const
 {
   // Find the maximum number of parents over the entire set of vertices of this directed 

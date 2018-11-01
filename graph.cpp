@@ -367,6 +367,29 @@ void Graph::compute_surface(const std::set<int>& vx,std::set<int>& surface) cons
   }
 }
 
+void Graph::write2disk(const std::string& filename) const
+{
+  int i,j;
+  std::set<int>::const_iterator it;
+
+  std::ofstream s(filename,std::ios::trunc);
+
+  s << "graph G {" << std::endl;
+  // First all the elements in the poset...
+  for(i=0; i<nvertex; ++i) {
+    s << "  \"" << 1+i << "\";" << std::endl;
+  }
+  // Now the directed edges induced by the poset's ordering...
+  for(i=0; i<nvertex; ++i) {
+    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+      j = *it;
+      s << "  \"" << 1+i << "\" -- \"" << 1+j << "\";" << std::endl;
+    }
+  }
+  s << "}" << std::endl;
+  s.close();
+}
+
 void Graph::core(Graph* G,int k) const
 {
   // A method to compute the k-core of the current graph

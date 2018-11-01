@@ -485,7 +485,7 @@ void Group::reduce()
   }
   else {
     for(i=0; i<new_relations.size(); ++i) {
-      w = new_relations[i].reduce(ngenerator,trivial_generators,offset);
+      w = new_relations[i].reduce(trivial_generators,offset);
       relations.push_back(w.normalize());
     }
   }

@@ -11,7 +11,12 @@ Word::Word()
 
 Word::Word(unsigned int n)
 {
-  if (n > 0) initialize(n);
+  initialize(n);
+}
+
+Word::Word(unsigned int n,int m)
+{
+  initialize(n,m);
 }
 
 Word::Word(const std::string& w)
@@ -36,14 +41,6 @@ Word::Word(const std::string& w)
   *this = temp.normalize();
 }
 
-Word::Word(unsigned int n,int m)
-{
-  if (m == 0) throw std::invalid_argument("The exponent of the word's only letter must not be zero!");
-
-  std::pair<unsigned int,int> doublet(n,m);
-  content.push_back(doublet);
-}
-
 Word::Word(const Word& source)
 {
   content = source.content;
@@ -61,6 +58,47 @@ Word& Word::operator =(const Word& source)
 Word::~Word()
 {
 
+}
+
+void Word::initialize(unsigned int n)
+{
+  content.clear();
+  if (n == 0) return;
+
+  unsigned int i;
+  std::pair<unsigned int,int> doublet;
+
+  for(i=0; i<n; ++i) {
+    doublet.first = i; 
+    doublet.second = RND.irandom(1,10);
+    if (RND.drandom() < 0.5) doublet.second *= -1;
+    content.push_back(doublet);
+  }
+}
+
+void Word::initialize(unsigned int n,int m)
+{
+  if (m == 0) throw std::invalid_argument("The exponent of the word's only letter must not be zero!");
+
+  std::pair<unsigned int,int> doublet(n,m);
+  content.clear();
+  content.push_back(doublet);
+}
+
+void Word::initialize(const std::vector<unsigned int>& base,const std::vector<int>& exponent)
+{
+  if (base.size() != exponent.size()) throw std::invalid_argument("The length of the base and exponent vectors for word initialization must be identical!");
+
+  unsigned int i;
+  std::pair<unsigned int,int> doublet;
+
+  content.clear();
+  for(i=0; i<base.size(); ++i) {
+    if (exponent[i] == 0) continue;
+    doublet.first = base[i];
+    doublet.second = exponent[i];
+    content.push_back(doublet);
+  }
 }
 
 unsigned int Word::get_alphabet(std::set<unsigned int>& alphabet) const
@@ -96,6 +134,7 @@ bool Word::trivial() const
 bool Word::alias() const
 {
   if (content.size() == 2) {
+    if (content[0].first == content[1].second) throw std::runtime_error("The class instance in Word::alias has not been normalized!");
     if ((std::abs(content[0].second) == 1) && (std::abs(content[1].second) == 1)) return true;
   }
   return false;
@@ -147,44 +186,6 @@ void Word::permute(unsigned int n,Word& w) const
   }
   for(i=0; i<n; ++i) {
     w.content.push_back(content[i]);
-  }
-}
-
-void Word::initialize(unsigned int n)
-{
-  unsigned int i;
-  std::pair<unsigned int,int> doublet;
-
-  content.clear();
-  for(i=0; i<n; ++i) {
-    doublet.first = i; 
-    doublet.second = RND.irandom(1,10);
-    if (RND.drandom() < 0.5) doublet.second *= -1;
-    content.push_back(doublet);
-  }
-}
-
-void Word::initialize(unsigned int n,int m)
-{
-  if (m == 0) throw std::invalid_argument("The exponent of the word's only letter must not be zero!");
-
-  std::pair<unsigned int,int> doublet(n,m);
-  content.push_back(doublet);
-}
-
-void Word::initialize(const std::vector<unsigned int>& base,const std::vector<int>& exponent)
-{
-  unsigned int i;
-  std::pair<unsigned int,int> doublet;
-#ifdef DEBUG
-  assert(base.size() == exponent.size());
-#endif
-  content.clear();
-  for(i=0; i<base.size(); ++i) {
-    if (exponent[i] == 0) continue;
-    doublet.first = base[i];
-    doublet.second = exponent[i];
-    content.push_back(doublet);
   }
 }
 
@@ -310,10 +311,9 @@ void Word::free_reduce()
   } while(true);
 }
 
-Word Word::reduce(unsigned int M,const std::set<unsigned int>& trivial_generators,const unsigned int* offset) const
+Word Word::reduce(const std::set<unsigned int>& trivial_generators,const unsigned int* offset) const
 {
-  assert(M > 0);
-  Word output(M,0);
+  Word output;
   std::pair<unsigned int,int> doublet;
   std::vector<std::pair<unsigned int,int> >::const_iterator it;
 
@@ -407,14 +407,25 @@ namespace SYNARMOSMA {
     unsigned int i;
     std::pair<unsigned int,int> doublet;
 
-    if (source.content.empty()) return os;
+    if (source.empty()) return os;
 
     for(i=0; i<source.content.size()-1; ++i) {
       doublet = source.content[i];
-      os << "x[" << 1 + doublet.first << "]^(" << doublet.second << ")*";
+      if (doublet.second == 0) continue;
+      if (doublet.second == 1) {
+        os << "x[" << 1 + doublet.first << "]*";
+      }
+      else {
+        os << "x[" << 1 + doublet.first << "]^(" << doublet.second << ")*";
+      }
     }
     doublet = source.content[source.content.size()-1];
-    os << "x[" << 1 + doublet.first << "]^(" << doublet.second << ")";
+    if (doublet.second == 1) {
+      os << "x[" << 1 + doublet.first << "]";
+    }
+    else {
+      os << "x[" << 1 + doublet.first << "]^(" << doublet.second << ")";
+    }
     return os;
   }
 
