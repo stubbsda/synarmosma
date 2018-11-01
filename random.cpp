@@ -111,6 +111,23 @@ int Random::irandom(int x,int y)
   return (x + output);
 }
 
+unsigned int Random::irandom(const std::set<unsigned int>& S)
+{
+  unsigned int output = 0;
+  int n = irandom(S.size());
+  int k = 0;
+  std::set<unsigned int>::const_iterator it;
+
+  for(it=S.begin(); it!=S.end(); ++it) {
+    if (k == n) {
+      output = *it;
+      break;
+    }
+    k++;
+  }
+  return output;
+}
+
 int Random::irandom(const std::set<int>& S)
 {
   int output = 0;

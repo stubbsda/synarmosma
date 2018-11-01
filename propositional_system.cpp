@@ -13,7 +13,7 @@ Propositional_System::Propositional_System(int n)
   initialize(n);
 }
 
-Propositional_System::Propositional_System(int n,const char* filename)
+Propositional_System::Propositional_System(int n,const std::string& filename)
 {
   assert(n >= 0);
   unsigned int i,eq_point;

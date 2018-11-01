@@ -25,7 +25,7 @@ namespace SYNARMOSMA {
    public:
     Functional_Equation();
     Functional_Equation(int);
-    Functional_Equation(const char*);
+    Functional_Equation(const std::string&);
     Functional_Equation(const Functional_Equation&);
     Functional_Equation& operator =(const Functional_Equation&);
     ~Functional_Equation();

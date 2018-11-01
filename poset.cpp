@@ -393,7 +393,7 @@ void Poset::write_incastrature(const std::string& filename) const
   // has been installed on the system.
   int i,j;
 
-  std::ofstream s(filename.c_str(),std::ios::trunc);
+  std::ofstream s(filename,std::ios::trunc);
 
   s << "digraph G {" << std::endl;
   // First all the elements in the poset...

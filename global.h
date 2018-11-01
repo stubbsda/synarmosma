@@ -230,6 +230,7 @@ namespace SYNARMOSMA {
     int irandom(int);
     int irandom(int,int);
     int irandom(const std::set<int>&);
+    unsigned int irandom(const std::set<unsigned int>&);
     int irandom(const std::set<int>&,const std::set<int>&);
     int irandom(const std::vector<int>&);
     int irandom(int,const std::vector<int>&);

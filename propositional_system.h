@@ -19,7 +19,7 @@ namespace SYNARMOSMA {
     Propositional_System();
     Propositional_System(int);
     Propositional_System(int,int);
-    Propositional_System(int,const char*);
+    Propositional_System(int,const std::string&);
     Propositional_System(const Propositional_System&);
     Propositional_System& operator =(const Propositional_System&);
     ~Propositional_System();

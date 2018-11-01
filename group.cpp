@@ -9,11 +9,8 @@ Group::Group()
 
 }
 
-Group::Group(const std::string& name,int n)
+Group::Group(const std::string& name,unsigned int n)
 {
-#ifdef DEBUG
-  assert(n > 0);
-#endif
   if (name == "Order") {
     // Here the user has specified the desired order of the 
     // group that is to be constructed
@@ -35,7 +32,7 @@ Group::Group(const std::string& name,int n)
         free = false;
         solvable = true;
         ngenerator = 1;
-        w.initialize(ngenerator,0,2);
+        w.initialize(0,2);
         relations.push_back(w);
         break;
       case 3:
@@ -44,7 +41,7 @@ Group::Group(const std::string& name,int n)
         free = false;
         solvable = true;
         ngenerator = 1;
-        w.initialize(ngenerator,0,3);
+        w.initialize(0,3);
         relations.push_back(w);
         break;
       case 4:
@@ -55,16 +52,16 @@ Group::Group(const std::string& name,int n)
           // Z/4
           ngenerator = 1;
           // {e,a,a^2,a^3}
-          w.initialize(ngenerator,0,4);
+          w.initialize(0,4);
           relations.push_back(w);
         }
         else {
           // Z/2 x Z/2, i.e. the Klein Vierergruppe
           ngenerator = 2;
           // {e,a,b,ab}
-          Word w1(ngenerator,0,2);
+          Word w1(0,2);
           relations.push_back(w1);
-          Word w2(ngenerator,1,2);
+          Word w2(1,2);
           relations.push_back(w2);
           relations.push_back(w1*w2);
         }
@@ -75,7 +72,7 @@ Group::Group(const std::string& name,int n)
         free = false;
         solvable = true;
         ngenerator = 1;
-        w.initialize(ngenerator,0,5);
+        w.initialize(0,5);
         relations.push_back(w);
         break;
       case 6:
@@ -85,17 +82,17 @@ Group::Group(const std::string& name,int n)
           // This is Z/6
           abelian = true;
           ngenerator = 1;
-          w.initialize(ngenerator,0,6);
+          w.initialize(0,6);
           relations.push_back(w);
         }
         else {
           // The dihedral group D_3
           abelian = false;
           ngenerator = 2;
-          Word w1(ngenerator,0,2);
-          Word w2(ngenerator,1,2);
-          Word w3(ngenerator,0,3);
-          Word w4(ngenerator,1,3);
+          Word w1(0,2);
+          Word w2(1,2);
+          Word w3(0,3);
+          Word w4(1,3);
           Word w5 = w3*w4;
           relations.push_back(w1);
           relations.push_back(w2);
@@ -108,7 +105,7 @@ Group::Group(const std::string& name,int n)
         free = false;
         solvable = true;
         ngenerator = 1;
-        w.initialize(ngenerator,0,7);
+        w.initialize(0,7);
         relations.push_back(w);
         break;
       case 8:
@@ -121,9 +118,9 @@ Group::Group(const std::string& name,int n)
           abelian = true;
           ngenerator = 3;
           // {e,a,b,c,ab,ac,bc,abc}
-          Word w1(ngenerator,0,1);
-          Word w2(ngenerator,1,1);
-          Word w3(ngenerator,2,1);
+          Word w1(0,1);
+          Word w2(1,1);
+          Word w3(2,1);
           relations.push_back(w1*w1);
           relations.push_back(w2*w2);
           relations.push_back(w3*w3);
@@ -136,8 +133,8 @@ Group::Group(const std::string& name,int n)
           abelian = true;
           ngenerator = 2;
           // {e,b,b^2,b^3,a,ab,ab^2,ab^3}
-          Word w1(ngenerator,0,1);
-          Word w2(ngenerator,1,1);
+          Word w1(0,1);
+          Word w2(1,1);
           relations.push_back(w1*w1*w1*w1);
           relations.push_back(w2*w2);
           relations.push_back(w1*w2*w1.invert()*w2.invert());
@@ -147,17 +144,17 @@ Group::Group(const std::string& name,int n)
           abelian = true;
           ngenerator = 1;
           // {e,a,a^2,a^3,a^4,a^5,a^6,a^7}
-          w.initialize(ngenerator,0,8);
+          w.initialize(0,8);
           relations.push_back(w);
         }
         else if (alpha == 3) {
           // D_4
           abelian = false;
           ngenerator = 2;
-          Word w1(ngenerator,0,2);
-          Word w2(ngenerator,1,2);
-          Word w3(ngenerator,0,4);
-          Word w4(ngenerator,1,4);
+          Word w1(0,2);
+          Word w2(1,2);
+          Word w3(0,4);
+          Word w4(1,4);
           Word w5 = w3*w4;
           relations.push_back(w1);
           relations.push_back(w2);
@@ -167,9 +164,9 @@ Group::Group(const std::string& name,int n)
           // H, the quaternion group
           abelian = false;
           ngenerator = 2;
-          Word w1(ngenerator,0,1);
-          Word w2(ngenerator,1,1);
-          Word w3(ngenerator,1,-2);
+          Word w1(0,1);
+          Word w2(1,1);
+          Word w3(1,-2);
           relations.push_back(w1*w1*w1*w1);
           relations.push_back(w2.invert()*w2.invert()*w1*w1);
           relations.push_back(w1*w2.invert()*w1*w2);
@@ -188,7 +185,7 @@ Group::Group(const std::string& name,int n)
     solvable = true;
     cardinality = 2*n;
     ngenerator = 2;
-    Word w1(ngenerator,0,2),w2(ngenerator,1,2),w3(ngenerator,0,n),w4(ngenerator,1,n);
+    Word w1(0,2),w2(1,2),w3(0,n),w4(1,n);
     Word w5 = w3 * w4;
     relations.push_back(w1);
     relations.push_back(w2);
@@ -205,16 +202,16 @@ Group::Group(const std::string& name,int n)
     free = (n > 2) ? false : true;
     if (n == 2) solvable = true;
     for(i=0; i<ngenerator; ++i) {
-      Word w1(ngenerator,i,1),w2(ngenerator,i,-1);
+      Word w1(i,1),w2(i,-1);
       for(j=i+2; j<ngenerator; ++j) {
-        Word w3(ngenerator,j,1),w4(ngenerator,j,-1);
+        Word w3(j,1),w4(j,-1);
         relations.push_back(w2*w4*w1*w3);
       }
     }
     // The cubic relations
     for(i=0; i<ngenerator-1; ++i) {
-      Word w1(ngenerator,i,1),w2(ngenerator,i,-1);
-      Word w3(ngenerator,i+1,1),w4(ngenerator,i+1,-1);
+      Word w1(i,1),w2(i,-1);
+      Word w3(i+1,1),w4(i+1,-1);
       relations.push_back(w4*w2*w4*w1*w3*w1);
     }
   }
@@ -226,7 +223,7 @@ Group::Group(const std::string& name,int n)
     solvable = true;
     cardinality = n;
     ngenerator = 1;
-    Word w(ngenerator,0,n);
+    Word w(0,n);
     relations.push_back(w);
   }
   else if (name == "Symmetric") {
@@ -247,15 +244,13 @@ Group::Group(const std::string& name,int n)
   }
 }
 
-Group::Group(int r,const std::vector<unsigned int>& torsion)
+Group::Group(unsigned int r,const std::vector<unsigned int>& torsion)
 {
-  assert(r >= 0);
   initialize(r,torsion);
 } 
 
-Group::Group(int n)
+Group::Group(unsigned int n)
 {
-  assert(n >= 0);
   // The free group on n generators
   ngenerator = n;
   if (n == 0) {
@@ -275,27 +270,29 @@ Group::Group(int n)
   }
 } 
 
-Group::Group(int n,const std::vector<Word>& R)
+Group::Group(unsigned int n,const std::vector<Word>& R)
 {
-  assert(n >= 0);
   if (n == 0) {
     assert(R.empty());
   }
   else {
-    for(int i=0; i<(signed) R.size(); ++i) {
-      assert(R[i].NL == (unsigned) n);
+    unsigned int i,m;
+    std::set<unsigned int> S;
+    for(i=0; i<R.size(); ++i) {
+      R[i].get_alphabet(S);
+      m = *S.rbegin();
+      assert(m < n);
     }
   }
   initialize(n,R);
 }
 
-Group::Group(int n,int m)
+Group::Group(unsigned int n,unsigned int m)
 {
-  assert(n >= 0 && m >= 0);
-  ngenerator = (unsigned) n;
+  ngenerator = n;
   if (m > 0) {
     free = false;
-    allocate((unsigned) m);
+    allocate(m);
   }
 }
 
@@ -337,7 +334,7 @@ int Group::implied_generators() const
 bool Group::consistent() const
 {
   unsigned int i,j,n;
-  Word w(ngenerator,0);
+  Word w;
 
   // Sanity check...
   for(i=0; i<relations.size(); ++i) {
@@ -358,7 +355,7 @@ bool Group::equivalent(const Word& w1,const Word& w2) const
 #endif
   // We only know how to solve the word problem in the braid group...
   if (!braid) return false;
-  Word nword(ngenerator,0),cword = w1*w2.invert();
+  Word nword,cword = w1*w2.invert();
   cword.free_reduce();
   if (cword.empty()) return true;
   if (cword.homogeneous()) return false;
@@ -458,7 +455,7 @@ void Group::reduce()
   bool inv,reduction = false,change = false;
   std::set<unsigned int> trivial_generators;
   std::vector<Word> new_relations;
-  Word w(ngenerator);
+  Word w;
 
   for(i=0; i<relations.size(); ++i) {
     w = relations[i].normalize();
@@ -574,7 +571,7 @@ void Group::reduce()
   }
 }
 
-void Group::initialize(int r,const std::vector<unsigned int>& torsion)
+void Group::initialize(unsigned int r,const std::vector<unsigned int>& torsion)
 {
   // The constructor for a finitely generated abelian group, whose presentation 
   // is thus of the form
@@ -586,16 +583,15 @@ void Group::initialize(int r,const std::vector<unsigned int>& torsion)
   // \begin{equation*} 
   // G = \mathbb{Z}^r \oplus \mathbb{Z}_{t_1} \oplus \dotsb \oplus \mathbb{Z}_{t_s}
   // \end{equation*}
-  assert(r >= 0);
   unsigned int i,j;
 
-  rank = (unsigned) r;
+  rank = r;
   abelian = true;
   solvable = true;
   free = false;
   finite = (rank > 0) ? false : true;
   ngenerator = rank + torsion.size();
-  Word w(ngenerator);
+  Word w;
   w.content.clear();
   for(i=0; i<rank; ++i) {
     for(j=i+1; j<rank; ++j) {
@@ -619,9 +615,8 @@ void Group::initialize(int r,const std::vector<unsigned int>& torsion)
   }
 }
 
-void Group::initialize(int n,const std::vector<Word>& R)
+void Group::initialize(unsigned int n,const std::vector<Word>& R)
 {
-  assert(n >= 0);
   if (n == 0) assert(R.empty());
 
   ngenerator = (unsigned) n;
@@ -673,7 +668,7 @@ Group Group::abelianize() const
   // $a$ and $b$ in the group presentation.
   unsigned int i,j,k;
   bool found;
-  Word w1(ngenerator),w2(ngenerator);
+  Word w1,w2;
   Group output(*this);
 
   for(i=0; i<ngenerator; ++i) {
@@ -716,7 +711,7 @@ void Group::allocate(unsigned int m)
   int e;
   unsigned int i,j,k,b,sum = 0;
   bool good;
-  Word w(ngenerator);
+  Word w;
   std::vector<unsigned int> length,base;
   std::vector<int> exponent,used;
 
@@ -844,7 +839,7 @@ int Group::deserialize(std::ifstream& s)
 {
   unsigned int i,j,n;
   int count = 0;
-  Word w(ngenerator);
+  Word w;
 
   clear();
 

@@ -26,7 +26,7 @@ Functional_Equation<kind>::Functional_Equation(int n)
 }
 
 template<class kind>
-Functional_Equation<kind>::Functional_Equation(const char* filename)
+Functional_Equation<kind>::Functional_Equation(const std::string& filename)
 {
   unsigned int i;
   bool first = true;

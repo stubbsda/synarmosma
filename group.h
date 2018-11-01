@@ -23,18 +23,18 @@ namespace SYNARMOSMA {
     Group abelianize() const;
    public:
     Group();
-    Group(int);
-    Group(int,const std::vector<Word>&);
-    Group(int,int);
-    Group(int,const std::vector<unsigned int>&);
+    Group(unsigned int);
+    Group(unsigned int,const std::vector<Word>&);
+    Group(unsigned int,unsigned int);
+    Group(unsigned int,const std::vector<unsigned int>&);
     Group(const Group&);
-    Group(const std::string&,int);
+    Group(const std::string&,unsigned int);
     ~Group();
     Group& operator =(const Group&);
-    inline int get_rank() const {return rank;};
+    inline unsigned int get_rank() const {return rank;};
     int implied_generators() const;
-    void initialize(int,const std::vector<Word>&);
-    void initialize(int,const std::vector<unsigned int>&);
+    void initialize(unsigned int,const std::vector<Word>&);
+    void initialize(unsigned int,const std::vector<unsigned int>&);
     bool equivalent(const Word&,const Word&) const;
     void reduce();
     void clear();
