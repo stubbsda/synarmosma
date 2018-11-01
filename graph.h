@@ -101,6 +101,7 @@ namespace SYNARMOSMA {
     inline int order() const {return nvertex;};
     int serialize(std::ofstream&) const override;
     int deserialize(std::ifstream&) override;
+    virtual void write2disk(const std::string&) const;
     friend class Nexus;
   };
 }

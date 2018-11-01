@@ -38,6 +38,7 @@ namespace SYNARMOSMA {
     bool path_connected(int u,int v) const {return (distance(u,v) > -1);};
     void compute_sinks(std::set<int>&) const;
     void compute_sources(std::set<int>&) const;
+    void write2disk(const std::string&) const override;
     friend class Propositional_System;
   };
 }
