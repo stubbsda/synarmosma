@@ -355,8 +355,8 @@ bool Group::equivalent(const Word& w1,const Word& w2) const
 #endif
   // We only know how to solve the word problem in the braid group...
   if (!braid) return false;
-  Word nword,cword = w1*w2.invert();
-  cword.free_reduce();
+  Word cword,nword = w1*w2.invert();
+  cword = nword.reduce();
   if (cword.empty()) return true;
   if (cword.homogeneous()) return false;
   int e1,e2,stype,dtype;
@@ -438,8 +438,7 @@ bool Group::equivalent(const Word& w1,const Word& w2) const
     for(i=spoint+m+2; i<n; ++i) {
       nword.content.push_back(cword.content[i]);
     }
-    nword.free_reduce();
-    cword = nword;
+    cword = nword.reduce();
     if (cword.homogeneous()) break;
   } while(true);
   if (cword.empty()) return true;
@@ -761,7 +760,7 @@ void Group::allocate(unsigned int m)
     good = true;
     for(j=0; j<i; ++j) {
       for(k=1; k<relations[j].length(); ++k) {
-        relations[j].permute(k,w);
+        w = relations[j].permute(k);
         if (w == relations[i]) {
           good = false;
           break;

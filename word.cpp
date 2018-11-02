@@ -167,26 +167,26 @@ bool Word::homogeneous() const
   return true;
 }
 
-void Word::permute(unsigned int n,Word& w) const
+Word Word::permute(unsigned int n) const
 {
   // This method will create the word formed by the cyclic
   // permutation of the current instance, that is
   // a_1*a_2*...*a_k -> a_n*a_{n+1}*...*a_k*a_1*a_2*...*a_{n-1}
   if (n >= length()) throw std::invalid_argument("The permutation index must be less than the word's length!");
-
-  w.clear();
+  Word output;
 
   if (n == 0) {
-    w = Word(*this);
-    return;
+    output = Word(*this);
+    return output;
   }
   unsigned int i;
-  for(i=n; i<content.size(); ++i) {
-    w.content.push_back(content[i]);
+  for(i=n; i<length(); ++i) {
+    output.content.push_back(content[i]);
   }
   for(i=0; i<n; ++i) {
-    w.content.push_back(content[i]);
+    output.content.push_back(content[i]);
   }
+  return output;
 }
 
 Word Word::operator !() const
@@ -300,20 +300,22 @@ int Word::deserialize(std::ifstream& s)
   return count;
 }
 
-void Word::free_reduce() 
+Word Word::reduce() const
 {
   unsigned int i,n,m,rpoint,L;
   bool altered;
   std::vector<std::pair<unsigned int,int> > vx;
+  Word output;
 
+  output.content = content;
   do {
     altered = false;
-    L = content.size();
+    L = output.length();
     for(i=0; i<L-1; ++i) {
-      n = content[i].first;
-      m = content[i+1].first;
+      n = output.content[i].first;
+      m = output.content[i+1].first;
       if (n == m) {
-        if (content[i].second == -content[i+1].second) {
+        if (output.content[i].second == -output.content[i+1].second) {
           rpoint = i;
           altered = true;
           break;
@@ -324,10 +326,12 @@ void Word::free_reduce()
     vx.clear();
     for(i=0; i<L; ++i) {
       if (i == rpoint || i == (rpoint+1)) continue;
-      vx.push_back(content[i]);
+      vx.push_back(output.content[i]);
     }
-    content = vx;
+    output.content = vx;
   } while(true);
+
+  return output;
 }
 
 Word Word::reduce(const std::set<unsigned int>& trivial_generators,const unsigned int* offset) const
