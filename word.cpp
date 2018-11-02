@@ -134,7 +134,7 @@ bool Word::trivial() const
 bool Word::alias() const
 {
   if (content.size() == 2) {
-    if (content[0].first == content[1].second) throw std::runtime_error("The class instance in Word::alias has not been normalized!");
+    if (content[0].first == content[1].first) throw std::runtime_error("The class instance in Word::alias has not been normalized!");
     if ((std::abs(content[0].second) == 1) && (std::abs(content[1].second) == 1)) return true;
   }
   return false;
@@ -170,7 +170,7 @@ bool Word::homogeneous() const
 void Word::permute(unsigned int n,Word& w) const
 {
   // This method will create the word formed by the cyclic
-  // permutation of *this, that is
+  // permutation of the current instance, that is
   // a_1*a_2*...*a_k -> a_n*a_{n+1}*...*a_k*a_1*a_2*...*a_{n-1}
   if (n >= length()) throw std::invalid_argument("The permutation index must be less than the word's length!");
 
@@ -231,19 +231,37 @@ Word Word::swap(unsigned int p,unsigned int q,bool invert) const
 
 Word Word::mutate() const
 {
+  if (empty()) throw std::runtime_error("An empty word cannot be mutated!");
+
   Word output;
   std::set<unsigned int> S;
   std::pair<unsigned int,int> doublet;
-  int n = RND.irandom(content.size());
-
-  get_alphabet(S);
+  int n = RND.irandom(length()); 
+  unsigned int m = get_alphabet(S);
 
   output.content = content;
 
-  doublet.first = RND.irandom(S); 
-  doublet.second = RND.irandom(1,10);
-  if (RND.drandom() < 0.5) doublet.second = -doublet.second;
-  output.content[n] = doublet;
+  if (m == 1) {
+#ifdef DEBUG
+    assert(n == 1);
+#endif
+    output.content[0].first = content[0].first;
+    do {
+      n =  RND.irandom(1,10);
+      if (RND.drandom() < 0.5) n *= 1;
+      if (n != content[0].second) break;
+    } while(true);
+    output.content[0].second = n;
+  }
+  else {
+    do {
+      doublet.first = RND.irandom(S); 
+      if (doublet.first != content[n].first) break;
+    } while(true);
+    doublet.second = RND.irandom(1,10);
+    if (RND.drandom() < 0.5) doublet.second = -doublet.second;
+    output.content[n] = doublet;
+  }
 
   return output;
 }
@@ -284,24 +302,25 @@ int Word::deserialize(std::ifstream& s)
 
 void Word::free_reduce() 
 {
-  int i,rpoint = -1,L = (signed) content.size();
-  unsigned int n,m;
+  unsigned int i,n,m,rpoint,L;
+  bool altered;
   std::vector<std::pair<unsigned int,int> > vx;
 
   do {
-    rpoint = -1;
-    L = (signed) content.size();
+    altered = false;
+    L = content.size();
     for(i=0; i<L-1; ++i) {
       n = content[i].first;
       m = content[i+1].first;
       if (n == m) {
         if (content[i].second == -content[i+1].second) {
           rpoint = i;
+          altered = true;
           break;
         }
       }
     }
-    if (rpoint == -1) break;
+    if (!altered) break;
     vx.clear();
     for(i=0; i<L; ++i) {
       if (i == rpoint || i == (rpoint+1)) continue;
@@ -332,14 +351,14 @@ Word Word::reduce(const std::set<unsigned int>& trivial_generators,const unsigne
 Word Word::normalize() const
 {
   unsigned int i = 0;
-  const unsigned int n = content.size();
+  const unsigned int n = length();
   std::pair<unsigned int,int> doublet;
   Word output;
 
-  if (content.size() < 2) {
-    for(i=0; i<content.size(); ++i) {
-      output.content.push_back(content[i]);
-    }
+  if (n == 0) return output;
+
+  if (n == 1) {
+    if (content[0].second != 0) output.content = content;
     return output;
   }
   do {

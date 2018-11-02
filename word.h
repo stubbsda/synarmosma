@@ -12,8 +12,11 @@ namespace SYNARMOSMA {
     /// is the letter's exponent, a non-zero integer. 
     std::vector<std::pair<unsigned int,int> > content;
 
+    /// This method initializes the word to the form \f$w = x_0^{k_0}\cdots x_{n-1}^{k_{n-1}}\f$ where \f$n\f$ is the argument and the \f$k_i\f$ are randomly chosen between -10 and 10, excluding zero.
     void initialize(unsigned int);
+    /// This method initializes the word to the form \f$w = x_n^m\f$ where \f$n\f$ is the first argument and \f$m\ne 0\f$ the second argument.
     void initialize(unsigned int,int);
+    /// This method initializes the word based on the first argument being a vector of letter indices and the second argument the exponents for these same letters.
     void initialize(const std::vector<unsigned int>&,const std::vector<int>&);
    public:
     /// The default constructor that leaves the instance empty.
@@ -38,15 +41,21 @@ namespace SYNARMOSMA {
     Word operator !() const;
     /// This method returns the inverse of the word, i.e. a word with the order of letters reversed and the sign of all the exponents reversed.
     Word invert() const;
+    /// This method mutates the word, i.e. a random letter is selected from the word and converted to another letter; if the word contains just one letter then the exponent is altered to a randomly chosen value between -10 and 10, excluding zero.
     Word mutate() const;
+    /// This method eliminates redundant elements of the word, fusing together adjacent letters which share the same index and dropping letters whose exponent is zero.
     Word normalize() const;
+    /// This method swaps every occurrence in the word of the second index by the first index, reversing the exponent's sign when the final argument is true, and reducing the index values by one when they are greater than the second argument. 
     Word swap(unsigned int,unsigned int,bool = false) const;
+    /// This method operates in a similar manner to the Word::normalize method, identifying pairs of adjacent letters with the same index and opposite but equal exponents, so that the pair can be eliminated.
     void free_reduce();
+    /// This method creates a new word from the existing one by eliminating all of the letters whose index lies in the first argument, using the array of offset indices in the second argument. 
     Word reduce(const std::set<unsigned int>&,const unsigned int*) const;
     /// This method returns the length of the vector "content".
     inline unsigned int length() const {return content.size();};
     /// This method returns true when the "content" vector is empty.
     inline bool empty() const {return content.empty();};
+    /// This method carries out a cyclic permutation of the second argument based on the first argument \f$q\f$, so that (ignoring exponents) if \f$w = x_0\cdots x_{n-1}\f$ then \f$w' = x_k x_{k+1}\cdots x_{n-1} x_0 x_1 \cdots x_{k-1}\f$. 
     void permute(unsigned int,Word&) const;
     /// This method determines if the word consists of a single letter whose exponent is \f$\pm 1\f$ and returns true if this is so.
     bool trivial() const;
