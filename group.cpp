@@ -9,9 +9,10 @@ Group::Group()
 
 }
 
-Group::Group(const std::string& name,unsigned int n)
+Group::Group(std::string& type,unsigned int n)
 {
-  if (name == "Order") {
+  boost::to_upper(type);
+  if (type == "ORDER") {
     // Here the user has specified the desired order of the 
     // group that is to be constructed
     Word w;
@@ -173,11 +174,10 @@ Group::Group(const std::string& name,unsigned int n)
         }  
         break;
       default:
-        // Create a random group with this many elements...
-        create_random();
+        throw std::invalid_argument("Group order > 8 is too high for constructor!");
     }
   }
-  else if (name == "Dihedral") {
+  else if (type == "DIHEDRAL") {
     // Dihedral group
     finite = true;
     abelian = (n > 2) ? false : true;
@@ -191,7 +191,7 @@ Group::Group(const std::string& name,unsigned int n)
     relations.push_back(w2);
     relations.push_back(w5);
   }
-  else if (name == "Braid") {
+  else if (type == "BRAID") {
     // Braid group
     // B_1 = {e}, B_2 = (Z,+)
     unsigned int i,j;
@@ -215,7 +215,7 @@ Group::Group(const std::string& name,unsigned int n)
       relations.push_back(w4*w2*w4*w1*w3*w1);
     }
   }
-  else if (name == "Cyclic") {
+  else if (type == "CYCLIC") {
     // Cyclic group
     finite = true;
     abelian = true;
@@ -226,21 +226,21 @@ Group::Group(const std::string& name,unsigned int n)
     Word w(0,n);
     relations.push_back(w);
   }
-  else if (name == "Symmetric") {
+  else if (type == "SYMMETRIC") {
     // Symmetric group
     cardinality = factorial(n);
     finite = true;
     abelian = false;
     solvable = (n < 5) ? true : false;
   }
-  else if (name == "Alternating") {
+  else if (type == "ALTERNATING") {
     // Alternating group
     finite = true;
     cardinality = factorial(n)/2;
     solvable = (n < 5) ? true : false;
   }
   else {
-    create_random();
+    throw std::invalid_argument("Unrecognized group type!");
   }
 }
 
@@ -278,6 +278,10 @@ Group::Group(unsigned int n,const std::vector<Word>& R)
   else {
     unsigned int i,m;
     std::set<unsigned int> S;
+
+    free = false;
+    // For each relation, get the maximum index of its letters and verify 
+    // that this is less than value of ngenerator.
     for(i=0; i<R.size(); ++i) {
       R[i].get_alphabet(S);
       m = *S.rbegin();
@@ -292,59 +296,70 @@ Group::Group(unsigned int n,unsigned int m)
   ngenerator = n;
   if (m > 0) {
     free = false;
-    allocate(m);
+    initialize(m);
   }
 }
 
-void Group::create_random()
+Group::Group(const Group& source)
 {
-  clear();
-  // A random group...
-  int m = 0;
-  ngenerator = RND.irandom(3,15);
-  double alpha = RND.drandom();
-  if (alpha < 0.7) {
-    m = RND.irandom(ngenerator/2);
-    free = false;
-  }
-  else {
-    free = true;
-  }
-  allocate(m);
+  relations = source.relations;
+  ngenerator = source.ngenerator;
+  abelian = source.abelian;
+  finite = source.finite;
+  solvable = source.solvable;
+  free = source.free;
+  braid = source.braid;
+  cardinality = source.cardinality;
+  rank = source.rank;
+  torsion = source.torsion;
 }
 
-int Group::implied_generators() const
+Group& Group::operator =(const Group& source)
+{
+  if (this == &source) return *this;
+
+  relations = source.relations;
+  ngenerator = source.ngenerator;
+  abelian = source.abelian;
+  finite = source.finite;
+  solvable = source.solvable;
+  free = source.free;
+  braid = source.braid;
+  cardinality = source.cardinality;
+  rank = source.rank;
+  torsion = source.torsion;
+
+  return *this;
+}
+
+Group::~Group()
+{
+
+}
+
+bool Group::consistent(std::set<unsigned int>& alphabet) const
 {
   // This method computes the number of distinct 
-  // generators in the various relations
-  if (relations.empty()) return 0;
+  // generators in the various relations and verifies 
+  // that there are no letters in the relation words 
+  // that aren't generators.
+  alphabet.clear();
+  if (relations.empty()) return true;
   unsigned int i,n;
-  std::set<int> glabels;
-  std::vector<std::pair<unsigned int,int> >::const_iterator it;
+  bool output = true;
+  std::set<unsigned int> S;
+  std::set<unsigned int>::const_iterator it;
 
   for(i=0; i<relations.size(); ++i) {
-    for(it=relations[i].content.begin(); it!=relations[i].content.end(); ++it) {
-      n = it->first;
-      glabels.insert(n);
+    relations[i].get_alphabet(S);
+    for(it=S.begin(); it!=S.end(); ++it) {
+      n = *it;
+      alphabet.insert(n);
+      // Illegal letter in this relation!
+      if (n >= ngenerator) output = false;
     }
   }
-  return (signed) glabels.size();
-}
-
-bool Group::consistent() const
-{
-  unsigned int i,j,n;
-  Word w;
-
-  // Sanity check...
-  for(i=0; i<relations.size(); ++i) {
-    w = relations[i];
-    for(j=0; j<w.content.size(); ++j) {
-      n = w.content[j].first;
-      if (n >= ngenerator) return false;
-    }
-  }
-  return true;
+  return output;
 }
 
 bool Group::equivalent(const Word& w1,const Word& w2) const
@@ -448,7 +463,7 @@ bool Group::equivalent(const Word& w1,const Word& w2) const
 void Group::reduce()
 {
   if (relations.empty()) return;
-  assert(ngenerator > 0);
+  if (ngenerator == 0) throw std::runtime_error("The number of generators must be greater than zero to reduce the group!");
 
   unsigned int i,j,p,q,offset[ngenerator],n = 0;
   bool inv,reduction = false,change = false;
@@ -570,6 +585,72 @@ void Group::reduce()
   }
 }
 
+void Group::initialize(unsigned int m)
+{
+  abelian = false;
+  finite = false;
+  solvable = false;
+  cardinality = 0;
+
+  if (m == 0) return;
+
+  int e;
+  unsigned int i,j,k,b,sum = 0;
+  bool duplicate;
+  Word w;
+  std::vector<unsigned int> length,base;
+  std::vector<int> exponent;
+
+  for(i=0; i<m; ++i) {
+   relations.push_back(w);
+  }
+  for(i=0; i<m-1; ++i) {
+    length.push_back(2 + RND.irandom(ngenerator/2));
+    sum += length[i];
+  }
+  if (ngenerator > sum) {
+    length.push_back(ngenerator - sum);
+  }
+  else {
+    length.push_back(2 + RND.irandom(ngenerator/2));
+  }
+
+  i = 0;
+  do {
+    base.clear(); exponent.clear();
+    j = RND.irandom(ngenerator);
+    base.push_back(j);
+    e = RND.irandom(1,10);
+    if (RND.drandom() < 0.5) e = -e;
+    exponent.push_back(e);
+    for(j=1; j<length[i]; ++j) {
+      e = RND.irandom(1,10);
+      if (RND.drandom() < 0.5) e = -e;
+      exponent.push_back(e);
+      do {
+        b = RND.irandom(ngenerator);
+        if (b != base[j-1]) break;
+      } while(true);
+      base.push_back(b);
+    }
+    relations[i].initialize(base,exponent);
+    // Check to make sure none of these relators are simply cyclic permutations 
+    // of one of the others!
+    duplicate = false;
+    for(j=0; j<i; ++j) {
+      for(k=1; k<relations[j].length(); ++k) {
+        w = relations[j].permute(k);
+        if (w == relations[i]) {
+          duplicate = true;
+          break;
+        }
+      }
+      if (duplicate) break;
+    }
+    if (!duplicate) i++;
+  } while(i < m);
+}
+
 void Group::initialize(unsigned int r,const std::vector<unsigned int>& torsion)
 {
   // The constructor for a finitely generated abelian group, whose presentation 
@@ -616,9 +697,9 @@ void Group::initialize(unsigned int r,const std::vector<unsigned int>& torsion)
 
 void Group::initialize(unsigned int n,const std::vector<Word>& R)
 {
-  if (n == 0) assert(R.empty());
+  if (n == 0 && !R.empty()) throw std::invalid_argument("If there are no generators then the group presentation cannot have any relations!");
 
-  ngenerator = (unsigned) n;
+  ngenerator = n;
   relations = R;
  
   if (ngenerator == 0) {
@@ -640,11 +721,10 @@ void Group::compute_rank()
     rank = 0;
     return;
   }
+  // The maximum possible value for the rank; this method needs to be completed by an 
+  // algorithm which reduces the relations to their canonical form and enables the calculation 
+  // of the rank and torsion coefficients.
   rank = ngenerator;
-  unsigned int i;
-  for(i=0; i<relations.size(); ++i) {
-   
-  }
 }
 
 void Group::clear()
@@ -698,116 +778,7 @@ Group Group::abelianize() const
   return output;
 }
 
-void Group::allocate(unsigned int m)
-{
-  abelian = false;
-  finite = false;
-  solvable = false;
-  cardinality = 0;
 
-  if (m == 0) return;
-
-  int e;
-  unsigned int i,j,k,b,sum = 0;
-  bool good;
-  Word w;
-  std::vector<unsigned int> length,base;
-  std::vector<int> exponent,used;
-
-  for(i=0; i<m; ++i) {
-   relations.push_back(w);
-  }
-  for(i=0; i<m-1; ++i) {
-    length.push_back(2 + RND.irandom(ngenerator/2));
-    sum += length[i];
-  }
-  if (ngenerator > sum) {
-    length.push_back(ngenerator - sum);
-  }
-  else {
-    length.push_back(2 + RND.irandom(ngenerator/2));
-  }
-  for(i=0; i<ngenerator; ++i) {
-    used.push_back(0);
-  }
-
-  i = 0;
-  do {
-    base.clear(); exponent.clear();
-    for(j=0; j<length[i]; ++j) {
-      e = RND.irandom(1,10);
-      if (RND.drandom() < 0.5) e = -e;
-      exponent.push_back(e);
-      // How to ensure that every generator appears at least 
-      // once in a relation?
-      if (j > 0) {
-        good = false;
-        do {
-          b = RND.irandom(used);
-          if (b != base[j-1]) good = true;
-        } while(!good);
-        used[b] = 1;
-        base.push_back(b);
-        continue;
-      }
-      k = RND.irandom(used);
-      used[k] = 1;
-      base.push_back(k);
-    }
-    relations[i].initialize(base,exponent);
-    // Check to make sure none of these relators are simply cyclic permutations 
-    // of one of the others!
-    good = true;
-    for(j=0; j<i; ++j) {
-      for(k=1; k<relations[j].length(); ++k) {
-        w = relations[j].permute(k);
-        if (w == relations[i]) {
-          good = false;
-          break;
-        }
-      }
-      if (!good) break;
-    }
-    if (good) i += 1;
-  } while(i < m);
-}
-
-Group::Group(const Group& source)
-{
-  relations = source.relations;
-  ngenerator = source.ngenerator;
-  abelian = source.abelian;
-  finite = source.finite;
-  solvable = source.solvable;
-  free = source.free;
-  braid = source.braid;
-  cardinality = source.cardinality;
-  rank = source.rank;
-  torsion = source.torsion;
-}
-
-Group& Group::operator =(const Group& source)
-{
-  if (this == &source) return *this;
-
-  relations = source.relations;
-  ngenerator = source.ngenerator;
-  abelian = source.abelian;
-  finite = source.finite;
-  solvable = source.solvable;
-  free = source.free;
-  braid = source.braid;
-  cardinality = source.cardinality;
-  rank = source.rank;
-  torsion = source.torsion;
-
-  return *this;
-}
-
-Group::~Group()
-{
-
-}
 
 int Group::serialize(std::ofstream& s) const
 {
@@ -864,50 +835,46 @@ int Group::deserialize(std::ifstream& s)
 
 std::string Group::compact_form() const
 {
+  if (ngenerator == 0) return std::string("{e}");
+
   unsigned int i,m;
-  std::string output = "";
+  std::stringstream sstream;
 
   if (abelian) {
-    output += boost::lexical_cast<std::string>(rank);
+    sstream << rank;
     if (!torsion.empty()) {
       m = torsion.size();
-      output += " | ";
+      sstream << " | ";
       for(i=0; i<m-1; ++i) {
-        output += boost::lexical_cast<std::string>(torsion[i]) + ", ";
+        sstream << torsion[i] << ", ";
       }
-      output += boost::lexical_cast<std::string>(torsion[m-1]); 
+      sstream << torsion[m-1];
     }
   }
   else {
-    if (ngenerator == 0) {
-      output += "{e}";
+    sstream << "{";
+    for(i=0; i<ngenerator-1; ++i) {
+      sstream << "x[" << i+1 << "],";
     }
-    else {
-      output += "{";
-      for(i=0; i<ngenerator-1; ++i) {
-        output += "x[" + boost::lexical_cast<std::string>(i+1) + "],";
+    sstream << "x[" << ngenerator << "]}";
+    if (!relations.empty()) {
+      m = relations.size();
+      sstream << " | {";
+      for(i=0; i<m-1; ++i) {
+        if (relations[i].empty()) continue;
+        sstream << relations[i] << ",";
       }
-      output += "x[" + boost::lexical_cast<std::string>(ngenerator) + "]}";
-      if (!relations.empty()) {
-        m = relations.size();
-        std::stringstream sstream;
-        sstream << " | {";
-        for(i=0; i<m-1; ++i) {
-          sstream << relations[i] << ",";
-        }
-        sstream << relations[m-1] << "}";
-        output += sstream.str();
-      }
+      sstream << relations[m-1] << "}";
     }
   }
-  return output;
+  return sstream.str();
 }
 
 namespace SYNARMOSMA {
   std::ostream& operator <<(std::ostream& s,const Group& g)
   {
     unsigned int i;
-    s << g.finite << "  " << g.abelian << "  " << g.cardinality << "  " << g.solvable << "  " << g.free << std::endl;
+    s << g.finite << "  " << g.abelian << "  " << g.cardinality << "  " << g.solvable << "  " << g.free << "  " << g.braid << std::endl;
     if (g.ngenerator == 0) {
       s << "< {e} | >";
       return s;

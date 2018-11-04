@@ -4,6 +4,7 @@
 #define _latticeh
 
 namespace SYNARMOSMA {
+  /// A class representing a lattice, that is an instance of the Poset class in which every two elements have a unique supremum and a unique infimum.
   class Lattice: public Poset {
    protected:
     std::set<int> atoms;
