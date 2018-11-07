@@ -6,17 +6,12 @@ extern Random RND;
 
 Lattice::Lattice() : Poset()
 {
-  atomic = false;
-  null = 0;
-  unity = 0;
   initialize();
 }
 
 Lattice::Lattice(int n) : Poset(n)
 {
-  atomic = false;
-  null = 0;
-  unity = 0;
+  if (n < 2) throw std::invalid_argument("A lattice must have at least two elements!");
   initialize();
 }
 
@@ -38,12 +33,14 @@ Lattice::Lattice(const Lattice& source)
 Lattice& Lattice::operator =(const Lattice& source) 
 {
   if (this == &source) return *this;
+
   N = source.N;
   order = source.order;
   atomic = source.atomic;
   atoms = source.atoms;
   null = source.null;
   unity = source.unity;
+
   return *this;
 }
 
@@ -110,6 +107,7 @@ int Lattice::deserialize(std::ifstream& s)
     s.read((char*)(&k),sizeof(int)); count += sizeof(int);
     atoms.insert(k);
   }
+
 #ifdef DEBUG
   assert(consistent());
 #endif
@@ -120,8 +118,9 @@ int Lattice::deserialize(std::ifstream& s)
 
 void Lattice::initialize()
 {
-  if (N < 2) return; 
-  int i,j,n1,n2,delta = 2*N*(N-1),ndelta;
+  if (N < 2) throw std::runtime_error("A lattice must have at least two elements!");
+
+  int i,j,n1,n2,ndelta,delta = 2*N*(N-1);
 
   do {
     n1 = RND.irandom(N);
@@ -144,9 +143,11 @@ void Lattice::initialize()
     }
     delta = ndelta;
   } while(delta > 0);
+
 #ifdef DEBUG
   assert(consistent());
 #endif
+
   compute_bounds();
   compute_atoms();
 }
@@ -166,6 +167,32 @@ bool Lattice::consistent() const
   return true;
 }
 
+double Lattice::atomicity() const
+{
+  if (atomic) return 1.0;
+
+  int i,j,npotential = 0,non_atomic = 0;
+  bool found;
+  std::set<int>::const_iterator it;
+
+  for(i=0; i<N; ++i) {
+    if (i == null) continue;
+    if (atoms.count(i) > 0) continue;
+    npotential++;
+    found = false;
+    for(it=atoms.begin(); it!=atoms.end(); ++it) {
+      j = *it;
+      if (get_order(j,i) == Relation::before) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) non_atomic++;  
+  }
+  // Since the lattice is non-atomic, we know that npotential > 0
+  return double(non_atomic)/double(npotential);  
+}
+
 void Lattice::compute_bounds()
 {
   // This method computes the null and identity elements for this lattice using a 
@@ -173,7 +200,7 @@ void Lattice::compute_bounds()
   int i,j;
   bool found,nfound;
   
-  // We begin by finding the 0 element, i.e. the element of the lattice such that 0 <= x for all x
+  // We begin by finding the 0 element, i.e. the element of the lattice such that 0 ~ x for all x
   nfound = false;
   for(i=0; i<N; ++i) {
     found = true;
@@ -198,7 +225,7 @@ void Lattice::compute_bounds()
     N += 1;
   }
 
-  // Now the 1 element, i.e. the element of the lattice such that x <= 1 for all x
+  // Now the 1 element, i.e. the element of the lattice such that x ~ 1 for all x
   nfound = false;
   for(i=0; i<N; ++i) {
     found = true;
@@ -257,8 +284,8 @@ void Lattice::compute_atoms()
 
 int Lattice::meet(int x,int y) const
 {
-  // Find the element w in L such that w <= x and w <= y, while any other 
-  // z in L satisfying these relations is such that z <= w.
+  // Find the element w in L such that w ~ x and w ~ y, while any other 
+  // z in L satisfying these relations is such that z ~ w.
   int i,j,rvalue = N;
   bool max;
   std::set<int> candidates;
@@ -292,8 +319,8 @@ int Lattice::meet(int x,int y) const
 
 int Lattice::join(int x,int y) const
 {
-  // Find the element w in L such that x <= w and y <= w, while any other 
-  // z in L satisfying these relations is such that w <= z.
+  // Find the element w in L such that x ~ w and y ~ w, while any other 
+  // z in L satisfying these relations is such that w ~ z.
   int i,j,rvalue = N;
   bool max;
   std::set<int> candidates;

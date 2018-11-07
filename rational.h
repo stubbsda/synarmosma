@@ -4,14 +4,14 @@
 #define _rationalh
 
 namespace SYNARMOSMA {  
-  /// A class representing rational numbers, i.e. a number of the form n/d where n and d are whole numbers; the rational number is stored in normalized form, where n and d are co-prime and d > 0.
+  /// A class representing rational numbers, i.e. a number of the form n/d where n and d are whole numbers. 
   class Rational {
    private:
-    /// The numerator of a rational number, stored as a multi-precision integer using 
-    /// the NTL::ZZ type.
+    /// The numerator of a rational number q=n/d with n and d co-prime and d > 0, stored as a 
+    /// multi-precision integer using the NTL::ZZ type.
     NTL::ZZ n = NTL::to_ZZ(0);
-    /// The denominator of a rational number, stored as a multi-precision integer using 
-    /// the NTL::ZZ type.
+    /// The denominator of a rational number q=n/d with n and d co-prime and d > 0, stored as a 
+    /// multi-precision integer using the NTL::ZZ type.
     NTL::ZZ d = NTL::to_ZZ(1);
     /// The height of the rational number q = n/d, defined to be log(abs(n)) when abs(q) > 1, 
     /// otherwise log(abs(d)).

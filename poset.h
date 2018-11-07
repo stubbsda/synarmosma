@@ -23,6 +23,8 @@ namespace SYNARMOSMA {
     Poset();
     /// This constructor sets the value of the property N to the argument but otherwise does nothing, i.e. no ordering on the elements.
     Poset(int);
+    /// This constructor sets the value of the property N to the first argument and then calls the Poset::construct_ordering method with the second argument.
+    Poset(int,double); 
     /// The copy constructor.
     Poset(const Poset&);
     /// The assignment operator.

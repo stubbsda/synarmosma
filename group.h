@@ -18,8 +18,8 @@ namespace SYNARMOSMA {
     /// based on the rank and torsion. If the rank > 0, the group is not finite.
     unsigned int rank = 0;
     /// This property reflects whether or not all the elements of the group 
-    /// commute with one another for the group operation, a*b = b*a; when it is 
-    /// false the rank, torsion and solvable properties are meaningless.
+    /// commute with one another for the group operation, \f$a\cdot b = b\cdot a\f$; 
+    /// when it is false the rank, torsion and solvable properties are meaningless.
     bool abelian = false;
     /// This property reflects whether or not the group has a finite number of 
     /// elements and so whether or not the cardinality property is meaningful.
