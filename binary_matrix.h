@@ -6,7 +6,7 @@
 namespace SYNARMOSMA {
   class Binary_Matrix {
    private:
-    std::vector<unsigned int>* elements;
+    std::set<unsigned int>* elements;
     unsigned int nrow,ncolumn;
 
      void clear();
@@ -24,6 +24,8 @@ namespace SYNARMOSMA {
     bool get(int,int) const;
     void set(int,int);
     void unset(int,int);
+    void invert(int,int);
+    double density() const;
     int rank() const;
     friend std::ostream& operator <<(std::ostream&,const Binary_Matrix&);
     friend Binary_Matrix operator *(const Binary_Matrix&,const Binary_Matrix&);
