@@ -946,7 +946,7 @@ void Graph::katz_centrality(std::vector<double>& output) const
   double* w = new double[nvertex];
   double* work = new double[nwork];
   std::vector<double> x,xnew;
-  std::vector<unsigned int>::const_iterator it;
+  std::set<unsigned int>::const_iterator it;
   Binary_Matrix* A = new Binary_Matrix;
   const double beta = 1.0;
 
@@ -1515,8 +1515,8 @@ void Graph::compute_adjacency_matrix(Binary_Matrix* A) const
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
       j = *it;
       if (j < i) continue;
-      A->elements[i].push_back(j); 
-      A->elements[j].push_back(i); 
+      A->set(i,j); 
+      A->set(j,i); 
     }
   }
 }
@@ -1590,7 +1590,7 @@ double Graph::cyclic_resistance() const
   unsigned int l;
   double sum;
   std::set<int>::const_iterator it;
-  std::vector<unsigned int>::const_iterator vt;
+  std::set<unsigned int>::const_iterator vt;
   Binary_Matrix* A = new Binary_Matrix;
   double* L = new double[nvertex*nvertex];
   double* C = new double[nvertex*nvertex];
