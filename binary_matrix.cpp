@@ -2,27 +2,39 @@
 
 using namespace SYNARMOSMA;
 
+extern Random RND;
+
 Binary_Matrix::Binary_Matrix()
 {
-  nrow = 10;
-  ncolumn = 10;
-  elements = new std::set<unsigned int>[nrow];
+
 }
 
-Binary_Matrix::Binary_Matrix(int n)
+Binary_Matrix::Binary_Matrix(unsigned int n,bool identity)
 {
-  assert(n > 0);
-  nrow = n;
-  ncolumn = n;
-  elements = new std::set<unsigned int>[nrow];
+  initialize(n,n);
+  if (identity) {
+    unsigned int i;
+    for(i=0; i<n; ++i) {
+      elements[i].insert(i);
+    }
+  }
 }
 
-Binary_Matrix::Binary_Matrix(int n,int m)
+Binary_Matrix::Binary_Matrix(unsigned int n,unsigned int m,float percent)
 {
-  assert(n > 0 && m > 0);
-  nrow = n;
-  ncolumn = m;
-  elements = new std::set<unsigned int>[nrow];
+  if (percent < -std::numeric_limits<float>::epsilon()) throw std::invalid_argument("The percentage in the binary matrix constructor must not be zero!");
+  initialize(n,m);
+  if (percent > std::numeric_limits<float>::epsilon()) {
+    unsigned int i,j;
+    float alpha;
+
+    for(i=0; i<nrow; ++i) {
+      for(j=0; j<ncolumn; ++j) {
+        alpha = float(RND.drandom());
+        if (alpha < percent) elements[i].insert(j);
+      }
+    }
+  }
 }
 
 Binary_Matrix::Binary_Matrix(const Binary_Matrix& source)
@@ -40,8 +52,9 @@ Binary_Matrix& Binary_Matrix::operator =(const Binary_Matrix& source)
 {
   if (this == &source) return *this;
 
+  clear();
   unsigned int i;
-  delete[] elements;
+
   nrow = source.nrow;
   ncolumn = source.ncolumn;
   elements = new std::set<unsigned int>[nrow];
@@ -54,13 +67,11 @@ Binary_Matrix& Binary_Matrix::operator =(const Binary_Matrix& source)
 
 Binary_Matrix::~Binary_Matrix()
 {
-  delete[] elements;
+  if (nrow > 0) delete[] elements;
 }
 
-void Binary_Matrix::initialize(int n,int m)
+void Binary_Matrix::initialize(unsigned int n,unsigned int m)
 {
-  assert(n > 0 && m > 0);
-  delete[] elements;
   nrow = n;
   ncolumn = m;
   elements = new std::set<unsigned int>[nrow];
@@ -68,23 +79,25 @@ void Binary_Matrix::initialize(int n,int m)
 
 void Binary_Matrix::clear()
 {
+  if (nrow > 0) delete[] elements;
   nrow = 0;
   ncolumn = 0;
-  delete[] elements;
 }
 
 int Binary_Matrix::serialize(std::ofstream& s) const
 {
   unsigned int i,j,n;
   int count = 0;
+  std::set<unsigned int>::const_iterator it;
 
   s.write((char*)(&nrow),sizeof(int)); count += sizeof(int);
   s.write((char*)(&ncolumn),sizeof(int)); count += sizeof(int);
   for(i=0; i<nrow; ++i) {
     n = elements[i].size();
     s.write((char*)(&n),sizeof(int)); count += sizeof(int);
-    for(j=0; j<n; ++j) {
-      s.write((char*)(&elements[i][j]),sizeof(int)); count += sizeof(int);
+    for(it=elements[i].begin(); it!=elements[i].end(); ++it) {
+      j = *it;
+      s.write((char*)(&j),sizeof(int)); count += sizeof(int);
     }
   }
   return count;
@@ -99,7 +112,7 @@ int Binary_Matrix::deserialize(std::ifstream& s)
 
   s.read((char*)(&nrow),sizeof(int)); count += sizeof(int);
   s.read((char*)(&ncolumn),sizeof(int)); count += sizeof(int);
-  elements = new std::vector<unsigned int>[nrow];
+  elements = new std::set<unsigned int>[nrow];
   for(i=0; i<nrow; ++i) {
     s.read((char*)(&n),sizeof(int)); count += sizeof(int);
     for(j=0; j<n; ++j) {
@@ -110,9 +123,9 @@ int Binary_Matrix::deserialize(std::ifstream& s)
   return count;
 }
 
-void Binary_Matrix::get_row(int n,bool* output) const
+void Binary_Matrix::get_row(unsigned int n,bool* output) const
 {
-  assert(n >= 0);
+  if (n >= nrow) throw std::invalid_argument("The row number argument is illegal for this binary matrix!");
   unsigned int i;
   std::set<unsigned int>::const_iterator it;
 
@@ -124,34 +137,27 @@ void Binary_Matrix::get_row(int n,bool* output) const
   }
 }
 
-bool Binary_Matrix::get(int i,int j) const
+bool Binary_Matrix::symmetric() const
 {
-  assert(i >= 0 && j >= 0);
-  bool output = (elements[i].count(j) > 0) ? true : false; 
-  return output;
-}
+  // This method tests if the matrix is symmetric...
+  if (nrow != ncolumn) return false;
 
-void Binary_Matrix::set(int i,int j) 
-{
-  assert(i >= 0 && j >= 0);
-  elements[i].insert(j);
-}
+  unsigned int i,j;
+  std::set<unsigned int> nzero;
+  std::set<unsigned int>::const_iterator it;
 
-void Binary_Matrix::unset(int i,int j)
-{
-  assert(i >= 0 && j >= 0);
-  if (it != elements[i].count(j)) elements[i].erase(elements[i].begin() + *it); 
-}
-
-void Binary_Matrix::invert(int i,int j)
-{
-  assert(i >= 0 && j >= 0);
-  if (elements[i].count(j) > 0) {
-    elements[i].erase(elements[i].begin() + *it);
+  for(i=0; i<ncolumn; ++i) {
+    // The set nzero will contain all the elements of the i-th column
+    for(j=0; j<nrow; ++j) {
+      for(it=elements[j].begin(); it!=elements[i].end(); ++it) {
+        if (*it == i) nzero.insert(*it); 
+      }
+    }
+    // Is the i-th column the same as the i-th row?
+    if (nzero != elements[i]) return false;
+    nzero.clear();
   }
-  else {
-    elements[i].insert(j);
-  }
+  return true;
 }
 
 double Binary_Matrix::density() const
@@ -168,8 +174,8 @@ int Binary_Matrix::rank() const
 {
   unsigned int i,j,k,r = 0;
   bool found;
-  std::vector<unsigned int> nzero;
-  std::vector<unsigned int>::const_iterator it,jt;
+  std::set<unsigned int> nzero;
+  std::set<unsigned int>::const_iterator it;
   Binary_Matrix wcopy(nrow,ncolumn);
 
   // Copy over the matrix into wcopy
@@ -180,8 +186,7 @@ int Binary_Matrix::rank() const
   for(k=0; k<ncolumn; ++k) {
     found = false;
     for(j=r; j<nrow; ++j) {
-      it = std::find(wcopy.elements[j].begin(),wcopy.elements[j].end(),k);
-      if (it != wcopy.elements[j].end()) {
+      if (wcopy.elements[j].count(k) > 0) {
         found = true;
         break;
       }
@@ -191,34 +196,38 @@ int Binary_Matrix::rank() const
       wcopy.elements[j] = wcopy.elements[r];
       wcopy.elements[r] = nzero;
       for(i=0; i<r; ++i) {
-        jt = std::find(wcopy.elements[i].begin(),wcopy.elements[i].end(),k);
-        if (jt == wcopy.elements[i].end()) continue;
+        if (wcopy.elements[i].count(k) == 0) continue;
         nzero = wcopy.elements[i];
         for(it=wcopy.elements[r].begin(); it!=wcopy.elements[r].end(); ++it) {
-          nzero.push_back(*it);
+          if (nzero.count(*it) > 0) {
+            nzero.erase(*it);
+          }
+          else {
+            nzero.insert(*it);
+          }
         }
         // Find the columns that appear twice in nzero and delete both...
         wcopy.elements[i].clear();
         for(it=nzero.begin(); it!=nzero.end(); ++it) {
-          j = std::count(nzero.begin(),nzero.end(),*it);
-          if (j == 2) continue;
-          wcopy.elements[i].push_back(*it);
+          wcopy.elements[i].insert(*it);
         }
       }
 
       for(i=r+1; i<nrow; ++i) {
-        it = std::find(wcopy.elements[i].begin(),wcopy.elements[i].end(),k);
-        if (it == wcopy.elements[i].end()) continue;
+        if (wcopy.elements[i].count(k) == 0) continue;
         nzero = wcopy.elements[i];
         for(it=wcopy.elements[r].begin(); it!=wcopy.elements[r].end(); ++it) {
-          nzero.push_back(*it);
+          if (nzero.count(*it) > 0) {
+            nzero.erase(*it);
+          }
+          else {
+            nzero.insert(*it);
+          }
         }
         // Find the columns that appear twice in nzero and delete both...
         wcopy.elements[i].clear();
         for(it=nzero.begin(); it!=nzero.end(); ++it) {
-          j = std::count(nzero.begin(),nzero.end(),*it);
-          if (j == 2) continue;
-          wcopy.elements[i].push_back(*it);
+          wcopy.elements[i].insert(*it);
         }
       }
       r++;      
@@ -242,7 +251,7 @@ namespace SYNARMOSMA {
           s << "1, ";
         }
       }
-      if (it == A.elements[i].count(ncolumn-1) == 0) {
+      if (A.elements[i].count(A.ncolumn-1) == 0) {
         s << "0 ";
       }
       else {
@@ -258,27 +267,39 @@ namespace SYNARMOSMA {
     return s;
   }
 
+  Binary_Matrix operator !(const Binary_Matrix& A)
+  {
+    unsigned int i,j;
+    Binary_Matrix output(A.nrow,A.ncolumn);
+
+    for(i=0; i<A.nrow; ++i) {
+      for(j=0; j<A.ncolumn; ++j) {
+        if (A.elements[i].count(j) == 0) output.elements[i].insert(j);
+      }
+    }
+    return output;
+  }
+
   Binary_Matrix operator +(const Binary_Matrix& A,const Binary_Matrix& B)
   {
-#ifdef DEBUG
-    assert(A.nrow == B.nrow && A.ncolumn == B.ncolumn);
-#endif
+    if (A.nrow != B.nrow || A.ncolumn != B.ncolumn) throw std::invalid_argument("These two binary matrices do not conform for addition!");
 
-    unsigned int i,j,k;
+    unsigned int i,j;
+    std::set<unsigned int>::const_iterator it;
     Binary_Matrix output(A.nrow,A.ncolumn);
 
     output = A;
 
     // Now the matrix addition itself...
     for(i=0; i<B.nrow; ++i) {
-      for(j=0; j<B.elements[i].size(); ++j) {
-        k = B.elements[i][j];
-        if (it == output.elements[i].count(k) == 0) {
-          output.elements[i].insert(k);
+      for(it=B.elements[i].begin(); it!=B.elements[i].end(); ++it) {
+        j = *it;
+        if (output.elements[i].count(j) == 0) {
+          output.elements[i].insert(j);
         }
         else {
           // 1 + 1 = 0 over GF(2), so delete this element
-          output.elements[i].erase(output.elements[i].begin() + *it);
+          output.elements[i].erase(j);
         }
       }
     }
@@ -287,32 +308,30 @@ namespace SYNARMOSMA {
 
   Binary_Matrix operator *(const Binary_Matrix& A,const Binary_Matrix& B)
   {
-#ifdef DEBUG
-    assert(A.ncolumn == B.nrow);
-#endif
-    unsigned int i,j,k,l,in1,sum;
+    if (A.ncolumn != B.nrow) throw std::invalid_argument("These two binary matrices do not conform for multiplication!");
+
+    unsigned int i,j,l,in1,sum;
+    std::set<unsigned int>::const_iterator it;
     Binary_Matrix output(A.nrow,B.ncolumn);
 
     // Convert the matrix B to a column-oriented format...
     std::vector<unsigned int>* nonzero_row = new std::vector<unsigned int>[B.ncolumn];
     for(l=0; l<B.ncolumn; ++l) {
       for(i=0; i<B.nrow; ++i) {
-        for(j=0; j<B.elements[i].size(); ++j) {
-          if (B.elements[i][j] == l) nonzero_row[l].push_back(i);
-        }
+        if (B.elements[i].count(l) > 0) nonzero_row[l].push_back(i);
       }
     }
     // Now the matrix multiplication itself...
     for(i=0; i<A.nrow; ++i) {
       for(j=0; j<B.ncolumn; ++j) {
         sum = 0;
-        for(k=0; k<A.elements[i].size(); ++k) {
-          in1 = A.elements[i][k];
+        for(it=A.elements[i].begin(); it!=A.elements[i].end(); ++it) {
+          in1 = *it;
           for(l=0; l<nonzero_row[j].size(); ++l) {
             if (nonzero_row[j][l] == in1) sum += 1;
           }
         }
-        if (sum % 2 == 1) output.elements[i].push_back(j);
+        if (sum % 2 == 1) output.elements[i].insert(j);
       }
     }
     delete[] nonzero_row;

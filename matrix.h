@@ -75,7 +75,7 @@ namespace SYNARMOSMA {
     void increment(int,int,kind);
     void convert(kind*,char) const;
     bool empty_row(int) const;
-    inline double sparsity() const {return 1.0 - double(number_nonzero())/double(nrow*ncolumn);};
+    inline double density() const {return double(number_nonzero())/double(nrow*ncolumn);};
     int number_nonzero() const; 
     double dispersion() const;
     kind diagonal_element(int) const;

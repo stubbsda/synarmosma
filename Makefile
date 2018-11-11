@@ -67,7 +67,7 @@ proposition.o: proposition.cpp proposition.h global.h
 word.o: word.cpp word.h global.h
 	$(CXX) $(MY_CXX_FLAGS) -c word.cpp
 
-homology.o: homology.h homology.cpp nexus.h matrix.h group.h global.h
+homology.o: homology.h homology.cpp nexus.h matrix.h binary_matrix.h group.h global.h
 	$(CXX) $(MY_CXX_FLAGS) -c homology.cpp
 
 homotopy.o: homotopy.h homotopy.cpp nexus.h matrix.h group.h global.h
@@ -94,7 +94,7 @@ variety_wrapper.o: global.h rational.h variety.h variety.cpp variety_wrapper.cpp
 functional_equation_wrapper.o: global.h rational.h variety.h polynomial.h functional_equation.h functional_equation.cpp functional_equation_wrapper.cpp
 	$(CXX) $(MY_CXX_FLAGS) -c functional_equation_wrapper.cpp
 
-propositional_system.o: global.h graph.h proposition.h propositional_system.h propositional_system.cpp directed_graph.h
+propositional_system.o: global.h graph.h proposition.h propositional_system.h propositional_system.cpp binary_matrix.h directed_graph.h
 	$(CXX) $(MY_CXX_FLAGS) -c propositional_system.cpp
 
 multitime.o: global.h multitime.h multitime.cpp
