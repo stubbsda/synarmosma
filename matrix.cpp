@@ -14,9 +14,8 @@ Matrix<kind>::Matrix()
 }
 
 template<class kind>
-Matrix<kind>::Matrix(int n)
+Matrix<kind>::Matrix(unsigned int n)
 {
-  assert(n > 0);
   unsigned int i;
 
   normalized = false;
@@ -29,9 +28,8 @@ Matrix<kind>::Matrix(int n)
 }
 
 template<class kind>
-Matrix<kind>::Matrix(int n,int m)
+Matrix<kind>::Matrix(unsigned int n,unsigned int m)
 {
-  assert(n > 0 && m > 0);
   normalized = false;
   nrow = n;
   ncolumn = m;
@@ -144,24 +142,24 @@ void Matrix<kind>::convert(kind* A,char mtype) const
 namespace SYNARMOSMA {
   // A divisibility test is meaningless in the context of fields like \mathbb{R} and \mathbb{C}...
   template<>
-  bool Matrix<double>::divisible(int n,unsigned int* out1,unsigned int* out2,double* f) const
+  bool Matrix<double>::divisible(unsigned int n,unsigned int* out1,unsigned int* out2,double* f) const
   {
-    assert(n >= 0);
+    if (n >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
     return true;
   }
 
   template<>
-  bool Matrix<std::complex<double> >::divisible(int n,unsigned int* out1,unsigned int* out2,std::complex<double>* f) const
+  bool Matrix<std::complex<double> >::divisible(unsigned int n,unsigned int* out1,unsigned int* out2,std::complex<double>* f) const
   {
-    assert(n >= 0);
+    if (n >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
     return true;
   }
 }
 
 template<class kind>
-bool Matrix<kind>::divisible(int n,unsigned int* out1,unsigned int* out2,kind* f) const
+bool Matrix<kind>::divisible(unsigned int n,unsigned int* out1,unsigned int* out2,kind* f) const
 {
-  assert(n >= 0);
+  if (n >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
   unsigned int i,j,nu = n;
   kind b1,b2 = Matrix<kind>::zero;
 
@@ -255,7 +253,7 @@ void Matrix<kind>::multiply(const std::vector<kind>& b,std::vector<kind>& output
 }
 
 template<class kind>
-int Matrix<kind>::number_nonzero() const
+unsigned int Matrix<kind>::number_nonzero() const
 {
   unsigned int i,nzero = 0;
 
@@ -356,9 +354,9 @@ namespace SYNARMOSMA {
   }
 
   template<>
-  bool Matrix<NTL::ZZ>::diagonally_dominant(int r) const 
+  bool Matrix<NTL::ZZ>::diagonally_dominant(unsigned int r) const 
   {
-    assert(r >= 0);
+    if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
     unsigned int i,ru = r;
     double q,d = 0.0,sum = 0.0;
 
@@ -377,9 +375,10 @@ namespace SYNARMOSMA {
   }
 
   template<>
-  bool Matrix<NTL::ZZ>::diagonally_dominant(int r,int c) const 
+  bool Matrix<NTL::ZZ>::diagonally_dominant(unsigned int r,unsigned int c) const 
   {
-    assert(r >= 0 && c >= 0);
+    if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
+    if (c >= ncolumn) throw std::invalid_argument("The column number argument is illegal for this matrix!");
     unsigned int i,cu = c;
     double q,d = 0.0,sum = 0.0;
 
@@ -447,9 +446,9 @@ bool Matrix<kind>::diagonally_dominant() const
 }
 
 template<class kind>
-bool Matrix<kind>::diagonally_dominant(int r) const 
+bool Matrix<kind>::diagonally_dominant(unsigned int r) const 
 {
-  assert(r >= 0);
+  if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
   unsigned int i,ru = r;
   double q,d = 0.0,sum = 0.0;
 
@@ -467,9 +466,10 @@ bool Matrix<kind>::diagonally_dominant(int r) const
 }
 
 template<class kind>
-bool Matrix<kind>::diagonally_dominant(int r,int c) const 
+bool Matrix<kind>::diagonally_dominant(unsigned int r,unsigned int c) const 
 {
-  assert(r >= 0 && c >= 0);
+  if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
+  if (c >= ncolumn) throw std::invalid_argument("The column number argument is illegal for this matrix!");
   unsigned int i,cu = c;
   double q,d = 0.0,sum = 0.0;
 
@@ -613,14 +613,6 @@ void Matrix<kind>::gauss_seidel_solver(std::vector<kind>& soln,const std::vector
 }
 
 template<class kind>
-void Matrix<kind>::clear()
-{
-  if (nrow > 0) delete[] elements;
-  nrow = 0;
-  ncolumn = 0;
-}
-
-template<class kind>
 void Matrix<kind>::clear(bool deep)
 {
   normalized = false;
@@ -635,6 +627,27 @@ void Matrix<kind>::clear(bool deep)
       elements[i].clear();
     }
   }
+}
+
+template<class kind>
+bool Matrix<kind>::consistent() const
+{
+  if (nrow == 0 || ncolumn == 0) return false;
+  unsigned int i,j,m;
+  std::set<unsigned int> indices;
+
+  for(i=0; i<nrow; ++i) {
+    for(j=0; j<elements[i].size(); ++j) {
+      m = elements[i][j].second;
+      // Make sure the column index lies in the appropriate range...
+      if (m >= ncolumn) return false;
+      // Also make sure that the there is only element corresponding to this row and column...
+      if (indices.count(m) > 0) return false;
+      indices.insert(m);
+    }
+    indices.clear();
+  }
+  return true;
 }
 
 namespace SYNARMOSMA {
@@ -743,10 +756,9 @@ int Matrix<kind>::deserialize(std::ifstream& s)
 }
 
 template<class kind>
-void Matrix<kind>::initialize(int n,int m)
+void Matrix<kind>::initialize(unsigned int n,unsigned int m)
 {
-  assert(n > 0 && m > 0);
-  if ((signed) nrow == n) {
+  if (nrow == n) {
     clear(false);
   }
   else {
@@ -875,9 +887,10 @@ Matrix<kind>& operator *(const Matrix<kind>& A,const Matrix<kind>& B)
 }
 
 template<class kind>
-void Matrix<kind>::increment(int n,int m,kind v)
+void Matrix<kind>::increment(unsigned int n,unsigned int m,kind v)
 {
-  assert(n >= 0 && m >= 0);
+  if (n >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
+  if (m >= ncolumn) throw std::invalid_argument("The column number argument is illegal for this matrix!");
   unsigned int i,q,mu = m;
   bool found = false;
   for(i=0; i<elements[n].size(); ++i) {
@@ -896,30 +909,31 @@ void Matrix<kind>::increment(int n,int m,kind v)
 }
 
 template<class kind>
-void Matrix<kind>::get_row(std::vector<kind>& v,std::vector<unsigned int>& c,int rnumber) const
+void Matrix<kind>::get_row(std::vector<kind>& v,std::vector<unsigned int>& c,unsigned int r) const
 {
+  if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
   unsigned int i;
   v.clear();
   c.clear();
-  for(i=0; i<elements[rnumber].size(); ++i) {
-    v.push_back(elements[rnumber][i].first);
-    c.push_back(elements[rnumber][i].second);
+  for(i=0; i<elements[r].size(); ++i) {
+    v.push_back(elements[r][i].first);
+    c.push_back(elements[r][i].second);
   }
 }
 
 template<class kind>
-bool Matrix<kind>::empty_row(int n) const
+bool Matrix<kind>::empty_row(unsigned int r) const
 {
-  assert(n >= 0);
-  return elements[n].empty();
+  if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
+  return elements[r].empty();
 }
 
 template<class kind>
-kind Matrix<kind>::get_first_nonzero(int n) const
+kind Matrix<kind>::get_first_nonzero(unsigned int r) const
 {
-  assert(n >= 0);
-  if (elements[n].empty()) return zero;
-  return elements[n][0].first;
+  if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
+  if (elements[r].empty()) return zero;
+  return elements[r][0].first;
 }
 
 template<class kind>
@@ -944,7 +958,7 @@ double Matrix<kind>::dispersion() const
 }
 
 template<class kind>
-int Matrix<kind>::optimize_dominance(std::vector<unsigned int>& shift)
+unsigned int Matrix<kind>::optimize_dominance(std::vector<unsigned int>& shift)
 {
   // A method to permute the matrix rows so that the diagonal dominance of the 
   // matrix is improved
@@ -1009,7 +1023,7 @@ int Matrix<kind>::optimize_dominance(std::vector<unsigned int>& shift)
   if (output) return nrow;
   // Compute the number of rows that are diagonally dominant and return 
   // this number
-  int ndominant = 0;
+  unsigned int ndominant = 0;
   for(i=0; i<nrow; ++i) {
     if (diagonally_dominant(i)) ndominant++;
   }
@@ -1018,11 +1032,13 @@ int Matrix<kind>::optimize_dominance(std::vector<unsigned int>& shift)
 
 namespace SYNARMOSMA {
   template<class kind>
-  void permute(Matrix<kind>& A,int n,int m,char type)
+  void permute(Matrix<kind>& A,unsigned int n,unsigned int m,char type)
   {
     // If (type == c), then column(n) <-> column(m)
     // If (type == r), then row(n) <-> row(m)
-    assert(n >= 0 && m >= 0);
+    if (n >= A.nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
+    if (m >= A.ncolumn) throw std::invalid_argument("The column number argument is illegal for this matrix!");
+    if (type != 'c' && type != 'r') throw std::invalid_argument("The matrix permutation type must be row-based or column-based!");
     unsigned int i,j,nu = n,mu = m;
     std::vector<std::pair<kind,unsigned int> > pr;
 
@@ -1046,17 +1062,19 @@ namespace SYNARMOSMA {
   }
 
   template<class kind>
-  void invert(Matrix<kind>& A,int n,char type)
+  void invert(Matrix<kind>& A,unsigned int n,char type)
   {
     // If (type == c), then column(n) -> -1*column(n)
     // If (type == r), then row(n) -> -1*row(n)
+    if (n >= A.nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
+    if (type != 'c' && type != 'r') throw std::invalid_argument("The matrix inversion type must be row-based or column-based!");
     assert(n >= 0);
     unsigned int i,j;
 
     if (type == 'c') {
       for(i=0; i<A.nrow; ++i) {
         for(j=0; j<A.elements[i].size(); ++j) {
-          if ((signed) A.elements[i][j].second == n) A.elements[i][j].first *= Matrix<kind>::neg1;
+          if (A.elements[i][j].second == n) A.elements[i][j].first *= Matrix<kind>::neg1;
         }
       }
     }
@@ -1068,11 +1086,13 @@ namespace SYNARMOSMA {
   }
 
   template<class kind>
-  void combine(Matrix<kind>& A,int n,int m,const kind& q,char type)
+  void combine(Matrix<kind>& A,unsigned int n,unsigned int m,const kind& q,char type)
   {
     // If (type == r), then row(n) -> row(n) + q*row(m)
     // If (type == c), then column(n) -> column(n) + q*column(m)
-    assert(n >= 0 && m >= 0);
+    if (n >= A.nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
+    if (m >= A.ncolumn) throw std::invalid_argument("The column number argument is illegal for this matrix!");
+    if (type != 'c' && type != 'r') throw std::invalid_argument("The matrix combination type must be row-based or column-based!");
     unsigned int i,j,l = 0,nu = n,mu = m;
     bool found,fd1,fd2;
     kind wv = Matrix<kind>::zero;
@@ -1129,9 +1149,10 @@ namespace SYNARMOSMA {
   }
 
   template<class kind>
-  void pivot_row(Matrix<kind>& A,int k,int l)
+  void pivot_row(Matrix<kind>& A,unsigned int k,unsigned int l)
   {
-    assert(k >= 0 && l >= 0);
+    if (k >= A.nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
+    if (l >= A.ncolumn) throw std::invalid_argument("The column number argument is illegal for this matrix!");
     unsigned int i,j,lu = l;
     bool found;
     kind n,q,d = Matrix<kind>::zero;
@@ -1158,9 +1179,10 @@ namespace SYNARMOSMA {
   }
 
   template<class kind>
-  void pivot_column(Matrix<kind>& A,int k,int l)
+  void pivot_column(Matrix<kind>& A,unsigned int k,unsigned int l)
   {
-    assert(k >= 0 && l >= 0);
+    if (k >= A.nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
+    if (l >= A.ncolumn) throw std::invalid_argument("The column number argument is illegal for this matrix!");
     unsigned int i,j,lu = l;
     bool found;
     kind n,q,d = Matrix<kind>::zero;
@@ -1187,9 +1209,9 @@ namespace SYNARMOSMA {
   }
 
   template<class kind>
-  void move_minimum(Matrix<kind>& A,int n)
+  void move_minimum(Matrix<kind>& A,unsigned int n)
   {
-    assert(n >= 0);
+    if (n >= A.nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
     unsigned int i,j,im,jm,nu = n,istart = 0,ulimit = A.nrow - n;  
     kind beta,alpha = Matrix<kind>::zero;
     bool full[ulimit];
@@ -1244,16 +1266,16 @@ namespace SYNARMOSMA {
     }
     jm = VY[im].second;
     im += n;
-    if (n != (signed) im) permute(A,n,im,'r');
-    if (n != (signed) jm) permute(A,n,jm,'c');
+    if (n != im) permute(A,n,im,'r');
+    if (n != jm) permute(A,n,jm,'c');
 
     delete[] VY;
   }
 
   template<class kind>
-  void prepare_matrix(Matrix<kind>& A,int n)
+  void prepare_matrix(Matrix<kind>& A,unsigned int n)
   {
-    assert(n >= 0);
+    if (n >= A.nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
     unsigned int i,j,v1,v2,nu = n;
     bool jump;
     kind f;
