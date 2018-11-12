@@ -106,7 +106,7 @@ vertex.o: global.h vertex.h vertex.cpp
 graph.o: graph.cpp graph.h edge.h schema.h pseudograph.h matrix.h binary_matrix.h global.h
 	$(CXX) $(MY_CXX_FLAGS) -c graph.cpp
 
-geometry.o: geometry.cpp geometry.h global.h 
+geometry.o: geometry.cpp geometry.h matrix.h global.h 
 	$(CXX) $(MY_CXX_FLAGS) -c geometry.cpp
 
 cell.o: cell.cpp cell.h global.h
