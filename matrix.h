@@ -74,14 +74,20 @@ namespace SYNARMOSMA {
     static const kind neg1;
     static const kind unity;
 
+    /// The default constructor which does nothing in the case of this class.
     Matrix();
-    Matrix(unsigned int);
+    /// The constructor for a square matrix whose dimension is the first argument and whose second optional argument is to construct the identity matrix when true.
+    Matrix(unsigned int,bool = false);
     Matrix(unsigned int,unsigned int);
     Matrix(const Matrix<kind>&);
     ~Matrix();
+    /// This method sets Matrix::normalized to false and, if its argument is true, checks if Matrix::nrow is greater than zero and if so frees the memory in Matrix::elements, then sets Matrix::nrow and Matrix::ncolumn to zero; if the argument is false the method just clears the values of each row vector.
     void clear(bool = true);
+    /// This method checks the internal consistency of the matrix: Matrix::nrow and Matrix::ncolumn must both be greater than zero, and every column value in the Matrix::elements property must lie between 0 and Matrix::ncolumn-1 and must only occur once. If any of these conditions are not satisfied, the method returns false.
     bool consistent() const;
+    /// This method writes the instance properties to a binary disk file and returns the number of bytes written to the file.
     int serialize(std::ofstream&) const;
+    /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
     int deserialize(std::ifstream&);
     void initialize(unsigned int,unsigned int);
     inline void set(unsigned int,unsigned int,kind,bool = false);
@@ -171,10 +177,10 @@ namespace SYNARMOSMA {
   {
     if (n >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
     if (m >= ncolumn) throw std::invalid_argument("The column number argument is illegal for this matrix!");
-    unsigned int i,q,mu = m;
+    unsigned int i,q;
     bool found = false;
     for(i=0; i<elements[n].size(); ++i) {
-      if (elements[n][i].second == mu) {
+      if (elements[n][i].second == m) {
         found = true;
         q = i;
         break;
