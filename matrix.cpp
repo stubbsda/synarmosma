@@ -7,30 +7,28 @@ extern Random RND;
 template<class kind>
 Matrix<kind>::Matrix()
 {
-  normalized = false;
 
-  nrow = 0;
-  ncolumn = 0;
 }
 
 template<class kind>
-Matrix<kind>::Matrix(unsigned int n)
+Matrix<kind>::Matrix(unsigned int n,bool identity)
 {
-  unsigned int i;
-
-  normalized = false;
+  if (n == 0) throw std::invalid_argument("The matrix dimension must be greater than zero!");
   nrow = n;
   ncolumn = n;
   elements = new std::vector<std::pair<kind,unsigned int> >[nrow];
-  for(i=0; i<nrow; ++i) {
-    elements[i].push_back(std::pair<kind,unsigned int>(unity,i));
+  if (identity) { 
+    unsigned int i;
+    for(i=0; i<nrow; ++i) {
+      elements[i].push_back(std::pair<kind,unsigned int>(unity,i));
+    }
   }
 }
 
 template<class kind>
 Matrix<kind>::Matrix(unsigned int n,unsigned int m)
 {
-  normalized = false;
+  if (n == 0 || m == 0) throw std::invalid_argument("The matrix dimensions must be greater than zero!");
   nrow = n;
   ncolumn = m;
   elements = new std::vector<std::pair<kind,unsigned int> >[nrow];
@@ -758,6 +756,7 @@ int Matrix<kind>::deserialize(std::ifstream& s)
 template<class kind>
 void Matrix<kind>::initialize(unsigned int n,unsigned int m)
 {
+  if (n == 0 || m == 0) throw std::invalid_argument("The matrix dimensions must be greater than zero!");
   if (nrow == n) {
     clear(false);
   }

@@ -11,6 +11,7 @@ Binary_Matrix::Binary_Matrix()
 
 Binary_Matrix::Binary_Matrix(unsigned int n,bool identity)
 {
+  if (n == 0) throw std::invalid_argument("The matrix dimension must be greater than zero!");
   initialize(n,n);
   if (identity) {
     unsigned int i;
@@ -22,6 +23,7 @@ Binary_Matrix::Binary_Matrix(unsigned int n,bool identity)
 
 Binary_Matrix::Binary_Matrix(unsigned int n,unsigned int m,float percent)
 {
+  if (n == 0 || m == 0) throw std::invalid_argument("The matrix dimensions must be greater than zero!");
   if (percent < -std::numeric_limits<float>::epsilon()) throw std::invalid_argument("The percentage in the binary matrix constructor must not be zero!");
   initialize(n,m);
   if (percent > std::numeric_limits<float>::epsilon()) {
@@ -72,6 +74,7 @@ Binary_Matrix::~Binary_Matrix()
 
 void Binary_Matrix::initialize(unsigned int n,unsigned int m)
 {
+  if (n == 0 || m == 0) throw std::invalid_argument("The matrix dimensions must be greater than zero!");
   nrow = n;
   ncolumn = m;
   elements = new std::set<unsigned int>[nrow];
