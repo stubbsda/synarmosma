@@ -251,17 +251,6 @@ void Matrix<kind>::multiply(const std::vector<kind>& b,std::vector<kind>& output
 }
 
 template<class kind>
-unsigned int Matrix<kind>::number_nonzero() const
-{
-  unsigned int i,nzero = 0;
-
-  for(i=0; i<nrow; ++i) {
-    nzero += elements[i].size();
-  }
-  return nzero;
-}
-
-template<class kind>
 kind Matrix<kind>::determinant() const
 {
   assert(nrow == ncolumn);
@@ -485,12 +474,12 @@ bool Matrix<kind>::diagonally_dominant(unsigned int r,unsigned int c) const
 }
 
 template<class kind>
-void Matrix<kind>::get_diagonal(std::vector<kind>& diag) const
+void Matrix<kind>::get_diagonal(std::vector<kind>& output) const
 {
   unsigned int i,j;
   kind d;
 
-  diag.clear();
+  output.clear();
 
   for(i=0; i<nrow; ++i) {
     d = zero;
@@ -500,7 +489,7 @@ void Matrix<kind>::get_diagonal(std::vector<kind>& diag) const
         break;
       }
     }
-    diag.push_back(d);
+    output.push_back(d);
   }
 }
 
@@ -886,28 +875,6 @@ Matrix<kind>& operator *(const Matrix<kind>& A,const Matrix<kind>& B)
 }
 
 template<class kind>
-void Matrix<kind>::increment(unsigned int n,unsigned int m,kind v)
-{
-  if (n >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
-  if (m >= ncolumn) throw std::invalid_argument("The column number argument is illegal for this matrix!");
-  unsigned int i,q,mu = m;
-  bool found = false;
-  for(i=0; i<elements[n].size(); ++i) {
-    if (elements[n][i].second == mu) {
-      found = true;
-      q = i;
-      break;
-    }
-  }
-  if (found) {
-    elements[n][q].first += v;
-  }
-  else {
-    elements[n].push_back(std::pair<kind,unsigned int>(v,m));
-  }
-}
-
-template<class kind>
 void Matrix<kind>::get_row(std::vector<kind>& v,std::vector<unsigned int>& c,unsigned int r) const
 {
   if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
@@ -918,13 +885,6 @@ void Matrix<kind>::get_row(std::vector<kind>& v,std::vector<unsigned int>& c,uns
     v.push_back(elements[r][i].first);
     c.push_back(elements[r][i].second);
   }
-}
-
-template<class kind>
-bool Matrix<kind>::empty_row(unsigned int r) const
-{
-  if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
-  return elements[r].empty();
 }
 
 template<class kind>
