@@ -92,6 +92,7 @@ namespace SYNARMOSMA {
     int serialize(std::ofstream&) const;
     /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
     int deserialize(std::ifstream&);
+    /// This method sets the value of Matrix::nrow and Matrix::ncolumn to the two arguments and then allocates the memory for the Matrix::elements property.    
     void initialize(unsigned int,unsigned int);
     /// This method sets the value of the matrix element specified by the first two arguments to the third argument and, if the fourth argument is true, increments the value rather than overwriting it.
     inline void set(unsigned int,unsigned int,kind,bool = false);
