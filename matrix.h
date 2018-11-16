@@ -100,14 +100,16 @@ namespace SYNARMOSMA {
     inline kind get(unsigned int,unsigned int) const;
     /// This method increments the value of the element, specified by the two first arguments, by the third argument; if the element specified does not exist, this method has the same effect as the set() method.
     inline void increment(unsigned int,unsigned int,kind);
-    /// This method determines if the row whose index is given by the argument contains any elements, returning true if the row is empty and false otherwise.
-    inline bool empty_row(unsigned int) const;
     /// This method returns the number of rows in this matrix.
     inline unsigned int get_nrow() const {return nrow;};
     /// This method computes the matrix's density, i.e. the number of non-zero elements divided by the total number of elements, and returns this value.
     inline double density() const {return double(number_nonzero())/double(nrow*ncolumn);};
     /// This method computes the number of non-zero elements in this matrix and returns this value.
-    inline unsigned int number_nonzero() const; 
+    unsigned int number_nonzero() const; 
+    /// This method determines if the row whose index is given by the argument contains any elements, returning true if the row is empty and false otherwise.
+    bool empty_row(unsigned int) const;
+    /// This method gets the non-zero element of the row with the lowest column index and returns it; if the row has no non-zero elements, it returns zero. 
+    kind get_first_nonzero(unsigned int) const;
     /// This method calculates the percentage of the matrix's rows which are not diagonally dominant, i.e. for which \f$|a_{ii}| < \sum_{j=1, j\ne i}^N |a_{ij}|\f$. 
     double dispersion() const;
     void convert(kind*,char) const;
@@ -122,7 +124,6 @@ namespace SYNARMOSMA {
     void increment(const Matrix<kind>&);
     void homotopy_scaling(kind,kind,Matrix<kind>*) const;
     void gauss_seidel_solver(std::vector<kind>&,const std::vector<kind>&,double,int);
-    kind get_first_nonzero(unsigned int) const;
     void get_row(std::vector<kind>&,std::vector<unsigned int>&,unsigned int) const;
     Matrix<kind>& operator =(const Matrix<kind>&);
     friend void permute<>(Matrix<kind>&,unsigned int,unsigned int,char);
@@ -232,24 +233,6 @@ namespace SYNARMOSMA {
     else {
       elements[n].push_back(std::pair<kind,unsigned int>(v,m));
     }
-  }
-
-  template<class kind>
-  unsigned int Matrix<kind>::number_nonzero() const
-  {
-    unsigned int i,nzero = 0;
-
-    for(i=0; i<nrow; ++i) {
-      nzero += elements[i].size();
-    }
-    return nzero;
-  }
-
-  template<class kind>
-  bool Matrix<kind>::empty_row(unsigned int r) const
-  {
-    if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
-    return elements[r].empty();
   }
 }
 #endif

@@ -14,7 +14,7 @@ namespace SYNARMOSMA {
   const NTL::ZZ Matrix<NTL::ZZ>::neg1 = NTL::to_ZZ(-1);
   template<>
   const NTL::ZZ Matrix<NTL::ZZ>::unity = NTL::to_ZZ(1); 
-
+  
   template<>
   const double Matrix<double>::zero = 0.0;
   template<>
