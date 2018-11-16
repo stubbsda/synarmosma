@@ -727,6 +727,99 @@ int Matrix<kind>::read_elements(std::ifstream& s)
   return count;
 }
 
+namespace SYNARMOSMA {
+  template<>
+  NTL::ZZ Matrix<NTL::ZZ>::get_first_nonzero(unsigned int r) const
+  {
+    if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
+    if (elements[r].empty()) return zero;
+    unsigned int i,min_index = ncolumn;
+    NTL::ZZ output = zero;
+
+    for(i=0; i<elements[r].size(); ++i) {
+      if (elements[r][i].second < min_index && elements[r][i].first != zero) {
+        output = elements[r][i].first;
+        min_index = elements[r][i].second;
+      }
+    }
+    return output; 
+  }
+
+  template<>
+  unsigned int Matrix<NTL::ZZ>::number_nonzero() const
+  {
+    unsigned int i,j,nzero = 0;
+
+    for(i=0; i<nrow; ++i) {
+      for(j=0; j<elements[i].size(); ++j) {
+        if (elements[i][j].first != zero) nzero++;
+      }
+    }
+    return nzero;
+  }
+
+  template<>
+  bool Matrix<NTL::ZZ>::empty_row(unsigned int r) const
+  {
+    if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
+    unsigned int i;
+    bool output = true;
+    for(i=0; i<elements[r].size(); ++i) {
+      if (elements[r][i].first != zero) {
+        output = false;
+        break;
+      }
+    }
+    return output;
+  }
+}
+
+template<class kind>
+kind Matrix<kind>::get_first_nonzero(unsigned int r) const
+{
+  if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
+  if (elements[r].empty()) return zero;
+  unsigned int i,min_index = ncolumn;
+  kind output = zero;
+
+  for(i=0; i<elements[r].size(); ++i) {
+    if (elements[r][i].second < min_index && std::abs(elements[r][i].first) > std::numeric_limits<double>::epsilon()) {
+      output = elements[r][i].first;
+      min_index = elements[r][i].second;
+    }
+  }
+  return output;
+}
+
+template<class kind>
+unsigned int Matrix<kind>::number_nonzero() const
+{
+  unsigned int i,j,nzero = 0;
+
+  for(i=0; i<nrow; ++i) {
+    for(j=0; j<elements[i].size(); ++j) {
+      if (std::abs(elements[i][j].first) > std::numeric_limits<double>::epsilon()) nzero++;
+    }
+  }
+
+  return nzero;
+}
+
+template<class kind>
+bool Matrix<kind>::empty_row(unsigned int r) const
+{
+  if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
+  unsigned int i;
+  bool output = true;
+  for(i=0; i<elements[r].size(); ++i) {
+    if (std::abs(elements[r][i].first) > std::numeric_limits<double>::epsilon()) {
+      output = false;
+      break;
+    }
+  }
+  return output;
+}
+
 template<class kind>
 int Matrix<kind>::deserialize(std::ifstream& s)
 {
@@ -885,14 +978,6 @@ void Matrix<kind>::get_row(std::vector<kind>& v,std::vector<unsigned int>& c,uns
     v.push_back(elements[r][i].first);
     c.push_back(elements[r][i].second);
   }
-}
-
-template<class kind>
-kind Matrix<kind>::get_first_nonzero(unsigned int r) const
-{
-  if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
-  if (elements[r].empty()) return zero;
-  return elements[r][0].first;
 }
 
 template<class kind>
