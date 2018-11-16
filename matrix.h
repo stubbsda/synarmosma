@@ -81,6 +81,7 @@ namespace SYNARMOSMA {
     Matrix(unsigned int,bool = false);
     /// The constructor for a general rectangular matrix, which is initialized to the zero matrix.
     Matrix(unsigned int,unsigned int);
+    /// The standard copy constructor - it calls the clear() method and then copies over all properties from the soure matrix to this one.
     Matrix(const Matrix<kind>&);
     /// The destructor for this class - if Matrix::nrow is greater than zero, it frees the memory in the Matrix::elements property.
     ~Matrix();
@@ -115,12 +116,17 @@ namespace SYNARMOSMA {
     void convert(kind*,char) const;
     /// This method obtains the vector of diagonal elements of the matrix, i.e. those elements whose row index is the same as their column index; the output vector will have a length of Matrix::nrow.
     void get_diagonal(std::vector<kind>&) const;
+    /// This method checks if the matrix is diagonally dominant, i.e. if for every row \f$i\f$ the inequality \f$|a_{ii}| \ge \sum_{j=1, j\ne i}^N |a_{ij}|\f$ is satisfied, and returns true if this is the case.
     bool diagonally_dominant() const;
+    /// This method checks if the row whose index is this method's unique argument is diagonally dominant, i.e. \f$|a_{ii}| \ge \sum_{j=1, j\ne i}^N |a_{ij}|\f$ for the row \f$i\f$, returning true if this is the case.
     bool diagonally_dominant(unsigned int) const;
+    /// This method checks if the element specified by the two arguments (row and column index) dominates its row, i.e. \f$|a_{ik}| \ge \sum_{j=1, j\ne k}^N |a_{ij}|\f$, where \f$i\f$ and \f$k\f$ are the two arguments of this method. 
     bool diagonally_dominant(unsigned int,unsigned int) const;
     unsigned int optimize_dominance(std::vector<unsigned int>&);
     kind determinant() const;
+    /// This method multiplies the matrix by the first argument of this method and writes the output into the second argument, after checking that the vector conforms to the matrix dimensions.
     void multiply(const std::vector<kind>&,std::vector<kind>&) const;
+    /// This method adds the matrix that is the method's argument to the instance, after first checking that the dimensions of the two matrices are identical.
     void increment(const Matrix<kind>&);
     void homotopy_scaling(kind,kind,Matrix<kind>*) const;
     void gauss_seidel_solver(std::vector<kind>&,const std::vector<kind>&,double,int);

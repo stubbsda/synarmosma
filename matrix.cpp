@@ -208,9 +208,7 @@ void Matrix<kind>::homotopy_scaling(kind a1,kind a2,Matrix<kind>* output) const
 template<class kind>
 void Matrix<kind>::increment(const Matrix<kind>& arg)
 {
-#ifdef DEBUG
-  assert(nrow == arg.nrow && ncolumn == arg.ncolumn);
-#endif
+  if (nrow != arg.nrow || ncolumn != arg.ncolumn) throw std::invalid_argument("The dimensions of the two matrices must be identical to add them!");
   unsigned int i,j,k,n;
   bool found;
 
@@ -233,9 +231,7 @@ void Matrix<kind>::increment(const Matrix<kind>& arg)
 template<class kind>
 void Matrix<kind>::multiply(const std::vector<kind>& b,std::vector<kind>& output) const
 {
-#ifdef DEBUG
-  assert(ncolumn == b.size());
-#endif
+  if (ncolumn != b.size()) throw std::invalid_argument("The vector's length must equal the number of matrix columns!");
   unsigned int i,j;
   kind sum;
 
@@ -344,13 +340,13 @@ namespace SYNARMOSMA {
   bool Matrix<NTL::ZZ>::diagonally_dominant(unsigned int r) const 
   {
     if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
-    unsigned int i,ru = r;
+    unsigned int i;
     double q,d = 0.0,sum = 0.0;
 
     for(i=0; i<elements[r].size(); ++i) {
       NTL::conv(elements[r][i].first,q);
       q = std::abs(q);
-      if (elements[r][i].second == ru) {
+      if (elements[r][i].second == r) {
         d = q;
         continue;
       }
@@ -366,13 +362,13 @@ namespace SYNARMOSMA {
   {
     if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
     if (c >= ncolumn) throw std::invalid_argument("The column number argument is illegal for this matrix!");
-    unsigned int i,cu = c;
+    unsigned int i;
     double q,d = 0.0,sum = 0.0;
 
     for(i=0; i<elements[r].size(); ++i) {
       NTL::conv(elements[r][i].first,q);
       q = std::abs(q);
-      if (elements[r][i].second == cu) {
+      if (elements[r][i].second == c) {
         d = q;
         continue;
       }
@@ -436,12 +432,12 @@ template<class kind>
 bool Matrix<kind>::diagonally_dominant(unsigned int r) const 
 {
   if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
-  unsigned int i,ru = r;
+  unsigned int i;
   double q,d = 0.0,sum = 0.0;
 
   for(i=0; i<elements[r].size(); ++i) {
     q = std::abs(elements[r][i].first);
-    if (elements[r][i].second == ru) {
+    if (elements[r][i].second == r) {
       d = q;
       continue;
     }
@@ -457,12 +453,12 @@ bool Matrix<kind>::diagonally_dominant(unsigned int r,unsigned int c) const
 {
   if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
   if (c >= ncolumn) throw std::invalid_argument("The column number argument is illegal for this matrix!");
-  unsigned int i,cu = c;
+  unsigned int i;
   double q,d = 0.0,sum = 0.0;
 
   for(i=0; i<elements[r].size(); ++i) {
     q = std::abs(elements[r][i].first);
-    if (elements[r][i].second == cu) {
+    if (elements[r][i].second == c) {
       d = q;
       continue;
     }
@@ -732,12 +728,13 @@ namespace SYNARMOSMA {
   NTL::ZZ Matrix<NTL::ZZ>::get_first_nonzero(unsigned int r) const
   {
     if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
-    if (elements[r].empty()) return zero;
+    if (elements[r].empty()) return NTL::to_ZZ(0);
     unsigned int i,min_index = ncolumn;
-    NTL::ZZ output = zero;
+    NTL::ZZ output = NTL::to_ZZ(0);
+    const NTL::ZZ null = NTL::to_ZZ(0);
 
     for(i=0; i<elements[r].size(); ++i) {
-      if (elements[r][i].second < min_index && elements[r][i].first != zero) {
+      if (elements[r][i].second < min_index && elements[r][i].first != null) {
         output = elements[r][i].first;
         min_index = elements[r][i].second;
       }
@@ -749,10 +746,11 @@ namespace SYNARMOSMA {
   unsigned int Matrix<NTL::ZZ>::number_nonzero() const
   {
     unsigned int i,j,nzero = 0;
+    const NTL::ZZ null = NTL::to_ZZ(0);
 
     for(i=0; i<nrow; ++i) {
       for(j=0; j<elements[i].size(); ++j) {
-        if (elements[i][j].first != zero) nzero++;
+        if (elements[i][j].first != null) nzero++;
       }
     }
     return nzero;
@@ -764,8 +762,10 @@ namespace SYNARMOSMA {
     if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
     unsigned int i;
     bool output = true;
+    const NTL::ZZ null = NTL::to_ZZ(0);
+
     for(i=0; i<elements[r].size(); ++i) {
-      if (elements[r][i].first != zero) {
+      if (elements[r][i].first != null) {
         output = false;
         break;
       }
