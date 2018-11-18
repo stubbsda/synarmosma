@@ -64,15 +64,25 @@ namespace SYNARMOSMA {
     /// function.
     bool normalized = false;
 
+    /// This method writes out the complete matrix to the output stream, one line per row, with a '%' before the entries explicitly stored in the Matrix::elements vector for that row.
     void display(std::ostream&) const;
+    /// This method checks whether the diagonal element (if zero the method returns false) of the row whose index is specified by the first argument is divisible by an element of the matrix with a row and column index greater than it, returning true in that case along with the indices of the element and the quotient. For a base type like double or std::complex<double> the divisibility test is of course meaningless.
     bool divisible(unsigned int,unsigned int*,unsigned int*,kind*) const;
     /// This method computes the transpose of the matrix provided as the argument, setting the output to the current matrix.
     void transpose(const Matrix<kind>&);
+    /// This method writes the content of the matrix itself in binary format to an output stream and is used by the serialize() method; it returns the number of bytes written.
     int write_elements(std::ofstream&) const;
+    /// This method reads the content of the matrix itself in binary format from an input stream is used by the deserialize() method; it returns the number of bytes read.
     int read_elements(std::ifstream&);
    public:
+    /// The value 0, stored in the correct data type for this instantiation of 
+    /// the template class.
     static const kind zero;
+    /// The value -1, stored in the correct data type for this instantiation of 
+    /// the template class.
     static const kind neg1;
+    /// The value 1, stored in the correct data type for this instantiation of 
+    /// the template class.
     static const kind unity;
 
     /// The default constructor which does nothing in the case of this class.
@@ -113,6 +123,7 @@ namespace SYNARMOSMA {
     kind get_first_nonzero(unsigned int) const;
     /// This method calculates the percentage of the matrix's rows which are not diagonally dominant, i.e. for which \f$|a_{ii}| < \sum_{j=1, j\ne i}^N |a_{ij}|\f$. 
     double dispersion() const;
+    /// This method writes the matrix into a one-dimensional array (the first argument) whose length is the product of Matrix::nrow and Matrix::ncolumn, using either a row-oriented or column-oriented convention, specified by the second argument ('r' or 'c').
     void convert(kind*,char) const;
     /// This method obtains the vector of diagonal elements of the matrix, i.e. those elements whose row index is the same as their column index; the output vector will have a length of Matrix::nrow.
     void get_diagonal(std::vector<kind>&) const;
@@ -122,15 +133,21 @@ namespace SYNARMOSMA {
     bool diagonally_dominant(unsigned int) const;
     /// This method checks if the element specified by the two arguments (row and column index) dominates its row, i.e. \f$|a_{ik}| \ge \sum_{j=1, j\ne k}^N |a_{ij}|\f$, where \f$i\f$ and \f$k\f$ are the two arguments of this method. 
     bool diagonally_dominant(unsigned int,unsigned int) const;
+    /// This method permutes the rows of the matrix in an effort to maximize the number of rows which are diagonally dominant; the argument is filled with the row permutations and the output is the number of rows which are diagonally dominant.
     unsigned int optimize_dominance(std::vector<unsigned int>&);
+    /// This method computes and returns the determinant of the matrix, first checking that it is square and then calculating it by Laplace's formula, i.e. the sum of cofactors. 
     kind determinant() const;
     /// This method multiplies the matrix by the first argument of this method and writes the output into the second argument, after checking that the vector conforms to the matrix dimensions.
     void multiply(const std::vector<kind>&,std::vector<kind>&) const;
     /// This method adds the matrix that is the method's argument to the instance, after first checking that the dimensions of the two matrices are identical.
     void increment(const Matrix<kind>&);
+    /// This method multiplies the instance matrix by the first argument and then adds to it the identity matrix of appropriate dimension multiplied by the second argument, writing the result in the final argument; in summary, \f$B = \lambda_1 A + \lambda_2 I\f$ where the three arguments are \f$\lambda_1\f$, \f$\lambda_2\f$ and \f$B\f$, with \f$A\f$ the current instance.
     void homotopy_scaling(kind,kind,Matrix<kind>*) const;
+    /// This method uses the Gauss-Seidel iterative algorithm to attempt to solve the linear system \f$A x = b\f$, where \f$A\f$ is the current instance, \f$x\f$ and \f$b\f$ the first and second arguments. The third argument is the convergence threshold and the fourth the maximum number of iterations to perform. 
     void gauss_seidel_solver(std::vector<kind>&,const std::vector<kind>&,double,int);
+    /// This method takes as its input the final argument, a row index, and then puts the content of this row in the two initial arguments, the first containing the values and the second the column indices.
     void get_row(std::vector<kind>&,std::vector<unsigned int>&,unsigned int) const;
+    /// The overloaded assignment operator for this class, which first calls clear() and then behaves exactly like the copy constructor for this class.
     Matrix<kind>& operator =(const Matrix<kind>&);
     friend void permute<>(Matrix<kind>&,unsigned int,unsigned int,char);
     friend void invert<>(Matrix<kind>&,unsigned int,char);
@@ -140,6 +157,7 @@ namespace SYNARMOSMA {
     friend void move_minimum<>(Matrix<kind>&,unsigned int);
     friend void prepare_matrix<>(Matrix<kind>&,unsigned int);
     friend unsigned int normalize<>(Matrix<kind>&);
+    /// This overloading of the ostream operator writes the matrix to the screen according to the same conventions as the display() method.
     friend std::ostream& operator << <>(std::ostream&,const Matrix<kind>&);
   };
 
@@ -179,7 +197,7 @@ namespace SYNARMOSMA {
     if (n >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
     if (m >= ncolumn) throw std::invalid_argument("The column number argument is illegal for this matrix!");
     unsigned int i,mu = m;
-    kind output = zero;
+    kind output = Matrix<kind>::zero;
 
     if (elements[n].empty()) return output;
     for(i=0; i<elements[n].size(); ++i) {
