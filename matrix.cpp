@@ -773,6 +773,28 @@ int Matrix<kind>::deserialize(std::ifstream& s)
 
 namespace SYNARMOSMA {
   template<>
+  unsigned int Matrix<NTL::ZZ>::eliminate_zeros()
+  {
+    // This method finds ane eliminates zeros from the matrix elements...
+    unsigned int i,j,nmodify = 0;
+    std::vector<std::pair<NTL::ZZ,unsigned int> > rvector;
+    const NTL::ZZ null = NTL::to_ZZ(0);
+
+    for(i=0; i<nrow; ++i) {
+      rvector.clear();
+      for(j=0; j<elements[i].size(); ++j) {
+        if (elements[i][j].first == null) {
+          nmodify++;
+          continue;
+        }
+        rvector.push_back(elements[i][j]);
+      }
+      if (rvector.size() != elements[i].size()) elements[i] = rvector;
+    }
+    return nmodify;
+  }
+
+  template<>
   NTL::ZZ Matrix<NTL::ZZ>::get_first_nonzero(unsigned int r) const
   {
     if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
@@ -820,6 +842,27 @@ namespace SYNARMOSMA {
     }
     return output;
   }
+}
+
+template<class kind>
+unsigned int Matrix<kind>::eliminate_zeros()
+{
+  // This method finds ane eliminates zeros from the matrix elements...
+  unsigned int i,j,nmodify = 0;
+  std::vector<std::pair<kind,unsigned int> > rvector;
+
+  for(i=0; i<nrow; ++i) {
+    rvector.clear();
+    for(j=0; j<elements[i].size(); ++j) {
+      if (std::abs(elements[i][j].first) < std::numeric_limits<double>::epsilon()) {
+        nmodify++;
+        continue;
+      }
+      rvector.push_back(elements[i][j]);
+    }
+    if (rvector.size() != elements[i].size()) elements[i] = rvector;
+  }
+  return nmodify;
 }
 
 template<class kind>
@@ -917,6 +960,7 @@ std::vector<kind>& operator *(const Matrix<kind>& A,const std::vector<kind>& b)
     }
     output.push_back(sum);
   }
+
   return output;
 }
 
@@ -950,6 +994,7 @@ Matrix<kind>& operator +(const Matrix<kind>& A,const Matrix<kind>& B)
       }
     }
   }
+  output.eliminate_zeros();
   return output;
 }
 
@@ -986,9 +1031,10 @@ Matrix<kind>& operator *(const Matrix<kind>& A,const Matrix<kind>& B)
           }
         }
       }
-      if (sum != Matrix<kind>::zero) output.elements[i].push_back(std::pair<kind,unsigned int>(sum,j));
+      output.elements[i].push_back(std::pair<kind,unsigned int>(sum,j));
     }
   }
+  output.eliminate_zeros();
   delete[] BC;
   delete[] BC_row;
   return output;
@@ -1107,26 +1153,26 @@ namespace SYNARMOSMA {
   {
     // If (type == c), then column(n) <-> column(m)
     // If (type == r), then row(n) <-> row(m)
-    if (n >= A.nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
-    if (m >= A.ncolumn) throw std::invalid_argument("The column number argument is illegal for this matrix!");
     if (type != 'c' && type != 'r') throw std::invalid_argument("The matrix permutation type must be row-based or column-based!");
-    unsigned int i,j,nu = n,mu = m;
-    std::vector<std::pair<kind,unsigned int> > pr;
+    if (n == m) throw std::invalid_argument("The row or column indices to be permuted must be distinct!");
+    if (type == 'r' && (n >= A.nrow || m >= A.nrow)) throw std::invalid_argument("The row number argument is illegal for this matrix!");
+    if (type == 'c' && (n >= A.ncolumn || m >= A.ncolumn)) throw std::invalid_argument("The column number argument is illegal for this matrix!");
 
     if (type == 'c') {
+      unsigned int i,j;
       for(i=0; i<A.nrow; ++i) {
         for(j=0; j<A.elements[i].size(); ++j) {
-          if (A.elements[i][j].second == nu) {
-            A.elements[i][j].second = mu;
+          if (A.elements[i][j].second == n) {
+            A.elements[i][j].second = m;
           }
-          else if (A.elements[i][j].second == mu) {
-            A.elements[i][j].second = nu;
+          else if (A.elements[i][j].second == m) {
+            A.elements[i][j].second = n;
           }
         }
       }
     }
     else {
-      pr = A.elements[n];
+      std::vector<std::pair<kind,unsigned int> > pr = A.elements[n];
       A.elements[n] = A.elements[m];
       A.elements[m] = pr;
     }
@@ -1189,12 +1235,7 @@ namespace SYNARMOSMA {
           A.elements[i].push_back(std::pair<kind,unsigned int>(wv,m));
         }
         else {
-          if (A.elements[i][l].first == -wv) {
-            A.elements[i].erase(A.elements[i].begin() + l);
-          }
-          else {
-            A.elements[i][l].first += wv;
-          }
+          A.elements[i][l].first += wv;
         }
       }
     }
@@ -1204,12 +1245,7 @@ namespace SYNARMOSMA {
         found = false;
         for(j=0; j<A.elements[n].size(); ++j) {
           if (A.elements[n][j].second == l) {
-            if (A.elements[n][j].first == -q*A.elements[m][i].first) {
-              A.elements[n].erase(A.elements[n].begin() + j);
-            }
-            else {
-              A.elements[n][j].first += q*A.elements[m][i].first;
-            }
+            A.elements[n][j].first += q*A.elements[m][i].first;
             found = true;
             break;
           }
@@ -1217,6 +1253,7 @@ namespace SYNARMOSMA {
         if (!found) A.elements[n].push_back(std::pair<kind,unsigned int>(q*A.elements[m][i].first,l));
       }
     }
+    A.eliminate_zeros();
   }
 
   template<class kind>
@@ -1291,12 +1328,12 @@ namespace SYNARMOSMA {
 
     for(i=n; i<A.nrow; ++i) {
       full[i-n] = false;
+      if (A.empty_row(i)) continue;
       for(j=0; j<A.elements[i].size(); ++j) {
         if (A.elements[i][j].second >= n) {
           VX.push_back(A.elements[i][j]);
         }
       }
-      if (VX.empty()) continue;
       full[i-n] = true;
       if (VX[0].first < 0) {
         alpha = -VX[0].first;
