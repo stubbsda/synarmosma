@@ -60,8 +60,8 @@ namespace SYNARMOSMA {
     /// matrix
     unsigned int ncolumn = 0;
     /// A property which determines whether or not the matrix 
-    /// has been transformed into row-reduced form by the normalize() 
-    /// function.
+    /// has been transformed into reduced row echelon form by the normalize() 
+    /// method.
     bool normalized = false;
 
     /// This method writes out the complete matrix to the output stream, one line per row, with a '%' before the entries explicitly stored in the Matrix::elements vector for that row.
@@ -127,6 +127,8 @@ namespace SYNARMOSMA {
     double dispersion() const;
     /// This method writes the matrix into a one-dimensional array (the first argument) whose length is the product of Matrix::nrow and Matrix::ncolumn, using either a row-oriented or column-oriented convention, specified by the second argument ('r' or 'c').
     void convert(kind*,char) const;
+    /// This method extracts the diagonal element of the row whose index is the argument.
+    inline kind get_diagonal(unsigned int) const;
     /// This method obtains the vector of diagonal elements of the matrix, i.e. those elements whose row index is the same as their column index; the output vector will have a length of Matrix::nrow.
     void get_diagonal(std::vector<kind>&) const;
     /// This method checks if the matrix is diagonally dominant, i.e. if for every row \f$i\f$ the inequality \f$|a_{ii}| \ge \sum_{j=1, j\ne i}^N |a_{ij}|\f$ is satisfied, and returns true if this is the case.
@@ -157,11 +159,15 @@ namespace SYNARMOSMA {
     friend void invert<>(Matrix<kind>&,unsigned int,char);
     /// This global function performs a scaled addition of two rows (when the final argument is 'r') or two columns (when it is 'c') of the matrix that is the first argument. As an example when the final argument is 'r', this method performs \f$A_{nk} = A_{nk} + q A_{mk}\f$ for all \f$k\f$, where \f$n\f$ and \f$m\f$ are the second and third arguments, with the scalar \f$q\f$ the fourth argument.
     friend void combine<>(Matrix<kind>&,unsigned int,unsigned int,const kind&,char);
+    /// This global function accepts a row and column index (the final two arguments) and uses the combine() function to add two rows to eliminate an off-diagonal element.
     friend void pivot_row<>(Matrix<kind>&,unsigned int,unsigned int);
+    /// This global function accepts a row and column index (the final two arguments) and uses the combine() function to add two columns to eliminate an off-diagonal element.
     friend void pivot_column<>(Matrix<kind>&,unsigned int,unsigned int);
-    /// This global function uses the permute function to move the row whose index is the second argument so that the smallest non-zero element in the sub-matrix with row and column index greater than or equal to the second argument.
+    /// This global function uses the permute() function to move the row whose index is the second argument so that the smallest non-zero element in the sub-matrix with row and column index greater than or equal to the second argument.
     friend void move_minimum<>(Matrix<kind>&,unsigned int);
+    /// This global function works on a particular row (whose index is the second argument) of a matrix, calling the combine(), move_minimum(), pivot_row() and pivot_column() functions to carry out elementary row operations.
     friend void prepare_matrix<>(Matrix<kind>&,unsigned int);
+    /// This global function transforms its unique argument into reduced row echelon form by elementary row operations, calling the prepare_matrix() and invert() functions for this purpose. The return value is the number of diagonal entries equal to 1.
     friend unsigned int normalize<>(Matrix<kind>&);
     /// This overloading of the ostream operator writes the matrix to the screen according to the same conventions as the display() method.
     friend std::ostream& operator << <>(std::ostream&,const Matrix<kind>&);
@@ -263,6 +269,22 @@ namespace SYNARMOSMA {
     else {
       elements[n].push_back(std::pair<kind,unsigned int>(v,m));
     }
+  }
+
+  template<class kind>
+  kind Matrix<kind>::get_diagonal(unsigned int n) const
+  {
+    if (n >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
+    unsigned int i;
+    kind output = Matrix<kind>::zero;
+
+    for(i=0; i<elements[n].size(); ++i) {
+      if (elements[n][i].second == n) {
+        output = elements[n][i].first;
+        break;
+      }
+    }
+    return output;
   }
 }
 #endif

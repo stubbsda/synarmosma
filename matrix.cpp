@@ -1433,18 +1433,12 @@ namespace SYNARMOSMA {
     do {
       p += 1;
       prepare_matrix(A,p-1);
-      for(i=0; i<A.elements[p-1].size(); ++i) {
-        if (A.elements[p-1][i].second == (p - 1)) {
-          bt = A.elements[p-1][i].first;
-          break;
-        }
-      }
+      bt = A.get_diagonal(p-1);
       if (bt < Matrix<kind>::zero) {
         invert(A,p-1,'r');
+        bt *= Matrix<kind>::neg1;
       }
-      else if (bt == Matrix<kind>::unity) {
-        q += 1;
-      }
+      if (bt == Matrix<kind>::unity) q += 1;
       quit = true;
       for(i=p; i<A.nrow; ++i) {
         for(j=0; j<A.elements[i].size(); ++j) {
