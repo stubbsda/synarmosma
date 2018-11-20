@@ -67,10 +67,10 @@ proposition.o: proposition.cpp proposition.h global.h
 word.o: word.cpp word.h global.h
 	$(CXX) $(MY_CXX_FLAGS) -c word.cpp
 
-homology.o: homology.h homology.cpp nexus.h matrix.h binary_matrix.h group.h global.h
+homology.o: homology.h homology.cpp nexus.h matrix.h binary_matrix.h global.h
 	$(CXX) $(MY_CXX_FLAGS) -c homology.cpp
 
-homotopy.o: homotopy.h homotopy.cpp nexus.h matrix.h group.h global.h
+homotopy.o: homotopy.h homotopy.cpp nexus.h group.h global.h
 	$(CXX) $(MY_CXX_FLAGS) -c homotopy.cpp
 
 binary_matrix.o: binary_matrix.cpp binary_matrix.h global.h
@@ -112,7 +112,7 @@ geometry.o: geometry.cpp geometry.h matrix.h global.h
 cell.o: cell.cpp cell.h global.h
 	$(CXX) $(MY_CXX_FLAGS) -c cell.cpp
 
-nexus.o: nexus.cpp nexus.h cell.h schema.h group.h matrix.h word.h global.h
+nexus.o: nexus.cpp nexus.h cell.h schema.h graph.h global.h
 	$(CXX) $(MY_CXX_FLAGS) -c nexus.cpp
 
 group.o: group.cpp group.h word.h global.h
