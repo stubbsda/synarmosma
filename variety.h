@@ -1,6 +1,5 @@
+#include "random.h"
 #include "rational.h"
-#include <NTL/ZZ_pEX.h>
-#include <NTL/ZZ_pXFactoring.h>
 
 #ifndef _varietyh
 #define _varietyh

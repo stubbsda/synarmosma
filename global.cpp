@@ -1,4 +1,4 @@
-#include "global.h"
+#include "random.h"
 
 SYNARMOSMA::Random RND;
 

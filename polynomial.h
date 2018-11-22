@@ -1,3 +1,4 @@
+#include "random.h"
 #include "rational.h"
 
 #ifndef _polynomialh
