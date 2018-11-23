@@ -4,8 +4,12 @@
 #define _cgraphh
 
 namespace SYNARMOSMA {
+  /// A class representing a pseudograph, i.e. a graph which permits multi-edges and self-loops.
   class Pseudograph {
    private:
+    /// The number of vertices in the pseudograph, which is 
+    /// also the size of the array of vectors that stores the 
+    /// neighbour lists.
     int nvertex = 0;
     std::vector<int>* neighbours;
 
@@ -13,7 +17,9 @@ namespace SYNARMOSMA {
     int compute_bridges(hash_map&) const;
     void clear();
    public:
+    /// The default constructor which does nothing.
     Pseudograph();
+    /// A constructor which accepts the order of the pseudograph as its unique argument, setting the value of Pseudograph::nvertex and allocating the memory for Pseudograph::neighbours. 
     Pseudograph(int);
     ~Pseudograph();
     Pseudograph(const Pseudograph&);
@@ -21,6 +27,7 @@ namespace SYNARMOSMA {
     int serialize(std::ofstream&) const;
     int deserialize(std::ifstream&);
     int get_candidates(std::vector<int>&) const;
+    /// This method calculates and returns the number of self-loops in this pseudograph.
     inline int get_loops() const;
     void add_edge(int,int);
     void contract(int,int,Pseudograph*) const;

@@ -9,9 +9,7 @@ Pseudograph::Pseudograph()
 
 Pseudograph::Pseudograph(int order)
 {
-#ifdef DEBUG
-  assert(order > 0);
-#endif
+  if (order <= 0) throw std::invalid_argument("The order of a pseudograph must be greater than zero!");
   nvertex = order;
   neighbours = new std::vector<int>[nvertex];
 }
