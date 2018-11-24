@@ -182,6 +182,8 @@ void Pseudograph::contract(int u,int v,Pseudograph* output) const
   // This involves fusing together two vertices, so the output graph will have 
   // one less edge and one less vertex, which will mean re-indexing all of the 
   // neighbour vectors.
+  if (u < 0 || u >= nvertex) throw std::invalid_argument("Illegal value for the vertex index in Pseudograph::contract!");
+  if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal value for the vertex index in Pseudograph::contract!");
   int i,j,n,vmin,vmax; 
   bool first = true;
   std::vector<int> nvector;
@@ -247,9 +249,12 @@ void Pseudograph::contract(int u,int v,Pseudograph* output) const
 void Pseudograph::remove(int u,int v,Pseudograph* output) const
 {
   // The much simpler case of removing an edge...
-  int i,n = (signed) output->neighbours[u].size();
+  if (u < 0 || u >= nvertex) throw std::invalid_argument("Illegal value for the vertex index in Pseudograph::remove!");
+  if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal value for the vertex index in Pseudograph::remove!");
+  unsigned int i,n = output->neighbours[u].size();
   bool first = true;
   std::vector<int> t;
+
   for(i=0; i<n; ++i) {
     if (first && output->neighbours[u][i] == v) {
       first = false;
@@ -257,10 +262,11 @@ void Pseudograph::remove(int u,int v,Pseudograph* output) const
     }
     t.push_back(output->neighbours[u][i]);
   }
-  output->neighbours[u] = t;
+  if (!first) output->neighbours[u] = t;
+
   t.clear();
   first = true;
-  n = (signed) output->neighbours[v].size();
+  n = output->neighbours[v].size();
   for(i=0; i<n; ++i) {
     if (first && output->neighbours[v][i] == u) {
       first = false;
@@ -268,5 +274,5 @@ void Pseudograph::remove(int u,int v,Pseudograph* output) const
     }
     t.push_back(output->neighbours[v][i]);
   }
-  output->neighbours[v] = t;  
+  if (!first) output->neighbours[v] = t;  
 }
