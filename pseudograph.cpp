@@ -86,10 +86,8 @@ int Pseudograph::deserialize(std::ifstream& s)
 
 void Pseudograph::add_edge(int u,int v)
 {
-#ifdef DEBUG
-  assert(u >= 0 && u < nvertex);
-  assert(v >= 0 && v < nvertex);
-#endif
+  if (u < 0 || u >= nvertex) throw std::invalid_argument("Illegal value for the vertex index in Pseudograph::add_edge!");
+  if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal value for the vertex index in Pseudograph::add_edge!");
   neighbours[u].push_back(v);
   neighbours[v].push_back(u);
 }
