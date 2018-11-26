@@ -11,11 +11,11 @@ Proposition::Proposition()
 
 Proposition::Proposition(const std::set<int>& atoms)
 {
-  int nc = 1 + RND.irandom(atoms.size()/Proposition::NP);
+  unsigned int nc = 1 + RND.irandom(atoms.size()/Proposition::NP);
   initialize(nc,atoms);
 }
 
-Proposition::Proposition(int nc,const std::set<int>& atoms)
+Proposition::Proposition(unsigned int nc,const std::set<int>& atoms)
 {
   initialize(nc,atoms);
 }
@@ -28,7 +28,9 @@ Proposition::Proposition(const Proposition& source)
 Proposition& Proposition::operator =(const Proposition& source)
 {
   if (this == &source) return *this;
+
   clause = source.clause;
+
   return *this;
 }
 
@@ -39,19 +41,20 @@ Proposition::~Proposition()
 
 void Proposition::initialize(unsigned int nc,const std::set<int>& atoms)
 {
-  int p;
+  clear();
+  if (nc == 0 || atoms.empty()) return;
+
+  int a;
   unsigned int i,j,k;
   double alpha;
   std::set<int> used;
   const unsigned int na = atoms.size();
 
-  clause.clear();
-
   for(i=0; i<nc; ++i) {
-    p = RND.irandom(atoms);
-    clause.push_back(p);
+    a = RND.irandom(atoms);
+    clause.push_back(a);
     used.clear();
-    used.insert(p);
+    used.insert(a);
     if (RND.drandom() < 0.5) {
       clause.push_back(0);
     }
@@ -66,9 +69,9 @@ void Proposition::initialize(unsigned int nc,const std::set<int>& atoms)
         }
         break;
       }
-      p = RND.irandom(atoms,used);
-      used.insert(p);
-      clause.push_back(p);
+      a = RND.irandom(atoms,used);
+      used.insert(a);
+      clause.push_back(a);
       if (RND.drandom() < 0.5) {
         clause.push_back(0);
       }
@@ -81,8 +84,8 @@ void Proposition::initialize(unsigned int nc,const std::set<int>& atoms)
 
 bool Proposition::satisfiable() const
 {
-  int i,l,a,p,K = 5;
-  unsigned int j,k;
+  int a,l;
+  unsigned int i,j,k,ulimit = 5;
   std::vector<int> bvalues,fclause;
   std::set<int> atoms,ca;
   std::set<int>::const_iterator it;
@@ -93,16 +96,20 @@ bool Proposition::satisfiable() const
     bvalues.push_back(RND.irandom(2));
   }
   const unsigned int natoms = atoms.size();
-  for(i=0; i<K; ++i) {
+  for(i=0; i<ulimit; ++i) {
     for(j=0; j<3*natoms; ++j) {
-      // Now grab an unsatisfied clause of the Boolean
-      // formula
+      // If the proposition is true with this mapping of the atomic propositions, we're done
       if (evaluate(bvalues,fclause)) return true;
+      // If it's not true, select a randomly chosen unsatisfied clause of the Boolean formula
       l = RND.irandom(fclause);
+      // Obtain all the atomic propositions from that clause in the set "ca"
+      ca.clear();
       for(k=0; k<2*Proposition::NP; k+=2) {
-        p = clause[2*Proposition::NP*l+k];
-        if (p >= 0) ca.insert(p);
+        a = clause[2*Proposition::NP*l+k];
+        if (a == -1) break;
+        ca.insert(a);
       }
+      // Pick one of these atomic propositions randomly from "ca" and alter its parity
       a = RND.irandom(ca);
       for(k=0; k<2*natoms; k+=2) {
         if (bvalues[k] == a) {
@@ -123,14 +130,6 @@ void Proposition::mutate()
   get_atoms(atoms);
   clear();
   if (atoms.empty()) return;
-  initialize(nc,atoms);
-}
-
-void Proposition::mutate(const std::set<int>& atoms)
-{
-  clear();
-  if (atoms.empty()) return;
-  unsigned int nc = 1 + RND.irandom(atoms.size()/Proposition::NP); 
   initialize(nc,atoms);
 }
 
@@ -203,24 +202,30 @@ bool Proposition::evaluate(const std::vector<int>& atoms,std::vector<int>& fclau
 
 void Proposition::get_atoms(std::set<int>& atoms) const
 {
-  unsigned int i,l = clause.size();
+  int a;
+  unsigned int i,j,nc = get_size();
 
   atoms.clear();
-  for(i=0; i<l; i+=2) {
-    if (clause[i] < 0) continue;
-    atoms.insert(clause[i]);
+  for(i=0; i<nc; ++i) {
+    for(j=0; j<2*Proposition::NP; j+=2) {
+      a = clause[2*Proposition::NP*i+j];
+      if (a == -1) break;
+      atoms.insert(a);
+    }
   }
 }
 
 void Proposition::set_atoms(const std::set<int>& atoms)
 {
-  int nc = 1 + RND.irandom(atoms.size()/Proposition::NP);
+  clear();
+  if (atoms.empty()) return;
+  unsigned int nc = 1 + RND.irandom(atoms.size()/Proposition::NP);
   initialize(nc,atoms);
 }
 
 int Proposition::serialize(std::ofstream& s) const
 {
-  int i,count = 0,n = clause.size();
+  int i,count = 0,n = (signed) clause.size();
 
   s.write((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
@@ -231,14 +236,14 @@ int Proposition::serialize(std::ofstream& s) const
 
 int Proposition::deserialize(std::ifstream& s)
 {
-  int i,n,l,count = 0;
+  int i,j,n,count = 0;
 
   clear();
 
   s.read((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<n; ++i) {
-    s.read((char*)(&l),sizeof(int)); count += sizeof(int);
-    clause.push_back(l);
+    s.read((char*)(&j),sizeof(int)); count += sizeof(int);
+    clause.push_back(j);
   }
   return count;
 }
