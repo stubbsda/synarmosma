@@ -14,29 +14,38 @@ namespace SYNARMOSMA {
     /// has a NOT symbol. If the clause contains less than NP atomic propositions, then all 
     /// of its subsequent elements are set to -1. 
     std::vector<int> clause;
-
     /// This static property is an unsigned integer containing the maximum number of atomic 
     /// propositions in a clause.
     static const unsigned int NP = 5;
+
+    void initialize(unsigned int,const std::set<int>&);
    public:
     /// The default constructor which does nothing.
     Proposition();
+    /// This constructor accepts a set containing the atomic propositions which should be used in this proposition; the number of clauses is chosen to a random integer between 1 and the cardinality of the input divided by Proposition::NP.
     Proposition(const std::set<int>&);
-    Proposition(int,const std::set<int>&);
+    /// This constructor has two arguments, the number of clauses and a set of atomic propositions that should be used to build the proposition. 
+    Proposition(unsigned int,const std::set<int>&);
+    /// The standard copy constructor that copies over the value of the Proposition::clause property.
     Proposition(const Proposition&);
+    /// The overloaded assignment operator that copies over the value of the Proposition::clause property.
     Proposition& operator =(const Proposition&);
+    /// The destructor which does nothing for this class.
     ~Proposition();
-    void initialize(unsigned int,const std::set<int>&);
     bool evaluate(const std::vector<int>&,std::vector<int>&) const;
     bool evaluate(const std::vector<std::pair<int,bool> >&) const;
     bool satisfiable() const;
+    /// This method collects the distinct atoms contained in this proposition and writes them to the method's unique argument.
     void get_atoms(std::set<int>&) const;
+    /// This method functions in exactly the same manner as the constructor with the same argument - a random number of clauses is generated and the atomic propositions are chosen from among the input set.
     void set_atoms(const std::set<int>&);
+    /// This method retains the same number of clauses and the same set of atomic propositions but otherwise completely regenerates the proposition.
     void mutate();
-    void mutate(const std::set<int>&);
     /// This method clears the Proposition::clause vector.
     inline void clear() {clause.clear();};
+    /// This method writes the instance properties to a binary disk file and returns the number of bytes written to the file.
     int serialize(std::ofstream&) const;
+    /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
     int deserialize(std::ifstream&);
     inline void set_clause(const std::vector<int>&);
     inline void get_clause(std::vector<int>& c) const {c = clause;};
