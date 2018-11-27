@@ -45,8 +45,6 @@ namespace SYNARMOSMA {
 
     /// This method determines the rank of the group, first checking that it is Abelian; it currently sets the rank to zero if the group is finite and to the number of generators otherwise, though this is just an upper bound for the rank.
     void compute_rank();
-    /// This method makes a new Abelian group from the current instance by adding the relation \f$aba^{-1}b^{-1}\f$ for each distinct pair of generators \f$a\f$ and \f$b\f$.
-    Group abelianize() const;
    public:
     /// The default constructor which simply initializes the properties with their default values.
     Group();
@@ -82,6 +80,10 @@ namespace SYNARMOSMA {
     void reduce();
     /// This method returns all the properties to their default values and empties the "relations" vector.
     void clear();
+    /// This method makes a new Abelian group from the current instance by adding the relation \f$aba^{-1}b^{-1}\f$ for each distinct pair of generators \f$a\f$ and \f$b\f$.
+    Group abelianize() const;
+    inline unsigned int get_number_generators() const {return ngenerator;};
+    inline unsigned int get_number_relations() const {return relations.size();};
     /// This method writes the instance properties to a binary disk file and returns the number of bytes written to the file.
     int serialize(std::ofstream&) const;
     /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
@@ -90,7 +92,6 @@ namespace SYNARMOSMA {
     std::string compact_form() const;
     /// The overloaded ostream operator writes out the group structure, beginning with a line listing the scalar properties (Abelian, free, solvable etc.) followed by a second line with the group's combinatorial presentation.
     friend std::ostream& operator <<(std::ostream&,const Group&);
-    friend class Homotopy;
   };
 }
 #endif

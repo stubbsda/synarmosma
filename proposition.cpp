@@ -129,12 +129,12 @@ void Proposition::mutate()
   initialize(nc,atoms);
 }
 
-bool Proposition::evaluate(const std::vector<std::pair<int,bool> >& atom_values) const
+bool Proposition::evaluate(const std::unordered_map<int,bool>& atoms) const
 {
   int a;
-  unsigned int i,j,k;
-  bool clause_value,atom_value,atom_found,output = true; 
-  const unsigned int in_size = atom_values.size();
+  unsigned int i,j;
+  bool clause_value,atom_value,output = true; 
+  std::unordered_map<int,bool>::const_iterator qt;
   const unsigned int nc = get_size();
  
   for(i=0; i<nc; ++i) {
@@ -143,15 +143,11 @@ bool Proposition::evaluate(const std::vector<std::pair<int,bool> >& atom_values)
     for(j=0; j<2*Proposition::NP; j+=2) {
       a = clause[2*Proposition::NP*i+j];
       if (a == -1) break;
-      atom_found = false;
-      for(k=0; k<in_size; ++k) {
-        if (atom_values[k].first == a) {
-          atom_value = atom_values[k].second;
-          atom_found = true;
-          break;
-        }
-      }
-      if (!atom_found) throw std::invalid_argument("Missing atomic proposition value in Proposition::evaluate method!");
+      qt = atoms.find(a);
+#ifdef DEBUG
+      if (qt == atoms.end()) throw std::invalid_argument("Missing atomic proposition value in Proposition::evaluate method!");
+#endif
+      atom_value = qt->second;
       if (clause[2*Proposition::NP*i+j+1] == 1) atom_value = !atom_value;
       clause_value = clause_value || atom_value;
     }
@@ -167,7 +163,7 @@ bool Proposition::evaluate(const std::unordered_map<int,bool>& atoms,std::set<un
 {
   int a;
   unsigned int i,j;
-  bool clause_value,atom_value = false,output = true;
+  bool clause_value,atom_value,output = true;
   std::unordered_map<int,bool>::const_iterator qt;
   const unsigned int nc = get_size();
 
@@ -179,6 +175,9 @@ bool Proposition::evaluate(const std::unordered_map<int,bool>& atoms,std::set<un
       a = clause[2*Proposition::NP*i+j];
       if (a == -1) break;
       qt = atoms.find(a);
+#ifdef DEBUG
+      if (qt == atoms.end()) throw std::invalid_argument("Missing atomic proposition value in Proposition::evaluate method!");
+#endif
       atom_value = qt->second;
       if (clause[2*Proposition::NP*i+j+1] == 1) atom_value = !atom_value;
       clause_value = clause_value || atom_value;
@@ -254,21 +253,21 @@ namespace SYNARMOSMA {
         parity = p.clause[2*Proposition::NP*i+j+1];
         if (pvalue < 0) continue;
         if (p.clause[2*Proposition::NP*i+j+2] < 0) {
-          if (parity == 1) s << "!";
+          if (parity == 1) s << "¬";
           s << "p[" << 1 + pvalue << "]";
           continue;
         }
-        if (parity == 1) s << "!";
-        s << "p[" << 1 + pvalue << "] | ";
+        if (parity == 1) s << "¬";
+        s << "p[" << 1 + pvalue << "] ∨ ";
       }
       pvalue = p.clause[2*Proposition::NP*i+2*Proposition::NP-2];
       parity = p.clause[2*Proposition::NP*i+2*Proposition::NP-1];
       if (pvalue >= 0) {
-        if (parity == 1) s << "!";
+        if (parity == 1) s << "¬";
         s << "p[" << 1 + pvalue << "]";
       }
       if (i < (nc - 1)) {
-        s << ") &" << std::endl; 
+        s << ") ∧" << std::endl; 
         s << "(";
       }
       else {

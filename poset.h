@@ -69,7 +69,6 @@ namespace SYNARMOSMA {
     void write_incastrature(const std::string&) const;
     /// This method accepts two elements x and y of the poset and returns "before" if x ~ y, "after" if x ~ y and "disparate" otherwise. 
     Relation get_order(int,int) const;
-    friend class Directed_Graph;
   };
 }
 #endif

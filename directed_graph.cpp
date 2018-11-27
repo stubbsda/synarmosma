@@ -129,7 +129,7 @@ int Directed_Graph::serialize(std::ofstream& s) const
 
 int Directed_Graph::deserialize(std::ifstream& s) 
 {
-  int i,j,k,n,count = 0;
+  int i,j,k,n,vx[2],count = 0;
   Edge q;
   std::set<int> S;
 
@@ -149,8 +149,9 @@ int Directed_Graph::deserialize(std::ifstream& s)
   for(i=0; i<n; ++i) {
     count += q.deserialize(s);
     edges.push_back(q);
+    q.get_vertices(vx);
     S.clear();
-    S.insert(q.low); S.insert(q.high);
+    S.insert(vx[0]); S.insert(vx[1]);
     index_table[S] = i;
   }
   s.read((char*)(&number_directed),sizeof(int)); count += sizeof(int);
@@ -166,7 +167,7 @@ void Directed_Graph::compute_directedness()
   std::vector<Edge>::const_iterator it;
 
   for(it=edges.begin(); it!=edges.end(); ++it) {
-    if (it->direction == Relation::disparate) null++;
+    if (it->get_direction() == Relation::disparate) null++;
   }
   number_directed = size() - null;
 }
@@ -379,7 +380,7 @@ int Directed_Graph::distance(int u,int v) const
   return delta;
 }
 
-void Directed_Graph::compute_distances(edge_hash& output) const
+void Directed_Graph::compute_distances(pair_index& output) const
 {
   int i,j,k,delta;
   std::pair<int,int> pr;
@@ -437,10 +438,11 @@ bool Directed_Graph::add_edge(int u,int v,Relation d,double ell)
     S.insert(u); S.insert(v);
     hash_map::const_iterator qt = index_table.find(S);
     if (u < v) {
-      edges[qt->second].direction = d;
+      edges[qt->second].set_direction(d);
     }
     else {
-      edges[qt->second].direction = (d == Relation::before ? Relation::after : Relation::before);
+      Relation rho = (d == Relation::before) ? Relation::after : Relation::before;
+      edges[qt->second].set_direction(rho);
     }
   }
   return true;
@@ -455,18 +457,20 @@ bool Directed_Graph::mutate_edge(int u,int v)
   if (qt == index_table.end()) return false;
   int n = qt->second;
   double alpha = RND.drandom();
-  auto d = edges[n].direction;
+  auto d = edges[n].get_direction();
   if (d == Relation::disparate) {
-    edges[n].direction = (alpha < 0.5) ? Relation::before : Relation::after;
+    d = (alpha < 0.5) ? Relation::before : Relation::after;
   }
   else {
     if (d == Relation::before) {
-      edges[n].direction = (alpha < 0.25) ? Relation::after : Relation::disparate;
+      d = (alpha < 0.25) ? Relation::after : Relation::disparate;
     }
     else {
-      edges[n].direction = (alpha < 0.25) ? Relation::before : Relation::disparate;
+      d = (alpha < 0.25) ? Relation::before : Relation::disparate;
     }
   }
+  edges[n].set_direction(d);
+
   return true;
 }
 
@@ -517,7 +521,7 @@ double Directed_Graph::compute_flow(int source,int sink)
   const int ne = size();
 
   for(i=0; i<ne; ++i) {
-    if (edges[i].direction == Relation::disparate) edges[i].capacity = 0.0;
+    if (edges[i].get_direction() == Relation::disparate) edges[i].set_capacity(0.0);
   }
   // Next we need to verify that there is at least one outgoing edge with capacity > 0 
   // for the source and at least one incoming edge with capacity > 0 for the sink
@@ -527,13 +531,13 @@ double Directed_Graph::compute_flow(int source,int sink)
     S.insert(source);
     S.insert(i);
     qt = index_table.find(S);
-    if (edges[qt->second].capacity < std::numeric_limits<double>::epsilon()) continue;
+    if (edges[qt->second].get_capacity() < std::numeric_limits<double>::epsilon()) continue;
     if (edges[qt->second].get_direction(source,i) == Relation::before) valid = true;
     if (valid) break;
   }
   if (!valid) {
     for(i=0; i<ne; ++i) {
-      edges[i].flow = 0.0;
+      edges[i].set_flow(0.0);
     }
     return 0.0;
   }
@@ -545,47 +549,47 @@ double Directed_Graph::compute_flow(int source,int sink)
     S.insert(sink);
     S.insert(i);
     qt = index_table.find(S);
-    if (edges[qt->second].capacity < std::numeric_limits<double>::epsilon()) continue;
+    if (edges[qt->second].get_capacity() < std::numeric_limits<double>::epsilon()) continue;
     if (edges[qt->second].get_direction(sink,i) == Relation::after) valid = true;
     if (valid) break;
   }
   if (!valid) {
     for(i=0; i<ne; ++i) {
-      edges[i].flow = 0.0;
+      edges[i].set_flow(0.0);
     }
     return 0.0;
   }
   // So we can finally proceed to computing a non-trivial flow on this directed graph
   int vx[2];
   std::pair<int,int> pr;
-  edge_hash rgraph;
-  edge_hash::const_iterator qtt;
+  pair_index rgraph;
+
   // Create a residual graph and fill the residual graph with
   // given capacities in the original graph as residual capacities
   // in residual graph
   for(i=0; i<ne; ++i) {
     edges[i].get_vertices(vx);
-    if (edges[i].direction == Relation::before) {
+    if (edges[i].get_direction() == Relation::before) {
       pr.first = vx[0]; pr.second = vx[1];
-      rgraph[pr] = int(10000.0*edges[i].capacity);
+      rgraph[pr] = int(10000.0*edges[i].get_capacity());
     }
-    else if (edges[i].direction == Relation::after) {
+    else if (edges[i].get_direction() == Relation::after) {
       pr.first = vx[1]; pr.second = vx[0];
-      rgraph[pr] = int(10000.0*edges[i].capacity);
+      rgraph[pr] = int(10000.0*edges[i].get_capacity());
     }
   }
 
   int max_flow = network_flow(rgraph,source,sink,nvertex);
   for(i=0; i<ne; ++i) {
-    edges[i].flow = 0.0;
+    edges[i].set_flow(0.0);
     edges[i].get_vertices(vx);
-    if (edges[i].direction == Relation::before) {
+    if (edges[i].get_direction() == Relation::before) {
       pr.first = vx[0]; pr.second = vx[1]; 
-      edges[i].flow = edges[i].capacity - double(rgraph[pr])/10000.0;
+      edges[i].set_flow(edges[i].get_capacity() - double(rgraph[pr])/10000.0);
     }
-    else if (edges[i].direction == Relation::after) {
+    else if (edges[i].get_direction() == Relation::after) {
       pr.first = vx[1]; pr.second = vx[0];
-      edges[i].flow = edges[i].capacity - double(rgraph[pr])/10000.0;
+      edges[i].set_flow(edges[i].get_capacity() - double(rgraph[pr])/10000.0);
     }
   }
   return double(max_flow)/10000.0;

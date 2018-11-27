@@ -198,7 +198,7 @@ void Propositional_System::compute_internal_logic()
   // theory
   unsigned int i,j,k,in1,p,idiv;
   bool out,row_vector[natom];
-  std::vector<std::pair<int,bool> > rvector;
+  std::unordered_map<int,bool> atom_values;
   Binary_Matrix logical_universe(nuniverse,natom);
   const unsigned int n = theorems.size();
 
@@ -220,11 +220,10 @@ void Propositional_System::compute_internal_logic()
     truth[i].reset();
     for(j=0; j<nuniverse; ++j) {
       logical_universe.get_row(j,row_vector);
-      rvector.clear();
       for(k=0; k<natom; ++k) {
-        rvector.push_back(std::pair<int,bool>(k,row_vector[k]));
+        atom_values[k] = row_vector[k];
       }
-      out = theorems[i].evaluate(rvector);
+      out = theorems[i].evaluate(atom_values);
       if (out) truth[i].set(j);
     }
   }

@@ -140,6 +140,23 @@ void Binary_Matrix::get_row(unsigned int n,bool* output) const
   }
 }
 
+void Binary_Matrix::multiply(const std::vector<double>& x,std::vector<double>& output) const
+{
+  if (nrow != x.size()) throw std::invalid_argument("The vector must have a length equal to the number of binary matrix rows!");
+  unsigned int i;
+  double sum;
+  std::set<unsigned int>::const_iterator it;
+
+  output.clear();
+  for(i=0; i<nrow; ++i) {
+    sum = 0.0;
+    for(it=elements[i].begin(); it!=elements[i].end(); ++it) {
+      sum += x[*it];
+    }
+    output.push_back(sum);
+  }
+}
+
 bool Binary_Matrix::symmetric() const
 {
   // This method tests if the matrix is symmetric...

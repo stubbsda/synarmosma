@@ -41,7 +41,7 @@ void Homotopy::compute_fitness()
   double temp,sum = 0.0;
 
   for(i=0; i<sequence.size(); ++i) {
-    temp = std::exp(-std::pow(double(sequence[i].ngenerator)-3.0,2))+ std::pow(std::sin(double(sequence[i].relations.size())),2);
+    temp = std::exp(-std::pow(double(sequence[i].get_number_generators())-3.0,2))+ std::pow(std::sin(double(sequence[i].get_number_relations())),2);
     sum += temp;
   }
   fitness = sum;

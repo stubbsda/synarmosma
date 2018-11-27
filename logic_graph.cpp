@@ -85,7 +85,7 @@ int Logic_Graph::serialize(std::ofstream& s) const
 
 int Logic_Graph::deserialize(std::ifstream& s)
 {
-  int i,j,k,n,count = 0;
+  int i,j,k,n,vx[2],count = 0;
   Edge q;
   std::set<int> S;
 
@@ -105,8 +105,9 @@ int Logic_Graph::deserialize(std::ifstream& s)
   for(i=0; i<n; ++i) {
     count += q.deserialize(s);
     edges.push_back(q);
+    q.get_vertices(vx);
     S.clear();
-    S.insert(q.low); S.insert(q.high);
+    S.insert(vx[0]); S.insert(vx[1]);
     index_table[S] = i;
   }
   count += logic->deserialize(s);
