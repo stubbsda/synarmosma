@@ -883,7 +883,7 @@ double Graph::compute_flow(int source,int sink)
   // So we can finally proceed to computing a non-trivial flow on this directed graph
   int vx[2];
   std::pair<int,int> pr;
-  edge_hash rgraph;
+  pair_index rgraph;
   // Create a residual graph and fill the residual graph with
   // given capacities in the original graph as residual capacities
   // in residual graph
@@ -957,9 +957,8 @@ void Graph::katz_centrality(std::vector<double>& output) const
 
   // Column-major form...
   for(i=0; i<nvertex; ++i) {
-    for(it=A->elements[i].begin(); it!=A->elements[i].end(); ++it) {
-      j = *it;
-      AD[nvertex*j+i] = 1.0;
+    for(j=0; j<nvertex; ++j) {
+      if (A->get(i,j)) AD[nvertex*j+i] = 1.0;
     }
   }
 
@@ -984,12 +983,10 @@ void Graph::katz_centrality(std::vector<double>& output) const
   delete[] work;
 
   do {
+    A->multiply(x,xnew);
     for(i=0; i<nvertex; ++i) {
-      sum = 0.0;
-      for(it=A->elements[i].begin(); it!=A->elements[i].end(); ++it) {
-        sum += x[*it];
-      }
-      xnew[i] = alpha*sum + beta;
+      xnew[i] *= alpha;
+      xnew[i] += beta;
     }
     // Test for convergence...
     sum = 0.0;
@@ -1585,73 +1582,57 @@ double Graph::cyclic_resistance() const
 #ifdef DEBUG
   assert(connected());
 #endif
-  int i,j,info,nv = nvertex;
-  int nwork = 5*nvertex;
-  unsigned int l;
+  int i,j,k,info,nv = nvertex,nwork = 5*nvertex;
+  bool rvector[nvertex];
   double sum;
-  std::set<int>::const_iterator it;
-  std::set<unsigned int>::const_iterator vt;
+  std::vector<double> delta;
+  Matrix<double>* L = new Matrix<double>;
+  Matrix<double>* W = new Matrix<double>;
   Binary_Matrix* A = new Binary_Matrix;
-  double* L = new double[nvertex*nvertex];
   double* C = new double[nvertex*nvertex];
-  double* W = new double[nvertex*nvertex];
   double* work = new double[nwork];
   int* pivots = new int[nvertex];
 
   compute_adjacency_matrix(A);
+  compute_laplacian(L);
+  L->convert(C,'r');
 
-  for(i=0; i<nvertex; ++i) {
-    L[nvertex*i+i] = double(neighbours[i].size());
-    for(j=i+1; j<nvertex; ++j) {
-      L[nvertex*i+j] = 0.0;
-      L[nvertex*j+i] = 0.0;
-    }
-  }
-  for(i=0; i<nvertex; ++i) {
-    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
-      j = *it;
-      if (j < i) continue;
-      L[nvertex*i+j] = -1.0;
-      L[nvertex*j+i] = -1.0;
-      continue;
-    }
-  }
-  for(i=0; i<nvertex*nvertex; ++i) {
-    C[i] = L[i];
-  }
   dgetri_(&nv,C,&nv,pivots,work,&nwork,&info);
 
+  W->initialize(nvertex,nvertex);
   for(i=0; i<nvertex; ++i) {
-    W[nvertex*i+i] = 0.0;
     for(j=i+1; j<nvertex; ++j) {
       sum = 1.0/(C[nvertex*i+i] + C[nvertex*j+j] - (C[nvertex*i+j] + C[nvertex*j+i]));
-      W[nvertex*i+j] = sum;
-      W[nvertex*j+i] = sum;
+      W->set(i,j,sum);
+      W->set(j,i,sum);
     }
   }
+  L->initialize(nvertex,nvertex);
   for(i=0; i<nvertex; ++i) {
     for(j=0; j<nvertex; ++j) {
       sum = 0.0;
-      for(vt=A->elements[j].begin(); vt!=A->elements[j].end(); vt++) {
-        l = *vt;
-        sum += W[nvertex*l+i];
+      A->get_row(j,rvector);
+      for(k=0; k<nvertex; ++k) {
+        if (rvector[k]) sum += W->get(k,i);
       }
-      L[nvertex*i+j] = sum;
+      L->set(i,j,sum); 
     }
   }
+  L->get_diagonal(delta);
   sum = 0.0;
   for(i=0; i<nvertex; ++i) {
-    sum += L[nvertex*i+i];
+    sum += delta[i];
   }
   sum -= double(size()); 
 
   delete[] work;
   delete[] pivots;
-  delete[] L;
   delete[] C;
-  delete[] W;
+
   delete A;
- 
+  delete L;
+  delete W;
+
   return sum;
 }
 

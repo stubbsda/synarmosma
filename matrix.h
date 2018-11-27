@@ -209,7 +209,7 @@ namespace SYNARMOSMA {
     if (n >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
     if (m >= ncolumn) throw std::invalid_argument("The column number argument is illegal for this matrix!");
     unsigned int i,mu = m;
-    kind output = Matrix<kind>::zero;
+    kind output = Matrix<kind>::zero; 
 
     if (elements[n].empty()) return output;
     for(i=0; i<elements[n].size(); ++i) {

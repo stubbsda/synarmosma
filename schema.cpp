@@ -249,7 +249,7 @@ int Schema::distance(int v1,int v2) const
   return l;
 }
 
-void Schema::compute_distances(edge_hash& output) const
+void Schema::compute_distances(pair_index& output) const
 {
   int i,j,k,delta,distances[nvertex][nvertex];
   std::pair<int,int> pr;

@@ -35,8 +35,6 @@ namespace SYNARMOSMA {
 
     /// This method restores all the properties of the Edge instance to their default value. 
     void clear();
-    /// This method returns the edge direction, considered from the ordering of the two arguments.
-    inline Relation get_direction(int,int) const;
    public:
     /// The standard constructor that initializes all properties to its default value and exits.
     Edge();
@@ -52,6 +50,20 @@ namespace SYNARMOSMA {
     virtual int serialize(std::ofstream&) const;
     /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
     virtual int deserialize(std::ifstream&);
+    /// This method sets the Edge::flow property.
+    inline void set_flow(double f) {flow = f;};
+    /// This method extracts and returns the Edge::flow property.
+    inline double get_flow() const {return flow;};
+    /// This method sets the Edge::capacity property.
+    inline void set_capacity(double c) {capacity = c;};
+    /// This method extracts and returns the Edge::capacity property.
+    inline double get_capacity() const {return capacity;};
+    /// This method sets the Edge::direction property.
+    inline void set_direction(const Relation rho) {direction = rho;};
+    /// This method extracts and returns the Edge::direction property.
+    inline Relation get_direction() const {return direction;};
+    /// This method returns the edge direction, considered from the ordering of the two arguments.
+    inline Relation get_direction(int,int) const;
     /// This method copies the two vertices into the integer array argument, which is assumed to be of the form "int vx[2]".
     inline void get_vertices(int*) const;
     /// This method takes two arguments which are assumed to be the new values for the edge's vertices.
@@ -61,8 +73,6 @@ namespace SYNARMOSMA {
     /// This method returns 0 if the edge is undirected (disparate), +1 if low => high and -1 otherwise.
     inline int get_parity() const;
     friend class Graph;
-    friend class Directed_Graph;
-    friend class Logic_Graph;
   };
 
   void Edge::set_vertices(int u,int v) 

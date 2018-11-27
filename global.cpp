@@ -495,11 +495,11 @@ namespace SYNARMOSMA {
     }
   }
 
-  bool bfs(const edge_hash& rgraph,int source,int sink,int nvertex,int* parent)
+  bool bfs(const pair_index& rgraph,int source,int sink,int nvertex,int* parent)
   {
     int u,v,kappa;
     std::pair<int,int> pr;
-    edge_hash::const_iterator qt;
+    pair_index::const_iterator pt;
 
     // Create a visited array and mark all vertices as not visited
     bool visited[nvertex];
@@ -519,8 +519,8 @@ namespace SYNARMOSMA {
       for(v=0; v<nvertex; ++v) {
         pr.first = u;
         pr.second = v;
-        qt = rgraph.find(pr);
-        kappa = (qt == rgraph.end()) ? 0 : qt->second;
+        pt = rgraph.find(pr);
+        kappa = (pt == rgraph.end()) ? 0 : pt->second;
         if (!visited[v] && kappa > 0) {
           q.push(v);
           parent[v] = u;
@@ -533,14 +533,14 @@ namespace SYNARMOSMA {
     return(visited[sink] == true);
   }
 
-  int network_flow(edge_hash& rgraph,int source,int sink,int nvertex)
+  int network_flow(pair_index& rgraph,int source,int sink,int nvertex)
   {
     // An implementation of the Ford-Fulkerson algorithm with breadth-first search 
     // (the Edmonds-Karp variation) for computing the maximum flow in a network with 
     // integer capacity and flow
     int u,v,g,path_flow,parent[nvertex],max_flow = 0;
     std::pair<int,int> pr;
-    edge_hash::const_iterator qt;
+    pair_index::const_iterator pt;
 
     // Augment the flow while there is path from source to sink
     while(bfs(rgraph,source,sink,nvertex,parent)) {
@@ -551,8 +551,8 @@ namespace SYNARMOSMA {
       for(v=sink; v!=source; v=parent[v]) {
         u = parent[v];
         pr.first = u; pr.second = v;
-        qt = rgraph.find(pr);
-        g = (qt == rgraph.end()) ? 0 : qt->second;
+        pt = rgraph.find(pr);
+        g = (pt == rgraph.end()) ? 0 : pt->second;
         path_flow = std::min(path_flow,g);
       }
       // Update residual capacities of the edges and reverse edges

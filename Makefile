@@ -70,7 +70,7 @@ word.o: word.cpp word.h random.h global.h
 homology.o: homology.h homology.cpp nexus.h matrix.h binary_matrix.h global.h
 	$(CXX) $(MY_CXX_FLAGS) -c homology.cpp
 
-homotopy.o: homotopy.h homotopy.cpp nexus.h group.h random.h global.h
+homotopy.o: homotopy.h homotopy.cpp nexus.h group.h word.h random.h global.h
 	$(CXX) $(MY_CXX_FLAGS) -c homotopy.cpp
 
 binary_matrix.o: binary_matrix.cpp binary_matrix.h random.h global.h
@@ -82,7 +82,7 @@ edge.o: global.h edge.h edge.cpp
 pseudograph.o: global.h pseudograph.h pseudograph.cpp
 	$(CXX) $(MY_CXX_FLAGS) -c pseudograph.cpp
 
-logic_graph.o: global.h random.h graph.h logic_graph.h proposition.h propositional_system.h logic_graph.cpp
+logic_graph.o: global.h random.h edge.h graph.h logic_graph.h proposition.h propositional_system.h logic_graph.cpp
 	$(CXX) $(MY_CXX_FLAGS) -c logic_graph.cpp
 
 polynomial_wrapper.o: global.h rational.h polynomial.h random.h polynomial.cpp polynomial_wrapper.cpp

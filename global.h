@@ -52,7 +52,7 @@ extern "C" {
 namespace SYNARMOSMA {
   using base_generator_type = boost::mt19937;
   using hash_map = boost::unordered_map<std::set<int>,int>;
-  using edge_hash = boost::unordered_map<std::pair<int,int>,int>;
+  using pair_index = boost::unordered_map<std::pair<int,int>,int>;
 
 #ifdef __LP64__
   using INT64 = signed long;
@@ -114,8 +114,8 @@ namespace SYNARMOSMA {
   bool double_equality(double,double);
   void trim(std::string&);
   void set_wcomponent_values(int,bool);
-  bool bfs(const edge_hash&,int,int,int,int*);
-  int network_flow(edge_hash&,int,int,int);
+  bool bfs(const pair_index&,int,int,int,int*);
+  int network_flow(pair_index&,int,int,int);
 
   inline void RGB_intensity(double rho,unsigned char* output)  
   {

@@ -773,17 +773,16 @@ int Matrix<kind>::deserialize(std::ifstream& s)
 
 namespace SYNARMOSMA {
   template<>
-  unsigned int Matrix<NTL::ZZ>::eliminate_zeros()
+  unsigned int Matrix<double>::eliminate_zeros()
   {
     // This method finds ane eliminates zeros from the matrix elements...
     unsigned int i,j,nmodify = 0;
-    std::vector<std::pair<NTL::ZZ,unsigned int> > rvector;
-    const NTL::ZZ null = NTL::to_ZZ(0);
+    std::vector<std::pair<double,unsigned int> > rvector;
 
     for(i=0; i<nrow; ++i) {
       rvector.clear();
       for(j=0; j<elements[i].size(); ++j) {
-        if (elements[i][j].first == null) {
+        if (std::abs(elements[i][j].first) < std::numeric_limits<double>::epsilon()) {
           nmodify++;
           continue;
         }
@@ -795,47 +794,44 @@ namespace SYNARMOSMA {
   }
 
   template<>
-  NTL::ZZ Matrix<NTL::ZZ>::get_first_nonzero(unsigned int r) const
+  double Matrix<double>::get_first_nonzero(unsigned int r) const
   {
     if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
-    if (elements[r].empty()) return NTL::to_ZZ(0);
+    if (elements[r].empty()) return 0.0;
     unsigned int i,min_index = ncolumn;
-    NTL::ZZ output = NTL::to_ZZ(0);
-    const NTL::ZZ null = NTL::to_ZZ(0);
+    double output = 0.0;
 
     for(i=0; i<elements[r].size(); ++i) {
-      if (elements[r][i].second < min_index && elements[r][i].first != null) {
+      if (elements[r][i].second < min_index && std::abs(elements[r][i].first) > std::numeric_limits<double>::epsilon()) {
         output = elements[r][i].first;
         min_index = elements[r][i].second;
       }
     }
-    return output; 
+    return output;
   }
 
   template<>
-  unsigned int Matrix<NTL::ZZ>::number_nonzero() const
+  unsigned int Matrix<double>::number_nonzero() const
   {
     unsigned int i,j,nzero = 0;
-    const NTL::ZZ null = NTL::to_ZZ(0);
 
     for(i=0; i<nrow; ++i) {
       for(j=0; j<elements[i].size(); ++j) {
-        if (elements[i][j].first != null) nzero++;
+        if (std::abs(elements[i][j].first) > std::numeric_limits<double>::epsilon()) nzero++;
       }
     }
+
     return nzero;
   }
 
   template<>
-  bool Matrix<NTL::ZZ>::empty_row(unsigned int r) const
+  bool Matrix<double>::empty_row(unsigned int r) const 
   {
     if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
     unsigned int i;
     bool output = true;
-    const NTL::ZZ null = NTL::to_ZZ(0);
-
     for(i=0; i<elements[r].size(); ++i) {
-      if (elements[r][i].first != null) {
+      if (std::abs(elements[r][i].first) > std::numeric_limits<double>::epsilon()) {
         output = false;
         break;
       }
@@ -854,7 +850,7 @@ unsigned int Matrix<kind>::eliminate_zeros()
   for(i=0; i<nrow; ++i) {
     rvector.clear();
     for(j=0; j<elements[i].size(); ++j) {
-      if (std::abs(elements[i][j].first) < std::numeric_limits<double>::epsilon()) {
+      if (elements[i][j].first == Matrix<kind>::zero) {
         nmodify++;
         continue;
       }
@@ -874,12 +870,12 @@ kind Matrix<kind>::get_first_nonzero(unsigned int r) const
   kind output = Matrix<kind>::zero;
 
   for(i=0; i<elements[r].size(); ++i) {
-    if (elements[r][i].second < min_index && std::abs(elements[r][i].first) > std::numeric_limits<double>::epsilon()) {
+    if (elements[r][i].second < min_index && elements[r][i].first != Matrix<kind>::zero) {
       output = elements[r][i].first;
       min_index = elements[r][i].second;
     }
   }
-  return output;
+  return output; 
 }
 
 template<class kind>
@@ -889,10 +885,9 @@ unsigned int Matrix<kind>::number_nonzero() const
 
   for(i=0; i<nrow; ++i) {
     for(j=0; j<elements[i].size(); ++j) {
-      if (std::abs(elements[i][j].first) > std::numeric_limits<double>::epsilon()) nzero++;
+      if (elements[i][j].first != Matrix<kind>::zero) nzero++;
     }
   }
-
   return nzero;
 }
 
@@ -902,8 +897,9 @@ bool Matrix<kind>::empty_row(unsigned int r) const
   if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
   unsigned int i;
   bool output = true;
+
   for(i=0; i<elements[r].size(); ++i) {
-    if (std::abs(elements[r][i].first) > std::numeric_limits<double>::epsilon()) {
+    if (elements[r][i].first != Matrix<kind>::zero) {
       output = false;
       break;
     }

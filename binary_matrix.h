@@ -44,6 +44,8 @@ namespace SYNARMOSMA {
     bool symmetric() const;
     /// This method returns the percentage (between 0.0 and 1.0) of matrix elements which are equal to 1.
     double density() const;
+    /// This method multiplies the first argument by the binary matrix and writes the output to the second argument.
+    void multiply(const std::vector<double>&,std::vector<double>&) const;
     /// This method writes the complete k-th row vector of the matrix to the second argument (assumed to be of size Binary_Matrix::ncolumn or more), where k is the first argument.
     void get_row(unsigned int,bool*) const;
     /// This method gets the indicated matrix element (row and column number), returning true if the element is 1 and false otherwise.
@@ -62,7 +64,6 @@ namespace SYNARMOSMA {
     friend Binary_Matrix operator *(const Binary_Matrix&,const Binary_Matrix&);
     /// The overloaded addition operator first checks that the two matrices have the same dimensions and then performs an element-wise "xor" on them to form the sum over GF(2). 
     friend Binary_Matrix operator +(const Binary_Matrix&,const Binary_Matrix&);
-    friend class Graph;
   };
 
   bool Binary_Matrix::get(unsigned int i,unsigned int j) const

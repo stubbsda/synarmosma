@@ -24,7 +24,7 @@ namespace SYNARMOSMA {
     virtual bool add_edge(int,int,double = 0.0);
     virtual bool drop_edge(int,int);
     virtual int distance(int,int) const;
-    virtual void compute_distances(edge_hash&) const;
+    virtual void compute_distances(pair_index&) const;
     bool positive_valence() const;
     int spanning_tree(std::vector<int>&) const;
     int component_analysis(std::vector<int>&) const;

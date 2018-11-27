@@ -15,8 +15,8 @@ int main(int argc,char** argv)
   std::string type,name;
   std::vector<double> foo;
   std::pair<int,int> pr;
-  SYNARMOSMA::edge_hash dmap;
-  SYNARMOSMA::edge_hash::const_iterator qt;
+  SYNARMOSMA::pair_index dmap;
+  SYNARMOSMA::pair_index::const_iterator qt;
 
   std::cout << "Testing rationals..." << std::endl;
   SYNARMOSMA::Rational q1(1,5);
