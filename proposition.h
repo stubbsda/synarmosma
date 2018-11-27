@@ -18,6 +18,7 @@ namespace SYNARMOSMA {
     /// propositions in a clause.
     static const unsigned int NP = 5;
 
+    /// This method accepts a value for the number of clauses to be created and the set of atomic propositions to be used and constructs the clause. 
     void initialize(unsigned int,const std::set<int>&);
    public:
     /// The default constructor which does nothing.
@@ -32,11 +33,13 @@ namespace SYNARMOSMA {
     Proposition& operator =(const Proposition&);
     /// The destructor which does nothing for this class.
     ~Proposition();
-    bool evaluate(const std::vector<int>&,std::vector<int>&) const;
+    /// This method evaluates the truth value of the proposition, with the first argument a hash map of atomic propositions and their Boolean value and the second argument on output contains the indices of all the clauses that were false with this set of values for the atomic propositions.
+    bool evaluate(const std::unordered_map<int,bool>&,std::set<unsigned int>&) const;
+    /// This method evaluates the truth value of the proposition, given a vector of pairs that maps each atomic proposition to a Boolean value. 
     bool evaluate(const std::vector<std::pair<int,bool> >&) const;
     bool satisfiable() const;
-    /// This method collects the distinct atoms contained in this proposition and writes them to the method's unique argument.
-    void get_atoms(std::set<int>&) const;
+    /// This method collects the distinct atoms contained in this proposition and writes them to the method's unique argument, returning the number of such atoms.
+    unsigned int get_atoms(std::set<int>&) const;
     /// This method functions in exactly the same manner as the constructor with the same argument - a random number of clauses is generated and the atomic propositions are chosen from among the input set.
     void set_atoms(const std::set<int>&);
     /// This method retains the same number of clauses and the same set of atomic propositions but otherwise completely regenerates the proposition.
@@ -47,10 +50,13 @@ namespace SYNARMOSMA {
     int serialize(std::ofstream&) const;
     /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
     int deserialize(std::ifstream&);
+    /// This method sets the Proposition::clause vector to be equal to the method's argument, after checking that its length is an even multiple of Proposition::NP.
     inline void set_clause(const std::vector<int>&);
+    /// This method sets the argument to the Proposition::clause vector.
     inline void get_clause(std::vector<int>& c) const {c = clause;};
     /// This method returns the number of clauses in this proposition. 
     inline unsigned int get_size() const {return clause.size()/(2*NP);}; 
+    /// This method returns the maximum number of atomic propositions in a clause.
     inline static unsigned int get_clause_size() {return NP;};
     friend std::ostream& operator <<(std::ostream&,const Proposition&);
     friend Proposition operator &(const Proposition&,const Proposition&);

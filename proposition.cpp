@@ -55,7 +55,7 @@ void Proposition::initialize(unsigned int nc,const std::set<int>& atoms)
     clause.push_back(a);
     used.clear();
     used.insert(a);
-    if (RND.drandom() < 0.5) {
+    if (RND.irandom(2) == 0) {
       clause.push_back(0);
     }
     else {
@@ -72,7 +72,7 @@ void Proposition::initialize(unsigned int nc,const std::set<int>& atoms)
       a = RND.irandom(atoms,used);
       used.insert(a);
       clause.push_back(a);
-      if (RND.drandom() < 0.5) {
+      if (RND.irandom(2) == 0) {
         clause.push_back(0);
       }
       else {
@@ -84,39 +84,35 @@ void Proposition::initialize(unsigned int nc,const std::set<int>& atoms)
 
 bool Proposition::satisfiable() const
 {
-  int a,l;
-  unsigned int i,j,k,ulimit = 5;
-  std::vector<int> bvalues,fclause;
-  std::set<int> atoms,ca;
+  int a;
+  unsigned int i,j,k,l,ulimit = 2*Proposition::NP;
+  std::unordered_map<int,bool> atom_values;
+  std::set<int> atoms,candidates;
+  std::set<unsigned int> false_clauses;
   std::set<int>::const_iterator it;
+  std::unordered_map<int,bool>::const_iterator qt;
 
-  get_atoms(atoms);
+  unsigned int natoms = get_atoms(atoms);
   for(it=atoms.begin(); it!=atoms.end(); ++it) {
-    bvalues.push_back(*it);
-    bvalues.push_back(RND.irandom(2));
+    atom_values[*it] = (RND.irandom(2) == 0) ? true : false;
   }
-  const unsigned int natoms = atoms.size();
   for(i=0; i<ulimit; ++i) {
     for(j=0; j<3*natoms; ++j) {
       // If the proposition is true with this mapping of the atomic propositions, we're done
-      if (evaluate(bvalues,fclause)) return true;
+      if (evaluate(atom_values,false_clauses)) return true;
       // If it's not true, select a randomly chosen unsatisfied clause of the Boolean formula
-      l = RND.irandom(fclause);
-      // Obtain all the atomic propositions from that clause in the set "ca"
-      ca.clear();
+      l = RND.irandom(false_clauses);
+      // Obtain all the atomic propositions from that clause in the set of candidates
+      candidates.clear();
       for(k=0; k<2*Proposition::NP; k+=2) {
         a = clause[2*Proposition::NP*l+k];
         if (a == -1) break;
-        ca.insert(a);
+        candidates.insert(a);
       }
-      // Pick one of these atomic propositions randomly from "ca" and alter its parity
-      a = RND.irandom(ca);
-      for(k=0; k<2*natoms; k+=2) {
-        if (bvalues[k] == a) {
-          bvalues[k+1] = (bvalues[k+1] + 1)%2;
-          break;
-        }
-      }
+      // Pick one of these atomic propositions randomly from among the candidates and alter its parity
+      a = RND.irandom(candidates);
+      qt = atom_values.find(a);
+      atom_values[a] = !(qt->second);
     }
   }
   return false;
@@ -125,11 +121,11 @@ bool Proposition::satisfiable() const
 void Proposition::mutate()
 {
   std::set<int> atoms;
-  unsigned int nc = get_size();
+  unsigned int n,nc = get_size();
 
-  get_atoms(atoms);
+  n = get_atoms(atoms);
   clear();
-  if (atoms.empty()) return;
+  if (n == 0) return;
   initialize(nc,atoms);
 }
 
@@ -167,52 +163,48 @@ bool Proposition::evaluate(const std::vector<std::pair<int,bool> >& atom_values)
   return output;
 }
 
-bool Proposition::evaluate(const std::vector<int>& atoms,std::vector<int>& fclause) const
+bool Proposition::evaluate(const std::unordered_map<int,bool>& atoms,std::set<unsigned int>& false_clauses) const
 {
   int a;
-  unsigned int i,j,k;
-  bool cvalue,avalue = false,output = true;
-  const unsigned int na = atoms.size();
+  unsigned int i,j;
+  bool clause_value,atom_value = false,output = true;
+  std::unordered_map<int,bool>::const_iterator qt;
   const unsigned int nc = get_size();
 
-
-  fclause.clear();
+  false_clauses.clear();
   for(i=0; i<nc; ++i) {
     // If a single clause is false, the whole expression is false...
-    cvalue = false;
+    clause_value = false;
     for(j=0; j<2*Proposition::NP; j+=2) {
       a = clause[2*Proposition::NP*i+j];
       if (a == -1) break;
-      for(k=0; k<na; k+=2) {
-        if (atoms[k] == a) {
-          avalue = (atoms[k+1] == 0) ? false : true;
-          break;
-        }
-      }
-      if (clause[2*Proposition::NP*i+j+1] == 1) avalue = !avalue;
-      cvalue = cvalue || avalue;
+      qt = atoms.find(a);
+      atom_value = qt->second;
+      if (clause[2*Proposition::NP*i+j+1] == 1) atom_value = !atom_value;
+      clause_value = clause_value || atom_value;
     }
-    if (!cvalue) {
-      fclause.push_back(i);
+    if (!clause_value) {
+      false_clauses.insert(i);
       output = false;
     }
   }
   return output;
 }
 
-void Proposition::get_atoms(std::set<int>& atoms) const
+unsigned int Proposition::get_atoms(std::set<int>& atoms) const
 {
   int a;
-  unsigned int i,j,nc = get_size();
+  unsigned int i,j,na = 0,nc = get_size();
 
   atoms.clear();
   for(i=0; i<nc; ++i) {
     for(j=0; j<2*Proposition::NP; j+=2) {
       a = clause[2*Proposition::NP*i+j];
       if (a == -1) break;
-      atoms.insert(a);
+      atoms.insert(a); na++;
     }
   }
+  return na;
 }
 
 void Proposition::set_atoms(const std::set<int>& atoms)
