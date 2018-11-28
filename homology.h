@@ -1,4 +1,5 @@
 #include "nexus.h"
+#include "integer_matrix.h"
 
 #ifndef _homologyh
 #define _homologyh

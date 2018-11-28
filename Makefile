@@ -1,7 +1,7 @@
 OBJECTS = global.o random.o cell.o nexus.o schema.o group.o graph.o geometry.o word.o rational.o\
 variety_wrapper.o polynomial_wrapper.o proposition.o propositional_system.o logic_graph.o edge.o\
-vertex.o multitime.o binary_matrix.o matrix_wrapper.o directed_graph.o functional_equation_wrapper.o\
-homology.o homotopy.o poset.o lattice.o pseudograph.o solver_wrapper.o
+vertex.o multitime.o binary_matrix.o integer_matrix_wrapper.o matrix_wrapper.o directed_graph.o\
+functional_equation_wrapper.o homology.o homotopy.o poset.o lattice.o pseudograph.o solver_wrapper.o
 
 MY_CXX_FLAGS = $(CXX_FLAGS) $(OPENMP) -fPIC #-DDISCRETE
 
@@ -58,6 +58,9 @@ rational.o: global.h rational.h rational.cpp
 solver_wrapper.o: solver_wrapper.cpp solver.cpp solver.h matrix.h random.h global.h
 	$(CXX) $(MY_CXX_FLAGS) -c solver_wrapper.cpp
 
+integer_matrix_wrapper.o: integer_matrix_wrapper.cpp integer_matrix.cpp integer_matrix.h random.h global.h
+	$(CXX) $(MY_CXX_FLAGS) -c integer_matrix_wrapper.cpp
+
 matrix_wrapper.o: matrix_wrapper.cpp matrix.cpp matrix.h random.h global.h
 	$(CXX) $(MY_CXX_FLAGS) -c matrix_wrapper.cpp
 
@@ -67,7 +70,7 @@ proposition.o: proposition.cpp proposition.h random.h global.h
 word.o: word.cpp word.h random.h global.h
 	$(CXX) $(MY_CXX_FLAGS) -c word.cpp
 
-homology.o: homology.h homology.cpp nexus.h matrix.h binary_matrix.h global.h
+homology.o: homology.h homology.cpp nexus.h integer_matrix.h binary_matrix.h global.h
 	$(CXX) $(MY_CXX_FLAGS) -c homology.cpp
 
 homotopy.o: homotopy.h homotopy.cpp nexus.h group.h word.h random.h global.h
