@@ -49,7 +49,7 @@ lattice.o: lattice.cpp lattice.h poset.h random.h global.h
 poset.o: poset.cpp poset.h random.h global.h
 	$(CXX) $(MY_CXX_FLAGS) -c poset.cpp
 
-directed_graph.o: directed_graph.cpp directed_graph.h schema.h edge.h random.h global.h
+directed_graph.o: directed_graph.cpp directed_graph.h schema.h pseudograph.h matrix.h binary_matrix.h edge.h random.h global.h
 	$(CXX) $(MY_CXX_FLAGS) -c directed_graph.cpp
 
 rational.o: global.h rational.h rational.cpp
@@ -82,7 +82,7 @@ edge.o: global.h edge.h edge.cpp
 pseudograph.o: global.h pseudograph.h pseudograph.cpp
 	$(CXX) $(MY_CXX_FLAGS) -c pseudograph.cpp
 
-logic_graph.o: global.h random.h edge.h graph.h logic_graph.h proposition.h propositional_system.h logic_graph.cpp
+logic_graph.o: global.h random.h edge.h schema.h pseudograph.h matrix.h binary_matrix.h graph.h logic_graph.h proposition.h propositional_system.h logic_graph.cpp
 	$(CXX) $(MY_CXX_FLAGS) -c logic_graph.cpp
 
 polynomial_wrapper.o: global.h rational.h polynomial.h random.h polynomial.cpp polynomial_wrapper.cpp
