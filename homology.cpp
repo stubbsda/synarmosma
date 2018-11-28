@@ -2,8 +2,8 @@
 
 using namespace SYNARMOSMA;
 
-extern template const NTL::ZZ Matrix<NTL::ZZ>::neg1;
-extern template const NTL::ZZ Matrix<NTL::ZZ>::unity; 
+extern template const NTL::ZZ Integer_Matrix<NTL::ZZ>::neg1;
+extern template const NTL::ZZ Integer_Matrix<NTL::ZZ>::unity; 
 
 Homology::Homology()
 {
@@ -158,7 +158,7 @@ void Homology::compute_integral_native(const Nexus* NX)
 
   if (field == Field::int32) {
     int alpha;
-    Matrix<int>* A = new Matrix<int>(d1,d2);
+    Integer_Matrix<int>* A = new Integer_Matrix<int>(d1,d2);
 
     for(i=0; i<nvertex; ++i) {
       for(it=NX->neighbours[i].begin(); it!=NX->neighbours[i].end(); ++it) {
@@ -236,7 +236,7 @@ void Homology::compute_integral_native(const Nexus* NX)
   }
   else {
     NTL::ZZ alpha;
-    Matrix<NTL::ZZ>* A = new Matrix<NTL::ZZ>(d1,d2);
+    Integer_Matrix<NTL::ZZ>* A = new Integer_Matrix<NTL::ZZ>(d1,d2);
 
     for(i=0; i<nvertex; ++i) {
       for(it=NX->neighbours[i].begin(); it!=NX->neighbours[i].end(); ++it) {
@@ -248,10 +248,10 @@ void Homology::compute_integral_native(const Nexus* NX)
         NX->elements[1][j].get_vertices(v2);
         S.clear();
         if (i == v2[0]) {
-          A->set(i,j,Matrix<NTL::ZZ>::neg1); 
+          A->set(i,j,Integer_Matrix<NTL::ZZ>::neg1); 
         }
         else if (i == v2[1]) {
-          A->set(i,j,Matrix<NTL::ZZ>::unity); 
+          A->set(i,j,Integer_Matrix<NTL::ZZ>::unity); 
         }
       }
     }
@@ -267,7 +267,7 @@ void Homology::compute_integral_native(const Nexus* NX)
     for(k=0; k<ulimit; ++k) {
       if (A->empty_row(k)) continue;
       alpha = A->get_first_nonzero(k);
-      if (alpha > Matrix<NTL::ZZ>::unity) {
+      if (alpha > Integer_Matrix<NTL::ZZ>::unity) {
         ss << alpha;
         cx = ss.str();
         tgenerators.push_back(boost::lexical_cast<int>(cx.c_str()));
@@ -301,7 +301,7 @@ void Homology::compute_integral_native(const Nexus* NX)
       for(k=0; k<ulimit; ++k) {
         if (A->empty_row(k)) continue;
         alpha = A->get_first_nonzero(k);
-        if (alpha > Matrix<NTL::ZZ>::unity) {
+        if (alpha > Integer_Matrix<NTL::ZZ>::unity) {
           ss << alpha;
           cx = ss.str();
           tgenerators.push_back(boost::lexical_cast<int>(cx.c_str()));

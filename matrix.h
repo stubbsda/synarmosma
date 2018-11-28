@@ -20,30 +20,6 @@ namespace SYNARMOSMA {
   Matrix<kind>& operator +(const Matrix<kind>&,const Matrix<kind>&);
 
   template<class kind>
-  void permute(Matrix<kind>&,unsigned int,unsigned int,char);
-
-  template<class kind>
-  void invert(Matrix<kind>&,unsigned int,char);
-
-  template<class kind>
-  void combine(Matrix<kind>&,unsigned int,unsigned int,const kind&,char);
-
-  template<class kind>
-  void pivot_row(Matrix<kind>&,unsigned int,unsigned int);
-
-  template<class kind>
-  void pivot_column(Matrix<kind>&,unsigned int,unsigned int);
-
-  template<class kind>
-  void move_minimum(Matrix<kind>&,unsigned int);
-
-  template<class kind>
-  void prepare_matrix(Matrix<kind>&,unsigned int);
-
-  template<class kind>
-  unsigned int normalize(Matrix<kind>&);
-
-  template<class kind>
   /// A class representing a general rectangular matrix over an arbitrary ring or field of elements, using templates.
   class Matrix {
    protected:
@@ -59,17 +35,11 @@ namespace SYNARMOSMA {
     /// The number of columns of this 
     /// matrix
     unsigned int ncolumn = 0;
-    /// A property which determines whether or not the matrix 
-    /// has been transformed into reduced row echelon form by the normalize() 
-    /// method.
-    bool normalized = false;
 
     /// This method writes out the complete matrix to the output stream, one line per row, with a '%' before the entries explicitly stored in the Matrix::elements vector for that row.
     void display(std::ostream&) const;
     /// This method iterates through all the putatively non-zero matrix elements and if it finds one which is indistinguishable from zero, it removes this element; the method returns the number of such pseudo-elements found in the matrix.
     unsigned int eliminate_zeros();
-    /// This method checks whether the diagonal element (if zero the method returns false) of the row whose index is specified by the first argument is divisible by an element of the matrix with a row and column index greater than it, returning true in that case along with the indices of the element and the quotient. For a base type like double or std::complex<double> the divisibility test is of course meaningless.
-    bool divisible(unsigned int,unsigned int*,unsigned int*,kind*) const;
     /// This method computes the transpose of the matrix provided as the argument, setting the output to the current matrix.
     void transpose(const Matrix<kind>&);
     /// This method writes the content of the matrix itself in binary format to an output stream and is used by the serialize() method; it returns the number of bytes written.
@@ -77,16 +47,6 @@ namespace SYNARMOSMA {
     /// This method reads the content of the matrix itself in binary format from an input stream is used by the deserialize() method; it returns the number of bytes read.
     int read_elements(std::ifstream&);
    public:
-    /// The value 0, stored in the correct data type for this instantiation of 
-    /// the template class.
-    static const kind zero;
-    /// The value -1, stored in the correct data type for this instantiation of 
-    /// the template class.
-    static const kind neg1;
-    /// The value 1, stored in the correct data type for this instantiation of 
-    /// the template class.
-    static const kind unity;
-
     /// The default constructor which does nothing in the case of this class.
     Matrix();
     /// The constructor for a square matrix whose dimension is the first argument and whose second optional argument is to construct the identity matrix when true.
@@ -153,22 +113,6 @@ namespace SYNARMOSMA {
     void get_row(std::vector<kind>&,std::vector<unsigned int>&,unsigned int) const;
     /// The overloaded assignment operator for this class, which first calls clear() and then behaves exactly like the copy constructor for this class.
     Matrix<kind>& operator =(const Matrix<kind>&);
-    /// This global function permutes two distinct columns (when the final argument is 'c') or two distinct rows (when this argument is 'r'), whose indices are the second and third arguments; the matrix affected is the first argument.
-    friend void permute<>(Matrix<kind>&,unsigned int,unsigned int,char);
-    /// This global function multiplies the elements of a row (when the final argument is 'r') or column (when it is 'c') by -1, with the index specified by the second argument and the matrix itself the first argument.
-    friend void invert<>(Matrix<kind>&,unsigned int,char);
-    /// This global function performs a scaled addition of two rows (when the final argument is 'r') or two columns (when it is 'c') of the matrix that is the first argument. As an example when the final argument is 'r', this method performs \f$A_{nk} = A_{nk} + q A_{mk}\f$ for all \f$k\f$, where \f$n\f$ and \f$m\f$ are the second and third arguments, with the scalar \f$q\f$ the fourth argument.
-    friend void combine<>(Matrix<kind>&,unsigned int,unsigned int,const kind&,char);
-    /// This global function accepts a row and column index (the final two arguments) and uses the combine() function to add two rows to eliminate an off-diagonal element.
-    friend void pivot_row<>(Matrix<kind>&,unsigned int,unsigned int);
-    /// This global function accepts a row and column index (the final two arguments) and uses the combine() function to add two columns to eliminate an off-diagonal element.
-    friend void pivot_column<>(Matrix<kind>&,unsigned int,unsigned int);
-    /// This global function uses the permute() function to move the row whose index is the second argument so that the smallest non-zero element in the sub-matrix with row and column index greater than or equal to the second argument.
-    friend void move_minimum<>(Matrix<kind>&,unsigned int);
-    /// This global function works on a particular row (whose index is the second argument) of a matrix, calling the combine(), move_minimum(), pivot_row() and pivot_column() functions to carry out elementary row operations.
-    friend void prepare_matrix<>(Matrix<kind>&,unsigned int);
-    /// This global function transforms its unique argument into reduced row echelon form by elementary row operations, calling the prepare_matrix() and invert() functions for this purpose. The return value is the number of diagonal entries equal to 1.
-    friend unsigned int normalize<>(Matrix<kind>&);
     /// This overloading of the ostream operator writes the matrix to the screen according to the same conventions as the display() method.
     friend std::ostream& operator << <>(std::ostream&,const Matrix<kind>&);
   };
@@ -209,7 +153,7 @@ namespace SYNARMOSMA {
     if (n >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
     if (m >= ncolumn) throw std::invalid_argument("The column number argument is illegal for this matrix!");
     unsigned int i,mu = m;
-    kind output = Matrix<kind>::zero; 
+    kind output = kind(0.0); 
 
     if (elements[n].empty()) return output;
     for(i=0; i<elements[n].size(); ++i) {
@@ -276,7 +220,7 @@ namespace SYNARMOSMA {
   {
     if (n >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
     unsigned int i;
-    kind output = Matrix<kind>::zero;
+    kind output = kind(0.0);
 
     for(i=0; i<elements[n].size(); ++i) {
       if (elements[n][i].second == n) {
