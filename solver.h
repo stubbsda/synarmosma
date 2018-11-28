@@ -1,3 +1,4 @@
+#include "random.h"
 #include "matrix.h"
 
 #ifndef _solverh

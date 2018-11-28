@@ -2,8 +2,6 @@
 
 using namespace SYNARMOSMA;
 
-extern Random RND;
-
 template<class kind>
 Integer_Matrix<kind>::Integer_Matrix()
 {
@@ -102,37 +100,6 @@ void Integer_Matrix<kind>::display(std::ostream& s) const
     s << std::endl;
   }
   s << std::endl;
-}
-
-template<class kind>
-void Integer_Matrix<kind>::convert(kind* A,char mtype) const
-{
-  if (mtype != 'r' && mtype != 'c') throw std::invalid_argument("The conversion type for the matrix must be row-oriented or column-oriented!");
-  // This method supposes that A has already been allocated the appropriate amount
-  // of memory...
-  unsigned int i,j;
-
-  for(i=0; i<nrow; ++i) {
-    for(j=0; j<ncolumn; ++j) {
-      A[nrow*i+j] = Integer_Matrix<kind>::zero;
-    }
-  }
-  if (mtype == 'r') {
-    // Row major format
-    for(i=0; i<nrow; ++i) {
-      for(j=0; j<elements[i].size(); ++j) {
-        A[nrow*i+elements[i][j].second] = elements[i][j].first;
-      }
-    }
-  }
-  else {
-    // Column major format
-    for(i=0; i<nrow; ++i) {
-      for(j=0; j<elements[i].size(); ++j) {
-        A[ncolumn*elements[i][j].second + i] = elements[i][j].first;
-      }
-    }
-  }  
 }
 
 template<class kind>

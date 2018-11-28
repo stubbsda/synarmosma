@@ -1,4 +1,4 @@
-#include "random.h"
+#include "global.h"
 
 #ifndef _integermatrixh
 #define _integermatrixh
@@ -44,7 +44,7 @@ namespace SYNARMOSMA {
   unsigned int normalize(Integer_Matrix<kind>&);
 
   template<class kind>
-  /// A class representing a general rectangular matrix over an arbitrary ring or field of elements, using templates.
+  /// A template class representing a general rectangular matrix over an integer base type.
   class Integer_Matrix {
    protected:
     /// This property is heart of the Integer_Matrix class as it contains all of the 
@@ -121,8 +121,6 @@ namespace SYNARMOSMA {
     bool empty_row(unsigned int) const;
     /// This method gets the non-zero element of the row with the lowest column index and returns it; if the row has no non-zero elements, it returns zero. 
     kind get_first_nonzero(unsigned int) const;
-    /// This method writes the matrix into a one-dimensional array (the first argument) whose length is the product of Integer_Matrix::nrow and Integer_Matrix::ncolumn, using either a row-oriented or column-oriented convention, specified by the second argument ('r' or 'c').
-    void convert(kind*,char) const;
     /// This method gets the value of the element specified by the two arguments, the row and column index respectively. 
     kind get(unsigned int,unsigned int) const;
     /// This method extracts the diagonal element of the row whose index is the argument.

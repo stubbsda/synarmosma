@@ -1,4 +1,4 @@
-#include "random.h"
+#include "global.h"
 
 #ifndef _matrixh
 #define _matrixh
@@ -20,7 +20,7 @@ namespace SYNARMOSMA {
   Matrix<kind>& operator +(const Matrix<kind>&,const Matrix<kind>&);
 
   template<class kind>
-  /// A class representing a general rectangular matrix over an arbitrary ring or field of elements, using templates.
+  /// A template class representing a general rectangular matrix over a floating point base type.
   class Matrix {
    protected:
     /// This property is heart of the Matrix class as it contains all of the 
