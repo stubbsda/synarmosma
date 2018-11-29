@@ -5,31 +5,29 @@ using namespace SYNARMOSMA;
 extern Random RND;
 
 template<class kind>
-Solver<kind>::Solver(int N)
+Solver<kind>::Solver(unsigned int N)
 {
-  assert(N > 0);
-
-  dim = N;
-  J = new SYNARMOSMA::Matrix<kind>(dim);
+  dimension = N;
+  J = new SYNARMOSMA::Matrix<kind>(dimension);
 }
 
 template<class kind>
-Solver<kind>::Solver(int N,double eps,int M,bool htype,bool approx)
+Solver<kind>::Solver(unsigned int N,double eps,unsigned int M,bool htype,bool approx)
 {
-  assert(N > 0 && M > 0 && eps > 0.0);
+  if (eps < std::numeric_limits<double>::epsilon()) throw std::invalid_argument("The epsilon value in the Solver class must be greater than zero!");
 
-  dim = N;
+  dimension = N;
   epsilon = eps;
   max_its = M;
   homotopy = htype;
   broyden = approx;
-  J = new SYNARMOSMA::Matrix<kind>(dim);
+  J = new SYNARMOSMA::Matrix<kind>(dimension);
 }
 
 template<class kind>
 Solver<kind>::~Solver()
 {
-  if (dim > 0) delete J;
+  if (dimension > 0) delete J;
 }
 
 namespace SYNARMOSMA {
@@ -96,7 +94,7 @@ void Solver<kind>::compute_jacobian(const std::vector<kind>& x)
   kind delta;
   std::set<unsigned int>::const_iterator it;
   std::vector<kind> w,y1,y2;
-  Matrix<kind>* JF = new Matrix<kind>(dim);
+  Matrix<kind>* JF = new Matrix<kind>(dimension);
 
   F(x,y1);
   w = x;
@@ -105,7 +103,7 @@ void Solver<kind>::compute_jacobian(const std::vector<kind>& x)
     fcall = false;
   }
 
-  for(i=0; i<dim; ++i) {
+  for(i=0; i<dimension; ++i) {
     for(it=dependencies[i].begin(); it!=dependencies[i].end(); ++it) {
       j = *it;
       w[j] += epsilon;
@@ -120,7 +118,7 @@ void Solver<kind>::compute_jacobian(const std::vector<kind>& x)
 }
 
 template<class kind>
-void Solver<kind>::compute_dependencies()
+double Solver<kind>::compute_dependencies()
 {
   unsigned int i,j;
   kind delta;
@@ -128,7 +126,7 @@ void Solver<kind>::compute_dependencies()
   std::vector<kind> w,x,y;
 
   dependencies.clear();
-  for(i=0; i<dim; ++i) {
+  for(i=0; i<dimension; ++i) {
     dependencies.push_back(null);
     delta = RND.drandom(-5.0,5.0);
     x.push_back(delta);
@@ -137,29 +135,33 @@ void Solver<kind>::compute_dependencies()
   }
 
   F(x,w);
-  for(i=0; i<dim; ++i) {
+  for(i=0; i<dimension; ++i) {
     x[i] += kind(10.0);
     F(x,y);
-    for(j=0; j<dim; ++j) {
+    for(j=0; j<dimension; ++j) {
       delta = y[j] - w[j];
       if (std::abs(delta) > epsilon) dependencies[j].insert(i);
     }
     x[i] -= kind(10.0);
   }
+
+  unsigned int sum = 0;
+  for(i=0; i<dimension; ++i) {
+    sum += dependencies[i].size();
 #ifdef VERBOSE
-  for(i=0; i<dim; ++i) {
     std::cout << "For equation " << 1+i << " there are " << dependencies[i].size() << " independent variables" << std::endl;
-  }
 #endif
+  }
+  return double(sum)/double(dimension*dimension);
 }
 
 namespace SYNARMOSMA {
   template<>
   bool Solver<double>::direct_solver(std::vector<double>& x) const
   {
-    int info,one = 1,n = dim;
-    int pivots[dim];
-    double A[dim*dim];
+    int info,one = 1,n = dimension;
+    int pivots[dimension];
+    double A[dimension*dimension];
     bool output = false;
 
     J->convert(A,'c');
@@ -174,9 +176,9 @@ namespace SYNARMOSMA {
   template<>
   bool Solver<std::complex<double> >::direct_solver(std::vector<std::complex<double> >& x) const
   {
-    int info,one = 1,n = dim;
-    int pivots[dim];
-    std::complex<double> A[dim*dim];
+    int info,one = 1,n = dimension;
+    int pivots[dimension];
+    std::complex<double> A[dimension*dimension];
     bool output = false;
 
     J->convert(A,'c');
@@ -219,10 +221,10 @@ int Solver<kind>::forward_step()
   double q,old_norm,xnorm,fnorm,pfactor;
   kind p;
   std::vector<kind> x,xnew,f,fnew,b,fdiff,xdiff,z;
-  Matrix<kind> secant(dim);
+  Matrix<kind> secant(dimension);
 
-  x = c_solution;
-  for(i=0; i<dim; ++i) {
+  x = current_solution;
+  for(i=0; i<dimension; ++i) {
     b.push_back(kind(0.0));
     f.push_back(kind(0.0));
     fnew.push_back(kind(0.0));
@@ -231,13 +233,13 @@ int Solver<kind>::forward_step()
     xdiff.push_back(kind(0.0));
   }
   F(x,f);
-  for(i=0; i<dim; ++i) {
+  for(i=0; i<dimension; ++i) {
     f[i] = a1(t)*f[i] + a2(t)*(x[i] - base_solution[i]); 
   }
   compute_jacobian(x);
 
   old_norm = 0.0;
-  for(i=0; i<dim; ++i) {
+  for(i=0; i<dimension; ++i) {
     q = std::abs(f[i]);
     old_norm += q*q;
   }
@@ -248,14 +250,14 @@ int Solver<kind>::forward_step()
   do {
     // Now compute the rhs of the equation, b = J*x - F(x)
     J->multiply(x,z);
-    for(i=0; i<dim; ++i) {
+    for(i=0; i<dimension; ++i) {
       b[i] = z[i] - f[i];
     }
     // And solve the linear system J*xnew = b
     success = linear_solver(x,b,xnew);
     if (!success) break;
     xnorm = 0.0;
-    for(i=0; i<dim; ++i) {
+    for(i=0; i<dimension; ++i) {
       xdiff[i] = xnew[i] - x[i];
       q = std::abs(xdiff[i]);
       xnorm += q*q;
@@ -268,11 +270,11 @@ int Solver<kind>::forward_step()
 #endif
     if (xnorm < epsilon) break;
     F(xnew,fnew);
-    for(i=0; i<dim; ++i) {
+    for(i=0; i<dimension; ++i) {
       fnew[i] = a1(t)*fnew[i] + a2(t)*(xnew[i] - base_solution[i]); 
     }
     fnorm = 0.0;
-    for(i=0; i<dim; ++i) {
+    for(i=0; i<dimension; ++i) {
       fdiff[i] = fnew[i] - f[i];
       q = std::abs(fnew[i]);
       fnorm += q*q;
@@ -295,13 +297,13 @@ int Solver<kind>::forward_step()
     if (broyden) {
       // Compute the Broyden approximation to the Jacobian and use it:
       J->multiply(xdiff,z);
-      for(i=0; i<dim; ++i) {
+      for(i=0; i<dimension; ++i) {
         z[i] = fdiff[i] - z[i];
       }
       pfactor = 1.0/(xnorm*xnorm);
       secant.clear(false);
-      for(i=0; i<dim; ++i) {
-        for(j=0; j<dim; ++j) {
+      for(i=0; i<dimension; ++i) {
+        for(j=0; j<dimension; ++j) {
           p = z[j]*xdiff[i];
           if (std::abs(p) > std::numeric_limits<double>::epsilon()) secant.set(i,j,pfactor*p);
         }
@@ -317,7 +319,7 @@ int Solver<kind>::forward_step()
 
   if (!output) throw std::runtime_error("Newton-Raphson solver failed to converge!");
 
-  c_solution = xnew;
+  current_solution = xnew;
   return its;
 }
 
@@ -330,7 +332,7 @@ namespace SYNARMOSMA {
 
     base_solution.clear();
 
-    for(i=0; i<dim; ++i) {
+    for(i=0; i<dimension; ++i) {
       alpha = -1.0 + 2.0*RND.drandom();
       base_solution.push_back(alpha);
     }
@@ -344,7 +346,7 @@ namespace SYNARMOSMA {
 
     base_solution.clear();
 
-    for(i=0; i<dim; ++i) {
+    for(i=0; i<dimension; ++i) {
       alpha = -1.0 + 2.0*RND.drandom();
       beta = -1.0 + 2.0*RND.drandom();
       base_solution.push_back(std::complex<double>(alpha,beta));
@@ -359,7 +361,7 @@ bool Solver<kind>::solve(std::vector<kind>& output)
   double dt = 0.01;
   bool success = true;
 
-  if (output.size() == dim) {
+  if (output.size() == dimension) {
     base_solution = output;
   }
   else {
@@ -367,7 +369,7 @@ bool Solver<kind>::solve(std::vector<kind>& output)
     output = base_solution;
   }
 
-  c_solution = base_solution;
+  current_solution = base_solution;
 
   if (homotopy) {
     bool converged = false;
@@ -422,7 +424,7 @@ bool Solver<kind>::solve(std::vector<kind>& output)
     }
   }
 
-  if (success) output = c_solution;
+  if (success) output = current_solution;
   
   return success;
 }
