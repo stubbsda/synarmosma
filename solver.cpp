@@ -7,6 +7,7 @@ extern Random RND;
 template<class kind>
 Solver<kind>::Solver(unsigned int N)
 {
+  if (N == 0) throw std::invalid_argument("The Solver::dimension property must be greater than zero!");
   dimension = N;
   J = new SYNARMOSMA::Matrix<kind>(dimension);
 }
@@ -14,7 +15,9 @@ Solver<kind>::Solver(unsigned int N)
 template<class kind>
 Solver<kind>::Solver(unsigned int N,double eps,unsigned int M,bool htype,bool approx)
 {
-  if (eps < std::numeric_limits<double>::epsilon()) throw std::invalid_argument("The epsilon value in the Solver class must be greater than zero!");
+  if (N == 0) throw std::invalid_argument("The Solver::dimension property must be greater than zero!");
+  if (M == 0) throw std::invalid_argument("The maximum number of iterations in the Solver class must be greater than zero!");
+  if (eps < std::numeric_limits<double>::epsilon()) throw std::invalid_argument("The convergence threshold in the Solver class must be greater than zero!");
 
   dimension = N;
   epsilon = eps;
@@ -325,30 +328,32 @@ int Solver<kind>::forward_step()
 
 namespace SYNARMOSMA {
   template<>
-  void Solver<double>::initialize_base_solution()
+  void Solver<double>::initialize_base_solution(double mean,double range)
   {
     unsigned int i;
-    double alpha;
+    const double lbound = mean - 0.5*range;
+    const double ubound = mean + 0.5*range;
 
     base_solution.clear();
 
     for(i=0; i<dimension; ++i) {
-      alpha = -1.0 + 2.0*RND.drandom();
-      base_solution.push_back(alpha);
+      base_solution.push_back(RND.drandom(lbound,ubound));
     }
   }
 
   template<>
-  void Solver<std::complex<double> >::initialize_base_solution()
+  void Solver<std::complex<double> >::initialize_base_solution(double mean,double range)
   {
     unsigned int i;
     double alpha,beta;
+    const double lbound = mean - 0.5*range;
+    const double ubound = mean + 0.5*range;
 
     base_solution.clear();
 
     for(i=0; i<dimension; ++i) {
-      alpha = -1.0 + 2.0*RND.drandom();
-      beta = -1.0 + 2.0*RND.drandom();
+      alpha = RND.drandom(lbound,ubound);
+      beta = RND.drandom(lbound,ubound);
       base_solution.push_back(std::complex<double>(alpha,beta));
     }
   }
@@ -365,7 +370,7 @@ bool Solver<kind>::solve(std::vector<kind>& output)
     base_solution = output;
   }
   else {
-    initialize_base_solution();
+    initialize_base_solution(0.0,2.0);
     output = base_solution;
   }
 
