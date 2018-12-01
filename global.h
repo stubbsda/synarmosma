@@ -68,9 +68,16 @@ namespace SYNARMOSMA {
 #endif
 
   template<class kind>
+  /// A template class representing a monomial, i.e. an expression of the form \f$a \prod_{k=1}^m x_{j_k}^{n_k}\f$, with \f$j_k\f$ and \f$n_k\f$ non-negative integers.
   class Monomial {
    public:
+    /// The coefficient \f$a\f$, drawn from the base class of this 
+    /// template class.
     kind coefficient;
+    /// The variable term, \f$\prod_{k=1}^m x_{j_k}^{n_k}\f$, here stored 
+    /// as a vector of pairs of unsigned integers, the first storing the 
+    /// index of the variable, thus \f$j_k\f$, while the second element of 
+    /// the pair is the exponent, \f$n_k\f$.
     std::vector<std::pair<unsigned int,unsigned int> > exponents; 
   };
 
