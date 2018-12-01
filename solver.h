@@ -6,7 +6,7 @@
 
 namespace SYNARMOSMA {
   template<class kind>
-  /// A template class representing a Newton-Raphson solver of a system of nonlinear algebraic equations over a floating point base type.
+  /// An abstract template class representing a Newton-Raphson solver of a system of nonlinear algebraic equations over a floating point base type.
   class Solver {
    protected:
     enum class Linear_Solver
@@ -77,16 +77,21 @@ namespace SYNARMOSMA {
 
     /// This method carries out an iterative Newton-Raphson solution of the nonlinear system, returning the number of such iterations carried out. The method throws a runtime error if the convergence fails for any reason, which is normally caught by the solve() method. 
     int forward_step();
+    /// This method attempts to solve the linear system \f$Jx = b\f$ where \f$b\f$ is the argument to the method and \f$J\f$ is the Solver::J matrix. The argument contains the solution \f$x\f$ if the method returns true, meaning the system was successfully solved using an LAPACK function. 
     bool direct_solver(std::vector<kind>&) const;
     /// This method computes the Jacobian matrix for a particular set of values of the independent variables, which is the method's unique argument.
     void compute_jacobian(const std::vector<kind>&);
     /// This method calculates the content of the Solver::dependencies vector and returns the density of Solver::J, i.e. the sum of the cardinalities divided by the square of Solver::dimension.
     double compute_dependencies();
+    /// This method is a generic entry point for the solution of \f$Jx = b\f$, with \f$J\f$ the Solver::J matrix, using either the direct_solver() method or the Gauss-Seidel method of the Matrix class. The first argument is the initial guess for the solution of this linear system, the second argument is the source term vector \f$b\f$ and the final argument is the computed solution, if the method returns true. 
     bool linear_solver(const std::vector<kind>&,const std::vector<kind>&,std::vector<kind>&) const;
+    /// This method is only of importance if Solver::homotopy is true, in which case it is the coefficient function for the first (i.e. \f$F(x)\f$) term of the homotopy. It must be continuous on \f$0\le t\le 1\f$ and satisfy the two conditions \f$a_1(0)=0\f$ and \f$a_1(1)=1\f$.  
     kind a1(double) const;
+    /// This method is only of importance if Solver::homotopy is true, in which case it is the coefficient function for the second (i.e. \f$x-b\f$) term of the homotopy. It must be continuous on \f$0\le t\le 1\f$ and satisfy the two conditions \f$a_2(0)=1\f$ and \f$a_2(1)=0\f$.  
     kind a2(double) const;
     /// This method is used when Solver::homotopy is true to initialize the contents of Solver::base_solution, the solution of the system when \f$t=0\f$. The contents of the vector are uniform random variates on the interval \f$[\rho-L,\rho+L]\f$ where \f$\rho\f$ is the first argument and \f$2L\f$ is the second argument. 
     void initialize_base_solution(double,double);
+    /// This is a pure virtual function which defines the system of equations \f$F(x) = 0\f$ that must be solved - the first argument contains the input \f$x\f$ while the second argument is the output.
     virtual void F(const std::vector<kind>&,std::vector<kind>&) const = 0;
    public:
     /// This constructor accepts as its unique argument the value of Solver::dimension, with all other properties retaining their default value.
@@ -95,10 +100,15 @@ namespace SYNARMOSMA {
     Solver(unsigned int,double,unsigned int,bool,bool);
     /// The destructor frees the memory associated with Solver::J if Solver::dimension is greater than zero.
     ~Solver();
+    /// This method is the main entry point for solving the system of equations; the unique argument is the initial guess (which only makes sense if Solver::homotopy is false) which upon exit will contain the solution, if the return value is true.
     bool solve(std::vector<kind>&);
+    /// This is a public method that sets the Solver::method property to Linear_Solver::iterative.
     inline void use_iterative() {method = Linear_Solver::iterative;};
+    /// This is a public method that sets the Solver::method property to Linear_Solver::direct.
     inline void use_direct() {method = Linear_Solver::direct;};
+    /// This is a public method that sets the Solver::homotopy property to true.
     inline void use_homotopy() {homotopy = true;};
+    /// This is a public method that sets the Solver::broyden property to true.
     inline void use_broyden() {broyden = true;};
   };
 }
