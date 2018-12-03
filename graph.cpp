@@ -1017,17 +1017,13 @@ void Graph::defoliate(const Pseudograph* parent,std::vector<Monomial<int> >& tut
   int e = RND.irandom(cd);
   int u = cvector[2*e];
   int v = cvector[2*e+1];
-  Pseudograph* c1 = new Pseudograph(parent->nvertex);
-  for(int i=0; i<parent->nvertex; ++i) {
-    c1->neighbours[i] = parent->neighbours[i];
-  }
+
+  Pseudograph* c1 = new Pseudograph(*parent);
   parent->remove(u,v,c1);
   defoliate(c1,tutte);
   delete c1;
-  Pseudograph* c2 = new Pseudograph(parent->nvertex);
-  for(int i=0; i<parent->nvertex; ++i) {
-    c2->neighbours[i] = parent->neighbours[i];
-  }
+
+  Pseudograph* c2 = new Pseudograph(*parent);
   parent->contract(u,v,c2);
   defoliate(c2,tutte);
   delete c2;
@@ -1035,8 +1031,8 @@ void Graph::defoliate(const Pseudograph* parent,std::vector<Monomial<int> >& tut
 
 void Graph::tutte_polynomial(std::vector<Monomial<int> >& output) const
 {
-  int i,j,k,cf,nt;
-  unsigned int p,q,p1,p2,base;
+  int i,j,cf,nt;
+  unsigned int k,p,q,p1,p2,base;
   Monomial<int> term;
   std::set<int>::const_iterator it;
   std::vector<Monomial<int> > tutte;
@@ -1061,7 +1057,7 @@ void Graph::tutte_polynomial(std::vector<Monomial<int> >& output) const
     if (occupied[i]) continue;
     term = tutte[i];
     cf = term.coefficient;
-    k = (signed) tutte[i].exponents.size();
+    k = tutte[i].exponents.size();
     if (k == 1) {
       base = tutte[i].exponents[0].first;
       if (base == 0) {
@@ -1076,7 +1072,7 @@ void Graph::tutte_polynomial(std::vector<Monomial<int> >& output) const
       p2 = tutte[i].exponents[1].second;
     }  
     for(j=1+i; j<nt; ++j) {
-      k = (signed) tutte[j].exponents.size();
+      k = tutte[j].exponents.size();
       if (k == 1) {
         base = tutte[j].exponents[0].first;
         if (base == 0) {

@@ -4,7 +4,7 @@
 #define _grouph
 
 namespace SYNARMOSMA {
-  /// A class representing a combinatorial presentation of a group, using the library's Word class to store the relations. 
+  /// A class representing a combinatorial presentation of a group, using the Word class to store the relations. 
   class Group {
    protected:
     /// This property is the number of generators for this presentation of 

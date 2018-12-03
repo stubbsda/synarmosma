@@ -39,6 +39,8 @@ namespace SYNARMOSMA {
     int deserialize(std::ifstream&);
     /// This method uses the compute_bridges() method to compute all the bridges in the pseudograph - the output value of the method - and so assemble a list of candidate edges for contraction, i.e. those which are not bridges.
     int get_candidates(std::vector<int>&) const;
+    /// This method simply returns the value of Pseudograph::nvertex, the order of the pseudograph.
+    inline int order() const {return nvertex;};
     /// This method calculates and returns the number of self-loops in this pseudograph.
     inline int get_loops() const;
     /// This method adds the edge joining the vertices indicated by the two arguments after checking that they lie within the appropriate range.
@@ -47,7 +49,6 @@ namespace SYNARMOSMA {
     void contract(int,int,Pseudograph*) const;
     /// This method removes any edges between the two vertices that are the first arguments of the method, writing the new output pseudograph as the final argument.
     void remove(int,int,Pseudograph*) const;
-    friend class Graph;
   };
 
   int Pseudograph::get_loops() const

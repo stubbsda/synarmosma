@@ -11,7 +11,10 @@ Logic_Graph::Logic_Graph() : Graph()
 
 Logic_Graph::Logic_Graph(int n) : Graph(n,true)
 {
-  logic = new Propositional_System(nvertex);
+  // We will choose a number of atoms that is a multiple 
+  // of the number of vertices...
+  unsigned int na = 2 + int(0.6*double(nvertex));
+  logic = new Propositional_System(nvertex,na);
 }
 
 Logic_Graph::Logic_Graph(const Logic_Graph& source)
@@ -21,7 +24,8 @@ Logic_Graph::Logic_Graph(const Logic_Graph& source)
   edges = source.edges;
   logical_breadth = source.logical_breadth;
   if (nvertex > 0) {
-    logic = new Propositional_System(nvertex);
+    unsigned int na = 2 + int(0.6*double(nvertex));
+    logic = new Propositional_System(nvertex,na);
     logic = source.logic;
   }
 }
@@ -29,15 +33,18 @@ Logic_Graph::Logic_Graph(const Logic_Graph& source)
 Logic_Graph& Logic_Graph::operator =(const Logic_Graph& source)
 {
   if (this == &source) return *this;
-  if (nvertex > 0) delete logic;
+
+  clear();
   nvertex = source.nvertex;
   neighbours = source.neighbours;
   edges = source.edges;
   logical_breadth = source.logical_breadth;
   if (nvertex > 0) {
-    logic = new Propositional_System(nvertex);
+    unsigned int na = 2 + int(0.6*double(nvertex));
+    logic = new Propositional_System(nvertex,na);
     logic = source.logic;
   }
+
   return *this;
 }
 
@@ -53,7 +60,7 @@ void Logic_Graph::create()
 
 void Logic_Graph::clear()
 {
-  logic->clear();
+  if (nvertex > 0) delete logic;
   nvertex = 0;
   edges.clear();
   index_table.clear();
@@ -127,10 +134,10 @@ void Logic_Graph::compute_logical_breadth()
   for(i=0; i<nvertex; ++i) {
     // First count the number of atomic propositions in my own
     // proposition:
-    logic->theorems[i].get_atoms(atoms);
+    logic->get_atoms(i,atoms);
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
       in1 = *it;
-      logic->theorems[in1].get_atoms(current);
+      logic->get_atoms(in1,current);
       for(jt=current.begin(); jt!=current.end(); ++it) {
         atoms.insert(*it);
       }
@@ -184,9 +191,7 @@ double Logic_Graph::rationalize_topology()
 bool Logic_Graph::drop_vertex(int v)
 {
   if (Graph::drop_vertex(v)) {
-    logic->theorems.erase(logic->theorems.begin() + v);
-    logic->truth.erase(logic->truth.begin() + v);
-    return true;
+    if (logic->drop_theorem(v)) return true;
   }
   return false;
 }
@@ -194,36 +199,32 @@ bool Logic_Graph::drop_vertex(int v)
 bool Logic_Graph::fusion(int v,int u)
 {
   if (Graph::fusion(v,u)) {
-    logic->theorems.erase(logic->theorems.begin() + u);
-    logic->truth.erase(logic->truth.begin() + u);
-    return true;
+    if (logic->drop_theorem(u)) return true;
   }
   return false;
 }
 
 int Logic_Graph::fission_x(int v)
 {
-  unsigned int i,n = Graph::fission_x(v);
+  unsigned int i,n = Graph::fission_x(v),na = logic->get_number_atoms();
   std::set<int> atoms;
 
-  for(i=0; i<logic->natom; ++i) {
+  for(i=0; i<na; ++i) {
     atoms.insert(i);
   }
-  logic->theorems.push_back(Proposition(atoms));
-  logic->truth.push_back(boost::dynamic_bitset<>(logic->nuniverse));
+  logic->add_theorem(atoms);
   return n;
 }
 
 int Logic_Graph::fission_m(int v)
 {
-  unsigned int i,n = Graph::fission_m(v);
+  unsigned int i,n = Graph::fission_m(v),na = logic->get_number_atoms();
   std::set<int> atoms;
 
-  for(i=0; i<logic->natom; ++i) {
+  for(i=0; i<na; ++i) {
     atoms.insert(i);
   }
-  logic->theorems.push_back(Proposition(atoms));
-  logic->truth.push_back(boost::dynamic_bitset<>(logic->nuniverse));
+  logic->add_theorem(atoms);
   return n;
 }
 

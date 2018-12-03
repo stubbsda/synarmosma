@@ -4,68 +4,15 @@ using namespace SYNARMOSMA;
 
 Propositional_System::Propositional_System()
 {
-  initialize(100);
+
 }
 
-Propositional_System::Propositional_System(int n)
+Propositional_System::Propositional_System(unsigned int na,unsigned int nt)
 {
-  assert(n >= 0);
-  initialize(n);
-}
-
-Propositional_System::Propositional_System(int n,const std::string& filename)
-{
-  assert(n >= 0);
-  unsigned int i,eq_point;
-  std::string line,name,value;
-
-  // Open the parameter file
-  std::ifstream s;
-  s.exceptions(std::ifstream::badbit);
-  try {
-    s.open(filename,std::ios::in);
-
-    while(std::getline(s,line)) {
-      // If it's an empty line, continue
-      if (line.empty()) continue;
-      // If the line begins with a #, ignore it
-      if (line[0] == '#') continue;
-      // Find the position of the equals sign
-      eq_point = 0;
-      for(i=0; i<line.length(); ++i) {
-        if (line[i] == '=') {
-          eq_point = i;
-          break;
-        }
-      }
-      // If there's no equals sign in this line, continue
-      if (eq_point < 1) continue;
-      name = line.substr(0,eq_point-1);
-      trim(name);
-      value = line.substr(eq_point+1,line.length());
-      trim(value);
-      // Now that we have the parameter name, see if it matches
-      // any of the known parameters. If so, read in the value and
-      // assign it
-      if (name == "naxiom") {
-        natom = boost::lexical_cast<int>(value);
-      }
-    }
-  }
-  catch (const std::ifstream::failure& e) {
-    std::cout << "Error in opening or reading the " << filename << " file!" << std::endl;
-  }
-  s.close();
-
-  initialize(n);
-}
-
-Propositional_System::Propositional_System(int n,int m)
-{
-  // n = number of axioms und m = number of atoms
-  assert(n >= 0 && m >= 0);
-  natom = m;
-  initialize(n);
+  // nt = number of theorems und na = number of atoms
+  if (na == 0 || nt == 0) throw std::invalid_argument("The number of atomic propositions and the number of theorems must be greater than zero!");
+  natom = na;
+  initialize(nt);
 }
 
 Propositional_System::Propositional_System(const Propositional_System& source)
@@ -95,15 +42,15 @@ Propositional_System::~Propositional_System()
 
 void Propositional_System::clear()
 {
-  theorems.clear();
   natom = 0;
   nuniverse = 0;
   truth.clear();
+  theorems.clear();
 }
 
-void Propositional_System::initialize(int n)
+void Propositional_System::initialize(unsigned int n)
 {
-  int i;
+  unsigned int i;
   std::set<int> atoms;
 
   for(i=0; i<n; ++i) {
@@ -113,7 +60,7 @@ void Propositional_System::initialize(int n)
     theorems.push_back(Proposition(atoms));
   }
   nuniverse = ipow(2,natom);
-  for(i=0; i<(signed) theorems.size(); ++i) {
+  for(i=0; i<theorems.size(); ++i) {
     truth.push_back(boost::dynamic_bitset<>(nuniverse));
   }
   compute_internal_logic();
@@ -156,9 +103,9 @@ int Propositional_System::deserialize(std::ifstream& s)
   return count;
 }
 
-int Propositional_System::consistency(int i,int j,std::string& type) const
+unsigned int Propositional_System::consistency(unsigned int i,unsigned int j,std::string& type) const
 {
-  assert(i >= 0 && j >= 0);
+  if (i >= theorems.size() || j >= theorems.size()) throw std::invalid_argument("Illegal theorem index in Propositional_System class!");
   boost::dynamic_bitset<> temp(nuniverse);
 
   boost::to_upper(type);
@@ -177,9 +124,9 @@ int Propositional_System::consistency(int i,int j,std::string& type) const
   return temp.count();
 }
 
-bool Propositional_System::implication(int n,const std::vector<unsigned int>& axioms) const
+bool Propositional_System::implication(unsigned int n,const std::vector<unsigned int>& axioms) const
 {
-  assert(n >= 0);
+  if (n >= theorems.size()) throw std::invalid_argument("Illegal theorem index in Propositional_System class!");
   unsigned int i;
   boost::dynamic_bitset<> temp(nuniverse);
 
@@ -250,5 +197,19 @@ void Propositional_System::compute_implication_graph(Directed_Graph* G) const
   }
 }
 
+unsigned int Propositional_System::add_theorem(const std::set<int>& atoms)
+{
+  // This method assumes that the new theorem doesn't use any new atomic propositions...
+  unsigned int n = theorems.size();
+  theorems.push_back(Proposition(atoms));
+  truth.push_back(boost::dynamic_bitset<>(nuniverse));
+  return n;
+}
 
-
+bool Propositional_System::drop_theorem(unsigned int n)
+{
+  if (n >= theorems.size()) return false;
+  theorems.erase(theorems.begin() + n);
+  truth.erase(truth.begin() + n);
+  return true;
+}
