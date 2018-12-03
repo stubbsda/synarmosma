@@ -1,5 +1,4 @@
 #include "proposition.h"
-#include "binary_matrix.h"
 #include "directed_graph.h"
 
 #ifndef _psystemh
@@ -25,17 +24,24 @@ namespace SYNARMOSMA {
     /// an instance of the Proposition class.
     std::vector<Proposition> theorems;
 
+    /// This method computes the property Propositional_System::truth, first calculating the value of Propositional_System::nuniverse.
     void compute_internal_logic();
+    /// This method has as its unique argument the number of theorems to be created, which are built randomly by the Proposition class, and then calls compute_internal_logic().
     void initialize(unsigned int);
    public:
     /// The default constructor which does nothing.
     Propositional_System();
+    /// This is the standard constructor for this class, with two arguments equal to the number of atomic propositions and the number of theorems, and which calls initialize() after setting these values.
     Propositional_System(unsigned int,unsigned int);
+    /// The standard copy constructor that simply copies over the instance's four properties to the target instance.
     Propositional_System(const Propositional_System&);
+    /// Overloaded assignement operator that copies over the instance's four properties to the target instance.
     Propositional_System& operator =(const Propositional_System&);
+    /// The destructor which in the case of this class has nothing to do.
     ~Propositional_System();
     /// This method clears the Propositional_System::theorems and Propositional_System::truth properties and sets the other properties to zero.
     void clear();
+    /// This method takes two elements of Propositional_System::theorems along with a Boolean operator among "AND", "OR" and "XOR", and computes the number of logical universes in which these two propositions are true according to the Boolean operator. 
     unsigned int consistency(unsigned int,unsigned int,std::string&) const;
     bool implication(unsigned int,const std::vector<unsigned int>&) const;
     void compute_implication_graph(Directed_Graph*) const;
@@ -43,9 +49,13 @@ namespace SYNARMOSMA {
     int serialize(std::ofstream&) const;
     /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
     int deserialize(std::ifstream&);
+    /// This method appends a new element to the vector Propositional_System::theorems, then checks to see if any new atomic propositions have to be added (in which case it calls compute_internal_logic()) and then returns the index of this new theorem.
     unsigned int add_theorem(const std::set<int>&);
+    /// This method removes the proposition from the Propositional_System::theorems and Propositional_System::truth properties, corresponding to the proposition whose index is the method's unique argument.
     bool drop_theorem(unsigned int);
+    /// This method returns the value of the property Propositional_System::natom.
     inline unsigned int get_number_atoms() const {return natom;};
+    /// This method returns the number of logical universes in which a particular element of Propositional_System::theorems (specified by the method's unique argument) is true.
     inline unsigned int bit_count(unsigned int) const;
     /// This method sets the second argument to the set of atomic propositions for the proposition whose index is the first argument. 
     inline void get_atoms(unsigned int i,std::set<int>& atoms) const;

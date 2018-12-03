@@ -53,15 +53,11 @@ void Propositional_System::initialize(unsigned int n)
   unsigned int i;
   std::set<int> atoms;
 
-  for(i=0; i<n; ++i) {
+  for(i=0; i<natom; ++i) {
     atoms.insert(i);
   }
   for(i=0; i<n; ++i) {
     theorems.push_back(Proposition(atoms));
-  }
-  nuniverse = ipow(2,natom);
-  for(i=0; i<theorems.size(); ++i) {
-    truth.push_back(boost::dynamic_bitset<>(nuniverse));
   }
   compute_internal_logic();
 }
@@ -126,12 +122,13 @@ unsigned int Propositional_System::consistency(unsigned int i,unsigned int j,std
 
 bool Propositional_System::implication(unsigned int n,const std::vector<unsigned int>& axioms) const
 {
-  if (n >= theorems.size()) throw std::invalid_argument("Illegal theorem index in Propositional_System class!");
+  if (n >= theorems.size()) throw std::invalid_argument("Illegal theorem index in Propositional_System::implication!");
   unsigned int i;
   boost::dynamic_bitset<> temp(nuniverse);
 
   temp = truth[n];
   for(i=0; i<axioms.size(); ++i) {
+    if (axioms[i] >= theorems.size()) throw std::invalid_argument("Illegal axiom index in Propositional_System::implication!");
     temp |= ~truth[axioms[i]];
   }
   if (temp.count() == nuniverse) return true;
@@ -148,6 +145,12 @@ void Propositional_System::compute_internal_logic()
   std::unordered_map<int,bool> atom_values;
   Binary_Matrix logical_universe(nuniverse,natom);
   const unsigned int n = theorems.size();
+
+  truth.clear();
+  nuniverse = ipow(2,natom);
+  for(i=0; i<theorems.size(); ++i) {
+    truth.push_back(boost::dynamic_bitset<>(nuniverse));
+  }
 
   // Loop through all vertices, if the topology has been modified, then
   // compute its truth value (do the set of propositions of its neighbours,
@@ -199,10 +202,17 @@ void Propositional_System::compute_implication_graph(Directed_Graph* G) const
 
 unsigned int Propositional_System::add_theorem(const std::set<int>& atoms)
 {
-  // This method assumes that the new theorem doesn't use any new atomic propositions...
   unsigned int n = theorems.size();
   theorems.push_back(Proposition(atoms));
-  truth.push_back(boost::dynamic_bitset<>(nuniverse));
+  // Check to see if this proposition uses any new atomic propositions...
+  int max_atom = *atoms.rbegin();
+  if (max_atom >= natom) {
+    natom = max_atom + 1;
+    compute_internal_logic();
+  }
+  else {
+    truth.push_back(boost::dynamic_bitset<>(nuniverse));
+  }
   return n;
 }
 
