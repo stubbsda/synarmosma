@@ -735,12 +735,7 @@ bool Nexus::orientable() const
 
   for(i=0; i<nf; ++i) {
     elements[dimension-1][i].get_vertices(S);
-    //for(j=0; j<dimension-1; ++j) {
-    //  s << vx[j] << ":";
-    //}
-    //s << vx[dimension-1];
     face_index[S] = i;
-    //s.str("");
   }
   
   for(i=0; i<ns; ++i) {
