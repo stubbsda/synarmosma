@@ -205,7 +205,7 @@ unsigned int Propositional_System::add_theorem(const std::set<int>& atoms)
   unsigned int n = theorems.size();
   theorems.push_back(Proposition(atoms));
   // Check to see if this proposition uses any new atomic propositions...
-  int max_atom = *atoms.rbegin();
+  unsigned int max_atom = (unsigned) *atoms.rbegin();
   if (max_atom >= natom) {
     natom = max_atom + 1;
     compute_internal_logic();
