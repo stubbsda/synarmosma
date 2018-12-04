@@ -157,9 +157,9 @@ void Homotopy::compute(const Nexus* NX)
     }
   }
   ngen = (signed) generator.size()/2;
-  Word w(ngen);
+  Word w;
   for(i=0; i<nr; ++i) {
-    w.content.clear();
+    w.clear();
     NX->elements[2][s2[i]].get_vertices(vx);
 
     nf = 0;
