@@ -34,7 +34,9 @@ namespace SYNARMOSMA {
     /// The destructor for this class, which does nothing.
     ~Word();
     /// This method calls clear on the vector "content" and so empties the word of its contents.
-    inline void clear() {content.clear();}; 
+    inline void clear() {content.clear();};
+    /// This method appends a new "letter" to the end of the word. 
+    inline void append(const std::pair<unsigned int,int>& term) {content.push_back(term);};
     /// This method computes the set of letters used in this word and returns the cardinality of this set.
     unsigned int get_alphabet(std::set<unsigned int>&) const;
     /// This operator has the same effect as calling the invert method on this instance of the Word class.
@@ -80,7 +82,6 @@ namespace SYNARMOSMA {
     /// This function accepts two words as argument and computes the intersection of their respective alphabet, returning the cardinality of this intersection.
     friend int affinity(const Word&,const Word&,std::set<unsigned int>&);
     friend class Group;
-    friend class Homotopy;
   };
 }
 #endif

@@ -186,7 +186,7 @@ Group::Group(std::string& type,unsigned int n)
     cardinality = 2*n;
     ngenerator = 2;
     Word w1(0,2),w2(1,2),w3(0,n),w4(1,n);
-    Word w5 = w3 * w4;
+    Word w5 = w3*w4;
     relations.push_back(w1);
     relations.push_back(w2);
     relations.push_back(w5);
@@ -433,25 +433,25 @@ bool Group::equivalent(const Word& w1,const Word& w2) const
     m = handle.size();
     nword.clear();
     for(i=0; i<spoint; ++i) {
-      nword.content.push_back(cword.content[i]);
+      nword.append(cword.content[i]);
     }
     for(i=0; i<m; ++i) {
       b1 = cword.content[handle[i]].first;
       if (b1 == (1+base)) {
         dtype = (cword.content[handle[i]].second < 0) ? -1 : 1;
-        nword.content.push_back(std::pair<unsigned int,int>(1+base,-stype));
-        nword.content.push_back(std::pair<unsigned int,int>(base,dtype));
-        nword.content.push_back(std::pair<unsigned int,int>(1+base,stype));
+        nword.append(std::pair<unsigned int,int>(1+base,-stype));
+        nword.append(std::pair<unsigned int,int>(base,dtype));
+        nword.append(std::pair<unsigned int,int>(1+base,stype));
       }
       else if (b1 == base) {
         continue;
       }
       else {
-        nword.content.push_back(cword.content[handle[i]]);
+        nword.append(cword.content[handle[i]]);
       }
     }
     for(i=spoint+m+2; i<n; ++i) {
-      nword.content.push_back(cword.content[i]);
+      nword.append(cword.content[i]);
     }
     cword = nword.reduce();
     if (cword.homogeneous()) break;
@@ -672,13 +672,13 @@ void Group::initialize(unsigned int r,const std::vector<unsigned int>& torsion)
   finite = (rank > 0) ? false : true;
   ngenerator = rank + torsion.size();
   Word w;
-  w.content.clear();
+  
   for(i=0; i<rank; ++i) {
     for(j=i+1; j<rank; ++j) {
-      w.content.push_back(std::pair<int,int>(i,1));
-      w.content.push_back(std::pair<int,int>(j,1));
-      w.content.push_back(std::pair<int,int>(i,-1));
-      w.content.push_back(std::pair<int,int>(j,-1));
+      w.append(std::pair<unsigned int,int>(i,1));
+      w.append(std::pair<unsigned int,int>(j,1));
+      w.append(std::pair<unsigned int,int>(i,-1));
+      w.append(std::pair<unsigned int,int>(j,-1));
       relations.push_back(w);
       w.content.clear();
     }
@@ -688,7 +688,7 @@ void Group::initialize(unsigned int r,const std::vector<unsigned int>& torsion)
 #ifdef DEBUG
     assert(torsion[i] > 1);
 #endif
-    w.content.push_back(std::pair<int,int>(rank+i,torsion[i]));
+    w.append(std::pair<unsigned int,int>(rank+i,torsion[i]));
     relations.push_back(w);
     w.clear();
     if (rank == 0) cardinality += torsion[i];
@@ -756,10 +756,10 @@ Group Group::abelianize() const
       w1.clear();
 
       // w1 = $aba^{-1}b^{-1}$
-      w1.content.push_back(std::pair<unsigned int,int>(i,1));
-      w1.content.push_back(std::pair<unsigned int,int>(j,1));
-      w1.content.push_back(std::pair<unsigned int,int>(i,-1));
-      w1.content.push_back(std::pair<unsigned int,int>(j,-1));
+      w1.append(std::pair<unsigned int,int>(i,1));
+      w1.append(std::pair<unsigned int,int>(j,1));
+      w1.append(std::pair<unsigned int,int>(i,-1));
+      w1.append(std::pair<unsigned int,int>(j,-1));
 
       // w2 = $bab^{-1}a^{-1}$
       w2 = !w1;

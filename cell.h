@@ -28,6 +28,7 @@ namespace SYNARMOSMA {
     void inline get_vertices(int*) const;
     void inline get_vertices(std::vector<int>&) const;
     void inline get_vertices(std::set<int>& v) const {v = vertices;};
+    void inline get_entourage(std::set<int>& v) const {v = entourage;};
     void get_faces(std::vector<Cell>&) const;
     virtual int serialize(std::ofstream&) const;
     virtual int deserialize(std::ifstream&);
@@ -39,7 +40,6 @@ namespace SYNARMOSMA {
     friend inline bool operator <=(const Cell&,const Cell&);
     friend inline bool operator <(const Cell&,const Cell&);
     friend class Nexus;
-    friend class Homology;
   };
 
   inline void Cell::get_vertices(std::vector<int>& v) const
