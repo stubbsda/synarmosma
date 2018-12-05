@@ -8,17 +8,16 @@ namespace SYNARMOSMA {
   /// A class representing a finite collection of instances of the Proposition class, using a shared set of atomic propositions.
   class Propositional_System {
    protected:
-    /// The number of atomic propositions in the entire set of 
-    /// propositions and which are presumed to be indexed from 
-    /// 0 to Propositional_System::natom-1.
-    unsigned int natom = 0;
     /// The number of distinct possible truth value assignments 
     /// to these Propositional_System::natom atomic propositions, 
-    /// \f$2^N\f$, where \f$N\f$ is Propositional_System::natom.
+    /// \f$2^N\f$, where \f$N\f$ is the cardinality of Propositional_System::atoms.
     unsigned int nuniverse = 0;
+    /// The set of atomic propositions which are used in at least 
+    /// one of the propositions.
+    std::set<int> atoms;
     /// A vector containing all of the possible truth value 
     /// assignments for the atomic propositions, stored in each 
-    /// case a bitset of length Propositional_System::natom.
+    /// case a bitset whose length is the cardinality of Propositional_System::atoms.
     std::vector<boost::dynamic_bitset<> > truth;
     /// The vector of propositions, each one of them 
     /// an instance of the Proposition class.
@@ -32,7 +31,7 @@ namespace SYNARMOSMA {
     /// The default constructor which does nothing.
     Propositional_System();
     /// This is the standard constructor for this class, with two arguments equal to the number of atomic propositions and the number of theorems, and which calls initialize() after setting these values.
-    Propositional_System(unsigned int,unsigned int);
+    Propositional_System(const std::set<int>&,unsigned int);
     /// The standard copy constructor that simply copies over the instance's four properties to the target instance.
     Propositional_System(const Propositional_System&);
     /// Overloaded assignement operator that copies over the instance's four properties to the target instance.
@@ -55,8 +54,8 @@ namespace SYNARMOSMA {
     unsigned int add_theorem(const std::set<int>&);
     /// This method removes the proposition from the Propositional_System::theorems and Propositional_System::truth properties, corresponding to the proposition whose index is the method's unique argument.
     bool drop_theorem(unsigned int);
-    /// This method returns the value of the property Propositional_System::natom.
-    inline unsigned int get_number_atoms() const {return natom;};
+    /// This method returns the cardinality of the set Propositional_System::atoms.
+    inline unsigned int get_number_atoms() const {return atoms.size();};
     /// This method returns the number of logical universes in which a particular element of Propositional_System::theorems (specified by the method's unique argument) is true.
     inline unsigned int bit_count(unsigned int) const;
     /// This method sets the second argument to the set of atomic propositions for the proposition whose index is the first argument. 

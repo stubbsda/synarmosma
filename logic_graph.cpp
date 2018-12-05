@@ -9,12 +9,19 @@ Logic_Graph::Logic_Graph() : Graph()
 
 }
 
-Logic_Graph::Logic_Graph(int n) : Graph(n,true)
+Logic_Graph::Logic_Graph(int n,double propositional_density) : Graph(n,true)
 {
   // We will choose a number of atoms that is a multiple 
   // of the number of vertices...
-  unsigned int na = 2 + int(0.6*double(nvertex));
-  logic = new Propositional_System(nvertex,na);
+  assert(propositional_density > std::numeric_limits<double>::epsilon());
+
+  std::set<int> atoms;
+  // Make sure the set isn't empty...
+  atoms.insert(0);
+  for(int i=1; i<nvertex; ++i) {
+    if (RND.drandom() < propositional_density) atoms.insert(i);
+  }
+  logic = new Propositional_System(atoms,nvertex);
 }
 
 Logic_Graph::Logic_Graph(const Logic_Graph& source)
@@ -24,8 +31,7 @@ Logic_Graph::Logic_Graph(const Logic_Graph& source)
   edges = source.edges;
   logical_breadth = source.logical_breadth;
   if (nvertex > 0) {
-    unsigned int na = 2 + int(0.6*double(nvertex));
-    logic = new Propositional_System(nvertex,na);
+    logic = new Propositional_System;
     logic = source.logic;
   }
 }
@@ -35,13 +41,13 @@ Logic_Graph& Logic_Graph::operator =(const Logic_Graph& source)
   if (this == &source) return *this;
 
   clear();
+
   nvertex = source.nvertex;
   neighbours = source.neighbours;
   edges = source.edges;
   logical_breadth = source.logical_breadth;
   if (nvertex > 0) {
-    unsigned int na = 2 + int(0.6*double(nvertex));
-    logic = new Propositional_System(nvertex,na);
+    logic = new Propositional_System;
     logic = source.logic;
   }
 

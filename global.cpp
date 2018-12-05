@@ -151,7 +151,7 @@ namespace SYNARMOSMA {
     z[2] = x[0]*y[1] - x[1]*y[0];
   }
 
-  void get_neighbours(int nfacets,const std::vector<int>* facets,int in1,std::vector<int>& N) 
+  void assemble_neighbours(int nfacets,const std::vector<int>* facets,int in1,std::vector<int>& N) 
   {
     std::vector<int> base = facets[in1];
     int i,j,k,nfound,D = (signed) base.size();

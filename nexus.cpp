@@ -742,7 +742,7 @@ bool Nexus::orientable() const
     orient[i] = 0;
   }
   orient[0] = 1;
-  get_neighbours(ns,facets,0,proc);
+  assemble_neighbours(ns,facets,0,proc);
   do {
     in1 = proc[0];
     current = facets[in1];
@@ -781,7 +781,7 @@ bool Nexus::orientable() const
       }
       if (!failed) {
         orient[in1] = o;
-        get_neighbours(ns,facets,in1,nproc);
+        assemble_neighbours(ns,facets,in1,nproc);
         for(vit=nproc.begin(); vit!=nproc.end(); ++vit) {
           proc.push_back(*vit);
         }
