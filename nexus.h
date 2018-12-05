@@ -36,8 +36,10 @@ namespace SYNARMOSMA {
     void compute_neighbours();
     inline int get_dimension() const {return dimension;};
     inline unsigned int get_length(int n) const {return elements[n].size();};
+    inline int get_index(int D,std::set<int>& S) const {hash_map::const_iterator qt = index_table[D].find(S); return qt->second;};
     inline void get_elements(int D,int n,int* vx) const {elements[D][n].get_vertices(vx);};
-    friend class Homology;
+    inline void get_elements(int D,int n,std::set<int>& vx) const {elements[D][n].get_vertices(vx);};
+    inline void get_entourage(int D,int n,std::set<int>& vx) const {elements[D][n].get_entourage(vx);};
   };
 }
 #endif

@@ -31,6 +31,7 @@ namespace SYNARMOSMA {
     virtual bool consistent() const;
     void components(std::vector<int>&,std::vector<int>&) const;
     inline int get_order() const {return nvertex;};
+    inline void get_neighbours(int n,std::set<int>& vx) const {vx = neighbours[n];};
   };
 
   int Schema::add_vertex()

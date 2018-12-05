@@ -21,7 +21,7 @@ namespace SYNARMOSMA {
     bool drop_vertex(int) override;
    public:
     Logic_Graph();
-    Logic_Graph(int);
+    Logic_Graph(int,double);
     Logic_Graph(const Logic_Graph&);
     Logic_Graph& operator =(const Logic_Graph&);
     ~Logic_Graph() override;
