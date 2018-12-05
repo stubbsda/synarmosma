@@ -35,8 +35,9 @@ namespace SYNARMOSMA {
     void compute_entourages();
     void compute_neighbours();
     inline int get_dimension() const {return dimension;};
+    inline unsigned int get_length(int n) const {return elements[n].size();};
+    inline void get_elements(int D,int n,int* vx) const {elements[D][n].get_vertices(vx);};
     friend class Homology;
-    friend class Homotopy;
   };
 }
 #endif

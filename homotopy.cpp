@@ -117,12 +117,14 @@ Homotopy& Homotopy::operator =(const Homotopy& source)
 
 void Homotopy::compute(const Nexus* NX)
 {
-  int i,j,q,r,ngen,n1,n2,n3,e1,e2,nf,vx[3],ntree;
+  int q,r,e1,e2,n1,n2,n3,vx[3];
+  unsigned int i,j,nf,ngen,ntree;
   bool found;
-  std::vector<int> tree_edges,generator,s1,s2;
+  std::vector<int> generator,tree_edges;
+  std::vector<unsigned int> s1,s2;
   std::vector<Word> relations;
-  const int ne = (signed) NX->elements[1].size();
-  const int nr = (NX->dimension > 1) ? (signed) NX->elements[2].size() : 0;
+  const unsigned int ne = NX->get_length(1);
+  const unsigned int nr = (NX->get_dimension() > 1) ? NX->get_length(2) : 0;
 
   sequence.clear();
   // Sanity check...
@@ -140,7 +142,7 @@ void Homotopy::compute(const Nexus* NX)
   // In principle, this is a group with ngenerators = nedges - ntree/2 and nrelations = ntriangles but we
   // can ignore those 2-simplices all of whose edges are in the spanning tree
   for(i=0; i<ne; ++i) {
-    NX->elements[1][s1[i]].get_vertices(vx);
+    NX->get_elements(1,s1[i],vx); 
 
     found = false;
     for(j=0; j<ntree; j+=2) {
@@ -156,11 +158,11 @@ void Homotopy::compute(const Nexus* NX)
       generator.push_back(vx[1]);
     }
   }
-  ngen = (signed) generator.size()/2;
+  ngen = generator.size()/2;
   Word w;
   for(i=0; i<nr; ++i) {
     w.clear();
-    NX->elements[2][s2[i]].get_vertices(vx);
+    NX->get_elements(2,s2[i],vx); 
 
     nf = 0;
 
@@ -206,49 +208,49 @@ void Homotopy::compute(const Nexus* NX)
     if (nf == 0) continue;
 
     if (nf == 1) {
-      if (n1 >= 0) w.content.push_back(std::pair<int,int>(n1,1));
-      if (n2 >= 0) w.content.push_back(std::pair<int,int>(n2,1));
-      if (n3 >= 0) w.content.push_back(std::pair<int,int>(n3,1));
+      if (n1 >= 0) w.append(std::pair<unsigned int,int>(n1,1));
+      if (n2 >= 0) w.append(std::pair<unsigned int,int>(n2,1));
+      if (n3 >= 0) w.append(std::pair<unsigned int,int>(n3,1));
       relations.push_back(w);
       continue;
     }
     // At least two of the edges of this triangle are generators, we need to
     // order them correctly...
     if (n1 >= 0) {
-      w.content.push_back(std::pair<int,int>(n1,1));
+      w.append(std::pair<unsigned int,int>(n1,1));
       q = generator[2*n1+1];
 
       if (n2 >= 0) {
         r = generator[2*n2];
         if (r == q) {
-          w.content.push_back(std::pair<int,int>(n2,1));
-          if (n3 >= 0) w.content.push_back(std::pair<int,int>(n3,1));
+          w.append(std::pair<unsigned int,int>(n2,1));
+          if (n3 >= 0) w.append(std::pair<unsigned int,int>(n3,1));
         }
         else {
-          if (n3 >= 0) w.content.push_back(std::pair<int,int>(n3,1));
-          w.content.push_back(std::pair<int,int>(n2,-1));
+          if (n3 >= 0) w.append(std::pair<unsigned int,int>(n3,1));
+          w.append(std::pair<unsigned int,int>(n2,-1));
         }
         relations.push_back(w);
         continue;
       }
       r = generator[2*n3];
       if (r == q) {
-        w.content.push_back(std::pair<int,int>(n3,1));
+        w.append(std::pair<unsigned int,int>(n3,1));
       }
       else {
-        w.content.push_back(std::pair<int,int>(n3,-1));
+        w.append(std::pair<unsigned int,int>(n3,-1));
       }
     }
     else {
       // So the two non-trivial generators are n2 and n3
-      w.content.push_back(std::pair<int,int>(n2,1));
+      w.append(std::pair<unsigned int,int>(n2,1));
       q = generator[2*n2+1];
       r = generator[2*n3];
       if (q == r) {
-        w.content.push_back(std::pair<int,int>(n3,1));
+        w.append(std::pair<unsigned int,int>(n3,1));
       }
       else {
-        w.content.push_back(std::pair<int,int>(n3,-1));
+        w.append(std::pair<unsigned int,int>(n3,-1));
       }
     }
     relations.push_back(w);

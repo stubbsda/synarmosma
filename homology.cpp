@@ -141,11 +141,11 @@ void Homology::compute_integral_native(const Nexus* NX)
   const int dimension = NX->dimension;
   const int nvertex = NX->nvertex;
   int i,j,d,p,v2[2];
-  unsigned int k,r,ulimit,d1 = nvertex,d2 = NX->elements[1].size();
+  unsigned int k,r,ulimit,d1 = nvertex,d2 = NX->get_length(1);
   std::string cx;
   std::stringstream ss;
   std::vector<unsigned int> image,kernel,tgenerators;
-  std::set<int> vx,S;
+  std::set<int> vx,vy,faces,S;
   std::set<int>::const_iterator it;
   hash_map::const_iterator qt;
 
@@ -167,7 +167,7 @@ void Homology::compute_integral_native(const Nexus* NX)
         qt = NX->index_table[1].find(S);
         j = qt->second;
         S.clear();
-        NX->elements[1][j].get_vertices(v2);
+        NX->get_elements(1,j,v2);
         if (i == v2[0]) {
           A->set(i,j,-1); 
         }
@@ -199,14 +199,16 @@ void Homology::compute_integral_native(const Nexus* NX)
     tgenerators.clear();
 
     for(d=2; d<=dimension; ++d) {
-      d1 = NX->elements[d-1].size();
-      d2 = NX->elements[d].size();
+      d1 = NX->get_length(d-1);
+      d2 = NX->get_length(d);
       A->initialize(d1,d2);
       for(k=0; k<d1; ++k) {
-        vx = NX->elements[d-1][k].vertices;
-        for(it=NX->elements[d-1][k].entourage.begin(); it!=NX->elements[d-1][k].entourage.end(); ++it) {
+        NX->elements[d-1][k].get_vertices(vx);
+        NX->elements[d-1][k].get_entourage(faces);
+        for(it=faces.begin(); it!=faces.end(); ++it) {
           j = *it;
-          alpha = coincidence(vx,NX->elements[d][j].vertices);
+          NX->elements[d][j].get_vertices(vy);
+          alpha = coincidence(vx,vy);
           if (alpha != 0) A->set(k,j,alpha); 
         }
       }
@@ -245,7 +247,7 @@ void Homology::compute_integral_native(const Nexus* NX)
         S.insert(p);
         qt = NX->index_table[1].find(S);
         j = qt->second;
-        NX->elements[1][j].get_vertices(v2);
+        NX->get_elements(1,j,v2);
         S.clear();
         if (i == v2[0]) {
           A->set(i,j,Integer_Matrix<NTL::ZZ>::neg1); 
@@ -278,14 +280,16 @@ void Homology::compute_integral_native(const Nexus* NX)
     tgenerators.clear();    
 
     for(d=2; d<=dimension; ++d) {
-      d1 = NX->elements[d-1].size();
-      d2 = NX->elements[d].size();
+      d1 = NX->get_length(d-1);
+      d2 = NX->get_length(d);
       A->initialize(d1,d2);
       for(k=0; k<d1; ++k) {
-        vx = NX->elements[d-1][k].vertices;
-        for(it=NX->elements[d-1][k].entourage.begin(); it!=NX->elements[d-1][k].entourage.end(); ++it) {
+        NX->elements[d-1][k].get_vertices(vx);
+        NX->elements[d-1][k].get_entourage(faces);
+        for(it=faces.begin(); it!=faces.end(); ++it) {
           j = *it;
-          alpha = NTL::to_ZZ(coincidence(vx,NX->elements[d][j].vertices));
+          NX->elements[d][j].get_vertices(vy);
+          alpha = NTL::to_ZZ(coincidence(vx,vy));
           if (alpha != 0) A->set(k,j,alpha); 
         }
       }
@@ -343,7 +347,7 @@ void Homology::compute_native(const Nexus* NX)
     int i,j,p,alpha;
     unsigned int r,k,d1 = NX->nvertex,d2 = NX->elements[1].size();
     std::vector<unsigned int> image,kernel;
-    std::set<int> vx,S;
+    std::set<int> vx,vy,faces,S;
     std::set<int>::const_iterator it;
     hash_map::const_iterator qt;
     Binary_Matrix* A = new Binary_Matrix(d1,d2);
@@ -367,14 +371,16 @@ void Homology::compute_native(const Nexus* NX)
     kernel.push_back(d2 - r);
 
     for(d=2; d<=NX->dimension; ++d) {
-      d1 = NX->elements[d-1].size();
-      d2 = NX->elements[d].size();
+      d1 = NX->get_length(d-1);
+      d2 = NX->get_length(d); 
       A->initialize(d1,d2);
       for(k=0; k<d1; ++k) {
-        vx = NX->elements[d-1][k].vertices;
-        for(it=NX->elements[d-1][k].entourage.begin(); it!=NX->elements[d-1][k].entourage.end(); ++it) {
+        NX->elements[d-1][k].get_vertices(vx);
+        NX->elements[d-1][k].get_entourage(faces);
+        for(it=faces.begin(); it!=faces.end(); ++it) {
           j = *it;
-          alpha = coincidence(vx,NX->elements[d][j].vertices);
+          NX->elements[d][j].get_vertices(vy);
+          alpha = coincidence(vx,vy);
           if (alpha != 0) A->set(k,j);   
         }
       }
@@ -414,7 +420,7 @@ void Homology::compute_gap(const Nexus* NX)
     std::vector<unsigned int> null,image,kernel;
     std::vector<std::string> tokens;
     std::vector<unsigned char> rvector;
-    std::set<int> vx;
+    std::set<int> vx,vy,faces;
     
     kernel.push_back(0);
     image.push_back(0);
@@ -427,19 +433,21 @@ void Homology::compute_gap(const Nexus* NX)
     betti_number.push_back(betti);
     torsion.push_back(null);
 
-    for(d=1; d<=NX->dimension; ++d) {
+    for(d=1; d<=NX->get_dimension(); ++d) {
       std::ofstream s("input.gap");
       s << "A := [";
-      d1 = NX->elements[d-1].size();
-      d2 = NX->elements[d].size();
+      d1 = NX->get_length(d-1);
+      d2 = NX->get_length(d);
       for(i=0; i<d1; ++i) {        
         for(j=0; j<d2; ++j) {
           rvector.push_back(0);
         }
-        vx = NX->elements[d-1][i].vertices;
-        for(it=NX->elements[d-1][i].entourage.begin(); it!=NX->elements[d-1][i].entourage.end(); ++it) {
+        NX->elements[d-1][i].get_vertices(vx);
+        NX->elements[d-1][i].get_entourage(faces);
+        for(it=faces.begin(); it!=faces.end(); ++it) {
           j = *it;
-          alpha = coincidence(vx,NX->elements[d][j].vertices);
+          NX->elements[d][j].get_vertices(vy);
+          alpha = coincidence(vx,vy);
           if (alpha != 0) rvector[j] = 1;
         }
         s << "[";
@@ -506,6 +514,7 @@ void Homology::compute_gap(const Nexus* NX)
 
   int i,j,k;
   std::vector<unsigned int> tnumber;
+  std::set<int> vx,faces;
   bool first = true;
   int depth;
   std::string hdata;
@@ -514,11 +523,12 @@ void Homology::compute_gap(const Nexus* NX)
   std::ofstream s("input.gap");
   s << "LoadPackage(\"simpcomp\");;" << std::endl;
   s << "complex := SCFromFacets([";
-  for(i=1; i<=NX->dimension; ++i) {
-    n = (signed) NX->elements[i].size();
+  for(i=1; i<=NX->get_dimension(); ++i) {
+    n = (signed) NX->get_length(i);
     k = 0;
     for(j=0; j<n; ++j) {
-      if (!(NX->elements[i][j].entourage.empty())) continue;
+      NX->elements[i][j].get_entourage(faces);
+      if (!(faces.empty())) continue;
       if (first) {
         s << "[";
         first = false;
@@ -527,7 +537,8 @@ void Homology::compute_gap(const Nexus* NX)
         s << ",[";
       }
       k = 0;
-      for(it=NX->elements[i][j].vertices.begin(); it!=NX->elements[i][j].vertices.end(); ++it) {
+      NX->elements[i][j].get_vertices(vx);
+      for(it=vx.begin(); it!=vx.end(); ++it) {
         if (k < i) {
           s << *it << ",";
         }
