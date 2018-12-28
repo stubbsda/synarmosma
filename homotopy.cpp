@@ -9,19 +9,43 @@ Homotopy::Homotopy()
 
 }
 
+Homotopy::Homotopy(unsigned int n)
+{
+  if (n == 0) throw std::invalid_argument("The upper limit of the homotopy sequence must be greater than zero!");
+  ulimit = n;
+  // We set $\pi_0(X)$ to be the trivial group, thereby assuming $X$ to be connected...
+  sequence.push_back(Group(1));
+  if (ulimit == 1) return;
+  // The fundamental group is a random group on six generators with two relations...
+  sequence.push_back(Group(6,2));
+  if (ulimit == 2) return;
+  unsigned int i;
+  Group g(10);
+  for(i=0; i<ulimit-2; ++i) {
+    // The higher-order groups are assumed to be random Abelian groups on ten generators with four relations...
+    g.initialize(4);
+    g.abelianize();
+    sequence.push_back(g);
+  }
+  compute_fitness();
+}
+
 Homotopy::Homotopy(const Homotopy& source)
 {
   sequence = source.sequence;
   fitness = source.fitness;
+  ulimit = source.ulimit;
 }
 
-Homotopy::Homotopy(int n)
+Homotopy& Homotopy::operator =(const Homotopy& source)
 {
-  for(int i=0; i<n; ++i) {
-    Group g;
-    sequence.push_back(g);
-  }
-  compute_fitness();
+  if (this == &source) return *this;
+
+  sequence = source.sequence;
+  fitness = source.fitness;
+  ulimit = source.ulimit;
+
+  return *this;
 }
 
 Homotopy::~Homotopy()
@@ -32,87 +56,85 @@ Homotopy::~Homotopy()
 void Homotopy::clear()
 {
   fitness = 0.0;
+  ulimit = 0;
   sequence.clear();
 }
 
 void Homotopy::compute_fitness()
 {
-  unsigned int i;
-  double temp,sum = 0.0;
+  unsigned int i,ng,nr;
+  double sum = 0.0;
 
-  for(i=0; i<sequence.size(); ++i) {
-    temp = std::exp(-std::pow(double(sequence[i].get_number_generators())-3.0,2))+ std::pow(std::sin(double(sequence[i].get_number_relations())),2);
-    sum += temp;
+  for(i=0; i<ulimit; ++i) {
+    ng = sequence[i].get_number_generators();
+    nr = sequence[i].get_number_relations();
+    sum += std::exp(-std::pow(double(ng - 3),2)) + std::pow(std::sin(double(nr)),2);
   }
   fitness = sum;
 }
 
-void Homotopy::mutate()
+void Homotopy::mutate(double severity)
 {
-  unsigned int n = RND.irandom(1,sequence.size());
-  Group g;
+  if (severity < -std::numeric_limits<double>::epsilon()) throw std::invalid_argument("The mutation severity must be greater than zero!");
+  if ((severity - 1.0) > std::numeric_limits<double>::epsilon()) throw std::invalid_argument("The mutation severity must not be greater than one!");
+  // If the severity is zero, then do nothing...
+  if (severity < std::numeric_limits<double>::epsilon()) return;
+  unsigned int n = RND.irandom(1,ulimit);
+  unsigned int ng = sequence[n].get_number_generators();
+  unsigned int mg = 1 + int(RND.drandom(severity*severity,2.5*severity)*double(ng));
+  Group g(mg,mg/2);
 
   if (n > 1) g = g.abelianize(); 
   sequence[n] = g;
   compute_fitness();
 }
 
-std::string Homotopy::write() const 
+std::string Homotopy::write() const
 {
-  std::string output = "[";
-  if (sequence.empty()) {
+  std::string output("[");
+
+  if (ulimit == 0) {
     output += "]";
     return output;
   }
-  int i,n = (signed) sequence.size() - 1;
+  unsigned int i;
 
-  for(i=0; i<n; ++i) {
+  for(i=0; i<ulimit-1; ++i) {
     output += sequence[i].compact_form() + "],[";
   }
-  output += sequence[n].compact_form() + "]";
+  output += sequence[ulimit-1].compact_form() + "]";
   return output;
 }
 
 int Homotopy::serialize(std::ofstream& s) const
 {
-  unsigned int i,n = sequence.size();
+  unsigned int i;
   int count = 0;
 
-  s.write((char*)(&n),sizeof(int)); count += sizeof(int);
-  for(i=0; i<n; ++i) {
+  s.write((char*)(&ulimit),sizeof(int)); count += sizeof(int);
+  for(i=0; i<ulimit; ++i) {
     count += sequence[i].serialize(s);
   }
-  s.write((char*)(&fitness),sizeof(double)); count += sizeof(double);
 
   return count;
 }
 
 int Homotopy::deserialize(std::ifstream& s)
 {
-  unsigned int i,n;
+  unsigned int i;
   int count = 0;
   Group g;
 
   clear();
 
-  s.read((char*)(&n),sizeof(int)); count += sizeof(int);
-  for(i=0; i<n; ++i) {
+  s.read((char*)(&ulimit),sizeof(int)); count += sizeof(int);
+  for(i=0; i<ulimit; ++i) {
     count += g.deserialize(s);
     sequence.push_back(g);
   }
-  s.read((char*)(&fitness),sizeof(double)); count += sizeof(double);
+  compute_fitness();
 
   return count;
-}
-
-Homotopy& Homotopy::operator =(const Homotopy& source)
-{
-  if (this == &source) return *this;
-
-  sequence = source.sequence;
-  fitness = source.fitness;
-
-  return *this;
 }
 
 void Homotopy::compute(const Nexus* NX)
@@ -126,9 +148,14 @@ void Homotopy::compute(const Nexus* NX)
   const unsigned int ne = NX->get_length(1);
   const unsigned int nr = (NX->get_dimension() > 1) ? NX->get_length(2) : 0;
 
-  sequence.clear();
+  clear();
   // Sanity check...
   if (!NX->connected()) return;
+
+  // Since this simplicial complex is connected, its 0-th order homotopy group is 
+  // simply the trivial group...
+  sequence.push_back(Group(1));
+  ulimit += 1;
 
   // First we need to calculate a spanning tree for the 1-skeleton of this complex...
   ntree = NX->spanning_tree(tree_edges);
@@ -256,21 +283,41 @@ void Homotopy::compute(const Nexus* NX)
     relations.push_back(w);
   }
   sequence.push_back(Group(ngen,relations));
+  ulimit += 1;
+  compute_fitness();
 }
 
 namespace SYNARMOSMA {
+  std::ostream& operator <<(std::ostream& s,const Homotopy& h)
+  {
+    s << "[";
+    if (h.ulimit == 0) {
+      s << "]";
+      return s;
+    }
+    unsigned int i;
+
+    for(i=0; i<h.ulimit-1; ++i) {
+      s << h.sequence[i].compact_form() << "],[";
+    }
+    s << h.sequence[h.ulimit-1].compact_form() << "]";
+    return s;
+  }
+
   Homotopy operator +(const Homotopy& h1,const Homotopy& h2)
   {
-    if (h1.sequence.size() != h2.sequence.size()) throw std::invalid_argument("Homotopy sequences of unequal length cannot be added!");
-    unsigned int i,bisection = 1 + RND.irandom(h1.sequence.size()-1);
+    if (h1.ulimit != h2.ulimit) throw std::invalid_argument("Homotopy sequences of unequal length cannot be added!");
+    unsigned int i,bisection = 1 + RND.irandom(h1.ulimit - 1);
     Homotopy output;
 
+    output.ulimit = h1.ulimit;
     for(i=0; i<bisection; ++i) {
       output.sequence.push_back(h1.sequence[i]);
     }
-    for(i=bisection; i<h1.sequence.size(); ++i) {
+    for(i=bisection; i<h1.ulimit; ++i) {
       output.sequence.push_back(h2.sequence[i]);
     }
+    output.compute_fitness();
 
     return output;
   }
