@@ -108,9 +108,7 @@ int Lattice::deserialize(std::ifstream& s)
     atoms.insert(k);
   }
 
-#ifdef DEBUG
-  assert(consistent());
-#endif
+  if (!consistent()) throw std::runtime_error("The lattice created using the deserialize method is inconsistent!");
 
   return count;
 }
@@ -144,9 +142,7 @@ void Lattice::initialize()
     delta = ndelta;
   } while(delta > 0);
 
-#ifdef DEBUG
-  assert(consistent());
-#endif
+  if (!consistent()) throw std::runtime_error("The lattice created by the initialize method is inconsistent!");
 
   compute_bounds();
   compute_atoms();

@@ -88,9 +88,7 @@ int Poset::deserialize(std::ifstream& s)
       }
     }
   }
-#ifdef DEBUG
-  assert(consistent());
-#endif
+  if (!consistent()) throw std::runtime_error("The poset created using the deserialize method is inconsistent!");
 
   return count;
 }
@@ -167,9 +165,8 @@ Relation Poset::get_order(int u,int v) const
 
 int Poset::build_chain(std::vector<int>& chain,int length) const
 {
-#ifdef DEBUG
-  assert(!chain.empty());
-#endif
+  if (chain.empty()) throw std::invalid_argument("The chain vector in Poset::build_chain must not be empty!");
+
   int l = (signed) chain.size(),output = 0;
   if (l == length) {
     output = 1;
@@ -434,8 +431,7 @@ void Poset::construct_ordering(double lambda)
     v = RND.irandom(N);
     if (set_order(u,v)) p = totality();
   } while(p < lambda);
-#ifdef DEBUG
-  assert(consistent());
-#endif
+
+  if (!consistent()) std::runtime_error("The poset created in Poset::construct_ordering does not have a consistent ordering!");
 }
 

@@ -273,7 +273,7 @@ Group::Group(unsigned int n)
 Group::Group(unsigned int n,const std::vector<Word>& R)
 {
   if (n == 0) {
-    assert(R.empty());
+    if (!R.empty()) throw std::invalid_argument("If there are no generators, then there should be no relations either!");
   }
   else {
     unsigned int i,m;
@@ -285,7 +285,7 @@ Group::Group(unsigned int n,const std::vector<Word>& R)
     for(i=0; i<R.size(); ++i) {
       R[i].get_alphabet(S);
       m = *S.rbegin();
-      assert(m < n);
+      if (m >= n) throw std::invalid_argument("One of the relations in the Group constructor has an illegal generator!");
     }
   }
   initialize(n,R);
@@ -365,9 +365,8 @@ bool Group::consistent(std::set<unsigned int>& alphabet) const
 bool Group::equivalent(const Word& w1,const Word& w2) const
 {
   // Make sure these are in fact words in this group...
-#ifdef DEBUG
-  assert(w1.legal() && w2.legal());
-#endif
+  if (!w1.legal() || !w2.legal()) throw std::invalid_argument("One or more of the words to be tested for equivalency is illegal!");
+
   // We only know how to solve the word problem in the braid group...
   if (!braid) return false;
   Word cword,nword = w1*w2.invert();
@@ -685,9 +684,7 @@ void Group::initialize(unsigned int r,const std::vector<unsigned int>& torsion)
   }
   if (rank == 0) cardinality = 0;
   for(i=0; i<torsion.size(); ++i) {
-#ifdef DEBUG
-    assert(torsion[i] > 1);
-#endif
+    if (torsion[i] <= 1) throw std::invalid_argument("The torsion elements for the initialization of an Abelian group must be greater than one!");
     w.append(std::pair<unsigned int,int>(rank+i,torsion[i]));
     relations.push_back(w);
     w.clear();
