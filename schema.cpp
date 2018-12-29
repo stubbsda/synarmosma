@@ -9,6 +9,7 @@ Schema::Schema()
 
 Schema::Schema(int n)
 {
+  if (n <= 0) throw std::invalid_argument("The number of vertices in the Schema constructor must be greater than zero!");
   for(int i=0; i<n; ++i) {
     add_vertex();
   }

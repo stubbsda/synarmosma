@@ -13,15 +13,16 @@ Logic_Graph::Logic_Graph(int n,double propositional_density) : Graph(n,true)
 {
   // We will choose a number of atoms that is a multiple 
   // of the number of vertices...
-  assert(propositional_density > std::numeric_limits<double>::epsilon());
+  if (propositional_density < std::numeric_limits<double>::epsilon()) throw std::invalid_argument("The propositional density must be greater than zero!");
 
   std::set<int> atoms;
-  // Make sure the set isn't empty...
+  // Make sure this set has at least one member...
   atoms.insert(0);
   for(int i=1; i<nvertex; ++i) {
     if (RND.drandom() < propositional_density) atoms.insert(i);
   }
   logic = new Propositional_System(atoms,nvertex);
+
 }
 
 Logic_Graph::Logic_Graph(const Logic_Graph& source)
@@ -30,10 +31,7 @@ Logic_Graph::Logic_Graph(const Logic_Graph& source)
   neighbours = source.neighbours;
   edges = source.edges;
   logical_breadth = source.logical_breadth;
-  if (nvertex > 0) {
-    logic = new Propositional_System;
-    logic = source.logic;
-  }
+  if (nvertex > 0) logic = new Propositional_System(*source.logic);
 }
 
 Logic_Graph& Logic_Graph::operator =(const Logic_Graph& source)
@@ -46,10 +44,7 @@ Logic_Graph& Logic_Graph::operator =(const Logic_Graph& source)
   neighbours = source.neighbours;
   edges = source.edges;
   logical_breadth = source.logical_breadth;
-  if (nvertex > 0) {
-    logic = new Propositional_System;
-    logic = source.logic;
-  }
+  if (nvertex > 0) logic = new Propositional_System(*source.logic);
 
   return *this;
 }
@@ -57,11 +52,6 @@ Logic_Graph& Logic_Graph::operator =(const Logic_Graph& source)
 Logic_Graph::~Logic_Graph()
 {
   if (nvertex > 0) delete logic;
-}
-
-void Logic_Graph::create()
-{
-  rationalize_topology();
 }
 
 void Logic_Graph::clear()
@@ -129,9 +119,10 @@ int Logic_Graph::deserialize(std::ifstream& s)
   return count;
 }
 
-void Logic_Graph::compute_logical_breadth()
+unsigned int Logic_Graph::compute_logical_breadth()
 {
-  int i,in1;
+  int i,j;
+  unsigned int n,ntotal = 0;
   std::set<int>::const_iterator it,jt;
   std::set<int> current,atoms;
 
@@ -139,30 +130,35 @@ void Logic_Graph::compute_logical_breadth()
 
   for(i=0; i<nvertex; ++i) {
     // First count the number of atomic propositions in my own
-    // proposition:
+    // proposition...
     logic->get_atoms(i,atoms);
+    // Then get the atoms contained in all the propositions of my neighbours...
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
-      in1 = *it;
-      logic->get_atoms(in1,current);
+      j = *it;
+      logic->get_atoms(j,current);
       for(jt=current.begin(); jt!=current.end(); ++it) {
         atoms.insert(*it);
       }
     }
-    logical_breadth.push_back(atoms.size());
+    n = atoms.size();
+    logical_breadth.push_back(n);
+    ntotal += n;
   }
+  return ntotal;
 }
 
-double Logic_Graph::rationalize_topology()
+double Logic_Graph::rationalize_topology(const Boolean& type)
 {
   // We begin this method with a complete graph topology, which is
-  // obviously connected. At each iteration, we examine the causal
-  // edges to verify that the proposition of the antecedent vertex
-  // implies the propositions of its descendent vertex neighbours
-  int i,m,n,vx[2],rsum,its = 0;
-  std::string op = "AND";
-  std::vector<int> bcount;
+  // obviously connected. At each iteration, we examine an edge to
+  // verify that the propositions of its two vertices are consistent
+  // under the AND operator, otherwise we remove the edge (unless 
+  // this would disconnect the graph).
+  int i,j,vx[2];
+  unsigned int m,n,rsum = 0,its = 0;
+  std::vector<unsigned int> bcount;
   std::set<int>::const_iterator it;
-  const int N = order()/2;
+  const unsigned int N = order()/2;
 
   make_complete();
 
@@ -174,21 +170,20 @@ double Logic_Graph::rationalize_topology()
     m = RND.irandom(edges.size());
     its++;
     edges[m].get_vertices(vx);
-    n = logic->consistency(vx[0],vx[1],op);
+    n = logic->consistency(vx[0],vx[1],type);
     // Keep this edge if the bit count is complete...
     if (n == bcount[vx[0]]) continue;
-    // If not, drop it
+    // If not, drop it...
     drop_edge(vx[0],vx[1]);
     // Unless this would disconnect the graph...
     if (!connected()) add_edge(vx[1],vx[1]);
   } while(its < N);
 
-  rsum = 0;
   for(i=0; i<nvertex; ++i) {
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
-      m = *it;
-      n = logic->consistency(i,m,op);
-      rsum += (bcount[i] - n);
+      j = *it;
+      n = logic->consistency(i,j,type);
+      rsum += bcount[i] - n;
     }
   }
   return double(rsum)/double(nvertex);
@@ -210,27 +205,39 @@ bool Logic_Graph::fusion(int v,int u)
   return false;
 }
 
-int Logic_Graph::fission_x(int v)
+void Logic_Graph::add_theorem(int v)
 {
-  unsigned int i,n = Graph::fission_x(v),na = logic->get_number_atoms();
-  std::set<int> atoms;
+  int i;
+  std::set<int> atoms,current;
+  std::set<int>::const_iterator it,jt;
 
-  for(i=0; i<na; ++i) {
-    atoms.insert(i);
+  logic->get_atoms(v,atoms);
+  // Then get the atoms contained in all the propositions of its neighbours...
+  for(it=neighbours[v].begin(); it!=neighbours[v].end(); ++it) {
+    i = *it;
+    logic->get_atoms(i,current);
+    for(jt=current.begin(); jt!=current.end(); ++it) {
+      atoms.insert(*it);
+    }
   }
   logic->add_theorem(atoms);
+}
+
+int Logic_Graph::fission_x(int v)
+{
+  unsigned int n = Graph::fission_x(v);
+
+  add_theorem(v);
+
   return n;
 }
 
 int Logic_Graph::fission_m(int v)
 {
-  unsigned int i,n = Graph::fission_m(v),na = logic->get_number_atoms();
-  std::set<int> atoms;
+  unsigned int n = Graph::fission_m(v);
 
-  for(i=0; i<na; ++i) {
-    atoms.insert(i);
-  }
-  logic->add_theorem(atoms);
+  add_theorem(v);
+
   return n;
 }
 

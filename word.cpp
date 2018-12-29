@@ -27,7 +27,7 @@ Word::Word(const std::string& w)
   Word temp;
 
   for(i=0; i<w.length(); ++i) {
-    assert(std::isalpha(w[i]));
+    if (!(std::isalpha(w[i]))) throw std::invalid_argument("The argument of this Word constructor must be a string of letters!");
     for(j=0; j<26; ++j) {
       if (std::tolower(w[i]) == alphabet[j]) {
         n = j;
@@ -236,24 +236,24 @@ Word Word::mutate() const
   Word output;
   std::set<unsigned int> S;
   std::pair<unsigned int,int> doublet;
-  int n = RND.irandom(length()); 
   unsigned int m = get_alphabet(S);
 
   output.content = content;
 
   if (m == 1) {
-#ifdef DEBUG
-    assert(n == 1);
-#endif
+    if (length() != 1) throw std::runtime_error("A word whose alphabet is a single letter must have a length of one!");
+    int n;
+
     output.content[0].first = content[0].first;
     do {
-      n =  RND.irandom(1,10);
+      n = RND.irandom(1,10);
       if (RND.drandom() < 0.5) n *= 1;
       if (n != content[0].second) break;
     } while(true);
     output.content[0].second = n;
   }
   else {
+    unsigned int n = RND.irandom(length());
     do {
       doublet.first = RND.irandom(S); 
       if (doublet.first != content[n].first) break;
@@ -331,6 +331,8 @@ Word Word::reduce() const
     output.content = vx;
   } while(true);
 
+  if (!output.legal()) throw std::runtime_error("The output from the Word::reduce method is illegal!");
+
   return output;
 }
 
@@ -346,9 +348,9 @@ Word Word::reduce(const std::set<unsigned int>& trivial_generators,const unsigne
     doublet.second = it->second;
     output.content.push_back(doublet);
   }
-#ifdef DEBUG
-  assert(output.legal());
-#endif
+
+  if (!output.legal()) throw std::runtime_error("The output from the Word::reduce method is illegal!");
+
   return output;
 }
 
@@ -383,9 +385,8 @@ Word Word::normalize() const
     }
   } while(true);
 
-#ifdef DEBUG
-  assert(output.legal());
-#endif
+  if (!output.legal()) throw std::runtime_error("The output from the Word::normalize method is illegal!");
+
   return output;
 }
 
