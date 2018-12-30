@@ -5,8 +5,6 @@
 
 namespace SYNARMOSMA {
   class Directed_Graph: public Graph {
-   private:
-    using Graph::add_edge;
    protected:
     int number_directed;
     bool directed_cycle(const std::vector<int>&,int,int) const;
@@ -20,7 +18,7 @@ namespace SYNARMOSMA {
     ~Directed_Graph() override;
     int serialize(std::ofstream&) const override;
     int deserialize(std::ifstream&) override;
-    bool add_edge(int,int,Relation,double = 0.0);
+    virtual bool add_edge(int,int,Relation = Relation::disparate,double = 0.0);
     // A method to compute the maximum network flow from a source vertex 
     // to a sink vertex
     double compute_flow(int,int) override;

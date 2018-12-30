@@ -21,7 +21,7 @@ namespace SYNARMOSMA {
     inline bool connected(int,int) const;
     virtual void clear();
     inline int add_vertex();
-    virtual bool add_edge(int,int,double = 0.0);
+    virtual bool add_edge(int,int);
     virtual bool drop_edge(int,int);
     virtual int distance(int,int) const;
     virtual void compute_distances(pair_index&) const;

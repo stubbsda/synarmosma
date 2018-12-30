@@ -100,7 +100,7 @@ bool Schema::drop_edge(int n,int m)
   return true;
 }
 
-bool Schema::add_edge(int n,int m,double kappa)
+bool Schema::add_edge(int n,int m)
 {
 #ifdef DEBUG
   assert(n >= 0 && n < nvertex);
