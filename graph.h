@@ -34,7 +34,7 @@ namespace SYNARMOSMA {
     // Returns the topological energy of this graph
     virtual double compute_energy() const;
     // A basic operator for adding an edge
-    bool add_edge(int,int,double = 0.0) override;
+    virtual bool add_edge(int,int,double = 0.0);
     // A basic operator for undoing the above edge addition
     bool drop_edge(int,int) override;
     // A method to handle dropping a vertex, a rather complicated
