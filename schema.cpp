@@ -81,10 +81,9 @@ int Schema::deserialize(std::ifstream& s)
 
 bool Schema::drop_edge(int n,int m)
 {
-#ifdef DEBUG
-  assert(n >= 0 && n < nvertex);
-  assert(m >= 0 && m < nvertex);
-#endif
+  if (n < 0 || n >= nvertex) throw std::invalid_argument("A vertex argument in Schema::drop_edge does not exist!");
+  if (m < 0 || m >= nvertex) throw std::invalid_argument("A vertex argument in Schema::drop_edge does not exist!");
+
   if (n == m) return false;
 
   std::set<int>::const_iterator it;
@@ -102,10 +101,9 @@ bool Schema::drop_edge(int n,int m)
 
 bool Schema::add_edge(int n,int m)
 {
-#ifdef DEBUG
-  assert(n >= 0 && n < nvertex);
-  assert(m >= 0 && m < nvertex);
-#endif
+  if (n < 0 || n >= nvertex) throw std::invalid_argument("A vertex argument in Schema::add_edge does not exist!");
+  if (m < 0 || m >= nvertex) throw std::invalid_argument("A vertex argument in Schema::add_edge does not exist!");
+
   if (n == m) return false;
 
   if (neighbours[n].count(m) == 0) {
@@ -115,16 +113,6 @@ bool Schema::add_edge(int n,int m)
     return true;
   }
   return false;
-}
-
-bool Schema::positive_valence() const
-{
-  // This method just checks if there are any vertices with no connections,
-  // in which case it returns false, true otherwise
-  for(int i=0; i<nvertex; ++i) {
-    if (neighbours[i].empty()) return false;
-  }
-  return true;
 }
 
 bool Schema::consistent() const
@@ -141,66 +129,20 @@ bool Schema::consistent() const
 
   // Loop through all vertices
   for(i=0; i<nvertex; ++i) {
-    // Check if the valence is weird
+    // Check if the valence is zero...
     if (neighbours[i].size() == 0) return false;
     // Now loop through all the neighbours
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
       in1 = *it;
-      // Check for self-bonding
+      // Check for self-bonding...
       if (in1 == i) return false;
-      // Check for neighbour values that are negative or too large
-      if (in1 >= nvertex) return false;
-      // If this neighbour vertex is local, then check to see if it too lists
-      // i as a neighbour
-      if (neighbours[in1].count(i) != 1) throw std::runtime_error("Inconsistent neighbour lists!");
+      // Check for neighbour values that are negative or too large...
+      if (in1 < 0 || in1 >= nvertex) return false;
+      // Check that this vertex's neighbour list is consistent with mine... 
+      if (neighbours[in1].count(i) == 0) return false;
     }
   }
   return true;
-}
-
-void Schema::components(std::vector<int>& csize,std::vector<int>& celements) const
-{
-  int i,start,nc,noe;
-  std::vector<int> component;
-  std::set<int> change,nchange;
-  std::set<int>::const_iterator it1,it2;
-
-  nc = 0;
-  for(i=0; i<nvertex; ++i) {
-    component.push_back(-1);
-  }
-
-  do {
-    start = -1;
-    for(i=0; i<nvertex; ++i) {
-      if (component[i] == -1) {
-        start = i;
-        break;
-      }
-    }
-    if (start == -1) break;
-    change.insert(start);
-    noe = 0;
-    do {
-      for(it1=change.begin(); it1!=change.end(); it1++) {
-        component[*it1] = nc;
-        celements.push_back(*it1);
-      }
-      noe += change.size();
-      for(it1=change.begin(); it1!=change.end(); it1++) {
-        i = *it1;
-        for(it2=neighbours[i].begin(); it2!=neighbours[i].end(); it2++) {
-          if (component[*it2] < 0) nchange.insert(*it2);
-        }
-      }
-      if (nchange.empty()) break;
-      change = nchange;
-      nchange.clear();
-    } while(true);
-    csize.push_back(noe);
-    nc++;
-    change.clear();
-  } while(true);
 }
 
 int Schema::distance(int v1,int v2) const
@@ -210,7 +152,7 @@ int Schema::distance(int v1,int v2) const
   if (v1 == v2) return 0;
 
   // Handle the simplest case first, where v2 is a neighbour of v1...
-  if (neighbours[v1].count(v2) == 1) return 1;
+  if (connected(v1,v2)) return 1;
 
   // So, we'll have to use Dijkstra's algorithm then...
   int i,n,v,md,base,l = -1;
@@ -376,9 +318,7 @@ int Schema::spanning_tree(std::vector<int>& tree_edges) const
   std::set<int>::const_iterator it,jt,kt,lt;
 
   // A sanity check...
-#ifdef DEBUG
-  assert(connected());
-#endif
+  if (!connected()) throw std::invalid_argument("The spanning tree calculation only makes sense for a connected schema!");
 
   current.insert(0);
 
@@ -409,9 +349,9 @@ int Schema::spanning_tree(std::vector<int>& tree_edges) const
     next.clear();
   } while(true);
   ntree = (signed) tree_edges.size();
-#ifdef DEBUG
-  assert(nvertex == (1+ntree/2));
-#endif
+
+  if (nvertex != (1 + ntree/2)) throw std::runtime_error("The size of the spanning tree is inconsistent with the schema's size!");
+
   return ntree;
 }
 

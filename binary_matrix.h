@@ -70,7 +70,6 @@ namespace SYNARMOSMA {
   {
     if (i >= nrow) throw std::invalid_argument("The row number argument is illegal for this binary matrix!");
     if (j >= ncolumn) throw std::invalid_argument("The column number argument is illegal for this binary matrix!");
-    assert(i >= 0 && j >= 0);
     bool output = (elements[i].count(j) > 0) ? true : false; 
     return output;
   }
