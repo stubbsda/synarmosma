@@ -43,7 +43,7 @@ namespace SYNARMOSMA {
     virtual bool drop_edge(int,int);
     /// This method computes the combinatorial distance between the two vertex arguments, i.e. the smallest number of "hops" to get from the first argument to the second; if there is no such path (only possible if connected() is false), the method returns -1. 
     virtual int distance(int,int) const;
-    /// This method computes the complete set of combinatorial distances in the schema and stores the result as an unordered map linking pairs of vertices (i,j) with i < j and the distance between them. 
+    /// This method computes the complete set of combinatorial distances in the schema and stores the result as an unordered map linking pairs of vertices (i,j) where i < j and the distance d between them. 
     virtual void compute_distances(pair_index&) const;
     /// This method verifies if every vertex has at least one edge and so a positive valence, returning true in this case.
     inline bool positive_valence() const;

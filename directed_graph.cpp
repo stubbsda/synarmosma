@@ -6,7 +6,7 @@ extern Random RND;
 
 Directed_Graph::Directed_Graph() : Graph() 
 {
-  number_directed = 0;
+  
 }
 
 Directed_Graph::Directed_Graph(int n) : Graph(n)
@@ -14,9 +14,7 @@ Directed_Graph::Directed_Graph(int n) : Graph(n)
   int i,j,nc = 0;
   double alpha;
   std::set<int> vx;
-  auto d = Relation::disparate;
-
-  number_directed = 0;
+  Relation d; 
 
   for(i=0; i<n; ++i) {
     for(j=1+i; j<n; ++j) {
@@ -44,6 +42,8 @@ Directed_Graph::Directed_Graph(int n) : Graph(n)
 
 Directed_Graph::Directed_Graph(int n,double p) : Graph(n)
 {
+  if (p < -std::numeric_limits<double>::epsilon()) throw std::invalid_argument("The edge probability must be greater than zero!");
+  if (p > 1.0) throw std::invalid_argument("The edge probability must not be greater than one!");
   int i,j,nc = 0;
   double alpha;
   std::set<int> vx;
@@ -158,18 +158,6 @@ int Directed_Graph::deserialize(std::ifstream& s)
 
   return count;
 
-}
-
-void Directed_Graph::compute_directedness() 
-{
-  // A method to calculate how many of the edges are directed...
-  int null = 0;
-  std::vector<Edge>::const_iterator it;
-
-  for(it=edges.begin(); it!=edges.end(); ++it) {
-    if (it->get_direction() == Relation::disparate) null++;
-  }
-  number_directed = size() - null;
 }
 
 void Directed_Graph::write2disk(const std::string& filename) const
@@ -595,19 +583,18 @@ double Directed_Graph::compute_flow(int source,int sink)
   return double(max_flow)/10000.0;
 }
 
-void Directed_Graph::compute_sinks(std::set<int>& output) const
+unsigned int Directed_Graph::compute_sinks(std::set<int>& output) const
 {
-  int i,j;
-  bool sink;
+  int i,j,test;
   std::set<int> S;
   std::set<int>::const_iterator it;
   hash_map::const_iterator qt;
 
   output.clear();
-  // A sink is a vertex all of whose edges are incoming...
+  // A sink is a vertex all of whose edges are incoming or undirected...
   for(i=0; i<nvertex; ++i) {
     if (neighbours[i].empty()) continue;
-    sink = true;
+    test = 0;
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
       j = *it;
       S.clear();
@@ -615,27 +602,31 @@ void Directed_Graph::compute_sinks(std::set<int>& output) const
       qt = index_table.find(S);
       if (edges[qt->second].get_direction(i,j) == Relation::before) {
         // If this vertex has an outgoing edge, it isn't a sink...
-        sink = false;
+        test = -1;
         break;
       }
+      else if (edges[qt->second].get_direction(i,j) == Relation::after) {
+        test = 1;
+      }
     }
-    if (sink) output.insert(i);
+    // To be a sink, the vertex must have at least one incoming edge and no outgoing edges
+    if (test == 1) output.insert(i);
   }
+  return output.size();
 }
 
-void Directed_Graph::compute_sources(std::set<int>& output) const
+unsigned int Directed_Graph::compute_sources(std::set<int>& output) const
 {
-  int i,j;
-  bool source;
+  int i,j,test;
   std::set<int> S;
   std::set<int>::const_iterator it;
   hash_map::const_iterator qt;
 
   output.clear();
-  // A source is a vertex all of whose edges are outgoing...
+  // A source is a vertex all of whose edges are outgoing or undirected...
   for(i=0; i<nvertex; ++i) {
     if (neighbours[i].empty()) continue;
-    source = true;
+    test = 0;
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
       j = *it;
       S.clear();
@@ -643,10 +634,15 @@ void Directed_Graph::compute_sources(std::set<int>& output) const
       qt = index_table.find(S);
       if (edges[qt->second].get_direction(i,j) == Relation::after) {
         // If this vertex has an incoming edge, it isn't a source...
-        source = false;
+        test = -1;
         break;
       }
+      else if (edges[qt->second].get_direction(i,j) == Relation::before) {
+        test = 1;
+      }
     }
-    if (source) output.insert(i);
+    // To be a source, the vertex must have at least one outgoing edge and no incoming edges
+    if (test == 1) output.insert(i);
   }
+  return output.size();
 }
