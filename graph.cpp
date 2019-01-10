@@ -225,7 +225,7 @@ Graph::Graph(int n,int c) : Schema(n)
         if (k == i) continue;
         if (neighbours[i].count(k) == 0) break;
       } while(true);
-      add_edge(i,k);
+      add_edge(i,k,0.0);
     }
   }
 
@@ -237,7 +237,7 @@ Graph::Graph(int n,int c) : Schema(n)
         sum += neighbours[k].size();
         if (rho < double(sum)/double(2*size())) break;
       }
-      add_edge(i,k);
+      add_edge(i,k,0.0);
     }
   }
 }
@@ -253,7 +253,7 @@ Graph::Graph(int n,double p) : Schema(n)
     for(j=1+i; j<n; ++j) {
       alpha = RND.drandom();
       if (alpha > p) continue;
-      add_edge(i,j);
+      add_edge(i,j,0.0);
     }
   }
 }
@@ -268,9 +268,11 @@ Graph::Graph(const Graph& source)
 Graph& Graph::operator =(const Graph& source) 
 {
   if (this == &source) return *this;
+
   nvertex = source.nvertex;
   neighbours = source.neighbours;
   edges = source.edges;
+
   return *this;
 }
 
@@ -654,6 +656,11 @@ bool Graph::drop_vertex(int v)
     index_table[S] = i;
   }
   return true;
+}
+
+bool Graph::add_edge(int v,int u)
+{
+  return add_edge(v,u,0.0);
 }
 
 bool Graph::add_edge(int v,int u,double kappa)

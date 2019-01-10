@@ -678,7 +678,7 @@ bool Nexus::pseudomanifold(bool* boundary) const
     for(i=0; i<nc; ++i) {
       ni = i*nc - i*(i+1)/2;
       for(j=1+i; j<nc; ++j) {
-        if (link[ni+j-(1+i)] == 1) G->add_edge(i,j);
+        if (link[ni+j-(1+i)] == 1) G->add_edge(i,j,0.0);
       }
     }
     if (!G->connected()) output = false;
