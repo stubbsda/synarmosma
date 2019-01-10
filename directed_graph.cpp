@@ -467,7 +467,6 @@ bool Directed_Graph::directed_cycle(const std::vector<int>& path,int base,int le
   if (base == path[0] && path.size() > 2) return true;
   if ((signed) path.size() == length) return false;
   int v;
-  bool out;
   std::set<int> S;
   std::set<int>::const_iterator it;
   hash_map::const_iterator qt;
@@ -480,8 +479,7 @@ bool Directed_Graph::directed_cycle(const std::vector<int>& path,int base,int le
     if (edges[qt->second].get_direction(base,v) == Relation::before) {
       std::vector<int> npath = path;
       npath.push_back(v);
-      out = directed_cycle(npath,v,length);
-      if (out) return true;
+      if (directed_cycle(npath,v,length)) return true;
     }
   }
   return false;
