@@ -420,11 +420,16 @@ void Directed_Graph::compute_distances(pair_index& output) const
 
 bool Directed_Graph::add_edge(int u,int v,Relation d,double ell)
 {
-  if (!Graph::add_edge(u,v,ell)) return false;
-  if (d != Relation::disparate) { 
-    std::set<int> S;
-    S.insert(u); S.insert(v);
-    hash_map::const_iterator qt = index_table.find(S);
+  bool output = Graph::add_edge(u,v,ell);
+
+  std::set<int> S;
+  S.insert(u); S.insert(v);
+  hash_map::const_iterator qt = index_table.find(S);
+
+  if (d == Relation::disparate) {
+    edges[qt->second].set_direction(d);
+  }
+  else {
     if (u < v) {
       edges[qt->second].set_direction(d);
     }
@@ -433,7 +438,7 @@ bool Directed_Graph::add_edge(int u,int v,Relation d,double ell)
       edges[qt->second].set_direction(rho);
     }
   }
-  return true;
+  return output;
 }
 
 bool Directed_Graph::mutate_edge(int u,int v)

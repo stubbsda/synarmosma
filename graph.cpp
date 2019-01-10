@@ -658,26 +658,20 @@ bool Graph::drop_vertex(int v)
   return true;
 }
 
-bool Graph::add_edge(int v,int u)
-{
-  return add_edge(v,u,0.0);
-}
-
 bool Graph::add_edge(int v,int u,double kappa)
 {
   if (u == v) return false;
+  std::set<int> vx; 
+  vx.insert(v); vx.insert(u);
   if (!connected(v,u)) {
     neighbours[v].insert(u);
     neighbours[u].insert(v);
-    std::set<int> vx; vx.insert(v); vx.insert(u);
-#ifdef DEBUG
-    hash_map::const_iterator qt = index_table.find(vx);
-    assert(qt == index_table.end());
-#endif
     index_table[vx] = (signed) edges.size();
     edges.push_back(Edge(v,u,kappa));
     return true;
   }
+  hash_map::const_iterator qt = index_table.find(vx);
+  edges[qt->second].length = kappa;
   return false;
 }
 

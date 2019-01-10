@@ -12,19 +12,19 @@ namespace SYNARMOSMA {
   std::ostream& operator <<(std::ostream& s,const Functional_Equation<kind>&);
 
   template<class kind>
+  /// A template class representing a polynomial functional equation over a base type, which is the field for the equation's polynomial coefficients and arguments.
   class Functional_Equation {
    protected:
-    // We need a triple from Boost!
     std::vector<std::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int> > terms;
     Polynomial<kind> remainder;
     bool linear = false;
     bool homogeneous = false;
    
-    void initialize(int);
+    void initialize(unsigned int);
     void analyze_file(std::vector<std::string>&,std::vector<std::string>&,std::vector<std::string>&);
    public:
     Functional_Equation();
-    Functional_Equation(int);
+    Functional_Equation(unsigned int);
     Functional_Equation(const std::string&);
     Functional_Equation(const Functional_Equation&);
     Functional_Equation& operator =(const Functional_Equation&);
@@ -32,7 +32,7 @@ namespace SYNARMOSMA {
     void clear();
     int serialize(std::ofstream&) const;
     int deserialize(std::ifstream&);
-    Variety<unsigned int> reduce(int);  
+    Variety<unsigned int> reduce(unsigned int);  
     friend std::ostream& operator << <>(std::ostream& s,const Functional_Equation<kind>&);
   };
 

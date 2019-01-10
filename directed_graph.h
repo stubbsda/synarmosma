@@ -30,6 +30,10 @@ namespace SYNARMOSMA {
     int serialize(std::ofstream&) const override;
     /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
     int deserialize(std::ifstream&) override;
+    /// This method adds an edge between the vertices specified by the first two arguments and exists to ensure that the appropriate method is called for this class; the method returns false if the edge already exists. 
+    virtual inline bool add_edge(int u,int v) override {return add_edge(u,v,Relation::disparate,0.0);};
+    /// This method adds an edge between the vertices specified by the first two arguments and the edge length; it exists to ensure that the appropriate method is called for this class and returns false if the edge already exists.
+    virtual inline bool add_edge(int u,int v,double kappa) override {return add_edge(u,v,Relation::disparate,kappa);};
     /// This method adds an edge between the vertices specified by the first two arguments, followed optionally by the orientation and length of the edge. The method returns false if the edge already exists. 
     virtual bool add_edge(int,int,Relation,double = 0.0);
     /// This method to compute the maximum network flow from a source vertex to a sink vertex, respecting the orientation of the graph's edges.
@@ -62,7 +66,6 @@ namespace SYNARMOSMA {
     unsigned int compute_sources(std::set<int>&) const;
     /// This method writes the directed graph out to a disk file in the DOT format for visualization by GraphViz; the method's argument is the filename.
     void write2disk(const std::string&) const override;
-    using Graph::add_edge;
   };
 
   void Directed_Graph::compute_directedness() 
