@@ -4,7 +4,7 @@
 #define _bmatrixh
 
 namespace SYNARMOSMA {
-  /// A class representing a matrix whose elements are zero and one, so an arbitrary n x m matrix over the Galois field GF(2).
+  /// A class representing a matrix whose elements are zero and one, so an arbitrary rectangular matrix over the Galois field GF(2).
   class Binary_Matrix {
    private:
     /// An array of sets of unsigned integers, one for each row, which contains the index of the columns 

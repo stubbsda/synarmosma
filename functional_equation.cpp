@@ -19,9 +19,9 @@ Functional_Equation<kind>::Functional_Equation()
 }
 
 template<class kind>
-Functional_Equation<kind>::Functional_Equation(int n)
+Functional_Equation<kind>::Functional_Equation(unsigned int n)
 {
-  assert(n > 0);
+  if (n == 0) throw std::invalid_argument("The order of the functional equation must be greater than zero!");
   initialize(n);
 }
 
@@ -335,11 +335,9 @@ int Functional_Equation<kind>::deserialize(std::ifstream& s)
 }
 
 template<class kind>
-void Functional_Equation<kind>::initialize(int n)
+void Functional_Equation<kind>::initialize(unsigned int n)
 {
-  assert(n > 0);
-  int i;
-  unsigned int m = 1;
+  unsigned int i,m = 1;
   for(i=1; i<n; ++i) {
     Polynomial<kind> alpha,beta;
     if (!linear) m = 1 + RND.irandom(8);
@@ -355,11 +353,11 @@ void Functional_Equation<kind>::initialize(int n)
 namespace SYNARMOSMA
 {
   template<>
-  Variety<unsigned int> Functional_Equation<NTL::ZZ>::reduce(int p)
+  Variety<unsigned int> Functional_Equation<NTL::ZZ>::reduce(unsigned int p)
   {
     assert(p > 0);
     if (!NTL::ProbPrime(p)) throw std::invalid_argument("Functional equation must be reduced over a prime!");
-    unsigned int j,in1;
+    unsigned int i,j,in1;
     long q;
     NTL::ZZ z;
     std::pair<unsigned int,unsigned int> duo;
@@ -370,7 +368,7 @@ namespace SYNARMOSMA
 
     output.clear();
 
-    for(int i=0; i<p; ++i) {
+    for(i=0; i<p; ++i) {
       z = NTL::to_ZZ(long(i));
       for(j=0; j<terms.size(); ++j) {
         trio = terms[j];
@@ -404,10 +402,11 @@ namespace SYNARMOSMA
 }
 
 template<class kind>
-Variety<unsigned int> Functional_Equation<kind>::reduce(int p)
+Variety<unsigned int> Functional_Equation<kind>::reduce(unsigned int p)
 {
-  assert(p > 0);
-  unsigned int j,in1;
+  if (!NTL::ProbPrime(p)) throw std::invalid_argument("Field characteristic must be prime!");
+
+  unsigned int i,j,in1;
   std::pair<unsigned int,unsigned int> duo;
   std::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int> trio;
   Variety<unsigned int> output(p,p);
@@ -416,7 +415,7 @@ Variety<unsigned int> Functional_Equation<kind>::reduce(int p)
 
   output.clear();
 
-  for(int i=0; i<p; ++i) {
+  for(i=0; i<p; ++i) {
     for(j=0; j<terms.size(); ++j) {
       trio = terms[j];
       // First convert alpha(p) to an element of GF(p)
