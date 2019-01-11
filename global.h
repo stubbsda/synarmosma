@@ -154,9 +154,8 @@ namespace SYNARMOSMA {
 
   inline std::string make_key(int x,int y)
   {
-#ifdef DEBUG
-    assert(x != y);
-#endif
+    if (x == y) throw std::invalid_argument("The key arguments must be distinct integers!");
+
     std::stringstream s;
     if (x < y) {
       s << x << ":" << y;
@@ -169,9 +168,8 @@ namespace SYNARMOSMA {
 
   inline std::string make_key(const std::vector<int>& v) 
   {
-#ifdef DEBUG
-    assert(!v.empty());
-#endif
+    if (v.empty()) throw std::invalid_argument("The key argument must not be an empty vector!");
+
     unsigned int i,n = v.size();
     std::stringstream s;
 
@@ -184,9 +182,8 @@ namespace SYNARMOSMA {
 
   inline std::string make_key(const std::set<int>& S)
   {
-#ifdef DEBUG
-    assert(!S.empty());
-#endif
+    if (S.empty()) throw std::invalid_argument("The key argument must not be an empty set!");
+
     unsigned int i,n = S.size();
     std::stringstream s;
     std::set<int>::const_iterator it;
