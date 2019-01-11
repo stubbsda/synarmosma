@@ -7,15 +7,7 @@ extern Random RND;
 template<class kind>
 Functional_Equation<kind>::Functional_Equation()
 {
-  unsigned int n = 5 + RND.irandom(6);
 
-  linear = false;
-  homogeneous = false;
-  float alpha = float(RND.drandom());
-  if (alpha < 0.5) linear = true;
-  alpha = float(RND.drandom());
-  if (alpha < 0.5) homogeneous = true;
-  initialize(n);
 }
 
 template<class kind>
@@ -55,9 +47,7 @@ Functional_Equation<kind>::Functional_Equation(const std::string& filename)
       for(i=0; i<line.length(); ++i) {
         if (line[i] == ':') bk.push_back(i);
       }
-#ifdef DEBUG
-      assert(bk.size() == 2);
-#endif
+      if (bk.size() != 2) throw std::runtime_error("Error parsing the functional equation input file!");
       store = line.substr(0,bk[0]);
       trim(store);
       alpha.push_back(store);
@@ -265,10 +255,12 @@ template<class kind>
 Functional_Equation<kind>& Functional_Equation<kind>::operator =(const Functional_Equation<kind>& source)
 {
   if (this == &source) return *this;
+
   linear = source.linear;
   homogeneous = source.homogeneous;
   terms = source.terms;
   remainder = source.remainder;
+
   return *this;
 }
 
@@ -355,7 +347,6 @@ namespace SYNARMOSMA
   template<>
   Variety<unsigned int> Functional_Equation<NTL::ZZ>::reduce(unsigned int p)
   {
-    assert(p > 0);
     if (!NTL::ProbPrime(p)) throw std::invalid_argument("Functional equation must be reduced over a prime!");
     unsigned int i,j,in1;
     long q;
