@@ -42,19 +42,20 @@ namespace SYNARMOSMA {
     int read_terms(std::ifstream&);
    public:
     Polynomial();
-    Polynomial(int);
-    Polynomial(int,int);
+    Polynomial(unsigned int);
+    Polynomial(unsigned int,unsigned int);
     Polynomial(const std::vector<kind>&);
-    Polynomial(const std::vector<kind>&,int);
+    Polynomial(const std::vector<kind>&,unsigned int);
     ~Polynomial();
     Polynomial& operator =(const Polynomial&);
     Polynomial& operator -(const Polynomial&);
     Polynomial(const Polynomial&);
     Polynomial<unsigned int> reduce(int);
     kind evaluate(kind);
-    inline int get_degree() const {return degree;};
-    kind get_value(int) const;
-    bool set_value(kind,int);
+    void generate(unsigned int);
+    inline unsigned int get_degree() const {return degree;};
+    kind get_value(unsigned int) const;
+    bool set_value(kind,unsigned int);
     void clear();
     int serialize(std::ofstream&) const;
     int deserialize(std::ifstream&);
