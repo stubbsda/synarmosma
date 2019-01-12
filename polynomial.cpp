@@ -7,22 +7,22 @@ extern Random RND;
 template<class kind>
 Polynomial<kind>::Polynomial()
 {
-  degree = RND.irandom(5,10);
-  initialize();
+
 }
 
 template<class kind>
-Polynomial<kind>::Polynomial(int n)
+Polynomial<kind>::Polynomial(unsigned int n)
 {
-  assert(n > 0);
   degree = n;
   initialize();
 }
 
 template<class kind>
-Polynomial<kind>::Polynomial(int n,int p)
+Polynomial<kind>::Polynomial(unsigned int n,unsigned int p)
 {
-  assert(n > 0 && p > 0);
+  if (p > 0) {
+    if (!NTL::ProbPrime(p)) throw std::invalid_argument("Non-zero field characteristic must be prime!");
+  }
   characteristic = p;
   degree = n;
   initialize();
@@ -58,9 +58,11 @@ Polynomial<kind>::Polynomial(const std::vector<kind>& t)
 }
 
 template<class kind>
-Polynomial<kind>::Polynomial(const std::vector<kind>& t,int p)
+Polynomial<kind>::Polynomial(const std::vector<kind>& t,unsigned int p)
 {
-  assert(p > 0);
+  if (p > 0) {
+    if (!NTL::ProbPrime(p)) throw std::invalid_argument("Non-zero field characteristic must be prime!");
+  }
   unsigned int i;
 
   characteristic = p;
@@ -100,6 +102,16 @@ void Polynomial<kind>::clear()
   homogeneous = false;
   irreducible = false;
   normed = false;
+}
+
+template<class kind>
+void Polynomial<kind>::generate(unsigned int d)
+{
+  unsigned int chi = characteristic;
+  clear();
+  degree = d;
+  characteristic = chi;
+  initialize();
 }
 
 namespace SYNARMOSMA {
@@ -288,16 +300,16 @@ Polynomial<kind>& Polynomial<kind>::operator =(const Polynomial<kind>& source)
 }
 
 template<class kind>
-kind Polynomial<kind>::get_value(int n) const
+kind Polynomial<kind>::get_value(unsigned int n) const
 {
-  assert(n >= 0 && n <= (signed) degree);
+  assert(n >= 0 && n <= degree);
   return terms[n];
 }
 
 template<class kind>
-bool Polynomial<kind>::set_value(kind x,int n)
+bool Polynomial<kind>::set_value(kind x,unsigned int n)
 {
-  if (n >= 0 && n <= (signed) degree) {
+  if (n >= 0 && n <= degree) {
     terms[n] = x;
     property_check();
     return true;

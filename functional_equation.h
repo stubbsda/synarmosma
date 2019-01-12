@@ -15,7 +15,12 @@ namespace SYNARMOSMA {
   /// A template class representing a polynomial functional equation over a base type, which is the field for the equation's polynomial coefficients and arguments.
   class Functional_Equation {
    protected:
+    /// This property contains the individual terms of the functional equation, in the form of a triple, which 
+    /// represent the mathematical expression \f$\sum_{i=1}^N q_i(x) F^i(p_i(x))\f$, where \f$q_i, p_i\in K[x]\f$ 
+    /// for all \f$1\le i\le N\f$, with \f$K\f$ the base field of this template class.
     std::vector<std::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int> > terms;
+    /// This property stores the inhomogeneous term \f$q_0(x)\in K[x]\f$ in the functional equation \f$\sum_{i=1}^N 
+    /// q_i(x) F^i(p_i(x)) + q_0(x) = 0\f$, assuming it exists. 
     Polynomial<kind> remainder;
     /// This Boolean property is true if the functional equation has the form \f$q_1(x) F(p_1(x)) + q_0(x) = 0\f$, 
     /// where \f$p_1\f$ and the \f$q_i\f$ are members of \f$K[x]\f$ with \f$K\f$ the base field of this template class. 
@@ -31,9 +36,12 @@ namespace SYNARMOSMA {
     Functional_Equation();
     Functional_Equation(unsigned int);
     Functional_Equation(const std::string&);
+    /// The standard copy constructor which copies over the properties from the source instance. 
     Functional_Equation(const Functional_Equation&);
+    /// The standard overloaded assignment operator which copies over the properties from the source instance. 
     Functional_Equation& operator =(const Functional_Equation&);
     ~Functional_Equation();
+    /// This method restores all of the properties of this instance of the class to their default value.
     void clear();
     /// This method writes the properties of this instance of the class to a binary disk file and returns the number of bytes written to the file.
     int serialize(std::ofstream&) const;

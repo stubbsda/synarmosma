@@ -28,9 +28,8 @@ namespace SYNARMOSMA {
     // A function to generate all the combinations of the elements of S, taken 
     // r at a time.
     const int n = (signed) S.size();
-#ifdef DEBUG
-    assert(r <= n);
-#endif
+    if (r > n) throw std::invalid_argument("The combination size must not exceed the number of elements!");
+
     int i;
     std::vector<int> v;
     std::set<int>::const_iterator it;
@@ -123,16 +122,13 @@ namespace SYNARMOSMA {
 
   int parity(const std::vector<int>& v1,const std::vector<int>& v2)
   {
-#ifdef DEBUG
-    assert(v1.size() == v2.size());
-#endif
-    int i,n = 0;
-    for(i=0; i<(signed) v1.size(); ++i) {
+    if (v1.size() != v2.size()) throw std::invalid_argument("The parity arguments must be vectors of the same length!");
+
+    unsigned int i,n = 0;
+    for(i=0; i<v1.size(); ++i) {
       if (v1[i] != v2[i]) n++;
     }
-#ifdef DEBUG
-    assert((n % 2) == 0);
-#endif
+    if ((n % 2) != 0) throw std::runtime_error("The raw parity distance is not an even number!");
     n /= 2;
     int output = (n%2 == 0) ? 1 : -1;
     return output;
@@ -140,10 +136,8 @@ namespace SYNARMOSMA {
 
   void cross_product(const std::vector<double>& x,const std::vector<double>& y,std::vector<double>& z)
   {
-#ifdef DEBUG
-    assert(x.size() == 3);
-    assert(y.size() == 3);
-#endif
+    if (x.size() != 3 || y.size() != 3) throw std::invalid_argument("The cross-product is only defined for 3-vectors!");
+
     z.clear();
     z.push_back(0.0); z.push_back(0.0); z.push_back(0.0);
     z[0] = x[1]*y[2] - x[2]*y[1];
@@ -195,9 +189,7 @@ namespace SYNARMOSMA {
       p = ((i+1)%2 == 0) ? 1 : -1; 
       // n is the index of vx in the array of faces...
       qt = face_index.find(vx);
-#ifdef DEBUG
-      assert(qt != face_index.end());
-#endif
+      if (qt == face_index.end()) throw std::runtime_error("The simplex face does not exist in the index table!");
       n = qt->second;
       output[n] = parity*p;
       vx.clear();
@@ -451,12 +443,11 @@ namespace SYNARMOSMA {
     // v1 = (v_1,v_2,...,v_k,v_(k+1),...v_(1+n))
     // that is, v1 is obtained from v2 by dropping the k-th
     // element of v2, then the incidence number is (-1)^k.
+    if (v2.size() != (1 + v1.size())) throw std::invalid_argument("The coincidence arguments must differ in length by one!");
     int i,in1,output;
-    std::set<int>::const_iterator it,jt;
     bool found = true;
-#ifdef DEBUG
-    assert((1+v1.size()) == v2.size());
-#endif
+    std::set<int>::const_iterator it,jt;
+
     for(it=v1.begin(); it!=v1.end(); ++it) {
       in1 = *it;
       jt = std::find(v2.begin(),v2.end(),in1);
