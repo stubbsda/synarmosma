@@ -68,88 +68,12 @@ Functional_Equation<kind>::Functional_Equation(const std::string& filename)
 
 namespace SYNARMOSMA {
   template<>
-  void Functional_Equation<Rational>::analyze_file(std::vector<std::string>& alpha,std::vector<std::string>& beta,std::vector<std::string>& exponents)
-  {
-    Polynomial<Rational> p1,p2;
-    std::vector<Rational> vx;
-    Rational coefficient;
-    unsigned int i,j,degree;
-    char c;
-    std::string s1,s2;
-    bool numerator;
-
-    for(i=0; i<alpha.size(); ++i) {
-      degree = boost::lexical_cast<unsigned int>(exponents[i]);
-      numerator = true;
-      for(j=0; j<alpha[i].length(); ++j) {
-        c = alpha[i][j];
-        if (c == '(') continue;
-        if (c == ',' || c == ')') {
-          coefficient = Rational(boost::lexical_cast<signed int>(s1),boost::lexical_cast<signed int>(s2));
-          vx.push_back(coefficient);
-          s1.clear();
-          s2.clear();
-          continue;
-        }
-        if (c == '/') {
-          numerator = false;
-          continue;
-        }
-        if (numerator) {
-          s1.push_back(c);
-        }
-        else {
-          s2.push_back(c);
-        }
-      }
-      p1 = Polynomial<Rational>(vx);
-
-      vx.clear();
-      s1.clear();
-      s2.clear();
-      if (degree == 0) {
-        remainder = p1;
-        continue;
-      }
-      numerator = true;
-      for(j=0; j<beta[i].length(); ++j) {
-        c = beta[i][j];
-        if (c == '(') continue;
-        if (c == ',' || c == ')') {
-          coefficient = Rational(boost::lexical_cast<signed int>(s1),boost::lexical_cast<signed int>(s2));
-          vx.push_back(coefficient);
-          s1.clear();
-          s2.clear();
-          continue;
-        }
-        if (c == '/') {
-          numerator = false;
-          continue;
-        }
-        if (numerator) {
-          s1.push_back(c);
-        }
-        else {
-          s2.push_back(c);
-        }
-      }
-      p2 = Polynomial<Rational>(vx);
-
-      std::tuple<Polynomial<Rational>,Polynomial<Rational>,unsigned int> trio(p1,p2,degree);
-      terms.push_back(trio);
-      vx.clear();
-      s1.clear();
-      s2.clear();
-    }
-  }
-
-  template<>
   void Functional_Equation<NTL::ZZ>::analyze_file(std::vector<std::string>& alpha,std::vector<std::string>& beta,std::vector<std::string>& exponents)
   {
     unsigned int i,j,degree;
     char c;
     std::string store;
-    Polynomial<NTL::ZZ> p1,p2;
+    Integer_Polynomial<NTL::ZZ> p1,p2;
     std::vector<NTL::ZZ> vx;
 
     for(i=0; i<alpha.size(); ++i) {
@@ -164,7 +88,7 @@ namespace SYNARMOSMA {
         }
         store.push_back(c);
       }
-      p1 = Polynomial<NTL::ZZ>(vx);
+      p1 = Integer_Polynomial<NTL::ZZ>(vx);
 
       vx.clear();
       store.clear();
@@ -182,13 +106,15 @@ namespace SYNARMOSMA {
         }
         store.push_back(c);
       }
-      p2 = Polynomial<NTL::ZZ>(vx);
+      p2 = Integer_Polynomial<NTL::ZZ>(vx);
 
       vx.clear();
       store.clear();
-      std::tuple<Polynomial<NTL::ZZ>,Polynomial<NTL::ZZ>,unsigned int> trio(p1,p2,degree);
+      std::tuple<Integer_Polynomial<NTL::ZZ>,Integer_Polynomial<NTL::ZZ>,unsigned int> trio(p1,p2,degree);
       terms.push_back(trio);
     }
+    simplify();
+    if (!consistent()) throw std::invalid_argument("The functional equation input is not consistent with this class!");
   }
 }
 
@@ -198,7 +124,7 @@ void Functional_Equation<kind>::analyze_file(std::vector<std::string>& alpha,std
   unsigned int i,j,degree;
   char c;
   std::string store;
-  Polynomial<kind> p1,p2;
+  Integer_Polynomial<kind> p1,p2;
   std::vector<kind> vx;
 
   for(i=0; i<alpha.size(); ++i) {
@@ -213,7 +139,7 @@ void Functional_Equation<kind>::analyze_file(std::vector<std::string>& alpha,std
       }
       store.push_back(c);
     }
-    p1 = Polynomial<kind>(vx);
+    p1 = Integer_Polynomial<kind>(vx);
 
     vx.clear();
     store.clear();
@@ -231,13 +157,15 @@ void Functional_Equation<kind>::analyze_file(std::vector<std::string>& alpha,std
       }
       store.push_back(c);
     }
-    p2 = Polynomial<kind>(vx);
+    p2 = Integer_Polynomial<kind>(vx);
 
     vx.clear();
     store.clear();
-    std::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int> trio(p1,p2,degree);
+    std::tuple<Integer_Polynomial<kind>,Integer_Polynomial<kind>,unsigned int> trio(p1,p2,degree);
     terms.push_back(trio);
   }
+  simplify();
+  if (!consistent()) throw std::invalid_argument("The functional equation input is not consistent with this class!");
 }
 
 template<class kind>
@@ -282,7 +210,7 @@ int Functional_Equation<kind>::serialize(std::ofstream& s) const
 {
   unsigned int i,j,n;
   int count = 0;
-  Polynomial<kind> p;
+  Integer_Polynomial<kind> p;
   
   s.write((char*)(&linear),sizeof(bool)); count += sizeof(bool);
   s.write((char*)(&homogeneous),sizeof(bool)); count += sizeof(bool);
@@ -306,7 +234,7 @@ int Functional_Equation<kind>::deserialize(std::ifstream& s)
 {
   unsigned int i,j,n;
   int count = 0;
-  Polynomial<kind> p1,p2;
+  Integer_Polynomial<kind> p1,p2;
 
   clear();
 
@@ -317,7 +245,7 @@ int Functional_Equation<kind>::deserialize(std::ifstream& s)
     s.read((char*)(&j),sizeof(int)); count += sizeof(int);
     count += p1.deserialize(s);
     count += p2.deserialize(s);
-    terms.push_back(std::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int>(p1,p2,j));
+    terms.push_back(std::tuple<Integer_Polynomial<kind>,Integer_Polynomial<kind>,unsigned int>(p1,p2,j));
   }
   count += remainder.deserialize(s);
 
@@ -328,18 +256,70 @@ template<class kind>
 void Functional_Equation<kind>::initialize(unsigned int n)
 {
   unsigned int i,d = (5 < (1 + 2*n)) ? 5 : 1 + 2*n;
-  Polynomial<kind> alpha,beta;
+  Integer_Polynomial<kind> q,p;
 
-  for(i=1; i<=n; ++i) {
-    alpha.generate(d - 1);
-    beta.generate(d);
-    terms.push_back(std::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int>(alpha,beta,i));
+  for(i=1; i<n; ++i) {
+    q.generate(d - 1);
+    p.generate(d);
+    terms.push_back(std::tuple<Integer_Polynomial<kind>,Integer_Polynomial<kind>,unsigned int>(q,p,i));
   }
+  do {
+    q.generate(d - 1);
+  } while(q.is_null());
+  p.generate(d);
+  terms.push_back(std::tuple<Integer_Polynomial<kind>,Integer_Polynomial<kind>,unsigned int>(q,p,n));
+
+  q.generate(d - 1);
+  remainder = q;
+
+  simplify();
+  if (!consistent()) throw std::runtime_error("The randomly generated functional equation is inconsistent!");
+}
+
+template<class kind>
+bool Functional_Equation<kind>::consistent() const
+{
+  unsigned int i,d,n = terms.size();
+  std::set<unsigned int> dset;
+
+  // Begin by checking that all of the terms are distinct in terms of their degree:
+  for(i=0; i<n; ++i) {
+    d = std::get<2>(terms[i]);
+    if (dset.count(d) > 0) return false;
+    dset.insert(d);
+  }
+  return true;
+}
+
+template<class kind>
+bool Functional_Equation<kind>::simplify()
+{
+  unsigned int i,d = 0,n = terms.size();
+  bool output = false;
+  Integer_Polynomial<kind> q;
+  std::vector<std::tuple<Integer_Polynomial<kind>,Integer_Polynomial<kind>,unsigned int> > nterms;
+
   if (!homogeneous) {
-    alpha.generate(d - 1);
-    remainder = alpha;
+    if (remainder.is_null()) {
+      homogeneous = true;
+      output = true;
+    }
   }
-  if (n == 1) linear = true;
+  for(i=0; i<n; ++i) {
+    q = std::get<0>(terms[i]);
+    if (q.is_null()) continue;
+    if (std::get<2>(terms[i]) > d) d = std::get<2>(terms[i]);
+    nterms.push_back(terms[i]);
+  }
+  if (d == 1) {
+    if (!linear) {
+      linear = true;
+      output = true;
+    }
+  }
+  if (nterms.size() == terms.size()) return output;
+  terms = nterms;
+  return true;  
 }
 
 namespace SYNARMOSMA
@@ -352,9 +332,9 @@ namespace SYNARMOSMA
     long q;
     NTL::ZZ z;
     std::pair<unsigned int,unsigned int> duo;
-    std::tuple<Polynomial<NTL::ZZ>,Polynomial<NTL::ZZ>,unsigned int> trio;
+    std::tuple<Integer_Polynomial<NTL::ZZ>,Integer_Polynomial<NTL::ZZ>,unsigned int> trio;
     Variety<unsigned int> output(p,p);
-    Polynomial<NTL::ZZ> py;
+    Integer_Polynomial<NTL::ZZ> py;
     Monomial<unsigned int> term;
 
     output.clear();
@@ -399,9 +379,9 @@ Variety<unsigned int> Functional_Equation<kind>::reduce(unsigned int p)
 
   unsigned int i,j,in1;
   std::pair<unsigned int,unsigned int> duo;
-  std::tuple<Polynomial<kind>,Polynomial<kind>,unsigned int> trio;
+  std::tuple<Integer_Polynomial<kind>,Integer_Polynomial<kind>,unsigned int> trio;
   Variety<unsigned int> output(p,p);
-  Polynomial<kind> py;
+  Integer_Polynomial<kind> py;
   Monomial<unsigned int> term;
 
   output.clear();

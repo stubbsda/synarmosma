@@ -1,7 +1,8 @@
 OBJECTS = global.o random.o cell.o nexus.o schema.o group.o graph.o geometry.o word.o rational.o\
 variety_wrapper.o polynomial_wrapper.o proposition.o propositional_system.o logic_graph.o edge.o\
 vertex.o multitime.o binary_matrix.o integer_matrix_wrapper.o matrix_wrapper.o directed_graph.o\
-functional_equation_wrapper.o homology.o homotopy.o poset.o lattice.o pseudograph.o solver_wrapper.o
+functional_equation_wrapper.o homology.o homotopy.o poset.o lattice.o pseudograph.o solver_wrapper.o\
+integer_polynomial_wrapper.o
 
 MY_CXX_FLAGS = $(CXX_FLAGS) $(OPENMP) -fPIC #-DDISCRETE
 
@@ -91,10 +92,13 @@ logic_graph.o: global.h random.h edge.h schema.h pseudograph.h matrix.h binary_m
 polynomial_wrapper.o: global.h rational.h polynomial.h random.h polynomial.cpp polynomial_wrapper.cpp
 	$(CXX) $(MY_CXX_FLAGS) -c polynomial_wrapper.cpp
 
+integer_polynomial_wrapper.o: global.h integer_polynomial.h random.h integer_polynomial.cpp integer_polynomial_wrapper.cpp
+	$(CXX) $(MY_CXX_FLAGS) -c integer_polynomial_wrapper.cpp
+
 variety_wrapper.o: global.h rational.h variety.h random.h variety.cpp variety_wrapper.cpp
 	$(CXX) $(MY_CXX_FLAGS) -c variety_wrapper.cpp
 
-functional_equation_wrapper.o: global.h rational.h variety.h polynomial.h random.h functional_equation.h functional_equation.cpp functional_equation_wrapper.cpp
+functional_equation_wrapper.o: global.h rational.h variety.h polynomial.h functional_equation.h functional_equation.cpp functional_equation_wrapper.cpp
 	$(CXX) $(MY_CXX_FLAGS) -c functional_equation_wrapper.cpp
 
 propositional_system.o: global.h graph.h proposition.h propositional_system.h propositional_system.cpp binary_matrix.h directed_graph.h

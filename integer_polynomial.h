@@ -1,40 +1,40 @@
 #include "random.h"
 #include "rational.h"
-#include "integer_polynomial.h"
 
-#ifndef _polynomialh
-#define _polynomialh
+#ifndef _integerpolynomialh
+#define _integerpolynomialh
 
 namespace SYNARMOSMA {
   template<class kind>
-  class Polynomial;
+  class Integer_Polynomial;
 
   template<class kind>
-  std::ostream& operator <<(std::ostream&,const Polynomial<kind>&);
+  std::ostream& operator <<(std::ostream&,const Integer_Polynomial<kind>&);
 
   template<class kind>
-  bool operator ==(const Polynomial<kind>&,const Polynomial<kind>&);
+  bool operator ==(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);
 
   template<class kind>
-  Polynomial<kind> operator +(const Polynomial<kind>&,const Polynomial<kind>&);
+  Integer_Polynomial<kind> operator +(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);
 
   template<class kind>
-  Polynomial<kind> operator -(const Polynomial<kind>&,const Polynomial<kind>&);
+  Integer_Polynomial<kind> operator -(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);
 
   template<class kind>
-  Polynomial<kind> operator *(kind,const Polynomial<kind>&);
+  Integer_Polynomial<kind> operator *(kind,const Integer_Polynomial<kind>&);
 
   template<class kind>
-  Polynomial<kind> operator *(const Polynomial<kind>&,const Polynomial<kind>&);
+  Integer_Polynomial<kind> operator *(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);
 
   template<class kind>
   // A class intended for low-degree polynomials since we store every coefficient, zero or not.
-  class Polynomial {
+  class Integer_Polynomial {
    protected:
     unsigned int degree = 0;
+    unsigned int characteristic = 0;
     bool irreducible = false;
     bool homogeneous = false;
-    bool monic = false;
+    bool normed = false;
     std::vector<kind> terms;
   
     void initialize();
@@ -42,15 +42,15 @@ namespace SYNARMOSMA {
     int write_terms(std::ofstream&) const;
     int read_terms(std::ifstream&);
    public:
-    Polynomial();
-    Polynomial(unsigned int);
-    Polynomial(unsigned int,unsigned int);
-    Polynomial(const std::vector<kind>&);
-    Polynomial(const std::vector<kind>&,unsigned int);
-    ~Polynomial();
-    Polynomial& operator =(const Polynomial&);
-    Polynomial& operator -(const Polynomial&);
-    Polynomial(const Polynomial&);
+    Integer_Polynomial();
+    Integer_Polynomial(unsigned int);
+    Integer_Polynomial(unsigned int,unsigned int);
+    Integer_Polynomial(const std::vector<kind>&);
+    Integer_Polynomial(const std::vector<kind>&,unsigned int);
+    ~Integer_Polynomial();
+    Integer_Polynomial& operator =(const Integer_Polynomial&);
+    Integer_Polynomial& operator -(const Integer_Polynomial&);
+    Integer_Polynomial(const Integer_Polynomial&);
     Integer_Polynomial<unsigned int> reduce(unsigned int);
     kind evaluate(kind);
     void generate(unsigned int);
@@ -61,45 +61,25 @@ namespace SYNARMOSMA {
     void clear();
     int serialize(std::ofstream&) const;
     int deserialize(std::ifstream&);
-    Polynomial<kind> derivative() const;
-    friend std::ostream& operator << <>(std::ostream&,const Polynomial<kind>&);
-    friend bool operator == <>(const Polynomial<kind>&,const Polynomial<kind>&);
-    friend Polynomial<kind> operator +<>(const Polynomial<kind>&,const Polynomial<kind>&);
-    friend Polynomial<kind> operator *<>(kind,const Polynomial<kind>&);
-    friend Polynomial<kind> operator *<>(const Polynomial<kind>&,const Polynomial<kind>&);
+    Integer_Polynomial<kind> derivative() const;
+    friend std::ostream& operator << <>(std::ostream&,const Integer_Polynomial<kind>&);
+    friend bool operator == <>(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);
+    friend Integer_Polynomial<kind> operator +<>(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);
+    friend Integer_Polynomial<kind> operator *<>(kind,const Integer_Polynomial<kind>&);
+    friend Integer_Polynomial<kind> operator *<>(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);
   };
 
-  template<>
-  void Polynomial<Rational>::simplify()
-  {
-    unsigned int i,d = 0;
-    const Rational unity(1);
-
-    for(i=0; i<=degree; ++i) {
-      if (terms[i].is_null()) continue;
-      d = i;
-    }
-    if (d < degree) {
-      std::vector<Rational> nterms;
-
-      for(i=0; i<=d; ++i) {
-        nterms.push_back(terms[i]);
-      }
-      terms = nterms;
-      degree = d;
-    }
-    if (terms[degree] == unity) monic = true;
-    if (terms[0].is_null()) homogeneous = true;
-  }
-
   template<class kind>
-  void Polynomial<kind>::simplify()
+  void Integer_Polynomial<kind>::simplify()
   {
     unsigned int i,d = 0;
-    const kind unity = 1.0;
-
+    if (characteristic > 0) {
+      for(i=0; i<=degree; ++i) {
+        terms[i] = terms[i] % characteristic;
+      }
+    }
     for(i=0; i<=degree; ++i) {
-      if (std::abs(terms[i]) < std::numeric_limits<double>::epsilon()) continue;
+      if (terms[i] == kind(0)) continue;
       d = i;
     }
     if (d < degree) {
@@ -111,39 +91,28 @@ namespace SYNARMOSMA {
       terms = nterms;
       degree = d;
     }
-    if (std::abs(terms[degree] - unity) == std::numeric_limits<double>::epsilon()) monic = true;
-    if (std::abs(terms[0]) < std::numeric_limits<double>::epsilon()) homogeneous = true;
-  }
-
-  template<> 
-  bool Polynomial<Rational>::is_null() const
-  {
-    if (terms.empty()) return true;
-    unsigned int i;
-    for(i=0; i<=degree; ++i) {
-      if (!terms[i].is_null()) return false;
-    }
-    return true;
+    if (terms[degree] == kind(1)) normed = true;
+    if (terms[0] == kind(0)) homogeneous = true;
   }
 
   template<class kind> 
-  bool Polynomial<kind>::is_null() const
+  bool Integer_Polynomial<kind>::is_null() const
   {
     if (terms.empty()) return true;
     unsigned int i;
     for(i=0; i<=degree; ++i) {
-      if (std::abs(terms[i]) > std::numeric_limits<double>::epsilon()) return false;
+      if (terms[i] != kind(0)) return false;
     }
     return true;
   }
 
   template<class kind>
-  std::ostream& operator <<(std::ostream& s,const Polynomial<kind>& source)
+  std::ostream& operator <<(std::ostream& s,const Integer_Polynomial<kind>& source)
   {
     unsigned int i;
 
     if (source.terms[source.degree] > 0) {
-      if (source.monic) {
+      if (source.terms[source.degree] == 1) {
         if (source.degree == 1) {
           s << "x ";
         }
@@ -213,7 +182,7 @@ namespace SYNARMOSMA {
         }  	
       }   	
     }
-    if (!source.homogeneous) {
+    if (source.terms[0] != 0) {
       if (source.terms[0] > 0) {
         s << "+ " << source.terms[0];
       }
@@ -224,32 +193,19 @@ namespace SYNARMOSMA {
     return s;
   }
 
-  template<>
-  bool operator ==(const Polynomial<Rational>& p1,const Polynomial<Rational>& p2)
+  template<class kind>
+  bool operator ==(const Integer_Polynomial<kind>& p1,const Integer_Polynomial<kind>& p2)
   {
     if (p1.degree != p2.degree) return false;
     unsigned int i;
-    Rational q;
     for(i=0; i<p1.degree; ++i) {
-      q = p1.terms[i] - p2.terms[i];
-      if (!q.is_null()) return false;
+      if (p1.terms[i] != p2.terms[i]) return false;
     }
     return true;
   }
 
   template<class kind>
-  bool operator ==(const Polynomial<kind>& p1,const Polynomial<kind>& p2)
-  {
-    if (p1.degree != p2.degree) return false;
-    unsigned int i;
-    for(i=0; i<p1.degree; ++i) {
-      if (std::abs(p1.terms[i] - p2.terms[i]) > std::numeric_limits<double>::epsilon()) return false;
-    }
-    return true;
-  }
-
-  template<class kind>
-  Polynomial<kind> operator -(const Polynomial<kind>& p1,const Polynomial<kind>& p2)
+  Integer_Polynomial<kind> operator -(const Integer_Polynomial<kind>& p1,const Integer_Polynomial<kind>& p2)
   {
     unsigned int i,mu = std::min(p1.degree,p2.degree);
     std::vector<kind> new_terms;
@@ -267,13 +223,13 @@ namespace SYNARMOSMA {
         new_terms.push_back(-p2.terms[i]);
       }
     }
-    Polynomial<kind> output(new_terms);
+    Integer_Polynomial<kind> output(new_terms);
     output.simplify();
     return output;
   }
 
   template<class kind>
-  Polynomial<kind> operator +(const Polynomial<kind>& p1,const Polynomial<kind>& p2)
+  Integer_Polynomial<kind> operator +(const Integer_Polynomial<kind>& p1,const Integer_Polynomial<kind>& p2)
   {
     unsigned int i,mu = std::min(p1.degree,p2.degree);
     std::vector<kind> new_terms;
@@ -291,13 +247,13 @@ namespace SYNARMOSMA {
         new_terms.push_back(p2.terms[i]);
       }
     }
-    Polynomial<kind> output(new_terms);
+    Integer_Polynomial<kind> output(new_terms);
     output.simplify();
     return output;
   }
 
   template<class kind>
-  Polynomial<kind> operator *(kind alpha,const Polynomial<kind>& p)
+  Integer_Polynomial<kind> operator *(kind alpha,const Integer_Polynomial<kind>& p)
   {
     unsigned int i;
     std::vector<kind> new_terms;
@@ -305,13 +261,13 @@ namespace SYNARMOSMA {
     for(i=0; i<=p.degree; ++i) {
       new_terms.push_back(alpha*p.terms[i]);
     }
-    Polynomial<kind> output(new_terms);
+    Integer_Polynomial<kind> output(new_terms);
     output.simplify();
     return output;
   }
 
   template<class kind>
-  Polynomial<kind> operator *(const Polynomial<kind>& p1,const Polynomial<kind>& p2)  
+  Integer_Polynomial<kind> operator *(const Integer_Polynomial<kind>& p1,const Integer_Polynomial<kind>& p2)  
   {
     unsigned int i,j,k,mdegree = p1.degree + p2.degree;
     kind sum;
@@ -329,7 +285,7 @@ namespace SYNARMOSMA {
       new_terms.push_back(sum);
     }    
     new_terms.push_back(p1.terms[p1.degree]*p2.terms[p2.degree]);        
-    Polynomial<kind> output(new_terms);
+    Integer_Polynomial<kind> output(new_terms);
     output.simplify();
     return output;
   } 
