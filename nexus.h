@@ -5,9 +5,10 @@
 #define _nexush
 
 namespace SYNARMOSMA {
+  /// A class representing an abstract simplicial complex, using the Cell class to store higher-dimensional elements.
   class Nexus: public Schema {
    protected:
-    int dimension;
+    int dimension = -1;
     std::vector<Cell>* elements;
     hash_map* index_table;
 
@@ -21,12 +22,12 @@ namespace SYNARMOSMA {
     int deserialize(std::ifstream&) override;
     bool orientable() const;
     bool pseudomanifold(bool*) const;
-    void surface_construction(int);
+    void surface_construction(std::string&);
     void clear() override;
     void initialize(int);
     void initialize(int,int);
-    void paste(const std::set<int>&);
-    void paste(const Cell&);
+    inline bool paste(const std::set<int>& vx) {return paste(Cell(vx));};
+    bool paste(const Cell&);
     void regularization();
     void ascend(int,int,std::vector<Cell>&) const;
     void star(const std::set<std::set<int> >&,std::vector<Cell>*) const;

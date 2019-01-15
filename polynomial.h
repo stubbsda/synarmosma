@@ -51,7 +51,7 @@ namespace SYNARMOSMA {
     Polynomial& operator =(const Polynomial&);
     Polynomial& operator -(const Polynomial&);
     Polynomial(const Polynomial&);
-    Integer_Polynomial<unsigned int> reduce(unsigned int);
+    Integer_Polynomial<int> reduce(unsigned int);
     kind evaluate(kind);
     void generate(unsigned int);
     inline unsigned int get_degree() const {return degree;};

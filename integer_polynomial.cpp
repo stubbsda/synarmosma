@@ -46,7 +46,7 @@ namespace SYNARMOSMA {
       terms = nterms;
       degree = d;
     }
-    if (terms[degree] == NTL::to_ZZ(1)) normed = true;
+    if (terms[degree] == NTL::to_ZZ(1)) monic = true;
     if (terms[0] == NTL::to_ZZ(0)) homogeneous = true;
   }
 }
@@ -68,7 +68,7 @@ void Integer_Polynomial<kind>::simplify()
     terms = nterms;
     degree = d;
   }
-  if (terms[degree] == kind(1)) normed = true;
+  if (terms[degree] == kind(1)) monic = true;
   if (terms[0] == kind(0)) homogeneous = true;
 }
 */
@@ -100,7 +100,7 @@ Integer_Polynomial<kind>::Integer_Polynomial(const std::vector<kind>& t,unsigned
   }
   irreducible = false;
   homogeneous = false;
-  normed = false;
+  monic = false;
   simplify();
 }
 
@@ -109,7 +109,7 @@ Integer_Polynomial<kind>::Integer_Polynomial(const Integer_Polynomial& source)
 {
   degree = source.degree;
   characteristic = source.characteristic;
-  normed = source.normed;
+  monic = source.monic;
   homogeneous = source.homogeneous;
   irreducible = source.irreducible;
   terms = source.terms;
@@ -129,7 +129,7 @@ void Integer_Polynomial<kind>::clear()
   degree = 0;
   homogeneous = false;
   irreducible = false;
-  normed = false;
+  monic = false;
 }
 
 template<class kind>
@@ -179,7 +179,7 @@ int Integer_Polynomial<kind>::serialize(std::ofstream& s) const
   s.write((char*)(&characteristic),sizeof(int)); count += sizeof(int);
   s.write((char*)(&homogeneous),sizeof(bool)); count += sizeof(bool);
   s.write((char*)(&irreducible),sizeof(bool)); count += sizeof(bool);
-  s.write((char*)(&normed),sizeof(bool)); count += sizeof(bool);
+  s.write((char*)(&monic),sizeof(bool)); count += sizeof(bool);
   count += write_terms(s);
 
   return count;
@@ -227,59 +227,21 @@ int Integer_Polynomial<kind>::deserialize(std::ifstream& s)
   s.read((char*)(&characteristic),sizeof(int)); count += sizeof(int);
   s.read((char*)(&homogeneous),sizeof(bool)); count += sizeof(bool);
   s.read((char*)(&irreducible),sizeof(bool)); count += sizeof(bool);
-  s.read((char*)(&normed),sizeof(bool)); count += sizeof(bool);
+  s.read((char*)(&monic),sizeof(bool)); count += sizeof(bool);
   count += read_terms(s);
 
   return count;
-}
-
-namespace SYNARMOSMA {
-  template<>
-  void Integer_Polynomial<NTL::ZZ>::initialize()
-  {
-    unsigned int i;
-    NTL::ZZ test;
-    bool flag = true;
-    const NTL::ZZ zero = NTL::to_ZZ(0);
-
-    for(i=0; i<degree; ++i) {
-      terms.push_back(NTL::to_ZZ(RND.irandom(-25,25)));
-    }
-    do {
-      test = NTL::to_ZZ(RND.irandom(-25,25));
-      if (test != zero) flag = false;
-    } while(flag);
-    terms.push_back(test);
-
-    irreducible = true;
-    simplify();
-  }
 }
 
 template<class kind>
 void Integer_Polynomial<kind>::initialize()
 {
   unsigned int i;
-  kind test;
-  bool flag = true;
-  const kind zero = kind(0);
 
-  if (characteristic == 0) {
-    for(i=0; i<degree; ++i) {
-      terms.push_back(kind(RND.irandom(-25,25)));
-    }
-    do {
-      test = kind(RND.irandom(-25,25));
-      if (test != zero) flag = false;
-    } while(flag);
-    terms.push_back(test);
+  for(i=0; i<=degree; ++i) {
+    terms.push_back(Integer_Polynomial<kind>::unity);
   }
-  else {
-    for(i=0; i<degree; ++i) {
-      terms.push_back(kind(RND.irandom(characteristic)));
-    }
-    terms.push_back(RND.irandom(1,characteristic-1));
-  }
+
   irreducible = true;
   simplify();
 }
@@ -291,7 +253,7 @@ Integer_Polynomial<kind>& Integer_Polynomial<kind>::operator =(const Integer_Pol
 
   degree = source.degree;
   characteristic = source.characteristic;
-  normed = source.normed;
+  monic = source.monic;
   homogeneous = source.homogeneous;
   irreducible = source.irreducible;
   terms = source.terms;
@@ -306,12 +268,12 @@ Integer_Polynomial<kind>& Integer_Polynomial<kind>::operator -(const Integer_Pol
 
   degree = source.degree;
   characteristic = source.characteristic;
-  normed = source.normed;
+  monic = source.monic;
   homogeneous = source.homogeneous;
   irreducible = source.irreducible;
   terms = source.terms;  
   for(i=0; i<=degree; ++i) {
-    terms[i] = kind(-1)*terms[i];
+    terms[i] = neg1*terms[i];
   }
 
   return *this;
@@ -333,7 +295,7 @@ void Integer_Polynomial<kind>::set_value(kind x,unsigned int n)
   else {
     unsigned int i;
     for(i=1+degree; i<n; ++i) {
-      terms.push_back(kind(0));
+      terms.push_back(Integer_Polynomial<kind>::zero);
     }
     terms.push_back(x);
     degree = n;
@@ -365,7 +327,7 @@ kind Integer_Polynomial<kind>::evaluate(kind x)
     if (x >= characteristic) throw std::invalid_argument("Argument exceeds field characteristic!");
   }
   int i;
-  kind y = kind(0);
+  kind y = Integer_Polynomial<kind>::zero;
   // Use Horner's method to speed evaluation of the polynomial
   for(i=degree; i>0; --i) {
     y = y*x + terms[i];
@@ -402,37 +364,37 @@ Integer_Polynomial<kind> Integer_Polynomial<kind>::derivative() const
 
 namespace SYNARMOSMA {
   template<>
-  Integer_Polynomial<unsigned int> Integer_Polynomial<NTL::ZZ>::reduce(unsigned int p)
+  Integer_Polynomial<int> Integer_Polynomial<NTL::ZZ>::reduce(unsigned int p)
   {
     if (!NTL::ProbPrime(p)) throw std::invalid_argument("Integer_Polynomial must be reduced over a prime characteristic!");
 
     unsigned int i;
     long temp;
     NTL::ZZ q,base = NTL::to_ZZ(p);
-    std::vector<unsigned int> nterms;
+    std::vector<int> nterms;
 
     for(i=0; i<=degree; ++i) {
       q = terms[i] % base;
       NTL::conv(temp,q);
-      nterms.push_back((unsigned int) temp);
+      nterms.push_back(temp);
     }
-    Integer_Polynomial<unsigned int> output(nterms,p);
+    Integer_Polynomial<int> output(nterms,p);
     return output;
   }
 }
 
 template<class kind>
-Integer_Polynomial<unsigned int> Integer_Polynomial<kind>::reduce(unsigned int p)
+Integer_Polynomial<int> Integer_Polynomial<kind>::reduce(unsigned int p)
 {
   if (!NTL::ProbPrime(p)) throw std::invalid_argument("Integer_Polynomial must be reduced over a prime characteristic!");
   
   unsigned int i;
-  std::vector<unsigned int> nterms;
+  std::vector<int> nterms;
 
   for(i=0; i<=degree; ++i) {
     nterms.push_back(convert(terms[i],p));
   }
-  Integer_Polynomial<unsigned int> output(nterms,p);
+  Integer_Polynomial<int> output(nterms,p);
   return output;
 }
 

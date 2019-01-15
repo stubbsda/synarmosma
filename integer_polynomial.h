@@ -34,8 +34,17 @@ namespace SYNARMOSMA {
     unsigned int characteristic = 0;
     bool irreducible = false;
     bool homogeneous = false;
-    bool normed = false;
+    bool monic = false;
     std::vector<kind> terms;
+    /// The value 0, stored in the correct data type for this instantiation of 
+    /// the template class.
+    static const kind zero;
+    /// The value -1, stored in the correct data type for this instantiation of 
+    /// the template class.
+    static const kind neg1;
+    /// The value 1, stored in the correct data type for this instantiation of 
+    /// the template class.
+    static const kind unity;
   
     void initialize();
     inline void simplify();
@@ -51,7 +60,7 @@ namespace SYNARMOSMA {
     Integer_Polynomial& operator =(const Integer_Polynomial&);
     Integer_Polynomial& operator -(const Integer_Polynomial&);
     Integer_Polynomial(const Integer_Polynomial&);
-    Integer_Polynomial<unsigned int> reduce(unsigned int);
+    Integer_Polynomial<int> reduce(unsigned int);
     kind evaluate(kind);
     void generate(unsigned int);
     inline unsigned int get_degree() const {return degree;};
@@ -79,7 +88,7 @@ namespace SYNARMOSMA {
       }
     }
     for(i=0; i<=degree; ++i) {
-      if (terms[i] == kind(0)) continue;
+      if (terms[i] == Integer_Polynomial<kind>::zero) continue;
       d = i;
     }
     if (d < degree) {
@@ -91,8 +100,8 @@ namespace SYNARMOSMA {
       terms = nterms;
       degree = d;
     }
-    if (terms[degree] == kind(1)) normed = true;
-    if (terms[0] == kind(0)) homogeneous = true;
+    if (terms[degree] == Integer_Polynomial<kind>::unity) monic = true;
+    if (terms[0] == Integer_Polynomial<kind>::zero) homogeneous = true;
   }
 
   template<class kind> 
@@ -101,7 +110,7 @@ namespace SYNARMOSMA {
     if (terms.empty()) return true;
     unsigned int i;
     for(i=0; i<=degree; ++i) {
-      if (terms[i] != kind(0)) return false;
+      if (terms[i] != Integer_Polynomial<kind>::zero) return false;
     }
     return true;
   }
@@ -112,7 +121,7 @@ namespace SYNARMOSMA {
     unsigned int i;
 
     if (source.terms[source.degree] > 0) {
-      if (source.terms[source.degree] == 1) {
+      if (source.monic) {
         if (source.degree == 1) {
           s << "x ";
         }
@@ -182,7 +191,7 @@ namespace SYNARMOSMA {
         }  	
       }   	
     }
-    if (source.terms[0] != 0) {
+    if (!source.homogeneous) {
       if (source.terms[0] > 0) {
         s << "+ " << source.terms[0];
       }

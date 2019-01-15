@@ -8,6 +8,9 @@ namespace SYNARMOSMA {
   template<class kind>
   class Functional_Equation;
 
+  extern template const int Integer_Polynomial<int>::zero;
+  extern template const NTL::ZZ Integer_Polynomial<NTL::ZZ>::zero;
+
   template<class kind>
   std::ostream& operator <<(std::ostream& s,const Functional_Equation<kind>&);
 
