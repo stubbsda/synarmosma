@@ -40,6 +40,8 @@ namespace SYNARMOSMA {
     Rational(const Rational&);
     /// A destructor that is empty.
     ~Rational();
+    /// This method returns true if this rational number is zero and false otherwise.
+    inline bool is_null() const {return (n == NTL::to_ZZ(0));};
     /// This method returns the numerator.
     inline NTL::ZZ get_numerator() const {return n;};
     /// This method returns the denominator.
