@@ -1,8 +1,8 @@
 OBJECTS = global.o random.o cell.o nexus.o schema.o group.o graph.o geometry.o word.o rational.o\
-variety_wrapper.o polynomial_wrapper.o proposition.o propositional_system.o logic_graph.o edge.o\
-vertex.o multitime.o binary_matrix.o integer_matrix_wrapper.o matrix_wrapper.o directed_graph.o\
+variety_wrapper.o polynomial_wrapper.o integer_polynomial_wrapper.o proposition.o propositional_system.o\
+vertex.o multitime.o binary_matrix.o integer_matrix_wrapper.o matrix_wrapper.o logic_graph.o edge.o\
 functional_equation_wrapper.o homology.o homotopy.o poset.o lattice.o pseudograph.o solver_wrapper.o\
-integer_polynomial_wrapper.o
+directed_graph.o
 
 MY_CXX_FLAGS = $(CXX_FLAGS) $(OPENMP) -fPIC #-DDISCRETE
 

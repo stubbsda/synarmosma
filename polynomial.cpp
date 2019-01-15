@@ -257,17 +257,17 @@ Polynomial<kind> Polynomial<kind>::derivative() const
 }
 
 template<class kind>
-Integer_Polynomial<unsigned int> Polynomial<kind>::reduce(unsigned int p)
+Integer_Polynomial<int> Polynomial<kind>::reduce(unsigned int p)
 {
   if (!NTL::ProbPrime(p)) throw std::invalid_argument("Polynomial must be reduced over a prime characteristic!");
   
   unsigned int i;
-  std::vector<unsigned int> nterms;
+  std::vector<int> nterms;
 
   for(i=0; i<=degree; ++i) {
     nterms.push_back(convert(terms[i],p));
   }
-  Integer_Polynomial<unsigned int> output(nterms,p);
+  Integer_Polynomial<int> output(nterms,p);
   return output;
 }
 

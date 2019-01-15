@@ -4,7 +4,7 @@ using namespace SYNARMOSMA;
 
 Nexus::Nexus() : Schema()
 {
-  dimension = -1;
+  
 }
 
 Nexus::Nexus(int n) : Schema()
@@ -21,7 +21,7 @@ Nexus::Nexus(const Nexus& source)
   dimension = source.dimension;
   elements = new std::vector<Cell>[1+dimension];
   index_table = new hash_map[1+dimension];
-  for(int i=0; i<1+dimension; ++i) {
+  for(int i=0; i<=dimension; ++i) {
     elements[i] = source.elements[i];
     index_table[i] = source.index_table[i];
   }
@@ -39,7 +39,7 @@ Nexus& Nexus::operator =(const Nexus& source)
   dimension = source.dimension;
   elements = new std::vector<Cell>[1+dimension];
   index_table = new hash_map[1+dimension];
-  for(int i=0; i<1+dimension; ++i) {
+  for(int i=0; i<=dimension; ++i) {
     elements[i] = source.elements[i];
     index_table[i] = source.index_table[i];
   }
@@ -153,13 +153,7 @@ int Nexus::deserialize(std::ifstream& s)
   return count;
 }
 
-void Nexus::paste(const std::set<int>& vx)
-{
-  Cell c(vx);
-  paste(c);
-}
-
-void Nexus::paste(const Cell& c)
+bool Nexus::paste(const Cell& c)
 {
   std::set<int> vx; 
   int m = c.dimension();
@@ -169,16 +163,29 @@ void Nexus::paste(const Cell& c)
   if (qt == index_table[m].end()) {
     elements[m].push_back(c);
     index_table[m][vx] = elements[m].size() - 1;
+    // Now check if any vertices need to be added...
+    int p = *vx.rbegin();
+    if (p >= nvertex) {
+      std::set<int> null;
+      for(int i=nvertex; i<=p; ++i) {
+        neighbours.push_back(null);
+      }
+      nvertex = 1 + p;
+    }
+    return true;
   }
+  return false;
 }
 
-void Nexus::surface_construction(int stype)
+void Nexus::surface_construction(std::string& surface)
 {
   // A method to construct certain standard surfaces for testing the correctness 
   // of the pseudomanifold and orientability routines...
   std::set<int> vx;
   
-  if (stype == 0) {
+  boost::to_upper(surface);
+
+  if (surface == "SPHERE") {
     // The 2-sphere $S^2$, which is an orientable pseudomanifold without boundary
     initialize(2,4);
 
@@ -198,7 +205,7 @@ void Nexus::surface_construction(int stype)
     paste(vx);
     vx.clear();
   }
-  else if (stype == 1) {
+  else if (surface == "PROJECTIVE_PLANE") {
     // The real projective plane, a non-orientable pseudomanifold without boundary
     initialize(2,6);
 
@@ -242,7 +249,7 @@ void Nexus::surface_construction(int stype)
     paste(vx);
     vx.clear();
   }
-  else if (stype == 2) {
+  else if (surface == "TORUS") {
     // The torus $S^1 \times S^1$, an orientable pseudomanifold without boundary
     initialize(2,9);
 
@@ -318,7 +325,7 @@ void Nexus::surface_construction(int stype)
     paste(vx);
     vx.clear();
   }
-  else {
+  else if (surface == "MÖBIUS_STRIP") {
     // The Möbius strip, a non-orientable pseudomanifold with boundary
     initialize(2,8);
 
@@ -353,6 +360,9 @@ void Nexus::surface_construction(int stype)
     vx.insert(0); vx.insert(1); vx.insert(7);
     paste(vx);
     vx.clear();
+  }
+  else {
+    throw std::invalid_argument("Unknown surface type in Nexus class!");
   }
   regularization();
 }
