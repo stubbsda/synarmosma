@@ -164,7 +164,7 @@ void Homology::compute_integral_native(const Nexus* NX)
       for(it=vx.begin(); it!=vx.end(); ++it) {
         p = *it;
         S.insert(i); S.insert(p);
-        j = NX->get_index(1,S);
+        j = NX->get_index(S);
         //qt = NX->index_table[1].find(S);
         //j = qt->second;
         S.clear();
@@ -247,7 +247,7 @@ void Homology::compute_integral_native(const Nexus* NX)
         p = *it;
         S.insert(i);
         S.insert(p);
-        j = NX->get_index(1,S);
+        j = NX->get_index(S);
         NX->get_elements(1,j,v2);
         S.clear();
         if (i == v2[0]) {
@@ -361,7 +361,7 @@ void Homology::compute_native(const Nexus* NX)
         p = *it;
         S.insert(i);
         S.insert(p);
-        j = NX->get_index(1,S);
+        j = NX->get_index(S);
         S.clear();
         A->set(i,j);
       }

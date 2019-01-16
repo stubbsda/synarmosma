@@ -7,11 +7,12 @@ Nexus::Nexus() : Schema()
   
 }
 
-Nexus::Nexus(int n) : Schema()
+Nexus::Nexus(int D) : Schema()
 {
-  elements = new std::vector<Cell>[1+n];
-  index_table = new hash_map[1+n];
-  dimension = n;
+  if (D < 1) throw std::invalid_argument("The dimensionality of a Nexus instance must be greater than zero!"); 
+  elements = new std::vector<Cell>[1+D];
+  index_table = new hash_map[1+D];
+  dimension = D;
 }
 
 Nexus::Nexus(const Nexus& source)
@@ -157,6 +158,7 @@ bool Nexus::paste(const Cell& c)
 {
   std::set<int> vx; 
   int m = c.dimension();
+  if (m > dimension) throw std::invalid_argument("The Cell being pasted to this Nexus instance has too high a dimension!");
 
   c.get_vertices(vx);
   hash_map::const_iterator qt = index_table[m].find(vx);
@@ -400,11 +402,11 @@ void Nexus::compute_entourages()
   }
 }
 
-void Nexus::regularization()
+int Nexus::regularization()
 {
   // If a given d-simplex exists, we need to make sure that all of
   // its sub-simplices also exist in the nexus
-  int i,j,k,n,m;
+  int i,j,k,n,m,na = 0;
   Cell S;
   hash_map::const_iterator qt;
 
@@ -419,12 +421,15 @@ void Nexus::regularization()
           elements[i-1].push_back(S);
           index_table[i-1][S.vertices] = m;
           m++;
+          na++;
         }
       }
     }
   }
   compute_entourages();
   compute_neighbours();
+
+  return na;
 }
 
 void Nexus::closure(const std::set<std::set<int> >& S,Nexus* NX,int* offset) const
