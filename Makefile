@@ -1,7 +1,7 @@
 # Which C++ compiler to use, default is Gnu g++
 CXX         = g++
 # General flags for C++ compilation, assumes compiler with OpenMP support
-CXX_FLAGS   = -std=c++14 -Wall -fopenmp -march=native -fPIC
+CXX_FLAGS   = -std=c++14 -Wall -march=native -fPIC -fopenmp
 # For debug mode
 DEBUG       = -g -DDEBUG
 # Optimization values for the g++ on an x86-64 platform
@@ -10,7 +10,7 @@ OPT         = -O3 -fstrict-aliasing -ftree-vectorize -funroll-loops
 #CXX_FLAGS  += $(OPT)
 CXX_FLAGS  += $(DEBUG)
 # Use the 64 bit integer versions of the vertex energy and spatial geometry?
-CXX_FLAGS += -DDISCRETE
+#CXX_FLAGS += -DDISCRETE
 # Standard linking flags, shouldn't need to be changed
 LD_FLAGS    = -Wall -shared -fopenmp
 # Debug or optimized version for linking...
@@ -23,7 +23,7 @@ BOOST       = -lboost_system
 # All the necessary libraries: LAPACK, Boost, NTL and GMP 
 LIBS        = $(LAPACK) $(BOOST) -lntl -lgmp -lm
 # Where to install the Synarmosma library, requires root privileges
-INSTALL_DIR = /home/stubbs/fabrica/local
+INSTALL_DIR = $(HOME)/fabrica/local
 # End of user-modifiable parameters!
 
 OBJECTS = global.o random.o cell.o nexus.o schema.o group.o graph.o geometry.o word.o rational.o\

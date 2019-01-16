@@ -21,7 +21,6 @@ are located at the beginning of the Makefile, where various compiler arguments a
 specified. The build variables are all described in the Makefile and in general the default values should 
 be safe on most Unix-like platforms. Certain methods within the library have been parallelized using 
 OpenMP, namely for the Geometry, Graph, Nexus and Matrix classes, so that a C++ compiler able to support 
-OpenMP is also desirable. A sample main.cpp file illustrating the use of the Variety template class 
-is also included in this directory. 
+OpenMP is also desirable. 
 
 For any questions, comments or suggestions, please contact info@synarmosma.org
