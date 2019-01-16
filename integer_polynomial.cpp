@@ -324,7 +324,7 @@ template<class kind>
 kind Integer_Polynomial<kind>::evaluate(kind x)
 {
   if (characteristic > 0) {
-    if (x >= characteristic) throw std::invalid_argument("Argument exceeds field characteristic!");
+    if (x >= (signed) characteristic) throw std::invalid_argument("Argument exceeds field characteristic!");
   }
   int i;
   kind y = Integer_Polynomial<kind>::zero;
