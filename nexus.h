@@ -37,16 +37,21 @@ namespace SYNARMOSMA {
     bool orientable() const;
     /// This method determines if the abstract simplicial complex represented by this Nexus instance is a pseudomanifold and returns true if this is so; the method's argument is a Boolean which is set to true if the Nexus instance is a pseudomanifold-with-boundary.
     bool pseudomanifold(bool*) const;
+    /// This method builds a minimal simplicial complex reflecting the topology of one of a fixed set of know surface topologies: SPHERE (4), PROJECTIVE_PLANE (6), TORUS (9) and MÖBIUS_STRIP (8); the number in brackets indicates the number of vertices needed to represent this surface. 
     void surface_construction(std::string&);
     /// This method restores the inherited Schema properties to their default value and, if Nexus::dimension is greater than -1, frees the memory for Nexus::elements and Nexus::index_table, then sets Nexus::dimension to -1. 
     void clear() override;
+    /// This method calls clear(), sets the value of Nexus::dimension to the argument and allocates the Nexus::elements and Nexus::index_table properties. 
     void initialize(int);
+    /// This method calls clear(), sets the value of Nexus::dimension to the first argument and the inherited nvertex property to the second argument. The method then allocates the Schema and Nexus properties.
     void initialize(int,int);
+    /// This method functions like the other paste() method but uses a set containing the vertices that should be added to the Nexus instance.
     inline bool paste(const std::set<int>& vx) {return paste(Cell(vx));};
     /// This method adds a new Cell to this Nexus instance and returns true if it is genuinely new, false otherwise. Note that this method does not call regularization(), so it is the caller's responsibility to ensure that the Nexus is explicitly regularized.
     bool paste(const Cell&);
     /// This method ensures that this Nexus instance satisfies the entailment property for an abstract simplicial complex, i.e. if a D-simplex is part of the complex then so are all of its sub-simplices. The method returns the number of simplices that had to be added to regularize the complex.
     int regularization();
+    /// This method computes via recursion the total entourage of a given d-simplex S, i.e. all n-simplices with d < n <= dimension that contain S. The first argument is the dimension d, the second the index of the simplex in Nexus::elements[d] and the final argument is the vector that will stores all of these instances of the Cell class. 
     void ascend(int,int,std::vector<Cell>&) const;
     void star(const std::set<std::set<int> >&,std::vector<Cell>*) const;
     void link(const std::set<std::set<int> >&,std::vector<Cell>*) const;
@@ -59,24 +64,51 @@ namespace SYNARMOSMA {
     inline unsigned int get_length(int) const;
     /// This method returns the index of a Cell of a given dimension in the relevant Nexus::elements vector and -1 if this Cell can't be found.
     inline int get_index(std::set<int>&) const;
-    inline void get_elements(int D,int n,int* vx) const {elements[D][n].get_vertices(vx);};
-    inline void get_elements(int D,int n,std::set<int>& vx) const {elements[D][n].get_vertices(vx);};
-    inline void get_entourage(int D,int n,std::set<int>& vx) const {elements[D][n].get_entourage(vx);};
+    /// This method puts the vertices belonging to the Cell specified by the first two arguments - the dimension d and index in Nexus::elements[d] - into the integer array in the final argument.
+    inline void get_elements(int,int,int*) const;
+    /// This method puts the vertices belonging to the Cell specified by the first two arguments - the dimension d and index in Nexus::elements[d] - into the integer set in the final argument.
+    inline void get_elements(int,int,std::set<int>&) const;
+    /// This method puts the entourage associated with the Cell specified by the first two arguments - the dimension d and index in Nexus::elements[d] - into the integer set in the final argument.
+    inline void get_entourage(int,int,std::set<int>&) const;
   };
 
   unsigned int Nexus::get_length(int D) const 
   {
-    if (D < 1) throw std::invalid_argument("The dimensionality in Nexus::get_length must be greater than zero!"); 
+    if (D < 1 || D > dimension) throw std::invalid_argument("Illegal dimension value in Nexus::get_length!"); 
     return elements[D].size();
   }
 
   int Nexus::get_index(std::set<int>& S) const 
   {
     unsigned int D = S.size() - 1; 
-    if (D < 1) throw std::invalid_argument("The dimensionality of the simplex in Nexus::get_index must be greater than zero!"); 
+    if (D < 1 || D > dimension) throw std::invalid_argument("Illegal dimension value in Nexus::get_index!"); 
     hash_map::const_iterator qt = index_table[D].find(S); 
     if (qt != index_table[D].end()) return qt->second;
     return -1;
+  }
+
+  void Nexus::get_elements(int D,int n,int* vx) const 
+  {
+    if (D < 1 || D > dimension) throw std::invalid_argument("Illegal dimension value in Nexus::get_elements!"); 
+    if (n < 0 || n >= (signed) elements.size()) throw std::invalid_argument("The simplex specified in Nexus::get_elements does not exist!");
+
+    elements[D][n].get_vertices(vx);
+  }
+
+  void Nexus::get_elements(int D,int n,std::set<int>& vx) const 
+  {
+    if (D < 1 || D > dimension) throw std::invalid_argument("Illegal dimension value in Nexus::get_elements!"); 
+    if (n < 0 || n >= (signed) elements.size()) throw std::invalid_argument("The simplex specified in Nexus::get_elements does not exist!");
+
+    elements[D][n].get_vertices(vx);
+  }
+
+  void Nexus::get_entourage(int D,int n,std::set<int>& vx) const 
+  {
+    if (D < 1 || D > dimension) throw std::invalid_argument("Illegal dimension value in Nexus::get_entourage!"); 
+    if (n < 0 || n >= (signed) elements.size()) throw std::invalid_argument("The simplex specified in Nexus::get_entourage does not exist!");
+
+    elements[D][n].get_entourage(vx);
   }
 }
 #endif
