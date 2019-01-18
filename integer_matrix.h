@@ -93,7 +93,7 @@ namespace SYNARMOSMA {
     Integer_Matrix(unsigned int,bool = false);
     /// The constructor for a general rectangular matrix, which is initialized to the zero matrix.
     Integer_Matrix(unsigned int,unsigned int);
-    /// The standard copy constructor - it calls the clear() method and then copies over all properties from the soure matrix to this one.
+    /// The standard copy constructor - it calls the clear() method and then copies over all properties from the source matrix to this one.
     Integer_Matrix(const Integer_Matrix<kind>&);
     /// The destructor for this class - if Integer_Matrix::nrow is greater than zero, it frees the memory in the Integer_Matrix::elements property.
     ~Integer_Matrix();

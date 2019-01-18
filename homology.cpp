@@ -135,9 +135,8 @@ int Homology::deserialize(std::ifstream& s)
 
 void Homology::compute_integral_native(const Nexus* NX)
 {
-#ifdef DEBUG
-  assert(field == Field::int32 || field == Field::multiprecision);
-#endif
+  if (field != Field::int32 && field != Field::multiprecision) throw std::runtime_error("The field type must be a signed integer or multi-precision integer for this Homology method!");
+ 
   const int dimension = NX->get_dimension();
   const int nvertex = NX->get_order();
   int i,j,d,p,v2[2];
@@ -147,7 +146,6 @@ void Homology::compute_integral_native(const Nexus* NX)
   std::vector<unsigned int> image,kernel,tgenerators;
   std::set<int> vx,vy,faces,S;
   std::set<int>::const_iterator it;
-  //hash_map::const_iterator qt;
 
   image.push_back(0);
   kernel.push_back(0);
@@ -165,8 +163,6 @@ void Homology::compute_integral_native(const Nexus* NX)
         p = *it;
         S.insert(i); S.insert(p);
         j = NX->get_index(S);
-        //qt = NX->index_table[1].find(S);
-        //j = qt->second;
         S.clear();
         NX->get_elements(1,j,v2);
         if (i == v2[0]) {
@@ -565,9 +561,9 @@ void Homology::compute_gap(const Nexus* NX)
     break;      
   }
   file.close();
-#ifdef DEBUG
-  assert(!(hdata.empty()));
-#endif
+  // The output file needs to be non-empty of course...
+  if (hdata.empty()) throw std::runtime_error("The GAP output file is empty!");
+
   // Now we need to parse the line that contains the homology groups' structure
   boost::char_separator<char> sep(", ");
   boost::tokenizer<boost::char_separator<char> > tok(hdata,sep);

@@ -282,7 +282,8 @@ Integer_Polynomial<kind>& Integer_Polynomial<kind>::operator -(const Integer_Pol
 template<class kind>
 kind Integer_Polynomial<kind>::get_value(unsigned int n) const
 {
-  assert(n <= degree);
+  if (n > degree) throw std::invalid_argument("The integer polynomial coefficient cannot exceed the degree!");
+ 
   return terms[n];
 }
 
