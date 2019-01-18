@@ -603,18 +603,18 @@ void Nexus::star(const std::set<std::set<int> >& S,std::vector<Cell>* output) co
   }
 }
 
-void Nexus::ascend(int d,int in1,std::vector<Cell>& out) const
+void Nexus::ascend(int D,int n,std::vector<Cell>& out) const
 {
-  if (d == 1+dimension) return;
+  if (D < 1 && D > dimension) return;
 
   int i;
   std::set<int>::const_iterator it;
-  std::set<int> S = elements[d][in1].entourage;
+  std::set<int> S = elements[D][n].entourage;
 
   for(it=S.begin(); it!=S.end(); ++it) {
     i = *it;
-    out.push_back(elements[d+1][i]);
-    ascend(1+d,i,out);
+    out.push_back(elements[D+1][i]);
+    ascend(1+D,i,out);
   }
 }
 
