@@ -10,6 +10,7 @@ Nexus::Nexus() : Schema()
 Nexus::Nexus(int D) : Schema()
 {
   if (D < 1) throw std::invalid_argument("The dimensionality of a Nexus instance must be greater than zero!"); 
+
   elements = new std::vector<Cell>[1+D];
   index_table = new hash_map[1+D];
   dimension = D;
@@ -17,6 +18,8 @@ Nexus::Nexus(int D) : Schema()
 
 Nexus::Nexus(const Nexus& source)
 {
+  clear();
+
   nvertex = source.nvertex;
   neighbours = source.neighbours;
   dimension = source.dimension;
@@ -31,10 +34,9 @@ Nexus::Nexus(const Nexus& source)
 Nexus& Nexus::operator =(const Nexus& source)
 {
   if (this == &source) return *this;
-  if (dimension > -1) {
-    delete[] elements;
-    delete[] index_table;
-  }
+
+  clear();
+
   nvertex = source.nvertex;
   neighbours = source.neighbours;
   dimension = source.dimension;
@@ -44,6 +46,7 @@ Nexus& Nexus::operator =(const Nexus& source)
     elements[i] = source.elements[i];
     index_table[i] = source.index_table[i];
   }
+
   return *this;
 }
 
@@ -55,29 +58,28 @@ Nexus::~Nexus()
   }
 }
 
-void Nexus::initialize(int d)
+void Nexus::initialize(int D)
 {
+  if (D < 1) throw std::invalid_argument("The dimensionality of a Nexus instance must be greater than zero!"); 
+
   clear();
-#ifdef DEBUG
-  assert(d > 0);
-#endif
-  elements = new std::vector<Cell>[1+d];
-  index_table = new hash_map[1+d];
-  dimension = d;
-  nvertex = 0;
+
+  elements = new std::vector<Cell>[1+D];
+  index_table = new hash_map[1+D];
+  dimension = D;
 }
 
-void Nexus::initialize(int d,int nv)
+void Nexus::initialize(int D,int n)
 {
+  if (D < 1) throw std::invalid_argument("The dimensionality of a Nexus instance must be greater than zero!"); 
+  if (n < 1) throw std::invalid_argument("The number of vertices in a Nexus instance must be greater than zero!"); 
+
   clear();
-#ifdef DEBUG
-  assert(d > 0);
-  assert(nv > 0);
-#endif
-  elements = new std::vector<Cell>[1+d];
-  index_table = new hash_map[1+d];
-  dimension = d;
-  nvertex = nv;
+
+  elements = new std::vector<Cell>[1+D];
+  index_table = new hash_map[1+D];
+  dimension = D;
+  nvertex = n;
   std::set<int> null;
   for(int i=0; i<nvertex; ++i) {
     neighbours.push_back(null);
@@ -86,13 +88,13 @@ void Nexus::initialize(int d,int nv)
 
 void Nexus::clear()
 {
+  nvertex = 0;
+  neighbours.clear();
   if (dimension > -1) {
     delete[] elements;
     delete[] index_table;
   }
-  neighbours.clear();
   dimension = -1;
-  nvertex = 0;
 }
 
 int Nexus::serialize(std::ofstream& s) const

@@ -23,16 +23,22 @@ namespace SYNARMOSMA {
    public:
     /// The default constructor which does nothing.
     Nexus();
+    /// The standard constructor for the Nexus class, in which the argument stores the value of the dimension which must be greater than zero.
     Nexus(int);
+    /// The standard copy constructor - it calls the clear() method and then copies over all properties from the source instance to this one.
     Nexus(const Nexus&);
+    /// The overloaded assignment operator for this class, which first calls clear() and then behaves exactly like the copy constructor for this class.
     Nexus& operator =(const Nexus&);
     /// The destructor which frees the memory of the Nexus::elements and Nexus::index_table properties if Nexus::dimension is greater than -1.
     ~Nexus() override;
     int serialize(std::ofstream&) const override;
     int deserialize(std::ifstream&) override;
+    /// This method determines if the abstract simplicial complex, assumed to be pseudomanifold, is orientable and returns true if this is so.
     bool orientable() const;
+    /// This method determines if the abstract simplicial complex represented by this Nexus instance is a pseudomanifold and returns true if this is so; the method's argument is a Boolean which is set to true if the Nexus instance is a pseudomanifold-with-boundary.
     bool pseudomanifold(bool*) const;
     void surface_construction(std::string&);
+    /// This method restores the inherited Schema properties to their default value and, if Nexus::dimension is greater than -1, frees the memory for Nexus::elements and Nexus::index_table, then sets Nexus::dimension to -1. 
     void clear() override;
     void initialize(int);
     void initialize(int,int);
