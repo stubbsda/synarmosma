@@ -127,6 +127,8 @@ bool Schema::consistent() const
   int i,in1;
   std::set<int>::const_iterator it;
 
+  if (nvertex != (signed) neighbours.size()) return false;
+
   // Loop through all vertices
   for(i=0; i<nvertex; ++i) {
     // Check if the valence is zero...

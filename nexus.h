@@ -31,7 +31,9 @@ namespace SYNARMOSMA {
     Nexus& operator =(const Nexus&);
     /// The destructor which frees the memory of the Nexus::elements and Nexus::index_table properties if Nexus::dimension is greater than -1.
     ~Nexus() override;
+    /// This method writes the instance properties to a binary disk file and returns the number of bytes written to the file.
     int serialize(std::ofstream&) const override;
+    /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
     int deserialize(std::ifstream&) override;
     /// This method determines if the abstract simplicial complex, assumed to be pseudomanifold, is orientable and returns true if this is so.
     bool orientable() const;
@@ -53,10 +55,17 @@ namespace SYNARMOSMA {
     int regularization();
     /// This method computes via recursion the total entourage of a given d-simplex S, i.e. all n-simplices with d < n <= dimension that contain S. The first argument is the dimension d, the second the index of the simplex in Nexus::elements[d] and the final argument is the vector that will stores all of these instances of the Cell class. 
     void ascend(int,int,std::vector<Cell>&) const;
+    /// This method computes the star of a set of simplices, contained in the first argument as a set of vertex sets. The star of the set S is the union of the stars of each simplex in S. For a single simplex s, the star of s is the set of simplices having s as a face; note that the star of S is generally not a simplicial complex itself. For this reason the output - the method's second argument - is stored as simply an array of Cell vectors, one for each dimension. 
     void star(const std::set<std::set<int> >&,std::vector<Cell>*) const;
+    /// This method computes the link of a set of simplices, contained in the first argument as a set of vertex sets. The link of of a set S equals closure(star(S)) − star(closure(S)); it is the closed star of S minus the stars of all faces of S. Like the star operator, the output of the link operator generally isn't a simplicial complex and so the output, the method's second argument, is stored as an array of Cell vectors, one for each dimension. 
     void link(const std::set<std::set<int> >&,std::vector<Cell>*) const;
+    /// This method computes the closure of a set of simplices, contained in the first argument as a set of vertex sets. The closure of the set S is the smallest simplicial subcomplex of this Nexus instance that contains each simplex in S; it is obtained by repeatedly adding to S each face of every simplex in S. The second argument is the closure itself and the final argument is the offset vector for the vertices of this new Nexus instance and this one.
     void closure(const std::set<std::set<int> >&,Nexus*,int*) const;
+    /// This method verifies that the simplicial complex is consistent, i.e. that it satisfies the entailment property, that Nexus::elements[0] and Nexus::index_table are empty and that as a Schema it is consistent.
+    virtual bool consistent() const override;
+    /// This method computes the set of entourages for the Nexus, i.e. verifies that the given sub-simplex exists and records its index value. 
     void compute_entourages();
+    /// This method clears the neighbour sets and then recomputes them on the basis of the set of 1-simplices contained in the Nexus instance.
     void compute_neighbours();
     /// This method returns the dimensionality of this instance of the Nexus class.  
     inline int get_dimension() const {return dimension;};
@@ -81,7 +90,7 @@ namespace SYNARMOSMA {
   int Nexus::get_index(std::set<int>& S) const 
   {
     unsigned int D = S.size() - 1; 
-    if (D < 1 || D > dimension) throw std::invalid_argument("Illegal dimension value in Nexus::get_index!"); 
+    if (D < 1 || D > (unsigned) dimension) throw std::invalid_argument("Illegal dimension value in Nexus::get_index!"); 
     hash_map::const_iterator qt = index_table[D].find(S); 
     if (qt != index_table[D].end()) return qt->second;
     return -1;
@@ -90,7 +99,7 @@ namespace SYNARMOSMA {
   void Nexus::get_elements(int D,int n,int* vx) const 
   {
     if (D < 1 || D > dimension) throw std::invalid_argument("Illegal dimension value in Nexus::get_elements!"); 
-    if (n < 0 || n >= (signed) elements.size()) throw std::invalid_argument("The simplex specified in Nexus::get_elements does not exist!");
+    if (n < 0 || n >= (signed) elements[D].size()) throw std::invalid_argument("The simplex specified in Nexus::get_elements does not exist!");
 
     elements[D][n].get_vertices(vx);
   }
@@ -98,7 +107,7 @@ namespace SYNARMOSMA {
   void Nexus::get_elements(int D,int n,std::set<int>& vx) const 
   {
     if (D < 1 || D > dimension) throw std::invalid_argument("Illegal dimension value in Nexus::get_elements!"); 
-    if (n < 0 || n >= (signed) elements.size()) throw std::invalid_argument("The simplex specified in Nexus::get_elements does not exist!");
+    if (n < 0 || n >= (signed) elements[D].size()) throw std::invalid_argument("The simplex specified in Nexus::get_elements does not exist!");
 
     elements[D][n].get_vertices(vx);
   }
@@ -106,7 +115,7 @@ namespace SYNARMOSMA {
   void Nexus::get_entourage(int D,int n,std::set<int>& vx) const 
   {
     if (D < 1 || D > dimension) throw std::invalid_argument("Illegal dimension value in Nexus::get_entourage!"); 
-    if (n < 0 || n >= (signed) elements.size()) throw std::invalid_argument("The simplex specified in Nexus::get_entourage does not exist!");
+    if (n < 0 || n >= (signed) elements[D].size()) throw std::invalid_argument("The simplex specified in Nexus::get_entourage does not exist!");
 
     elements[D][n].get_entourage(vx);
   }
