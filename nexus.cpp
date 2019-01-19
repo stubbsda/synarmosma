@@ -371,8 +371,37 @@ void Nexus::surface_construction(std::string& surface)
   regularization();
 }
 
+bool Nexus::consistent() const
+{
+  if (!Schema::consistent()) return false;
+  // We shouldn't have any 0-simplices stored in these properties...
+  if (!elements[0].empty() || !index_table[0].empty()) return false;
+
+  int i,j,k,ns;
+  std::set<int> vx;
+  hash_map::const_iterator qt;
+
+  for(i=dimension; i>1; i--) {
+    ns = (signed) elements[i].size();
+    for(j=0; j<ns; ++j) {
+      // Verify that every vertex in this simplex exists...
+      elements[i][j].get_vertices(vx);
+      k = *vx.rbegin();
+      if (k >= nvertex) return false;
+      // Now check the entailment property for an abstract simplicial complex...
+      for(k=0; k<1+i; ++k) {
+        qt = index_table[i-1].find(elements[i][j].faces[k]);
+        if (qt == index_table[i-1].end()) return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 void Nexus::compute_neighbours()
 {
+  if (nvertex != (signed) neighbours.size()) throw std::runtime_error("Illegal value of the nvertex property in Nexus::compute_neighbours!");
   int i,vx[2];
   const int ne = (signed) elements[1].size();
   for(i=0; i<nvertex; ++i) {
@@ -388,16 +417,14 @@ void Nexus::compute_neighbours()
 void Nexus::compute_entourages()
 {
   int i,j,k,ns;
-  std::set<int> s;
-  std::set<int>::const_iterator it;
   hash_map::const_iterator qt;
 
-  for(i=dimension; i>=1; i--) {
+  for(i=dimension; i>1; i--) {
     ns = (signed) elements[i].size();
     for(j=0; j<ns; ++j) {
       for(k=0; k<1+i; ++k) {
         qt = index_table[i-1].find(elements[i][j].faces[k]);
-        if (qt == index_table[i-1].end()) throw std::runtime_error("Missing entourage element!");
+        if (qt == index_table[i-1].end()) throw std::runtime_error("Missing entourage element in Nexus::compute_entourages!");
         elements[i-1][qt->second].entourage.insert(j);
       }
     }
@@ -431,6 +458,8 @@ int Nexus::regularization()
   compute_entourages();
   compute_neighbours();
 
+  if (!consistent()) throw std::runtime_error("The Nexus instance is inconsistent after regularization!");
+
   return na;
 }
 
@@ -446,6 +475,7 @@ void Nexus::closure(const std::set<std::set<int> >& S,Nexus* NX,int* offset) con
 
   for(st=S.begin(); st!=S.end(); st++) {
     s = *st;
+    if (s.empty()) continue;
     n = s.size() - 1;
     if (n > 0) {
       qt = index_table[n].find(s);
