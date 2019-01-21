@@ -365,7 +365,7 @@ namespace SYNARMOSMA
       NTL::conv(q,remainder.evaluate(z));
       in1 = (unsigned int) q;
       in1 = in1 % p;
-      output.set_remainder_value(i,in1);
+      output.set_remainder(i,in1);
     }
     output.elaborate();
     return output;
@@ -404,7 +404,7 @@ Variety<unsigned int> Functional_Equation<kind>::reduce(unsigned int p)
       term.exponents.clear();
     }
     in1 = convert(remainder.evaluate(i),p);
-    output.set_remainder_value(i,in1);
+    output.set_remainder(i,in1);
   }
   output.elaborate();
   return output;

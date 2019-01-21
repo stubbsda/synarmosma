@@ -62,7 +62,7 @@ namespace SYNARMOSMA {
     int deserialize(std::ifstream&);
     /// This method computes the reduction of the functional equation over the Galois field \f$GF(p^k)\f$ for prime \f$p\f$ and \f$k=1\f$. As this is a field with \f$p < \infty\f$ elements the functional equation is closed and can be converted to a variety over \f$GF(p)\f$ with \f$p\f$ equations in \f$p\f$ unknowns, {\f$F(0),F(1),\dots,F(p-1)\f$}.  
     Variety<unsigned int> reduce(unsigned int);
-    /// An overloaded ostream operator to do a "pretty print" of the functional equation, using the similarly overloaded operator for the Polynomial class.  
+    /// An overloaded ostream operator to do a "pretty print" of the functional equation, using the similarly overloaded operator for the Integer_Polynomial class.  
     friend std::ostream& operator << <>(std::ostream& s,const Functional_Equation<kind>&);
   };
 
