@@ -53,6 +53,8 @@ Variety<kind>::Variety(int n,int p)
 template<class kind>
 Variety<kind>::Variety(const Variety<kind>& source)
 {
+  clear();
+
   unsigned int i;
   remainder = source.remainder;
   nequation = source.nequation;
@@ -72,7 +74,8 @@ Variety<kind>& Variety<kind>::operator =(const Variety<kind>& source)
 {
   if (this == &source) return *this;
 
-  if (nequation > 0) delete[] equations;
+  clear();
+
   unsigned int i;
   remainder = source.remainder;
   nequation = source.nequation;
@@ -101,7 +104,6 @@ void Variety<kind>::allocate()
   if (nequation < 1) throw std::invalid_argument("The number of equations to be allocated must be greater than zero!");
 
   equations = new std::vector<Monomial<kind> >[nequation];
-  initialize();
 }
 
 namespace SYNARMOSMA {
@@ -131,9 +133,10 @@ kind Variety<kind>::generate_coefficient(int L) const
 }
 
 template<class kind>
-void Variety<kind>::initialize()
+void Variety<kind>::random_variety(unsigned int mdegree)
 {
-  unsigned int i,j,k,l,alpha,beta,test;
+  if (mdegree < 1) throw std::invalid_argument("The maximum degree of a randomly generated variety must be greater than zero!");
+  unsigned int i,j,k,l,nterm,alpha,beta,test;
   Monomial<kind> term;
   std::set<unsigned int> atoms;
   std::pair<unsigned int,unsigned int> duo;
@@ -142,11 +145,13 @@ void Variety<kind>::initialize()
 
   projective = false;
   for(i=0; i<nequation; ++i) {
-    alpha = RND.irandom(3,8);
+    nterm = RND.irandom(3,8);
+    if (nterm > mdegree*nvariable) nterm = mdegree*nvariable;
     atoms.clear();
-    for(j=0; j<alpha; ++j) {
+    for(j=0; j<nterm; ++j) {
       beta = RND.irandom(1,1+nvariable);
       term.coefficient = generate_coefficient(10);
+      tpower = 0;
       for(k=0; k<beta; ++k) {
         // What of the case where duo.first is the same number for different iterations
         // of this loop over k? We need to ensure that this never happens...
@@ -162,9 +167,16 @@ void Variety<kind>::initialize()
           if (good) break;
         } while(true);
         duo.first = test;
-        duo.second = RND.irandom(1,6);
-        term.exponents.push_back(duo);
-        atoms.insert(duo.first);
+        alpha = RND.irandom(1,1+mdegree);
+        duo.second = ((tpower + alpha) <= mdegree) ? alpha : 0;
+        if (duo.second > 0) {
+          term.exponents.push_back(duo);
+          atoms.insert(duo.first);
+          tpower += duo.second;
+        }
+        else {
+          break;
+        }
       }
       equations[i].push_back(term);
       term.exponents.clear();
@@ -619,9 +631,9 @@ bool Variety<kind>::add_term(int n,const Monomial<kind>& t)
 }
 
 template<class kind>
-bool Variety<kind>::add_term(int n,kind alpha,const std::vector<unsigned int>& xp)
+bool Variety<kind>::add_term(int n,kind alpha,const std::vector<unsigned int>& powers)
 {
-  assert(xp.size() == nvariable);
+  if (powers.size() != nvariable) throw std::invalid_argument("The length of the vector of exponents must be equal to the number of variables in the variety!");
 
   unsigned int i;
   Monomial<kind> term;
