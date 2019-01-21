@@ -7,37 +7,29 @@ extern Random RND;
 template<class kind>
 Variety<kind>::Variety()
 {
-  nequation = 3 + RND.irandom(5);
-  nvariable = 2 + RND.irandom(3);
-  characteristic = 0;
-  allocate();
+
 }
 
 template<class kind>
 Variety<kind>::Variety(int n)
 {
-#ifdef DEBUG
-  assert(n > 0);
-#endif
+  if (n < 1) throw std::invalid_argument("The number of equations in the variety must be greater than zero!");
+
   nequation = n;
   nvariable = n;
   characteristic = 0;
   allocate();
 }
 
-namespace SYNARMOSMA 
-{
+namespace SYNARMOSMA {
   template<>
-  Variety<unsigned int>::Variety(int n,int p)
+  Variety<Rational>::Variety(int n,int p) 
   {
-#ifdef DEBUG
-    assert(n > 0 && p > 0);
-#endif
+    if (n < 1) throw std::invalid_argument("The number of equations in the variety must be greater than zero!");
+    if (p != 0) throw std::invalid_argument("The characteristic must be zero when the base field is rational!");
     nequation = n;
     nvariable = n;
-    if (!NTL::ProbPrime(p)) throw std::invalid_argument("Field characteristic must be prime!");
-    nvariable = p;
-    characteristic = p;
+    characteristic = 0;
     allocate();
   }
 }
@@ -45,11 +37,14 @@ namespace SYNARMOSMA
 template<class kind>
 Variety<kind>::Variety(int n,int p)
 {
-#ifdef DEBUG
-  assert(n > 0 && p == 0);
-#endif
+  if (n < 1) throw std::invalid_argument("The number of equations in the variety must be greater than zero!");
+  if (p > 0) {
+    if (!NTL::ProbPrime(p)) throw std::invalid_argument("The field characteristic must be zero or a prime!");
+  }
+  else if (p < 0) {
+    throw std::invalid_argument("The field characteristic must be zero or a prime!");
+  }
   nequation = n;
-  nvariable = n;
   nvariable = p;
   characteristic = p;
   allocate();
@@ -103,11 +98,36 @@ Variety<kind>::~Variety()
 template<class kind>
 void Variety<kind>::allocate()
 {
-#ifdef DEBUG
-  assert(nequation > 0);
-#endif
+  if (nequation < 1) throw std::invalid_argument("The number of equations to be allocated must be greater than zero!");
+
   equations = new std::vector<Monomial<kind> >[nequation];
   initialize();
+}
+
+namespace SYNARMOSMA {
+  template<>
+  Rational Variety<Rational>::generate_coefficient(int L) const
+  {
+    int n = RND.irandom(-L*L,L*L);
+    int d = RND.irandom(-L,L);
+    Rational output(n,d);
+    return output;
+  }
+
+  template<>
+  NTL::ZZ Variety<NTL::ZZ>::generate_coefficient(int L) const
+  {
+    int t = (characteristic > 0) ? RND.irandom(characteristic) : RND.irandom(-L,L);
+    NTL::ZZ output = NTL::to_ZZ(t);
+    return output;
+  }
+}
+
+template<class kind>
+kind Variety<kind>::generate_coefficient(int L) const
+{
+  kind output = (characteristic > 0) ? RND.irandom(characteristic) : RND.irandom(-L,L);
+  return output;
 }
 
 template<class kind>
@@ -118,7 +138,7 @@ void Variety<kind>::initialize()
   std::set<unsigned int> atoms;
   std::pair<unsigned int,unsigned int> duo;
   bool good;
-  kind in1;
+  kind rho;
 
   projective = false;
   for(i=0; i<nequation; ++i) {
@@ -126,10 +146,7 @@ void Variety<kind>::initialize()
     atoms.clear();
     for(j=0; j<alpha; ++j) {
       beta = RND.irandom(1,1+nvariable);
-      term.coefficient = (characteristic > 0) ? RND.irandom(characteristic) : RND.irandom(-10,10);
-#ifdef DEBUG
-      assert(beta <= nvariable);
-#endif
+      term.coefficient = generate_coefficient(10);
       for(k=0; k<beta; ++k) {
         // What of the case where duo.first is the same number for different iterations
         // of this loop over k? We need to ensure that this never happens...
@@ -151,9 +168,9 @@ void Variety<kind>::initialize()
       }
       equations[i].push_back(term);
       term.exponents.clear();
-      in1 = (characteristic > 0) ? RND.irandom(characteristic) : RND.irandom(-10,10);
-      remainder.push_back(in1);
     }
+    rho = generate_coefficient(10);
+    remainder.push_back(rho);
     dependencies.push_back(atoms);
   }
 }
@@ -175,6 +192,100 @@ void Variety<kind>::clear()
   linear = false;
   homogeneous = false;
   projective = false;
+}
+
+namespace SYNARMOSMA {
+  template<>
+  int Variety<Rational>::read_equations(std::ifstream& s)
+  {
+    unsigned int i,j,k,l1,l2,n,m;
+    int count = 0;
+    NTL::ZZ q1,q2;
+    Monomial<Rational> t;
+
+    for(i=0; i<nequation; ++i) {
+      s.read((char*)(&n),sizeof(int)); count += sizeof(int);
+      for(j=0; j<n; ++j) {
+        count += read_ZZ(s,q1);
+        count += read_ZZ(s,q2);
+        t.coefficient = Rational(q1,q2);
+        s.read((char*)(&m),sizeof(int)); count += sizeof(int);
+        for(k=0; k<m; ++k) {
+          s.read((char*)(&l1),sizeof(int)); count += sizeof(int);
+          s.read((char*)(&l2),sizeof(int)); count += sizeof(int);
+          t.exponents.push_back(std::pair<unsigned int,unsigned int>(l1,l2));
+        }
+        equations[i].push_back(t);
+        t.exponents.clear();
+      }
+    }
+    for(i=0; i<nequation; ++i) {
+      count += read_ZZ(s,q1);
+      count += read_ZZ(s,q2);
+      remainder.push_back(Rational(q1,q2));
+    }
+    return count;
+  }
+
+  template<>
+  int Variety<NTL::ZZ>::read_equations(std::ifstream& s)
+  {
+    unsigned int i,j,k,l1,l2,n,m;
+    int count = 0;
+    NTL::ZZ q;
+    Monomial<NTL::ZZ> t;
+
+    for(i=0; i<nequation; ++i) {
+      s.read((char*)(&n),sizeof(int)); count += sizeof(int);
+      for(j=0; j<n; ++j) {
+        count += read_ZZ(s,q);
+        t.coefficient = q;
+        s.read((char*)(&m),sizeof(int)); count += sizeof(int);
+        for(k=0; k<m; ++k) {
+          s.read((char*)(&l1),sizeof(int)); count += sizeof(int);
+          s.read((char*)(&l2),sizeof(int)); count += sizeof(int);
+          t.exponents.push_back(std::pair<unsigned int,unsigned int>(l1,l2));
+        }
+        equations[i].push_back(t);
+        t.exponents.clear();
+      }
+    }
+    for(i=0; i<nequation; ++i) {
+      count += read_ZZ(s,q);
+      remainder.push_back(q);
+    }
+    return count;
+  }
+}
+
+template<class kind>
+int Variety<kind>::read_equations(std::ifstream& s)
+{
+  unsigned int i,j,k,l1,l2,n,m;
+  int count = 0;
+  kind x;
+  Monomial<kind> t;
+
+  for(i=0; i<nequation; ++i) {
+    s.read((char*)(&n),sizeof(int)); count += sizeof(int);
+    for(j=0; j<n; ++j) {
+      s.read((char*)(&x),sizeof(kind)); count += sizeof(kind);
+      t.coefficient = x;
+      s.read((char*)(&m),sizeof(int)); count += sizeof(int);
+      for(k=0; k<m; ++k) {
+        s.read((char*)(&l1),sizeof(int)); count += sizeof(int);
+        s.read((char*)(&l2),sizeof(int)); count += sizeof(int);
+        t.exponents.push_back(std::pair<unsigned int,unsigned int>(l1,l2));
+      }
+      equations[i].push_back(t);
+      t.exponents.clear();
+    }
+  }
+  for(i=0; i<nequation; ++i) {
+    s.read((char*)(&x),sizeof(kind)); count += sizeof(kind);
+    remainder.push_back(x);
+  }
+  return count;
 }
 
 namespace SYNARMOSMA {
@@ -281,100 +392,6 @@ int Variety<kind>::serialize(std::ofstream& s) const
   return count;
 }
 
-namespace SYNARMOSMA {
-  template<>
-  int Variety<Rational>::read_equations(std::ifstream& s)
-  {
-    unsigned int i,j,k,l1,l2,n,m;
-    int count = 0;
-    NTL::ZZ q1,q2;
-    Monomial<Rational> t;
-
-    for(i=0; i<nequation; ++i) {
-      s.read((char*)(&n),sizeof(int)); count += sizeof(int);
-      for(j=0; j<n; ++j) {
-        count += read_ZZ(s,q1);
-        count += read_ZZ(s,q2);
-        t.coefficient = Rational(q1,q2);
-        s.read((char*)(&m),sizeof(int)); count += sizeof(int);
-        for(k=0; k<m; ++k) {
-          s.read((char*)(&l1),sizeof(int)); count += sizeof(int);
-          s.read((char*)(&l2),sizeof(int)); count += sizeof(int);
-          t.exponents.push_back(std::pair<unsigned int,unsigned int>(l1,l2));
-        }
-        equations[i].push_back(t);
-        t.exponents.clear();
-      }
-    }
-    for(i=0; i<nequation; ++i) {
-      count += read_ZZ(s,q1);
-      count += read_ZZ(s,q2);
-      remainder.push_back(Rational(q1,q2));
-    }
-    return count;
-  }
-
-  template<>
-  int Variety<NTL::ZZ>::read_equations(std::ifstream& s)
-  {
-    unsigned int i,j,k,l1,l2,n,m;
-    int count = 0;
-    NTL::ZZ q;
-    Monomial<NTL::ZZ> t;
-
-    for(i=0; i<nequation; ++i) {
-      s.read((char*)(&n),sizeof(int)); count += sizeof(int);
-      for(j=0; j<n; ++j) {
-        count += read_ZZ(s,q);
-        t.coefficient = q;
-        s.read((char*)(&m),sizeof(int)); count += sizeof(int);
-        for(k=0; k<m; ++k) {
-          s.read((char*)(&l1),sizeof(int)); count += sizeof(int);
-          s.read((char*)(&l2),sizeof(int)); count += sizeof(int);
-          t.exponents.push_back(std::pair<unsigned int,unsigned int>(l1,l2));
-        }
-        equations[i].push_back(t);
-        t.exponents.clear();
-      }
-    }
-    for(i=0; i<nequation; ++i) {
-      count += read_ZZ(s,q);
-      remainder.push_back(q);
-    }
-    return count;
-  }
-}
-
-template<class kind>
-int Variety<kind>::read_equations(std::ifstream& s)
-{
-  unsigned int i,j,k,l1,l2,n,m;
-  int count = 0;
-  kind x;
-  Monomial<kind> t;
-
-  for(i=0; i<nequation; ++i) {
-    s.read((char*)(&n),sizeof(int)); count += sizeof(int);
-    for(j=0; j<n; ++j) {
-      s.read((char*)(&x),sizeof(kind)); count += sizeof(kind);
-      t.coefficient = x;
-      s.read((char*)(&m),sizeof(int)); count += sizeof(int);
-      for(k=0; k<m; ++k) {
-        s.read((char*)(&l1),sizeof(int)); count += sizeof(int);
-        s.read((char*)(&l2),sizeof(int)); count += sizeof(int);
-        t.exponents.push_back(std::pair<unsigned int,unsigned int>(l1,l2));
-      }
-      equations[i].push_back(t);
-      t.exponents.clear();
-    }
-  }
-  for(i=0; i<nequation; ++i) {
-    s.read((char*)(&x),sizeof(kind)); count += sizeof(kind);
-    remainder.push_back(x);
-  }
-  return count;
-}
-
 template<class kind>
 int Variety<kind>::deserialize(std::ifstream& s) 
 {
@@ -398,78 +415,6 @@ int Variety<kind>::deserialize(std::ifstream& s)
 }
 
 template<class kind>
-void Variety<kind>::elaborate()
-{
-  unsigned int i,j,k;
-  std::set<unsigned int> atoms;
-
-  dependencies.clear();
-
-  for(i=0; i<nequation; ++i) {
-    atoms.clear();
-    for(j=0; j<equations[i].size(); ++j) {
-      for(k=0; k<equations[i][j].exponents.size(); ++k) {
-        atoms.insert(equations[i][j].exponents[k].first);
-      }
-    }
-    dependencies.push_back(atoms);
-  }
-}
-
-namespace SYNARMOSMA {
-  template<>
-  void Variety<NTL::ZZ>::make_projective()
-  {
-    if (projective) return;
-    unsigned int i,j,k,in1,sum;
-    Monomial<NTL::ZZ> term;
-    bool equal;
-    std::vector<unsigned int> exponents;
-    std::pair<unsigned int,unsigned int> duo;
-    const NTL::ZZ zero = NTL::to_ZZ(0);
-
-    duo.first = nvariable + 1;
-    for(i=0; i<nequation; ++i) {
-      for(j=0; j<equations[i].size(); ++j) {
-        term = equations[i][j];
-        sum = 0;
-        for(k=0; k<term.exponents.size(); ++k) {
-          sum += term.exponents[k].second;
-        }
-        exponents.push_back(sum);
-      }
-      // We need to know if all the values of "exponents" are equal
-      equal = true;
-      in1 = exponents[0];
-      for(j=1; j<exponents.size(); ++j) {
-        if (exponents[j] != in1) equal = false;
-        if (exponents[j] > in1) in1 = exponents[j];
-      }
-      if (!equal) {
-        for(j=0; j<equations[i].size(); ++j) {
-          if (exponents[j] < in1) {
-            duo.second = in1 - exponents[j];
-            equations[i][j].exponents.push_back(duo);
-          }
-        }
-      }
-      exponents.clear();
-      if (remainder[i] != zero) {
-        term.exponents.clear();
-        term.coefficient = remainder[i];
-        duo.second = in1;
-        term.exponents.push_back(duo);
-        equations[i].push_back(term);
-        remainder[i] = 0;
-      }
-    }
-    nvariable += 1;
-    projective = true;
-    homogeneous = true;
-  }
-}
-
-template<class kind>
 void Variety<kind>::make_projective()
 {
   if (projective) return;
@@ -478,7 +423,6 @@ void Variety<kind>::make_projective()
   bool equal;
   std::vector<unsigned int> exponents;
   std::pair<unsigned int,unsigned int> duo;
-  const kind zero = 0;
 
   duo.first = nvariable + 1;
   for(i=0; i<nequation; ++i) {
@@ -512,7 +456,7 @@ void Variety<kind>::make_projective()
       duo.second = in1;
       term.exponents.push_back(duo);
       equations[i].push_back(term);
-      remainder[i] = 0;
+      remainder[i] = zero;
     }
   }
   nvariable += 1;
@@ -520,62 +464,23 @@ void Variety<kind>::make_projective()
   homogeneous = true;
 }
 
-namespace SYNARMOSMA {
-  template<>
-  int Variety<unsigned int>::compute_zeros() const
-  {
-#ifdef DEBUG
-    assert(characteristic > 0);
-#endif
-    unsigned int bdry,nsolution,i,j,k,l,f,in1;
-    std::vector<unsigned int> elements,vec;
-    bool soln;
-    unsigned int wt,value;
-    Monomial<unsigned int> term;
-  
-    bdry = ipow(characteristic,nvariable);
-    for(i=0; i<characteristic; ++i) {
-      elements.push_back(i);
-    }
-    nsolution = 0;
-    for(i=0; i<bdry; ++i) {
-      in1 = i;
-      for(j=0; j<nvariable; ++j) {      
-        f = in1/characteristic;
-        vec.push_back(elements[f]);
-        in1 -= f*characteristic;
-      }
-      soln = true;
-      for(j=0; j<nequation; ++j) {
-        value = 0;
-        for(k=0; k<equations[j].size(); ++k) {
-          term = equations[j][k];
-          wt = term.coefficient;
-          for(l=0; l<term.exponents.size(); ++l) {
-            wt *= ipow(vec[term.exponents[l].first],term.exponents[l].second);
-          }
-          value += wt;
-        }
-        value = value % characteristic;
-        if (value != 0) {
-          soln = false;
-          break;
-        }
-      }
-      if (soln) nsolution += 1;
-      vec.clear();
-    }
-    return nsolution;
-  }
-}
-
 template<class kind>
-int Variety<kind>::compute_zeros() const
+void Variety<kind>::elaborate()
 {
-#ifdef DEBUG
-  assert(characteristic == 0);
-#endif
-  return 0;
+  unsigned int i,j,k;
+  std::set<unsigned int> atoms;
+
+  dependencies.clear();
+
+  for(i=0; i<nequation; ++i) {
+    atoms.clear();
+    for(j=0; j<equations[i].size(); ++j) {
+      for(k=0; k<equations[i][j].exponents.size(); ++k) {
+        atoms.insert(equations[i][j].exponents[k].first);
+      }
+    }
+    dependencies.push_back(atoms);
+  }
 }
 
 template<class kind>
@@ -655,132 +560,17 @@ int Variety<kind>::compute_dependencies(std::vector<unsigned int>& component) co
   return family;
 }
 
-namespace SYNARMOSMA {
-  template<>
-  void Variety<unsigned int>::zeta_function(int k,std::vector<unsigned int>& output) const
-  {
-#ifdef DEBUG
-    assert(k > 0);
-    assert(characteristic > 0);
-#endif
-    unsigned int i,j,m,n,l,bdry,in1,f,size,nsolution,ku = k;
-    bool soln,found;
-    Monomial<unsigned int> term;
-
-    NTL::ZZ_p::init(NTL::to_ZZ(characteristic));
-
-    // First we calculate the case $k = 1$
-    output.clear();
-    output.push_back(compute_zeros()); 
-
-    // Now we need to calculate the case $k > 1$ 
-    for(n=2; n<=ku; ++n) {
-      size = ipow(characteristic,n);
-
-      NTL::ZZ_pX P;
-      NTL::BuildIrred(P,n);
-
-      NTL::ZZ_pE::init(P);
-      NTL::ZZ_pE value,wt;
-      std::vector<NTL::ZZ_pE> elements,vec;
-
-      bdry = ipow(size,nvariable);
-      do {
-        wt = NTL::random_ZZ_pE();
-        found = false;
-        for(i=0; i<elements.size(); ++i) {
-          if (wt == elements[i]) {
-            found = true;
-            break;
-          }
-        }
-        if (!found) elements.push_back(wt);      
-        if (elements.size() == NTL::ZZ_pE::cardinality()) break;
-      } while(true);
-
-      nsolution = 0;
-      for(i=0; i<bdry; ++i) {
-        in1 = i;
-        for(j=0; j<nvariable; ++j) {
-          f = in1/size;
-          vec.push_back(elements[f]);
-          in1 -= f*size;
-        }
-        soln = true;
-        for(j=0; j<nequation; ++j) {
-          value = NTL::ZZ_pE::zero();
-          for(m=0; m<equations[j].size(); ++m) {
-            term = equations[j][m];
-            wt = term.coefficient;
-            for(l=0; l<term.exponents.size(); ++l) {
-              wt *= power(vec[term.exponents[l].first],term.exponents[l].second);
-            }
-            value += wt;
-          }
-          if (value != NTL::ZZ_pE::zero()) {
-            soln = false;
-            break;
-          }
-        }
-        if (soln) nsolution += 1;
-        vec.clear();
-      }
-      output.push_back(nsolution);
-    }
-  }
-}
-
 template<class kind>
-void Variety<kind>::zeta_function(int k,std::vector<unsigned int>& output) const
-{
-#ifdef DEBUG
-  assert(k > 0);
-  assert(characteristic == 0);
-#endif
-}
-
-
-namespace SYNARMOSMA {
-  template<>
-  void Variety<unsigned int>::normalize(int n)
-  {
-    assert(n >= 0);
-    if (characteristic == 0) return;
-    unsigned int i,in1;
- 
-    for(i=0; i<equations[n].size(); ++i) {
-      in1 = equations[n][i].coefficient;
-      in1 = in1 % characteristic;
-      equations[n][i].coefficient = in1;
-    }
-  }
-}
-
-template<class kind>
-void Variety<kind>::normalize(int n)
-{
-#ifdef DEBUG
-  assert(n >= 0);
-  assert(characteristic == 0);
-#endif
-  return;
-}
-
-template<class kind>
-void Variety<kind>::property_check()
+void Variety<kind>::compute_properties()
 {
   unsigned int i,j,k,sum;
   std::set<unsigned int> tpower;
-
-  for(i=0; i<nequation; ++i) {
-    normalize(i);
-  }
 
   linear = true;
   homogeneous = true;
   projective = true;
   for(i=0; i<nequation; ++i) {
-    if (remainder[i] != 0) {
+    if (remainder[i] != zero) {
       homogeneous = false;
       projective = false;
     }
@@ -800,23 +590,13 @@ void Variety<kind>::property_check()
 }
 
 template<class kind>
-void Variety<kind>::set_remainder_value(int n,kind r)
+bool Variety<kind>::add_term(int n,const Monomial<kind>& t)
 {
-#ifdef DEBUG
-  assert(n >= 0 && n < (signed) nequation);
-#endif
-  remainder[n] = r;
-}
+  if (n < 0 || n >= (signed) nequation) throw std::invalid_argument("Illegal equation number in Variety::add_term!");
 
-template<class kind>
-void Variety<kind>::add_term(int n,const Monomial<kind>& t)
-{
-#ifdef DEBUG
-  assert(n >= 0 && n < (signed) nequation);
-#endif
   // Have we already seen this term?
   unsigned int i,in1;
-  bool found = false;
+  bool found = false,output = true;
   std::vector<std::pair<unsigned int,unsigned int> > power,term = t.exponents;
   for(i=0; i<equations[n].size(); ++i) {
     power = equations[n][i].exponents;
@@ -828,20 +608,21 @@ void Variety<kind>::add_term(int n,const Monomial<kind>& t)
   }
   if (found) {
     equations[n][in1].coefficient = equations[n][in1].coefficient + t.coefficient;
+    output = false;
   }
   else {
     equations[n].push_back(t);
   }
-  property_check();
+  compute_properties();
+
+  return output;
 }
 
 template<class kind>
-void Variety<kind>::add_term(int n,kind alpha,const std::vector<unsigned int>& xp)
+bool Variety<kind>::add_term(int n,kind alpha,const std::vector<unsigned int>& xp)
 {
-#ifdef DEBUG
-  assert(n >= 0 && n < (signed) nequation);
   assert(xp.size() == nvariable);
-#endif
+
   unsigned int i;
   Monomial<kind> term;
   std::pair<unsigned int,unsigned int> duo;
@@ -854,6 +635,6 @@ void Variety<kind>::add_term(int n,kind alpha,const std::vector<unsigned int>& x
       term.exponents.push_back(duo);
     }
   }
-  add_term(n,term);
+  return add_term(n,term);
 }
 

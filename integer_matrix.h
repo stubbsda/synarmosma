@@ -47,21 +47,20 @@ namespace SYNARMOSMA {
   /// A template class representing a general rectangular matrix over an integer base type.
   class Integer_Matrix {
    protected:
-    /// This property is heart of the Integer_Matrix class as it contains all of the 
-    /// elements stored in compressed form as an array of vectors. There is a 
-    /// vector for each row, with the vector's elements consisting of a pair. 
-    /// The first part of the pair is the value of the matrix element, the 
+    /// This property is heart of the Integer_Matrix class as it contains all of the
+    /// elements stored in compressed form as an array of vectors. There is a
+    /// vector for each row, with the vector's elements consisting of a pair.
+    /// The first part of the pair is the value of the matrix element, the
     /// second is the column index.
     std::vector<std::pair<kind,unsigned int> >* elements;
-    /// The number of rows of this  
+    /// The number of rows of this
     /// matrix.
     unsigned int nrow = 0;
-    /// The number of columns of this 
+    /// The number of columns of this
     /// matrix
     unsigned int ncolumn = 0;
-    /// A property which determines whether or not the matrix 
-    /// has been transformed into reduced row echelon form by the normalize() 
-    /// method.
+    /// A property which determines whether or not the matrix has been transformed
+    /// into reduced row echelon form by the normalize() method.
     bool normalized = false;
 
     /// This method writes out the complete matrix to the output stream, one line per row, with a '%' before the entries explicitly stored in the Integer_Matrix::elements vector for that row.
@@ -77,13 +76,13 @@ namespace SYNARMOSMA {
     /// This method reads the content of the matrix itself in binary format from an input stream is used by the deserialize() method; it returns the number of bytes read.
     int read_elements(std::ifstream&);
    public:
-    /// The value 0, stored in the correct data type for this instantiation of 
+    /// The value 0, stored in the correct data type for this instantiation of
     /// the template class.
     static const kind zero;
-    /// The value -1, stored in the correct data type for this instantiation of 
+    /// The value -1, stored in the correct data type for this instantiation of
     /// the template class.
     static const kind neg1;
-    /// The value 1, stored in the correct data type for this instantiation of 
+    /// The value 1, stored in the correct data type for this instantiation of
     /// the template class.
     static const kind unity;
 
