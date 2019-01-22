@@ -1,5 +1,6 @@
 #include "random.h"
 #include "rational.h"
+#include "graph.h"
 
 #ifndef _varietyh
 #define _varietyh
@@ -52,11 +53,14 @@ namespace SYNARMOSMA {
     void allocate();
     /// This method tries to determine the correct value of various of the class properties, such as Variety::homogeneous, Variety::linear and Variety::projective. 
     void compute_properties();
-    void find_partial(std::vector<unsigned int>&,int,const std::vector<unsigned int>*) const;
+    /// This utility method is called by this class' serialize method to write the Variety::equations and Variety::remainder properties in binary format to an ofstream instance, returning the number of bytes written.
     int write_equations(std::ofstream&) const;
+    /// This utility method is called by this class' deserialize method to read the Variety::equations and Variety::remainder properties in binary format from an ifstream instance, returning the number of bytes read.
     int read_equations(std::ifstream&);
     /// This utility method generates a random number from the appropriate base field between -L and L, where L is the method's argument, while also respecting the field charactertistic. 
     kind generate_coefficient(int) const;
+    /// This method computes the value of the Variety::dependencies property and returns the average number of independent variables per equation in the variety.
+    double compute_dependencies();
    public:
     /// The default constructor which does nothing.
     Variety();
@@ -74,7 +78,6 @@ namespace SYNARMOSMA {
     int serialize(std::ofstream&) const;
     /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
     int deserialize(std::ifstream&);
-    void elaborate();
     /// This method initializes a random algebraic variety using the generate_coefficient() method for the coefficients and remainder term, then calls compute_properties(). The method's argument is the maximum total degree of each term in each equation. 
     void random_variety(unsigned int);
     /// This method adds a term to the equation specified by the first argument; the second argument is the term's coefficient and the third is the vector of non-negative powers for each variable in the variety. 
@@ -87,7 +90,9 @@ namespace SYNARMOSMA {
     void make_projective();
     /// This method frees the memory associated with the Variety::equations property (if any has been allocated), clears the Variety::remainder and Variety::dependencies vectors and sets all of the class' properties back to their default values.
     void clear();
-    int compute_dependencies(std::vector<unsigned int>&) const;
+    /// This method computes the dependency graph among the variety's equations - each equation corresponds to a vertex and if two equations have at least one independent variable in common, there is an edge connecting the corresponding vertices. The method returns the connectedness of this graph.
+    bool compute_dependency_graph(Graph*) const;
+    /// This overloaded ostream operator does a "pretty print" of the variety, making the output as legible as possible. 
     friend std::ostream& operator << <>(std::ostream&,const Variety<kind>&);
   };
 
@@ -109,7 +114,7 @@ namespace SYNARMOSMA {
     for(i=0; i<source.nequation; ++i) {
       for(j=0; j<source.equations[i].size(); ++j) {
         term = source.equations[i][j];
-        if (term.coefficient != kind(1)) s << term.coefficient << "*";
+        s << "(" << term.coefficient << ")*";
         for(k=0; k<term.exponents.size()-1; ++k) {
           s << "x(" << term.exponents[k].first << ")";
           if (term.exponents[k].second > 1) s << "^" << term.exponents[k].second;
@@ -118,7 +123,7 @@ namespace SYNARMOSMA {
         s << "x(" << term.exponents[term.exponents.size()-1].first << ")^" << term.exponents[term.exponents.size()-1].second;
         if (j < source.equations[i].size()-1) s << " + ";
       }
-      if (source.remainder[i] > kind(0)) s << " + " << source.remainder[i];
+      if (source.remainder[i] > zero) s << " + " << source.remainder[i];
       s << " = 0" << std::endl;
     }
     return s;

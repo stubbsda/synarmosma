@@ -82,7 +82,9 @@ namespace SYNARMOSMA {
     void clear();
     /// This method makes a new Abelian group from the current instance by adding the relation \f$aba^{-1}b^{-1}\f$ for each distinct pair of generators \f$a\f$ and \f$b\f$.
     Group abelianize() const;
+    /// This method returns the number of generators in this combinatorial group presentation.
     inline unsigned int get_number_generators() const {return ngenerator;};
+    /// This method returns the number of relations in this combinatorial group presentation.
     inline unsigned int get_number_relations() const {return relations.size();};
     /// This method writes the instance properties to a binary disk file and returns the number of bytes written to the file.
     int serialize(std::ofstream&) const;
