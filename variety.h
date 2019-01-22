@@ -34,6 +34,9 @@ namespace SYNARMOSMA {
     /// This Boolean property is true if every term in a given equation has the same 
     /// total degree and false otherwise.
     bool projective = false;
+    /// This property is the heart of the class and stores the individual equations 
+    /// of the variety, each one as a vector of Monomial elements, with the size of 
+    /// the array of vectors equal to Variety::nequation.
     std::vector<Monomial<kind> >* equations;
     /// This vector stores the remainder term for each equation in the variety and 
     /// thus should have a length equal to Variety::nequation. 
@@ -41,6 +44,8 @@ namespace SYNARMOSMA {
     /// This property is a vector of integer sets, each element of which contains the 
     /// independent variables upon which this equation in the variety depends.
     std::vector<std::set<unsigned int> > dependencies;
+    /// The value 0, stored in the correct data type for this instantiation of
+    /// the template class.
     static const kind zero;      
 
     /// This method allocates the memory for the array Variety::equations.
@@ -71,12 +76,14 @@ namespace SYNARMOSMA {
     int deserialize(std::ifstream&);
     void elaborate();
     /// This method initializes a random algebraic variety using the generate_coefficient() method for the coefficients and remainder term, then calls compute_properties(). The method's argument is the maximum total degree of each term in each equation. 
-    void random_variety(int);
+    void random_variety(unsigned int);
     /// This method adds a term to the equation specified by the first argument; the second argument is the term's coefficient and the third is the vector of non-negative powers for each variable in the variety. 
     bool add_term(int,kind,const std::vector<unsigned int>&);
+    /// This method directly adds a new term, the second argument, to the equation specified by the first argument. 
     bool add_term(int,const Monomial<kind>&);
     /// This method sets the remainder to the value in the second argument for the equation specified by the first argument. 
     inline void set_remainder(int,kind);
+    /// This method first checks if the variety is projective and, if not, adds a further variable to it so as to make each term homogeneous for each of the equations separately. 
     void make_projective();
     /// This method frees the memory associated with the Variety::equations property (if any has been allocated), clears the Variety::remainder and Variety::dependencies vectors and sets all of the class' properties back to their default values.
     void clear();

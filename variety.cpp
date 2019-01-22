@@ -136,7 +136,7 @@ template<class kind>
 void Variety<kind>::random_variety(unsigned int mdegree)
 {
   if (mdegree < 1) throw std::invalid_argument("The maximum degree of a randomly generated variety must be greater than zero!");
-  unsigned int i,j,k,l,nterm,alpha,beta,test;
+  unsigned int i,j,k,l,nterm,alpha,beta,test,tpower;
   Monomial<kind> term;
   std::set<unsigned int> atoms;
   std::pair<unsigned int,unsigned int> duo;
@@ -641,9 +641,9 @@ bool Variety<kind>::add_term(int n,kind alpha,const std::vector<unsigned int>& p
 
   term.coefficient = alpha;
   for(i=0; i<nvariable; ++i) {
-    if (xp[i] > 0) {
+    if (powers[i] > 0) {
       duo.first = i;
-      duo.second = xp[i];
+      duo.second = powers[i];
       term.exponents.push_back(duo);
     }
   }
