@@ -9,10 +9,10 @@ namespace SYNARMOSMA {
    protected:
     /// This vector of signed integers contains the proposition, stored according to the 
     /// following system: the vector contains an integral number of clauses and each clause  
-    /// is of length 2*Proposition::NP. It contains a non-negative integer (the index of 
-    /// the atomic proposition) followed by 0 or 1, which indicates if the atomic proposition 
-    /// has a NOT symbol. If the clause contains less than NP atomic propositions, then all 
-    /// of its subsequent elements are set to -1. 
+    /// is of length 2*NP. It contains a non-negative integer (the index of the atomic 
+    /// proposition) followed by 0 or 1, which indicates if the atomic proposition has a 
+    /// NOT symbol. If the clause contains less than NP atomic propositions, then all of 
+    /// its subsequent elements are set to -1. 
     std::vector<int> clause;
     /// This static property is an unsigned integer containing the maximum number of atomic 
     /// propositions in a clause.

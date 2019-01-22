@@ -477,9 +477,9 @@ void Variety<kind>::make_projective()
 }
 
 template<class kind>
-void Variety<kind>::elaborate()
+double Variety<kind>::compute_dependencies()
 {
-  unsigned int i,j,k;
+  unsigned int i,j,k,nsum = 0;
   std::set<unsigned int> atoms;
 
   dependencies.clear();
@@ -491,85 +491,35 @@ void Variety<kind>::elaborate()
         atoms.insert(equations[i][j].exponents[k].first);
       }
     }
+    nsum += atoms.size();
     dependencies.push_back(atoms);
   }
+  return double(nsum)/double(nequation);
 }
 
 template<class kind>
-void Variety<kind>::find_partial(std::vector<unsigned int>& connected,int first,const std::vector<unsigned int>* dual_system) const
+bool Variety<kind>::compute_dependency_graph(Graph* G) const
 {
-  assert(first >= 0);
-  unsigned int i,in1,in2;
-  bool done = false;
-  std::set<unsigned int>::const_iterator it,jt;
-  std::set<unsigned int> current,next,handled;
+  // This method computes the dependency graph for the variety's equations. 
+  // There is a vertex for each equation and if two equations share at least 
+  // one independent variable there is an edge connecting the two vertices. 
+  unsigned int i,j;
+  std::vector<unsigned int> v;
 
-  current = dependencies[first];
-
-  do {
-    for(it=current.begin(); it!=current.end(); ++it) {
-      in1 = *it;
-      for(i=0; i<dual_system[in1].size(); ++i) {
-        in2 = dual_system[in1][i];
-        if (!connected[in2]) {
-          handled.insert(in2);
-          for(jt=dependencies[in2].begin(); jt!=dependencies[in2].end(); ++jt) {
-            next.insert(*jt);
-          }
-        }
-      }
-    }
-    current = next;
-    next.clear();
-    for(it=handled.begin(); it!=handled.end(); ++it) {
-      connected[*it] = 1;
-    }
-    handled.clear();
-    if (current.empty()) done = true;
-  } while(!done);
-}
-
-template<class kind>
-int Variety<kind>::compute_dependencies(std::vector<unsigned int>& component) const
-{
-  unsigned int i,j,first = 0,family = 0;
-  bool done = false;
-  std::vector<unsigned int> connected;
-  std::vector<unsigned int>* dual_system = new std::vector<unsigned int>[nvariable];
-
-  component.clear();
+  G->clear();
   for(i=0; i<nequation; ++i) {
-    component.push_back(0);
-    connected.push_back(0);
-  }
-  for(i=0; i<nvariable; ++i) {
-    // We must determine which variables this equation contains
-    for(j=0; j<nequation; ++j) {
-      if (dependencies[j].count(i) > 0) dual_system[i].push_back(j);
-    }
+    G->add_vertex();
   }
 
-  do {
-    done = true;
-    connected[first] = 1;
-    find_partial(connected,first,dual_system);
-    for(i=0; i<nequation; ++i) {
-      if (connected[i] == 1) {
-        component[i] = family;
-      }
-      else {
-        first = i;
-        done = false;
-      }
+  for(i=0; i<nequation; ++i) {
+    for(j=1+i; j<nequation; ++j) {
+      set_intersection(dependencies[i].begin(),dependencies[i].end(),dependencies[j].begin(),dependencies[j].end(),std::back_inserter(v));
+      if (!v.empty()) G->add_edge(i,j);
+      v.clear();
     }
-    family += 1;
-    for(i=0; i<nequation; ++i) {
-      connected[i] = 0;
-    }
-  } while(!done);
-
-  delete[] dual_system;
-  return family;
+  }
+  bool output G->connected();
+  return output;
 }
 
 template<class kind>
@@ -598,7 +548,7 @@ void Variety<kind>::compute_properties()
     tpower.clear();
     if (!projective && !linear && !homogeneous) break;
   }
-  elaborate();
+  compute_dependencies();
 }
 
 template<class kind>
