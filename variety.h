@@ -51,8 +51,6 @@ namespace SYNARMOSMA {
 
     /// This method allocates the memory for the array Variety::equations.
     void allocate();
-    /// This method tries to determine the correct value of various of the class properties, such as Variety::homogeneous, Variety::linear and Variety::projective. 
-    void compute_properties();
     /// This utility method is called by this class' serialize method to write the Variety::equations and Variety::remainder properties in binary format to an ofstream instance, returning the number of bytes written.
     int write_equations(std::ofstream&) const;
     /// This utility method is called by this class' deserialize method to read the Variety::equations and Variety::remainder properties in binary format from an ifstream instance, returning the number of bytes read.
@@ -90,6 +88,8 @@ namespace SYNARMOSMA {
     void make_projective();
     /// This method frees the memory associated with the Variety::equations property (if any has been allocated), clears the Variety::remainder and Variety::dependencies vectors and sets all of the class' properties back to their default values.
     void clear();
+    /// This method tries to determine the correct value of various of the class properties, such as Variety::homogeneous, Variety::linear, Variety::dependencies and Variety::projective. 
+    void compute_properties();
     /// This method computes the dependency graph among the variety's equations - each equation corresponds to a vertex and if two equations have at least one independent variable in common, there is an edge connecting the corresponding vertices. The method returns the connectedness of this graph.
     bool compute_dependency_graph(Graph*) const;
     /// This overloaded ostream operator does a "pretty print" of the variety, making the output as legible as possible. 
@@ -123,7 +123,7 @@ namespace SYNARMOSMA {
         s << "x(" << term.exponents[term.exponents.size()-1].first << ")^" << term.exponents[term.exponents.size()-1].second;
         if (j < source.equations[i].size()-1) s << " + ";
       }
-      if (source.remainder[i] > zero) s << " + " << source.remainder[i];
+      if (source.remainder[i] > Variety<kind>::zero) s << " + " << source.remainder[i];
       s << " = 0" << std::endl;
     }
     return s;
