@@ -367,7 +367,7 @@ namespace SYNARMOSMA
       in1 = in1 % p;
       output.set_remainder(i,in1);
     }
-    output.elaborate();
+    output.compute_properties();
     return output;
   }
 }
@@ -406,6 +406,6 @@ Variety<unsigned int> Functional_Equation<kind>::reduce(unsigned int p)
     in1 = convert(remainder.evaluate(i),p);
     output.set_remainder(i,in1);
   }
-  output.elaborate();
+  output.compute_properties();
   return output;
 }

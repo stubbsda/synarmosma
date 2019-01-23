@@ -462,13 +462,13 @@ void Variety<kind>::make_projective()
       }
     }
     exponents.clear();
-    if (remainder[i] != zero) {
+    if (remainder[i] != Variety<kind>::zero) {
       term.exponents.clear();
       term.coefficient = remainder[i];
       duo.second = in1;
       term.exponents.push_back(duo);
       equations[i].push_back(term);
-      remainder[i] = zero;
+      remainder[i] = Variety<kind>::zero;
     }
   }
   nvariable += 1;
@@ -518,7 +518,7 @@ bool Variety<kind>::compute_dependency_graph(Graph* G) const
       v.clear();
     }
   }
-  bool output G->connected();
+  bool output = G->connected();
   return output;
 }
 
@@ -532,7 +532,7 @@ void Variety<kind>::compute_properties()
   homogeneous = true;
   projective = true;
   for(i=0; i<nequation; ++i) {
-    if (remainder[i] != zero) {
+    if (remainder[i] != Variety<kind>::zero) {
       homogeneous = false;
       projective = false;
     }
