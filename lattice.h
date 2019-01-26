@@ -23,7 +23,7 @@ namespace SYNARMOSMA {
     /// This method randomly builds an ordering on the lattice elements such that it satisfies the axioms of a lattice and then calls the Lattice::compute_atoms and Lattice::compute_bounds methods to calculate all the properties of the lattice.
     void initialize();
    public:
-    /// The default constructor which sets all the properties to their default value.
+    /// The default constructor, which does nothing.
     Lattice();
     /// This constructor accepts as its unique argument the number of elements of the lattice and calls the Poset constructor with this argument, then the Lattice::initialize method. 
     Lattice(int);
@@ -31,7 +31,7 @@ namespace SYNARMOSMA {
     Lattice(const Lattice&);
     /// The destructor which does nothing.
     ~Lattice() override;
-    /// The overloaded assignment operator that sets all the class properties.
+    /// The overloaded assignment operator that sets all the class properties to those of the source.
     Lattice& operator =(const Lattice&);
     /// This method determines, given the arguments \f$x\f$ and \f$y\f$, the element \f$w\f$ of the lattice such that \f$w \sim x\f$ and \f$w \sim y\f$, while any other element \f$z\f$ in the lattice satisfying these relations also satisfies \f$z \sim w\f$. If the method cannot find such an element it returns N.
     int meet(int,int) const;

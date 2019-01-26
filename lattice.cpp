@@ -6,7 +6,7 @@ extern Random RND;
 
 Lattice::Lattice() : Poset()
 {
-  initialize();
+
 }
 
 Lattice::Lattice(int n) : Poset(n)

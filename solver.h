@@ -1,5 +1,5 @@
 #include "random.h"
-#include "matrix.h"
+#include "graph.h"
 
 #ifndef _solverh
 #define _solverh
@@ -102,6 +102,8 @@ namespace SYNARMOSMA {
     ~Solver();
     /// This method is the main entry point for solving the system of equations; the unique argument is the initial guess (which only makes sense if Solver::homotopy is false) which upon exit will contain the solution, if the return value is true.
     bool solve(std::vector<kind>&);
+    /// This method computes the dependency graph among the system of equations - each equation corresponds to a vertex and if two equations have at least one independent variable in common, there is an edge connecting the corresponding vertices. The method returns the connectedness of this graph.
+    bool compute_dependency_graph(Graph*) const;
     /// This is a public method that sets the Solver::method property to Linear_Solver::iterative.
     inline void use_iterative() {method = Linear_Solver::iterative;};
     /// This is a public method that sets the Solver::method property to Linear_Solver::direct.
