@@ -158,6 +158,31 @@ double Solver<kind>::compute_dependencies()
   return double(sum)/double(dimension*dimension);
 }
 
+template<class kind>
+bool Solver<kind>::compute_dependency_graph(Graph* G) const
+{
+  // This method computes the dependency graph for the variety's equations.
+  // There is a vertex for each equation and if two equations share at least
+  // one independent variable there is an edge connecting the two vertices.
+  unsigned int i,j;
+  std::vector<unsigned int> v;
+
+  G->clear();
+  for(i=0; i<dimension; ++i) {
+    G->add_vertex();
+  }
+
+  for(i=0; i<dimension; ++i) {
+    for(j=1+i; j<dimension; ++j) {
+      set_intersection(dependencies[i].begin(),dependencies[i].end(),dependencies[j].begin(),dependencies[j].end(),std::back_inserter(v));
+      if (!v.empty()) G->add_edge(i,j);
+      v.clear();
+    }
+  }
+  bool output = G->connected();
+  return output;
+}
+
 namespace SYNARMOSMA {
   template<>
   bool Solver<double>::direct_solver(std::vector<double>& x) const
