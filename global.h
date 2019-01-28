@@ -50,7 +50,6 @@ extern "C" {
 }
 
 namespace SYNARMOSMA {
-  using base_generator_type = boost::mt19937;
   using hash_map = boost::unordered_map<std::set<int>,int>;
   using pair_index = boost::unordered_map<std::pair<int,int>,int>;
 
