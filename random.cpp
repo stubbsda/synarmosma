@@ -4,9 +4,6 @@ using namespace SYNARMOSMA;
 
 Random::Random()
 {
-  brn_allocated = false;
-  beta_allocated = false;
-  poisson_allocated = false;
   uniform = new boost::uniform_real<>(0,1);
   gaussian = new boost::normal_distribution<>;
   VRG = new boost::variate_generator<base_generator_type&,boost::uniform_real<> >(BGT,*uniform);
@@ -32,16 +29,28 @@ Random::~Random()
 
 void Random::initialize_bernoulli(double p)
 {
+  if (brn_allocated) {
+    delete brn;
+    delete vbrn;
+  }
+  else {
+    brn_allocated = true;
+  }
   brn = new boost::bernoulli_distribution<>(p);
   vbrn = new boost::variate_generator<base_generator_type&,boost::bernoulli_distribution<> >(BGT,*brn);
-  brn_allocated = true;
 }
 
 void Random::initialize_poisson(double lambda)
 {
+  if (poisson_allocated) {
+    delete poisson;
+    delete vpoisson;
+  }
+  else {
+    poisson_allocated = true;
+  }
   poisson = new boost::poisson_distribution<>(lambda);
   vpoisson = new boost::variate_generator<base_generator_type&,boost::poisson_distribution<> >(BGT,*poisson);
-  poisson_allocated = true;
 }
 
 void Random::initialize_beta(double a,double b)
@@ -63,6 +72,7 @@ double Random::drandom()
 
 double Random::drandom(double x,double y)
 {
+  if (y < x) throw std::invalid_argument("The arguments to Random::drandom(a,b) must satisfy a < b!");
   double alpha = x + drandom()*(y - x);
   return alpha;
 }
@@ -89,18 +99,21 @@ double Random::nrandom()
 
 double Random::nrandom(double mu,double sigma)
 {
+  if (sigma < std::numeric_limits<double>::epsilon()) throw std::invalid_argument("The variance of the Gaussian distribution must be greater than zero!");
   double z = sigma*nrandom() + mu;
   return z;
 }
 
 double Random::nrandom(double sigma)
 {
+  if (sigma < std::numeric_limits<double>::epsilon()) throw std::invalid_argument("The variance of the Gaussian distribution must be greater than zero!");
   double z = nrandom(0.0,sigma);
   return z;
 }
 
 int Random::irandom(int n)
 {
+  if (n < 1) throw std::invalid_argument("The argument of Random::irandom must be greater than zero!");
   int output = int(n*drandom());
   return output;
 }
@@ -113,6 +126,7 @@ int Random::irandom(int x,int y)
 
 unsigned int Random::irandom(const std::set<unsigned int>& S)
 {
+  if (S.empty()) throw std::invalid_argument("The argument of Random::irandom must not be an empty set!");
   unsigned int output = 0;
   int n = irandom(S.size());
   int k = 0;
@@ -130,9 +144,9 @@ unsigned int Random::irandom(const std::set<unsigned int>& S)
 
 int Random::irandom(const std::set<int>& S)
 {
+  if (S.empty()) throw std::invalid_argument("The argument of Random::irandom must not be an empty set!");
   int output = 0;
-  int n = irandom(S.size());
-  int k = 0;
+  unsigned int k = 0,n = irandom(S.size());
   std::set<int>::const_iterator it;
 
   for(it=S.begin(); it!=S.end(); ++it) {
@@ -147,30 +161,22 @@ int Random::irandom(const std::set<int>& S)
 
 int Random::irandom(const std::set<int>& S,const std::set<int>& used)
 {
+  if (S.empty()) throw std::invalid_argument("The argument of Random::irandom must not be an empty set!");
   int output = 0;
-  std::set<int>::const_iterator it;
 
   do {
     output = irandom(S);
-    it = used.find(output);
-    if (it == used.end()) break;
+    if (used.count(output) == 0) break;
   } while(true);
   return output;
 }
 
 int Random::irandom(const std::vector<int>& used)
 {
-  int i,output,l = (signed) used.size();
-  bool good = false;
+  if (std::count(used.begin(),used.end(),0) == 0) throw std::invalid_argument("There must be at least one zero element in the argument of Random:irandom!"); 
+  unsigned int l = used.size();
+  int output = 0;
 
-  // But what if used[i] = 1 for all i?
-  for(i=0; i<l; ++i) {
-    if (used[i] == 0) {
-      good = true;
-      break;
-    }
-  }
-  if (!good) return irandom(l);
   do {
     output = irandom(l);
     if (used[output] == 0) break;
@@ -180,24 +186,18 @@ int Random::irandom(const std::vector<int>& used)
 
 int Random::irandom(int ulimit,const std::vector<int>& used)
 {
-  int i,output = 0,l = (signed) used.size();
-  bool found;
+  int output = 0;
+
   do {
     output = irandom(ulimit);
-    found = false;
-    for(i=0; i<l; ++i) {
-      if (used[i] == output) {
-        found = true;
-        break;
-      }
-    }
-    if (!found) break;
+    if (std::count(used.begin(),used.end(),output) == 0) break;
   } while(true);
   return output;
 }
 
 void Random::shuffle(std::vector<int>& index,int n)
 {
+  if (n < 1) throw std::invalid_argument("The number of elements to shuffle must be greater than zero!");
   int i,r,t;
   
   index.clear();
@@ -215,6 +215,8 @@ void Random::shuffle(std::vector<int>& index,int n)
 
 void Random::generate_random_vector(std::vector<double>& x,int n,double a,double b) 
 {
+  if (n < 1) throw std::invalid_argument("The length of the random vector must be greater than zero!");
+
   x.clear();
 
   for(int i=0; i<n; ++i) {
@@ -224,6 +226,8 @@ void Random::generate_random_vector(std::vector<double>& x,int n,double a,double
 
 void Random::generate_random_vector(std::vector<std::complex<double> >& x,int n,double a,double b,bool nz_imaginary) 
 {
+  if (n < 1) throw std::invalid_argument("The length of the random vector must be greater than zero!");
+
   std::complex<double> alpha; 
 
   x.clear();
