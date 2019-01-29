@@ -9,6 +9,7 @@ Cell::Cell()
 
 Cell::Cell(int n)
 {
+  if (n < 1) throw std::invalid_argument("The number of vertices in the Cell constructor must be greater than zero!");
   for(int i=0; i<=n; ++i) {
     vertices.insert(i);
   }
@@ -17,6 +18,7 @@ Cell::Cell(int n)
 
 Cell::Cell(int v1,int v2)
 {
+  if (v1 == v2) throw std::invalid_argument("The edge vertices in the Cell constructor must be distinct!");
   // A specialized constructor for 1-cells
   vertices.insert(v1);
   faces.push_back(vertices);
@@ -26,8 +28,9 @@ Cell::Cell(int v1,int v2)
   vertices.insert(v1);
 }
 
-Cell::Cell(const std::set<int>& v)
+Cell::Cell(const std::set<int>& vx)
 {
+  if (vx.empty()) throw std::invalid_argument("The vertex set in the Cell constructor must not be empty!");
   vertices = v;
   calculate_faces();
 }
@@ -52,6 +55,8 @@ Cell& Cell::operator =(const Cell& source)
 
 void Cell::initialize(int v1,int v2)
 {
+  if (v1 == v2) throw std::invalid_argument("The edge vertices in the Cell constructor must be distinct!");
+
   clear();
 
   vertices.insert(v1);
@@ -64,7 +69,10 @@ void Cell::initialize(int v1,int v2)
 
 void Cell::initialize(const std::set<int>& vx)
 {
+  if (vx.empty()) throw std::invalid_argument("The vertex set in the Cell constructor must not be empty!");
+
   clear();
+
   vertices = vx;
   calculate_faces();
 }
@@ -131,35 +139,15 @@ int Cell::deserialize(std::ifstream& s)
   return count;
 }
 
-bool Cell::face(const std::set<int>& f) const
-{
-  for(int i=0; i<1+dimension(); ++i) {
-    if (f == faces[i]) return true;
-  }
-  return false;
-}
-
 bool Cell::exchange(int p,int q)
 {
-  std::set<int> vx;
-  std::set<int>::const_iterator it;
-  bool found = false;
-
-  for(it=vertices.begin(); it!=vertices.end(); ++it) {
-    if (*it == q) {
-      found = true;
-      continue;
-    }
-    vx.insert(*it);
-  }
-  if (found) {
-    // We have to change several things in this case, this
-    // simplex's key and also its faces
-    vx.insert(p);
-    vertices = vx;
+  if (vertices.count(q) > 0) {
+    vertices.erase(q);    
+    vertices.insert(p);
     calculate_faces();
+    return true;
   }
-  return found;
+  return false;
 }
 
 
