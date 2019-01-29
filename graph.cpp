@@ -13,6 +13,7 @@ Graph::Graph() : Schema()
 Graph::Graph(int n) : Schema(n)
 {
   // A graph with n vertices but no edges...
+  if (n < 1) throw std::invalid_argument("The graph order must be greater than zero!");
 }
 
 Graph::Graph(std::string& name)
@@ -152,12 +153,13 @@ Graph::Graph(std::string& name)
     }
   }
   else {
-    throw std::invalid_argument("Unrecognized graph name!");
+    throw std::invalid_argument("Unrecognized name in graph constructor!");
   }
 }
 
 Graph::Graph(int n,std::string& type) : Schema(n)
 {
+  if (n < 1) throw std::invalid_argument("The graph order must be greater than zero!");
   int i;
 
   boost::to_upper(type);
@@ -190,7 +192,7 @@ Graph::Graph(int n,std::string& type) : Schema(n)
   else if (type == "CONNECTED") {
     // Create a random connected graph on n vertices - we keep adding 
     // random edges until the graph is connected
-    assert(n > 1);
+    if (n < 2) throw std::invalid_argument("The order of a connected graph must be greater than one!");
 
     int u,v;
 
@@ -205,19 +207,19 @@ Graph::Graph(int n,std::string& type) : Schema(n)
     } while(true);
   }
   else {
-    throw std::invalid_argument("Unrecognized graph type!");
+    throw std::invalid_argument("Unrecognized type in graph constructor!");
   }
 }
 
 Graph::Graph(int n,int c) : Schema(n)
 {
+  if (n < 1) throw std::invalid_argument("The graph order must be greater than zero!");
+  if (c < 1) throw std::invalid_argument("The minimum degree in the graph constructor must be greater than zero!");
   // Construct a scale-free graph with n vertices where 
   // the minimum degree is c
   int i,j,k,sum;
   double rho;
-#ifdef DEBUG
-  assert(c >= 1);
-#endif 
+
   for(i=0; i<c+1; ++i) {
     for(j=(signed) neighbours[i].size(); j<c; ++j) {
       do {
@@ -284,6 +286,7 @@ Graph::~Graph()
 bool Graph::consistent() const
 {
   if (!Schema::consistent()) return false;
+
   int i,vx[2],nedge = (signed) edges.size();
   std::set<int>::const_iterator it;
   for(i=0; i<nedge; ++i) {
@@ -395,24 +398,22 @@ void Graph::write2disk(const std::string& filename) const
 void Graph::core(Graph* G,int k) const
 {
   // A method to compute the k-core of the current graph
-  // The 1-core is just the graph itself...
-#ifdef DEBUG
-  assert(k > 1);
-#endif
+  if (k < 1) throw std::invalid_argument("For the k-core of a graph, k must be greater than zero!");
 
-  if (k > max_degree()) {
-    // The k-core in this case is null
-    G->clear();
-    return;
-  }
-  else if (k < min_degree()) {
-    // The k-core is just the graph as a whole in this case...
+  G->clear();
+
+  // The k-core in this case is null
+  if (k > max_degree()) return;
+
+  // The 1-core and the k-core when k < min_degree(G) is just the graph itself...
+  if (k == 1 || k < min_degree()) {
     G->nvertex = nvertex; 
     G->edges = edges;
     G->neighbours = neighbours;
     return;
   }
 
+  // The less trivial cases...
   int i;
   bool found;
 
@@ -446,9 +447,7 @@ void Graph::vertex_centrality(std::vector<double>& output,double tolerance) cons
   const double beta = 1.0;
 
   adjacency_eigenvalues(sigma);
-#ifdef DEBUG
-  assert(!sigma.empty());
-#endif
+
   alpha = 0.5/sigma[nvertex-1];
   output.clear();
   sigma.clear();
@@ -560,9 +559,7 @@ bool Graph::bipartite() const
 
 int Graph::eccentricity(int v) const
 {
-#ifdef DEBUG
-  assert(v >= 0 && v < nvertex);
-#endif
+  if (v < 0 || v >= nvertex) throw std::invalid_argument("The Graph::eccentricity argument must be a vertex of the graph!");
 
   int i,delta,output = 0;
 #ifdef _OPENMP
@@ -584,9 +581,8 @@ int Graph::eccentricity(int v) const
 
 bool Graph::planar() const
 {
-#ifdef DEBUG
-  assert(connected());
-#endif
+  if (!connected()) throw std::runtime_error("To compute a graph's planarity it must be connected!");
+
   // Small graphs are always planar...
   if (nvertex <= 2) return true;
   // The more edges, the less likely it's planar...
@@ -604,9 +600,8 @@ bool Graph::planar() const
 
 bool Graph::drop_vertex(int v)
 {
-#ifdef DEBUG
-  assert(v >= 0 && v < nvertex);
-#endif
+  if (v < 0 || v >= nvertex) throw std::invalid_argument("The Graph::drop_vertex argument must be a vertex of the graph!");
+
   int i,j,nedges = (signed) edges.size();
   std::vector<int> deletion;
   std::set<int> S = neighbours[v];
@@ -680,14 +675,15 @@ bool Graph::drop_edge(int v,int u)
   if (u == v) return false;
   if (!connected(v,u)) return false;
 
+  std::set<int> vx; 
+  hash_map::const_iterator qt;
+
+  vx.insert(u); vx.insert(v);
+  qt = index_table.find(vx);
+  // This edge doesn't exist!
+  if (qt == index_table.end()) return false;
   neighbours[u].erase(v);
   neighbours[v].erase(u);
-  std::set<int> vx; 
-  vx.insert(u); vx.insert(v);
-  hash_map::const_iterator qt = index_table.find(vx);
-#ifdef DEBUG
-  assert(qt != index_table.end());
-#endif
   edges.erase(edges.begin() + qt->second);
   index_table.clear();
   for(int i=0; i<(signed) edges.size(); ++i) {
@@ -931,25 +927,32 @@ void Graph::complement(Graph* G) const
   }
 }
 
-void Graph::katz_centrality(std::vector<double>& output) const
+void Graph::katz_centrality(std::vector<double>& output,double tolerance) const
 {
   // A method to compute the Katz centrality of the vertices in the 
   // graph - we first need to compute the adjacency matrix and its 
   // largest eigenvalue, then we use a recursive process in order to 
   // compute the vector of centrality values.
-  assert(nvertex > 1);
-  int i,j,info,nv = nvertex,nwork = 3*nvertex - 1;
+  if (nvertex < 2) throw std::runtime_error("The Katz centrality can only be computed if the graph order is greater than one!");
+
+  int i;
+  double sum;
+  /*
+  int info,nv = nvertex,nwork = 3*nvertex - 1;
+
   char jtype = 'N';
   char uplo = 'U';
   double alpha,sum;
   double* AD = new double[nvertex*nvertex];
   double* w = new double[nvertex];
   double* work = new double[nwork];
-  std::vector<double> x,xnew;
-  std::set<unsigned int>::const_iterator it;
-  Binary_Matrix* A = new Binary_Matrix;
+  */
+  std::vector<double> w,x,xnew;
+  //std::set<unsigned int>::const_iterator it;
+  //Binary_Matrix* A = new Binary_Matrix;
   const double beta = 1.0;
 
+  /*
   compute_adjacency_matrix(A);
   for(i=0; i<nvertex*nvertex; ++i) {
     AD[i] = 0.0;
@@ -966,9 +969,9 @@ void Graph::katz_centrality(std::vector<double>& output) const
   // the eigenvalues of A (which are real since A is symmetric and
   // real) in ascending order, thus w[nv-1] will be the largest
   dsyev_(&jtype,&uplo,&nv,AD,&nv,w,work,&nwork,&info);
-#ifdef DEBUG
-  assert(info == 0);  
-#endif
+  if (info != 0) throw std::runtime_error("Unable to compute the eigenvalues of adjacency matrix!");
+  */
+  adjacency_eigenvalues(w);
 
   for(i=0; i<nvertex; ++i) {
     x.push_back(1.0);
@@ -976,11 +979,14 @@ void Graph::katz_centrality(std::vector<double>& output) const
   }
 
   // We want alpha to be just under the threshold for convergence
-  alpha = 0.9*(1.0/w[nvertex-1]);
+  const double alpha = 0.9*(1.0/w[nvertex-1]);
 
-  delete[] AD;
-  delete[] w;
-  delete[] work;
+  //delete[] AD;
+  //delete[] w;
+  //delete[] work;
+
+  Binary_Matrix* A = new Binary_Matrix;
+  compute_adjacency_matrix(A);
 
   do {
     A->multiply(x,xnew);
@@ -993,11 +999,13 @@ void Graph::katz_centrality(std::vector<double>& output) const
     for(i=0; i<nvertex; ++i) {
       sum += (xnew[i] - x[i])*(xnew[i] - x[i]);
     }
-    if (sum < 0.0001) break;
+    sum = std::sqrt(sum);
+    if (sum < tolerance) break;
     x = xnew;
   } while(true);
 
-  delete A;  
+  delete A;
+  
   output = xnew;
 }
 
@@ -1239,9 +1247,8 @@ void Graph::random_walk(double* mean,double* sdeviation,int D) const
 
 void Graph::degree_distribution(bool logarithmic,std::vector<double>& histogram) const
 {
-#ifdef DEBUG
-  assert(connected());
-#endif
+  if (!connected()) throw std::invalid_argument("It is meaningless to compute the degree distribution for a disconnected graph!");
+
   int i;
   const int max = max_degree();
   int counter[1+max];
@@ -1284,9 +1291,8 @@ void Graph::degree_distribution(bool logarithmic,std::vector<double>& histogram)
 
 double Graph::percolation(bool site) const 
 {
-#ifdef DEBUG
-  assert(connected());
-#endif
+  if (!connected()) throw std::invalid_argument("Percolation computations are meaningless for a disconnected graph!");
+
   int i,n,nc;
   double output;
   std::vector<int> csize,components;
@@ -1367,9 +1373,8 @@ double Graph::cosine_similarity(int u,int v) const
 
 int Graph::girth() const
 {
-#ifdef DEBUG
-  assert(nvertex > 0);
-#endif
+  if (nvertex < 1) throw std::invalid_argument("The girth cannot be calculated for a graph with no vertices!");
+
   int i,j,p,q,alpha,length = 1 + size(),done[nvertex],parent[nvertex],dist[nvertex];
   std::set<int> current,next;
   std::set<int>::const_iterator it,jt;
@@ -1470,9 +1475,8 @@ double Graph::completeness() const
 
 double Graph::algebraic_connectivity() const
 {
-#ifdef DEBUG
-  assert(connected() && nvertex > 1);
-#endif
+  if (!connected() || nvertex < 2) throw std::invalid_argument("The algebraic connectivity cannot be computed for a disconnected graph or one with an order less than two!");
+
   int i,j,info,nv = nvertex,nwork = 3*nvertex - 1;
   char jtype = 'N';
   char uplo = 'U';
@@ -1516,9 +1520,7 @@ void Graph::compute_adjacency_matrix(Binary_Matrix* A) const
 
 void Graph::adjacency_eigenvalues(std::vector<double>& output) const
 {
-#ifdef DEBUG
-  assert(connected() && nvertex > 1);
-#endif
+  if (!connected() || nvertex < 2) throw std::invalid_argument("The adjacency matrix eigenvalues cannot be computed for a disconnected graph or one with an order less than two!");
 
   int i,j,info,nv = nvertex,nwork = 3*nvertex - 1;
   char jtype = 'N';
@@ -1544,11 +1546,10 @@ void Graph::adjacency_eigenvalues(std::vector<double>& output) const
   // the eigenvalues of A (which are real since A is symmetric and
   // real) in ascending order, thus w[nv-1] will be the largest
   dsyev_(&jtype,&uplo,&nv,AD,&nv,w,work,&nwork,&info);
+  if (info != 0) throw std::runtime_error("Unable to compute the eigenvalues of this graph's adjacency matrix!");
 
-  if (info == 0) {
-    for(i=0; i<nvertex; ++i) {
-      output.push_back(w[i]);
-    }
+  for(i=0; i<nvertex; ++i) {
+    output.push_back(w[i]);
   }
 }
 
@@ -1575,9 +1576,8 @@ double Graph::entwinement() const
 
 double Graph::cyclic_resistance() const
 {
-#ifdef DEBUG
-  assert(connected());
-#endif
+  if (!connected()) throw std::invalid_argument("The cyclic resistance is undefined for a disconnected graph!");
+
   int i,j,k,info,nv = nvertex,nwork = 5*nvertex;
   bool rvector[nvertex];
   double sum;
@@ -1643,9 +1643,8 @@ int Graph::genus(std::vector<int>& gamma) const
 {
   // A method to compute the genus of a connected graph, assumed simple as well, or to 
   // calculate at least the minimum and maximum genus of this graph.  
-#ifdef DEBUG
-  assert(connected());
-#endif
+  if (!connected()) throw std::invalid_argument("The genus is undefined for a disconnected graph!");
+
   gamma.clear();
   if (planar()) return 0;
   int nedge = size();
@@ -1813,15 +1812,11 @@ double Graph::compute_energy() const
 {
   // To compute the topological energy, first determine if the graph is 
   // connected
-  if (!connected()) return 1000000.0;
+  if (!connected()) return std::numeric_limits<double>::infinity();
   std::vector<int> gamma;
   int g = genus(gamma);
-  if (g == -1) {
-    return double(gamma[0])/(1.0 + double(gamma[1]));
-  }
-  else {
-    return g;
-  }
+  double output = (g == -1) ? double(gamma[0])/(1.0 + double(gamma[1])) : double(g);
+  return output;
 }
 
 int Graph::minimize_topology(int nsteps,double temperature,std::vector<double>& energy_history)
