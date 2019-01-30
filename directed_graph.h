@@ -26,7 +26,7 @@ namespace SYNARMOSMA {
     Directed_Graph& operator =(const Directed_Graph&);
     /// The destructor, which for this class does nothing. 
     ~Directed_Graph() override;
-    /// This method writes the edge's properties to a binary disk file and returns the number of bytes written to the file.
+    /// This method writes the directed graph's properties to a binary disk file and returns the number of bytes written to the file.
     int serialize(std::ofstream&) const override;
     /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
     int deserialize(std::ifstream&) override;

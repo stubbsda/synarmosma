@@ -31,7 +31,7 @@ Cell::Cell(int v1,int v2)
 Cell::Cell(const std::set<int>& vx)
 {
   if (vx.empty()) throw std::invalid_argument("The vertex set in the Cell constructor must not be empty!");
-  vertices = v;
+  vertices = vx;
   calculate_faces();
 }
 
