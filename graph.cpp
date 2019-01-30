@@ -287,14 +287,28 @@ bool Graph::consistent() const
 {
   if (!Schema::consistent()) return false;
 
-  int i,vx[2],nedge = (signed) edges.size();
-  std::set<int>::const_iterator it;
+  int i,vx[2];
+  std::set<int> S;
+  hash_map::const_iterator qt;
+  const int nedge = (signed) edges.size();
+ 
   for(i=0; i<nedge; ++i) {
     edges[i].get_vertices(vx);
+    // Edge is a self-loop...
+    if (vx[0] == vx[1]) return false;
+    // Edge vertices don't exist...
     if (vx[0] < 0 || vx[0] >= nvertex) return false;
     if (vx[1] < 0 || vx[1] >= nvertex) return false;
+    // Edge is inconsistent with neighbour table...
     if (neighbours[vx[0]].count(vx[1]) == 0) return false;
     if (neighbours[vx[1]].count(vx[0]) == 0) return false;
+    S.clear();
+    S.insert(vx[0]); S.insert(vx[1]); 
+    qt = index_table.find(S);
+    // Unable to find this edge in the edge index...
+    if (qt == index_table.end()) return false;
+    // Wrong index value...
+    if (qt->second != i) return false;
   }
   return true;
 }
@@ -439,40 +453,49 @@ void Graph::core(Graph* G,int k) const
   } while(true);
 }
 
-void Graph::vertex_centrality(std::vector<double>& output,double tolerance) const
+void Graph::vertex_centrality(std::vector<double>& output,double tolerance,bool katz) const
 {
-  int i,j;
-  double sum,alpha,error;
-  std::vector<double> sigma,sigma_new;
+  // A method to compute the centrality of the vertices in the 
+  // graph - we first need to compute the adjacency matrix and its 
+  // largest eigenvalue, then we use a recursive process in order to 
+  // compute the vector of centrality values. This method can use 
+  // either the standard formula or that for Katz centrality.
+  if (nvertex < 2) throw std::runtime_error("The vertex centrality can only be computed if the graph order is greater than one!");
+  int i;
+  double sum;
+  std::vector<double> x,xnew;
   const double beta = 1.0;
 
-  adjacency_eigenvalues(sigma);
+  adjacency_eigenvalues(x);
 
-  alpha = 0.5/sigma[nvertex-1];
-  output.clear();
-  sigma.clear();
+  const double alpha = (katz) ? 0.9/x[nvertex-1] : 0.5/x[nvertex-1];
+
+  x.clear();
   for(i=0; i<nvertex; ++i) {
-    sigma.push_back(1.0);
-    sigma_new.push_back(0.0);
+    x.push_back(1.0);
+    xnew.push_back(0.0);
   }
 
+  Binary_Matrix* A = new Binary_Matrix;
+  compute_adjacency_matrix(A);
+
   do {
+    A->multiply(x,xnew);
     for(i=0; i<nvertex; ++i) {
-      sum = 0.0;
-      for(j=0; j<nvertex; ++j) {
-        if (connected(i,j)) sum += sigma[j];
-      }
-      sigma_new[i] = beta + alpha*sum;
+      xnew[i] *= alpha;
+      xnew[i] += beta;
     }
     sum = 0.0;
     for(i=0; i<nvertex; ++i) {
-      sum += (sigma_new[i] - sigma[i])*(sigma_new[i] - sigma[i]);
+      sum += (xnew[i] - x[i])*(xnew[i] - x[i]);
     }
-    error = std::sqrt(sum);
-    if (error < tolerance) break;
-    sigma = sigma_new;
+    if (std::sqrt(sum) < tolerance) break;
+    x = xnew;
   } while(true);
-  output = sigma;
+
+  delete A;
+
+  output = xnew;
 }
 
 int Graph::DFS_bridge(int u,int v,int dcount,int* low,int* pre) const
@@ -925,88 +948,6 @@ void Graph::complement(Graph* G) const
       if (qt == index_table.end()) G->add_edge(i,j);
     }
   }
-}
-
-void Graph::katz_centrality(std::vector<double>& output,double tolerance) const
-{
-  // A method to compute the Katz centrality of the vertices in the 
-  // graph - we first need to compute the adjacency matrix and its 
-  // largest eigenvalue, then we use a recursive process in order to 
-  // compute the vector of centrality values.
-  if (nvertex < 2) throw std::runtime_error("The Katz centrality can only be computed if the graph order is greater than one!");
-
-  int i;
-  double sum;
-  /*
-  int info,nv = nvertex,nwork = 3*nvertex - 1;
-
-  char jtype = 'N';
-  char uplo = 'U';
-  double alpha,sum;
-  double* AD = new double[nvertex*nvertex];
-  double* w = new double[nvertex];
-  double* work = new double[nwork];
-  */
-  std::vector<double> w,x,xnew;
-  //std::set<unsigned int>::const_iterator it;
-  //Binary_Matrix* A = new Binary_Matrix;
-  const double beta = 1.0;
-
-  /*
-  compute_adjacency_matrix(A);
-  for(i=0; i<nvertex*nvertex; ++i) {
-    AD[i] = 0.0;
-  }
-
-  // Column-major form...
-  for(i=0; i<nvertex; ++i) {
-    for(j=0; j<nvertex; ++j) {
-      if (A->get(i,j)) AD[nvertex*j+i] = 1.0;
-    }
-  }
-
-  // If info is zero after this LAPACK call, then w will contain
-  // the eigenvalues of A (which are real since A is symmetric and
-  // real) in ascending order, thus w[nv-1] will be the largest
-  dsyev_(&jtype,&uplo,&nv,AD,&nv,w,work,&nwork,&info);
-  if (info != 0) throw std::runtime_error("Unable to compute the eigenvalues of adjacency matrix!");
-  */
-  adjacency_eigenvalues(w);
-
-  for(i=0; i<nvertex; ++i) {
-    x.push_back(1.0);
-    xnew.push_back(0.0);
-  }
-
-  // We want alpha to be just under the threshold for convergence
-  const double alpha = 0.9*(1.0/w[nvertex-1]);
-
-  //delete[] AD;
-  //delete[] w;
-  //delete[] work;
-
-  Binary_Matrix* A = new Binary_Matrix;
-  compute_adjacency_matrix(A);
-
-  do {
-    A->multiply(x,xnew);
-    for(i=0; i<nvertex; ++i) {
-      xnew[i] *= alpha;
-      xnew[i] += beta;
-    }
-    // Test for convergence...
-    sum = 0.0;
-    for(i=0; i<nvertex; ++i) {
-      sum += (xnew[i] - x[i])*(xnew[i] - x[i]);
-    }
-    sum = std::sqrt(sum);
-    if (sum < tolerance) break;
-    x = xnew;
-  } while(true);
-
-  delete A;
-  
-  output = xnew;
 }
 
 void Graph::defoliate(const Pseudograph* parent,std::vector<Monomial<int> >& tutte) const

@@ -21,6 +21,7 @@ namespace SYNARMOSMA {
 
     int DFS_bridge(int,int,int,int*,int*) const;
     int DFS_cycle(int,int,std::vector<int>&,bool*) const;
+    /// This method computes the eigenvalues of the graph's adjacency matrix and writes them to the argument, in ascending order.
     void adjacency_eigenvalues(std::vector<double>&) const;
     void defoliate(const Pseudograph*,std::vector<Monomial<int> >&) const;
   public:
@@ -36,24 +37,25 @@ namespace SYNARMOSMA {
     Graph& operator =(const Graph&);
     /// The destructor which does nothing.
     virtual ~Graph() override;
+    /// This method carries out all the operations of the Schema::clear() method and then clears the Graph::edges and Graph::index_table properties.
     virtual void clear() override;
     /// This method returns the topological energy of this graph, based on its genus.
     virtual double compute_energy() const;
-    // A basic operator for adding an edge
+    /// This method adds an edge to the graph between the two vertices specified in its two arguments, assuming an edge length of zero; the method returns true if this a new edge, false otherwise.
     virtual inline bool add_edge(int u,int v) override {return add_edge(u,v,0.0);};
+    /// This method adds an edge to the graph between the two vertices specified in its first two arguments, while the third argument is the length of this edge; the method returns true if this is a new edge, false otherwise.
     virtual bool add_edge(int,int,double);
-    // A basic operator for undoing the above edge addition
-    bool drop_edge(int,int) override;
-    // A method to handle dropping a vertex, a rather complicated
-    // operation for this class
+    /// This method deletes the edge connecting the two vertices specified in its arguments, returning true if there was an edge to delete and false otherwise.
+    virtual bool drop_edge(int,int) override;
+    /// This method deletes a vertex specified by the argument, which also requires deleting all of this vertex's edges as well; it returns true if this is successful. 
     virtual bool drop_vertex(int);
-    /// Thhis method minimizes the graph topology according to a fitness function using simulated annealing 
+    /// This method minimizes the graph topology according to a fitness function using simulated annealing. 
     int minimize_topology(int,double,std::vector<double>&);
     /// This method renders the graph topology complete, i.e. every vertex is directly connected to every other vertex; it returns the number of edges that had to be added to the graph to achieve this result.
     int make_complete();
+    /// This method first checks if the graph is consistent as an instance of the Schema class, then performs a series of sanity checks on the elements of the Graph::edges vector and returns true if everything is consistent.
     virtual bool consistent() const override;
-    // Given a set of vertices, calculate the set of edges connecting them to the 
-    // rest of the graph, i.e. the "surface" which encloses the volume (the set of vertices)
+    /// Given a set of vertices (the first argument), this method calculates the set of edges (the second argument) connecting them to the rest of the graph, i.e. the "surface" which encloses the volume (the set of vertices).
     void compute_surface(const std::set<int>&,std::set<int>&) const;
     // Hyphantic operators
     bool stellar_addition(int);
@@ -63,9 +65,8 @@ namespace SYNARMOSMA {
     virtual bool foliation_m(int,int);
     virtual int fission_x(int);
     virtual int fission_m(int);
-    // A method to compute the maximum network flow from a source vertex to a sink vertex
+    /// This method computes the maximum network flow from a source vertex (first argument) to a sink vertex (second argument), returning the value of the flow.
     virtual double compute_flow(int,int);
-    // A series of const methods to calculate various graph properties
     void core(Graph*,int) const;
     int eccentricity(int) const;
     bool planar() const;
@@ -84,8 +85,7 @@ namespace SYNARMOSMA {
     double connectivity() const;
     int omega() const;
     double algebraic_connectivity() const;
-    void vertex_centrality(std::vector<double>&,double) const;
-    void katz_centrality(std::vector<double>&,double) const;
+    void vertex_centrality(std::vector<double>&,double,bool = false) const;
     void degree_distribution(bool,std::vector<double>&) const;
     double percolation(bool) const;
     double cyclic_resistance() const;
@@ -103,10 +103,15 @@ namespace SYNARMOSMA {
     int compute_deformed_laplacian(std::complex<double>,Matrix<std::complex<double> >*) const;
     int compute_laplacian(Matrix<double>*) const;
     int genus(std::vector<int>&) const;
+    /// This method returns the size of the graph, i.e. the number of edges.
     inline int size() const {return (signed) edges.size();};
+    /// This method returns the order of the graph, i.e. the number of vertices.
     inline int order() const {return nvertex;};
+    /// This method writes the graph's properties to a binary disk file and returns the number of bytes written to the file.
     virtual int serialize(std::ofstream&) const override;
+    /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
     virtual int deserialize(std::ifstream&) override;
+    /// This method writes the graph out to a disk file in the DOT format for visualization by GraphViz; the method's argument is the filename.
     virtual void write2disk(const std::string&) const;
   };
 }
