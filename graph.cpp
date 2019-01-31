@@ -4,10 +4,9 @@ using namespace SYNARMOSMA;
 
 extern Random RND;
 
-Graph::Graph() : Schema()
+Graph::Graph()
 {
   // The empty graph, no vertices or edges...
-  nvertex = 0;
 }
 
 Graph::Graph(int n) : Schema(n)
@@ -265,6 +264,7 @@ Graph::Graph(const Graph& source)
   nvertex = source.nvertex;
   neighbours = source.neighbours;
   edges = source.edges;
+  index_table = source.index_table;
 }
 
 Graph& Graph::operator =(const Graph& source) 
@@ -274,6 +274,7 @@ Graph& Graph::operator =(const Graph& source)
   nvertex = source.nvertex;
   neighbours = source.neighbours;
   edges = source.edges;
+  index_table = source.index_table;
 
   return *this;
 }
@@ -801,9 +802,9 @@ bool Graph::fusion(int v,int u)
     if (neighbours[v].empty()) return false;
     u = RND.irandom(neighbours[v]);
   }
+  std::set<int> S = neighbours[u];
   if (!drop_vertex(u)) return false;
   int i;
-  std::set<int> S = neighbours[u];
   std::set<int>::const_iterator it;
   if (u < v) v = v - 1;
   for(it=S.begin(); it!=S.end(); ++it) {
@@ -1354,64 +1355,6 @@ int Graph::girth() const
   // The graph is acyclic...
   if (length == (1 + size())) return -1;
   return length;
-}
-
-double Graph::inverse_girth() const
-{
-  int output = girth();
-  double g = 0.0;
-  if (output > 0) {
-    g = 1.0/double(output);
-  }
-  return g;
-}
-
-int Graph::circuit_rank() const
-{
-  int chi = size() - nvertex;
-  if (connected()) return 1 + chi;
-  std::vector<int> components;
-  int n = component_analysis(components);
-  return n + chi;
-}
-
-int Graph::max_degree() const
-{
-  int i,n,output = 0;
-  for(i=0; i<nvertex; ++i) {
-    n = (signed) neighbours[i].size();
-    if (n > output) output = n;
-  }
-  return output;
-}
-
-int Graph::min_degree() const
-{
-  int i,n,output = 1 + size();
-  for(i=0; i<nvertex; ++i) {
-    n = (signed) neighbours[i].size();
-    if (n < output) output = n;
-  }
-  return output;
-}
-
-double Graph::average_degree() const
-{
-  int i;
-  double sum = 0.0;
-  for(i=0; i<nvertex; ++i) {
-    sum += double(neighbours[i].size());
-  }
-  return sum/double(nvertex);
-}
-
-double Graph::completeness() const
-{
-  double output = 0.0;
-  if (nvertex == 1) return output;
-
-  output = 2.0*double(size())/double(nvertex*(nvertex-1));
-  return output;
 }
 
 double Graph::algebraic_connectivity() const
