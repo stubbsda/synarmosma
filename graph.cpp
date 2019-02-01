@@ -245,6 +245,9 @@ Graph::Graph(int n,int c) : Schema(n)
 
 Graph::Graph(int n,double p) : Schema(n)
 {
+  if (n < 1) throw std::invalid_argument("The graph order must be greater than zero!");
+  if (p < std::numeric_limits<double>::epsilon || p > 1.0) throw std::invalid_argument("The edge percentage must lie between 0 and 1!")
+
   // A constructor that builds a graph with n vertices and p percent of 
   // the number of edges in the complete graph on n vertices, chosen randomly.
   int i,j;
@@ -282,6 +285,14 @@ Graph& Graph::operator =(const Graph& source)
 Graph::~Graph()
 {
 
+}
+
+void Graph::initialize(const Graph& G)
+{
+  nvertex = G.nvertex;
+  neighbours = G.neighbours;
+  edges = G.edges;
+  index_table = G.index_table;  
 }
 
 bool Graph::consistent() const
@@ -410,6 +421,28 @@ void Graph::write2disk(const std::string& filename) const
   s.close();
 }
 
+int Graph::boundary_nodes(const std::set<int>& vx) const
+{
+  // This method computes the number of nodes which lie on the boundary of 
+  // the nodes contained in the method's argument. A node is on the boundary 
+  // if it has at least one edge which joins it to a vertex which is not a 
+  // member of the set "vx".
+  int i,nb = 0;
+  std::set<int>::const_iterator it,jt;
+
+  for(it=vx.begin(); it!=vx.end(); ++it) {
+    i = *it;
+    for(jt=neighbours[i].begin(); jt!=neighbours[i].end(); ++jt) {
+      // Check if this edge connects the vertex i to the rest of the graph...
+      if (vx.count(*jt) == 0) {
+        nb++;
+        break;
+      }
+    }
+  }
+  return nb;
+}
+
 void Graph::core(Graph* G,int k) const
 {
   // A method to compute the k-core of the current graph
@@ -420,37 +453,28 @@ void Graph::core(Graph* G,int k) const
   // The k-core in this case is null
   if (k > max_degree()) return;
 
+  G->initialize(this);
+
   // The 1-core and the k-core when k < min_degree(G) is just the graph itself...
-  if (k == 1 || k < min_degree()) {
-    G->nvertex = nvertex; 
-    G->edges = edges;
-    G->neighbours = neighbours;
-    return;
-  }
+  if (k == 1 || k < min_degree()) return;
 
   // The less trivial cases...
-  int i;
-  bool found;
-
-  G->nvertex = nvertex; 
-  G->edges = edges;
-  G->neighbours = neighbours;
+  int i,n;
 
   do {
-    if (G->max_degree() < k) {
+    if (k > G->max_degree()) {
       // The k-core will necessarily be null in this case, so we can exit
       G->clear();
       break;
     }   
-    found = false;
-    for(i=0; i<G->nvertex; ++i) {
-      if ((signed) G->neighbours[i].size() < k) {
+    n = G->nvertex;
+    for(i=0; i<n; ++i) {
+      if (k > G->degree(i)) {
         G->drop_vertex(i);
-        found = true;
         break;
       }
     }
-    if (!found) break;
+    if (n != G->nvertex) break;
   } while(true);
 }
 
@@ -748,7 +772,7 @@ bool Graph::stellar_deletion(int v)
   int n,i = 0,vx[3];
   std::set<int> S = neighbours[v];
   std::set<int>::const_iterator it;
-  drop_vertex(v);
+  if (!drop_vertex(v)) return false;
   for(it=S.begin(); it!=S.end(); ++it) {
     n = *it;
     if (n > v) n--;
@@ -1053,14 +1077,14 @@ double Graph::clustering_coefficient(int v) const
   // This method calculates the percentage of distinct pairs (u,w) 
   // of neighbours of v which are also connected directly
   if (neighbours[v].size() < 2) return 0.0;
-  int i,j,n,np,nf = 0;
+  unsigned int i,j,n,np,nf = 0;
   std::vector<int> vx;
   std::set<int>::const_iterator it;
 
   for(it=neighbours[v].begin(); it!=neighbours[v].end(); ++it) {
     vx.push_back(*it);
   }
-  n = (signed) vx.size();
+  n = vx.size();
   for(i=0; i<n; ++i) {
     for(j=1+i; j<n; ++j) {
       if (neighbours[vx[i]].count(vx[j]) > 0 && neighbours[vx[j]].count(vx[i]) > 0) nf++;
@@ -1086,7 +1110,7 @@ double Graph::mean_path_length() const
 
   for(i=0; i<nvertex; ++i) {
     for(j=1+i; j<nvertex; ++j) {
-      sum += distance(i,j);
+      sum += double(distance(i,j));
     }
   }
   sum = sum/npair;
@@ -1127,13 +1151,15 @@ bool Graph::biconnected() const
   return true;
 }
 
-double Graph::return_probability(int base,int length) const
+double Graph::return_probability(int base,int length,int ntrials) const
 {
-  int i,j,h = 0,next,current;
+  int i,j,next,current,sum = 0;
   bool home;
   double rho;
-  const int ntrials = 50;
 
+#ifdef _OPENMP
+#pragma omp parallel for default(shared) private(i,j,next,current,home) reduction(+:sum) schedule(dynamic,1)
+#endif
   for(i=0; i<ntrials; ++i) {
     current = base;
     home = false;
@@ -1145,21 +1171,19 @@ double Graph::return_probability(int base,int length) const
         break;
       }
     }
-    if (home) h++;
+    if (home) sum++;
   }
 
-  rho = double(h)/double(ntrials);
+  rho = double(sum)/double(ntrials);
   return rho;
 }
 
-void Graph::random_walk(double* mean,double* sdeviation,int D) const
+std::pair<double,double> Graph::random_walk(int L,double p,int ntrials) const
 {
   int i,j,v;
   double mu,rho = 0.0,sigma = 0.0;
   std::set<int> vx;
-  const int ntrials = 15;
-  const int L = int(std::pow(nvertex,1.0/double(D)));
-  const int nbase = int(0.05*nvertex);
+  const int nbase = int(p*nvertex);
   double value[nbase];
 
   for(i=0; i<nbase; ++i) {
@@ -1183,8 +1207,11 @@ void Graph::random_walk(double* mean,double* sdeviation,int D) const
     sigma = (value[i] - rho)*(value[i] - rho);
   }
   sigma = std::sqrt(sigma/double(nbase));
-  *mean = rho;
-  *sdeviation = sigma;
+
+  std::pair<double,double> output(rho,sigma);
+  return output;
+  //*mean = rho;
+  //*sdeviation = sigma;
 }
 
 void Graph::degree_distribution(bool logarithmic,std::vector<double>& histogram) const
@@ -1192,15 +1219,15 @@ void Graph::degree_distribution(bool logarithmic,std::vector<double>& histogram)
   if (!connected()) throw std::invalid_argument("It is meaningless to compute the degree distribution for a disconnected graph!");
 
   int i;
-  const int max = max_degree();
-  int counter[1+max];
+  const int m = max_degree();
+  int counter[1+m];
 
-  for(i=0; i<=max; ++i) {
+  for(i=0; i<=m; ++i) {
     counter[i] = 0;
   }
 
   for(i=0; i<nvertex; ++i) {
-    counter[neighbours[i].size()] += 1;
+    counter[degree(i)] += 1;
   }
 
   histogram.clear();
@@ -1212,8 +1239,8 @@ void Graph::degree_distribution(bool logarithmic,std::vector<double>& histogram)
     do {
       lbound *= 2;
       ubound *= 2;
-      if (lbound > max) break;
-      if (ubound > (1+max)) ubound = 1 + max;
+      if (lbound > m) break;
+      if (ubound > (1 + m)) ubound = 1 + m;
       sum = 0;
       for(i=lbound; i<ubound; ++i) {
         sum += counter[i];
@@ -1225,7 +1252,7 @@ void Graph::degree_distribution(bool logarithmic,std::vector<double>& histogram)
   }
   else {
     // Use a uniform bin width of unity...
-    for(i=2; i<=max; ++i) {
+    for(i=2; i<=m; ++i) {
       histogram.push_back(double(counter[i]));
     }
   }
@@ -1236,60 +1263,39 @@ double Graph::percolation(bool site) const
   if (!connected()) throw std::invalid_argument("Percolation computations are meaningless for a disconnected graph!");
 
   int i,n,nc;
-  double output;
   std::vector<int> csize,components;
+  Graph* G = new Graph;
   const double NE = double(size());
   const double NV = double(nvertex);
   
-  Graph wcopy(*this);
+  G->initialize(this);
 
-  if (site) {
-    // Site percolation - we remove vertices and their associated edges...
-    do {
-      n = RND.irandom(wcopy.nvertex);
-      if (!wcopy.drop_vertex(n)) continue;
-      nc = wcopy.component_analysis(components);
-      if (nc == 1) continue;
-      // We need to see if the giant component still exists...
-      for(i=0; i<nc; ++i) {
-        csize.push_back(0);
-      }
-      for(i=0; i<wcopy.nvertex; ++i) {
-        csize[components[i]] += 1;
-      }
-      // Sort the component sizes in ascending order
-      std::sort(csize.begin(),csize.end());
-      // The giant component has vanished if the largest component is less than 
-      // twice the size of the next largest component...
-      if (double(csize[nc-1])/double(csize[nc-2]) < 2.0) break;
-      csize.clear();
-    } while(true);
-    output = double(wcopy.nvertex)/NV;
-  }
-  else {
-    // Bond percolation - we only remove edges..
-    do {
-      n = RND.irandom(wcopy.nvertex);
-      // Eliminate a random edge connected to vertex "n"...
-      if (!wcopy.foliation_x(n,-1)) continue;
-      nc = wcopy.component_analysis(components);
-      if (nc == 1) continue;
-      // We need to see if the giant component still exists...
-      for(i=0; i<nc; ++i) {
-        csize.push_back(0);
-      }
-      for(i=0; i<wcopy.nvertex; ++i) {
-        csize[components[i]] += 1;
-      }
-      // Sort the component sizes in ascending order
-      std::sort(csize.begin(),csize.end());
-      // The giant component has vanished if the largest component is less than 
-      // twice the size of the next largest component...
-      if (double(csize[nc-1])/double(csize[nc-2]) < 2.0) break;
-      csize.clear();
-    } while(true);
-    output = double(wcopy.size())/NE;
-  }
+  do {
+    n = RND.irandom(G->order());
+    // Site percolation (we remove vertices and their associated edges) or bond percolation (we only remove edges)...
+    success = (site) ? G->drop_vertex(n) : G->foliation_x(n,-1);
+    if (!success) continue;
+    nc = G->component_analysis(components);
+    if (nc == 1) continue;
+    // We need to see if the giant component still exists...
+    for(i=0; i<nc; ++i) {
+      csize.push_back(0);
+    }
+    for(i=0; i<G->order(); ++i) {
+      csize[components[i]] += 1;
+    }
+    // Sort the component sizes in ascending order
+    std::sort(csize.begin(),csize.end());
+    // The giant component has vanished if the largest component is less than 
+    // twice the size of the next largest component...
+    if (double(csize[nc-1])/double(csize[nc-2]) < 2.0) break;
+    csize.clear();
+  } while(true);
+
+  double output = (site) ? double(G->order())/NV : double(G->size())/NE;
+
+  delete G;
+
   return output;
 }
 
@@ -1303,7 +1309,7 @@ double Graph::cosine_similarity(int u,int v) const
 
   int i,sum = 0;
   Binary_Matrix* A = new Binary_Matrix;
-  const double denominator = std::sqrt(double(neighbours[u].size()*neighbours[v].size()));
+  const double denominator = std::sqrt(double(degree(u)*degree(v)));
   compute_adjacency_matrix(A);
   // Now we need to square this binary matrix A...
   for(i=0; i<nvertex; ++i) {
@@ -1371,7 +1377,7 @@ double Graph::algebraic_connectivity() const
   }
 
   for(i=0; i<nvertex; ++i) {
-    A[(nvertex+1)*i] = double(neighbours[i].size());
+    A[(nvertex+1)*i] = double(degree(i));
     for(j=1+i; j<nvertex; ++j) {
       if (connected(i,j)) {
         A[nvertex*i+j] = -1.0; 
@@ -1445,6 +1451,7 @@ double Graph::entwinement() const
 
   double output = 0.0;
   std::vector<double> w;
+
   adjacency_eigenvalues(w);
 
   // We know that w[nv-1] <= max_degree(), so we divide by this
@@ -1464,7 +1471,7 @@ double Graph::cyclic_resistance() const
 
   int i,j,k,info,nv = nvertex,nwork = 5*nvertex;
   bool rvector[nvertex];
-  double sum;
+  double sum = 0.0;
   std::vector<double> delta;
   Matrix<double>* L = new Matrix<double>;
   Matrix<double>* W = new Matrix<double>;
@@ -1499,7 +1506,7 @@ double Graph::cyclic_resistance() const
     }
   }
   L->get_diagonal(delta);
-  sum = 0.0;
+
   for(i=0; i<nvertex; ++i) {
     sum += delta[i];
   }
@@ -1543,7 +1550,7 @@ int Graph::genus(std::vector<int>& gamma) const
 
 double Graph::connectivity() const 
 {
-  int i,in1,nn,mm;
+  int i,j;
   double output = 0.0;
   std::set<int>::const_iterator it;
 
@@ -1551,26 +1558,11 @@ double Graph::connectivity() const
   // c = \sum_{edges} 1/sqrt{|v_i|*|v_j|}
   for(i=0; i<nvertex; ++i) {
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
-      in1 = *it;
-      if (in1 > i) {
-        nn = neighbours[i].size();
-        mm = neighbours[in1].size();
-        output += 1.0/std::sqrt(double(nn*mm));
-      }
+      j = *it;
+      if (j > i) output += 1.0/std::sqrt(double(degree(i)*degree(j)));
     }
   }
   return output;
-}
-
-int Graph::omega() const 
-{
-  // The minimum omega is the sum
-  // omega = \sum_{i=1}^N 1/(N-|v_i|)
-  double sum = 0.0;
-  for(int i=0; i<nvertex; ++i) {
-    sum += 1.0/double(nvertex - neighbours[i].size());
-  }
-  return int(sum);
 }
 
 int Graph::compute_laplacian(Matrix<double>* L) const
@@ -1582,7 +1574,7 @@ int Graph::compute_laplacian(Matrix<double>* L) const
 
   for(i=0; i<nvertex; ++i) {
     if (neighbours[i].empty()) continue;
-    L->set(i,i,double(neighbours[i].size())); nzero++;
+    L->set(i,i,double(degree(i))); nzero++;
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
       L->set(i,*it,-1.0); nzero++;
     }
@@ -1599,7 +1591,7 @@ int Graph::compute_deformed_laplacian(std::complex<double> s,Matrix<std::complex
 
   for(i=0; i<nvertex; ++i) {
     if (neighbours[i].empty()) continue;
-    L->set(i,i,1.0 + s*s*double(neighbours[i].size() - 1)); nzero++;
+    L->set(i,i,1.0 + s*s*double(degree(i) - 1)); nzero++;
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
       L->set(i,*it,-s); nzero++;
     }

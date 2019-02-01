@@ -19,21 +19,32 @@ namespace SYNARMOSMA {
     /// vertices.
     hash_map index_table;
 
+    /// This method uses a recursive depth-first search to enumerate the number of bridges in the graph, which is the return value.
     int DFS_bridge(int,int,int,int*,int*) const;
+    /// This method uses a recursive depth-first search to enumerate the number of cycles in the graph, which is the return value.
     int DFS_cycle(int,int,std::vector<int>&,bool*) const;
     /// This method computes the eigenvalues of the graph's adjacency matrix and writes them to the argument, in ascending order.
     void adjacency_eigenvalues(std::vector<double>&) const;
+    /// This method is used to calculate the Tutte polynomial (the second argument) of the graph, based on the pseudograph (the first argument) which is constructed from the graph.
     void defoliate(const Pseudograph*,std::vector<Monomial<int> >&) const;
+    /// This method initializes the graph to the properties of its argument.
+    void initialize(const Graph&);
   public:
     /// The default constructor which does nothing. 
     Graph();
     /// The standard constructor which sets the number of vertices to the argument while the number of edges is left at zero.
     Graph(int);
+    /// This is the constructor for "named" graphs - DÜRER, GOLOMB, HERSCHEL, PETERSEN and WAGNER - which have a fixed number of vertices and edges as well as topology.
     Graph(std::string&);
+    /// This is the contructor for a category of named graphs that also require the number of vertices to be specified: COMPLETE, CHAIN, CYCLIC and CONNECTED. The latter constructs a graph on n vertices by adding edges randomly until the graph is connected. 
     Graph(int,std::string&);
+    /// This constructor accepts the number of vertices n (the first argument) and a minimum degree (the second argument) to construct a scale-free graph on n vertices with that minimum degree.
     Graph(int,int);
+    /// This constructor accepts the number of vertices n (the first argument) and a percentage (the second argument); this percentage is relative to the number of edges for a complete graph on n vertices. 
     Graph(int,double);
+    /// The standard copy constructor - it copies over all properties from the source instance to this one.
     Graph(const Graph&);
+    /// The overloaded assignment operator for this class, which behaves exactly like the copy constructor for this class.
     Graph& operator =(const Graph&);
     /// The destructor which does nothing.
     virtual ~Graph() override;
@@ -57,8 +68,9 @@ namespace SYNARMOSMA {
     virtual bool consistent() const override;
     /// Given a set of vertices (the first argument), this method calculates the set of edges (the second argument) connecting them to the rest of the graph, i.e. the "surface" which encloses the volume (the set of vertices).
     void compute_surface(const std::set<int>&,std::set<int>&) const;
-    // Hyphantic operators
+    /// This method determines if the vertex represented by its argument is part of a 3-cycle; if so, this 3-cycle is replaced by a Y topology among the three vertices by the addition of a new vertex. The method returns true if the transformation is successful, false otherwise.
     bool stellar_addition(int);
+    /// This method carries out the inverse transformation of stellar_addition() - if the vertex given by the method's argument has a degree equal to three, then it is deleted and its three neighbours are placed in a 3-cycle among themselves. The method returns true if this is successful, false otherwise.
     bool stellar_deletion(int);
     /// This method fuses together the two vertices that are its arguments; if the final argument is -1, it chooses a neighbouring vertex of the first argument at random to fuse with this first argument. In this fusion the edge sets of the two vertices are combined together and the method returns true if the fusion is successful.
     virtual bool fusion(int,int);
@@ -72,11 +84,15 @@ namespace SYNARMOSMA {
     virtual int fission_m(int);
     /// This method computes the maximum network flow from a source vertex (first argument) to a sink vertex (second argument), returning the value of the flow.
     virtual double compute_flow(int,int);
+    /// This method computes the k-core of the graph and writes this new graph to its first argument, where k is the second argument. The k-core of a graph is the set of vertices (and their accompanying edges) whose degree is greater than or equal to k.
     void core(Graph*,int) const;
+    /// This method computes the eccentricity of a vertex, its unique argument and returns this value. The eccentricity of a vertex is the maximum combinatorial distance between it and every other vertex in the graph.
     int eccentricity(int) const;
-    /// This method returns true if the graph is planar, false otherwise. 
+    /// This method returns true if the graph is planar, false otherwise, using the Boost library to do the planarity testing.
     bool planar() const;
+    /// This method returns false if there is at least one vertex whose removal disconnects the graph, otherwise it returns true.
     bool biconnected() const;
+    /// This method computes the cosine similarity between two vertices u and v. This is defined to be the (u,v) element of the square of the adjacency matrix, divided by the square root of the product of the degree of u and v.
     double cosine_similarity(int,int) const;
     /// This method computes the length of the graph's largest cycle; it returns -1 if the graph is acyclic. 
     int girth() const;
@@ -84,42 +100,59 @@ namespace SYNARMOSMA {
     inline double inverse_girth() const;
     /// This method computes the complement of this graph, i.e. the graph with the same vertices but where two vertices are connected if and only if they are not connected in the original graph.
     void complement(Graph*) const;
+    /// This method builds a pseudograph representation of the graph and then uses the defoliate() method to encode this pseudograph into a multivariate polynomial, the Tutte polynomial of the graph.
     void tutte_polynomial(std::vector<Monomial<int> >&) const;
+    /// This method accepts a vertex as its argument v and computes the percentage of the distinct pairs of neighbours of v whose members are also directly connected together.
     double clustering_coefficient(int) const;
+    /// This method computes the sum of clustering_coefficient(v) over all vertices v in the graph and divides this the number of vertices, which is then returned.
     double clustering_coefficient() const;
+    /// This method sums the combinatorial distance between every distinct pair of vertices in the graph and divides this by the number of such pairs, returning the result.
     double mean_path_length() const;
     /// This method computes the number of edges which are bridges, i.e. edges which if deleted would disconnect the graph.
     int bridge_count() const;
+    /// This method returns false if the graph contains a cycle of odd length and true otherwise.
     bool bipartite() const;
     /// This method computes the graph's cyclicity, i.e. the percentage of edges whose deletion would not disconnect the graph.
     double cyclicity() const;
+    /// This method computes and returns the value of the graph connectivity, defined as the sum over all edges of \f$1/\sqrt{\deg(u)\deg(v)}\f$, where \f$u\f$ and \f$v\f$ are the two vertices joined by the edge. 
     double connectivity() const;
-    int omega() const;
+    /// This method computes and returns the value of the algebraic connectivity of the graph, i.e. the smallest non-zero eigenvalue of graph Laplacian.
     double algebraic_connectivity() const;
+    /// This method computes the eigenvector centrality, a vector whose length is equal to the graph's order and which measures each vertex's centrality or importance in the graph. The output is the method's first argument, while the second argument sets the tolerance for the recursion process that generates the centrality vector and the final argument determines whether or not Katz centrality is calculated.
     void vertex_centrality(std::vector<double>&,double,bool = false) const;
+    /// This method calculates a histogram of vertex degrees which is stored in the method's second argument. The first argument controls whether the binning is logarithmic or not; if true the bin width doubles, 1, 2, 4, 8, 16 and so forth.
     void degree_distribution(bool,std::vector<double>&) const;
+    /// This method computes the percentage of randomly selected vertices (site percolation) or edges (bond percolation) that need to be removed from the graph to eliminate its "giant component" and returns this percentage. If the argument is true the method uses site percolation, otherwise bond percolation. 
     double percolation(bool) const;
+    /// This method computes and returns the index of graph complexity discussed in the paper Klein et al., "Graph Cyclicity, Excess Conductance and Resistance Deficit", J. Math. Chem., 30:271-287 (2001).
     double cyclic_resistance() const;
+    /// This method computes and returns the graph's entwinement. This is defined to be \f$(\lambda_\textrm{max} - \kappa)/(d_\textrm{max} - \kappa)\f$, where \f$\lambda_\textrm{max}\f$ is the largest eigenvalue of its adjacency matrix, \f$d_\textrm{max}\f$ the maximum degree and \f$\kappa = \max(d_\textrm{avg},\sqrt{d_\textrm{max}})\f$. 
     double entwinement() const;
+    /// This method takes a set of vertices (the argument) and computes how many of its elements are boundary vertices of this set, i.e. possess at least neighbour which does not belong to the set of vertices, and returns this number.
+    int boundary_nodes(const std::set<int>&) const;
     /// This method computes the graph's completeness, i.e. the graph's size divided by \f$N(N-1)/2\f$, where \f$N\f$ is the graph's order; this measures how closely it approximates the complete graph on \f$N\f$ vertices.
     inline double completeness() const;
     /// This method computes the graph's circuit rank, defined to be the number of graph components minus the number of vertices plus the number of edges.
     inline int circuit_rank() const;
     /// This method computes the graph's chromatic number, i.e. the smallest number of colours which can be used to colour the vertices such that no two neighbouring vertices share the same colour.
     int chromatic_number() const;
-    int boundary_nodes() const;
     /// This method returns the minimum degree of the graph.
     inline int max_degree() const;
     /// This method returns the maximum degree of the graph.
     inline int min_degree() const;
     /// This method returns the arithmetic mean of the vertex degrees of the graph.
     inline double average_degree() const;
-    double return_probability(int,int) const;
-    void random_walk(double*,double*,int) const;
+    /// This method's argument represent a base vertex v, a length l and the number of trials n - the method carries out n random walks from v of length l and returns the percentage of these walks which return at least once to the starting vertex v.
+    double return_probability(int,int,int = 100) const;
+    /// This method uses the return_probability() method to do a general analysis of random walks on the graph topology. Its arguments are the length of the random walk, the percentage of vertices randomly selected that are used as a starting point and the number of walks per starting point. The method returns a pair of doubles, the average return probability and its standard deviation over the number of starting points.
+    std::pair<double,double> random_walk(int,double,int = 15) const;
     /// This method computes the adjacency matrix of the graph and stores it in an instance of the Binary_Matrix class, which is the method's unique argument.
     void compute_adjacency_matrix(Binary_Matrix*) const;
+    /// This method computes the deformed graph Laplacian, defined as \f$\Delta_G(s) = I + s^2 (D - I) - s A\f$, where \f$I\f$ is the identity matrix, \f$D\f$ is the diagonal matrix of vertex degrees, \f$A\f$ is the adjacency matrix and \f$s\f$ is a complex number. It is easy to see that \f$\Delta_G(1) = L_G\f$, the standard graph Laplacian, while \f$\Delta_G(0) = I\f$. The method returns the number of non-zero entries in this deformed Laplacian.
     int compute_deformed_laplacian(std::complex<double>,Matrix<std::complex<double> >*) const;
+    /// This method computes the graph Laplacian, defined as \f$ L_G = D - A\f$ where \f$D\f$ is the diagonal matrix of vertex degrees and \f$A\f$ is the adjacency matrix of the graph; the method returns the number of non-zero entries in the graph Laplacian.
     int compute_laplacian(Matrix<double>*) const;
+    /// This method returns the value of the graph's genus; if the graph is planar this is just zero. For a non-planar graph, the method computes an upper and lower bound for the genus; if these coincide the method returns this value, otherwise it puts the two values in the method's argument and returns -1.
     int genus(std::vector<int>&) const;
     /// This method returns the size of the graph, i.e. the number of edges.
     inline int size() const {return (signed) edges.size();};
