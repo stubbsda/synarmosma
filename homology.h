@@ -8,13 +8,16 @@ namespace SYNARMOSMA {
   /// A class representing the finite sequence of homology groups for a topological space, a sequence whose length is equal to the space's dimension. 
   class Homology {
    public:
+    /// This enumerated class lists the three kind of domains over which the homology can be computed: native 32 bit integers, multiprecision 
+    /// integers (NTL::ZZ) and mod2. 
     enum class Field
     {
         int32,
         multiprecision,
         mod2
     };
-
+    /// This enumerated class lists the two methods available for computing the homology, either using the computer algebra software GAP (if it 
+    /// is available) or a native technique in the Homology class itself.
     enum class Method
     {
         gap,

@@ -57,6 +57,8 @@ namespace SYNARMOSMA {
     inline int get_order() const {return nvertex;};
     /// This method writes the value of the neighbour set to the second argument for the vertex whose index is the first argument.
     inline void get_neighbours(int n,std::set<int>& vx) const {vx = neighbours[n];};
+    /// This method returns the degree of vertex in its unique argument.
+    inline int degree(int) const;
   };
 
   int Schema::add_vertex()
@@ -78,6 +80,12 @@ namespace SYNARMOSMA {
       if (neighbours[i].empty()) return false;
     }
     return true;
+  }
+
+  int Schema::degree(int n) const
+  {
+    if (n < 0 || n >= nvertex) throw std::invalid_argument("The vertex argument in Schema::degree does not exist!");
+    return (signed) neighbours[n].size();
   }
 
   bool Schema::connected(int n,int m) const
