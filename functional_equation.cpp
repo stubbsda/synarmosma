@@ -68,6 +68,7 @@ Functional_Equation<kind>::Functional_Equation(const std::string& filename)
 
 namespace SYNARMOSMA {
   template<>
+  /// This method has to specialized for the NTL::ZZ base field again due to the complexity of reading in multiprecision integers as input data.
   void Functional_Equation<NTL::ZZ>::analyze_file(std::vector<std::string>& alpha,std::vector<std::string>& beta,std::vector<std::string>& exponents)
   {
     unsigned int i,j,degree;
@@ -325,6 +326,7 @@ bool Functional_Equation<kind>::simplify()
 namespace SYNARMOSMA
 {
   template<>
+  /// This method is specialized to handle the base of a NTL::ZZ base field, due to the complexity of reducing a multiprecision integer modulo a prime p.   
   Variety<unsigned int> Functional_Equation<NTL::ZZ>::reduce(unsigned int p)
   {
     if (!NTL::ProbPrime(p)) throw std::invalid_argument("Functional equation must be reduced over a prime!");

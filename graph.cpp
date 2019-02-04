@@ -246,7 +246,7 @@ Graph::Graph(int n,int c) : Schema(n)
 Graph::Graph(int n,double p) : Schema(n)
 {
   if (n < 1) throw std::invalid_argument("The graph order must be greater than zero!");
-  if (p < std::numeric_limits<double>::epsilon || p > 1.0) throw std::invalid_argument("The edge percentage must lie between 0 and 1!")
+  if (p < std::numeric_limits<double>::epsilon() || p > 1.0) throw std::invalid_argument("The edge percentage must lie between 0 and 1!");
 
   // A constructor that builds a graph with n vertices and p percent of 
   // the number of edges in the complete graph on n vertices, chosen randomly.
@@ -453,7 +453,7 @@ void Graph::core(Graph* G,int k) const
   // The k-core in this case is null
   if (k > max_degree()) return;
 
-  G->initialize(this);
+  G->initialize(*this);
 
   // The 1-core and the k-core when k < min_degree(G) is just the graph itself...
   if (k == 1 || k < min_degree()) return;
@@ -1263,12 +1263,13 @@ double Graph::percolation(bool site) const
   if (!connected()) throw std::invalid_argument("Percolation computations are meaningless for a disconnected graph!");
 
   int i,n,nc;
+  bool success;
   std::vector<int> csize,components;
   Graph* G = new Graph;
   const double NE = double(size());
   const double NV = double(nvertex);
   
-  G->initialize(this);
+  G->initialize(*this);
 
   do {
     n = RND.irandom(G->order());
@@ -1483,7 +1484,7 @@ double Graph::cyclic_resistance() const
   compute_adjacency_matrix(A);
   compute_laplacian(L);
   L->convert(C,'r');
-
+  // Use an LAPACK routine to compute the inverse of the graph Laplacian matrix
   dgetri_(&nv,C,&nv,pivots,work,&nwork,&info);
 
   W->initialize(nvertex,nvertex);

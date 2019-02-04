@@ -120,8 +120,9 @@ int Random::irandom(int n)
 
 int Random::irandom(int x,int y)
 {
-  int output = irandom(y-x);
-  return (x + output);
+  if (x == y) return x;
+  int output = x + irandom(y-x);
+  return output;
 }
 
 unsigned int Random::irandom(const std::set<unsigned int>& S)

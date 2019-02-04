@@ -302,6 +302,7 @@ bool Integer_Matrix<kind>::consistent() const
 
 namespace SYNARMOSMA {
   template<>
+  /// This method is an instantiation of write_elements() for the case of a multiprecision integer, needed so that the write_ZZ routine can be called to handle the possibility of very large numbers.
   int Integer_Matrix<NTL::ZZ>::write_elements(std::ofstream& s) const
   {
     unsigned int i,j,k,n;
@@ -355,6 +356,7 @@ int Integer_Matrix<kind>::serialize(std::ofstream& s) const
 
 namespace SYNARMOSMA {
   template<>
+  /// This method is an instantiation of read_elements() for the case of a multiprecision integer, needed so that the read_ZZ routine can be called to handle the possibility of very large numbers.
   int Integer_Matrix<NTL::ZZ>::read_elements(std::ifstream& s)
   {
     unsigned int i,j,k,n;

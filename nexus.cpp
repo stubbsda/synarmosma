@@ -439,7 +439,7 @@ int Nexus::regularization()
   Cell S;
   hash_map::const_iterator qt;
 
-  for(i=dimension; i>=1; i--) {
+  for(i=dimension; i>=2; i--) {
     n = (signed) elements[i].size();
     m = (signed) elements[i-1].size();
     for(j=0; j<n; ++j) {

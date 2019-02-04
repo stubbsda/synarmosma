@@ -51,7 +51,7 @@ Geometry& Geometry::operator =(const Geometry& source)
 
 Geometry::~Geometry()
 {
-  clear();
+
 }
 
 void Geometry::initialize(bool type,bool model,bool flat,bool hmemory,int D)
@@ -123,7 +123,8 @@ bool Geometry::consistent() const
 
 int Geometry::serialize(std::ofstream& s) const
 {
-  int i,j,n = 0,count = 0;
+  int i,l,count = 0;
+  unsigned int j,n = 0;
 #ifdef DISCRETE
   INT64 x;
 #else
@@ -139,7 +140,7 @@ int Geometry::serialize(std::ofstream& s) const
 
   if (relational) {
     for(i=0; i<nvertex; ++i) {
-      for(j=1+i; j<nvertex; ++j) {
+      for(l=1+i; l<nvertex; ++l) {
         x = distances[n];
 #ifdef DISCRETE
         s.write((char*)(&x),sizeof(INT64)); count += sizeof(INT64);
@@ -165,7 +166,7 @@ int Geometry::serialize(std::ofstream& s) const
     }
     else {
       for(i=0; i<nvertex; ++i) {
-        n = (signed) coordinates[i].size();
+        n = coordinates[i].size();
         s.write((char*)(&n),sizeof(int)); count += sizeof(int);
         for(j=0; j<n; ++j) {
           x = coordinates[i][j];
@@ -179,7 +180,7 @@ int Geometry::serialize(std::ofstream& s) const
     }
     if (high_memory) {
       for(i=0; i<nvertex; ++i) {
-        for(j=1+i; j<nvertex; ++j) {
+        for(l=1+i; l<nvertex; ++l) {
           x = distances[n];
 #ifdef DISCRETE
           s.write((char*)(&x),sizeof(INT64)); count += sizeof(INT64);
@@ -197,6 +198,7 @@ int Geometry::serialize(std::ofstream& s) const
 int Geometry::deserialize(std::ifstream& s)
 {
   int i,j,n,count = 0;
+  unsigned int k;
 #ifdef DISCRETE
   INT64 x;
 #else
@@ -232,7 +234,7 @@ int Geometry::deserialize(std::ifstream& s)
 #endif
     if (uniform) {
       for(i=0; i<nvertex; ++i) {
-        for(j=0; j<background_dimension; ++j) {
+        for(k=0; k<background_dimension; ++k) {
 #ifdef DISCRETE
           s.read((char*)(&x),sizeof(INT64)); count += sizeof(INT64);
 #else           
@@ -313,18 +315,19 @@ double Geometry::perceptual_divergence(const double* raxis,double theta,const do
 
 void Geometry::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<double>& x)
 {
-  int i,j,k;
+  int i,j;
+  unsigned int k;
   std::vector<double> xc;
 #ifdef DISCRETE
   std::vector<INT64> xi;
 #endif
 #ifdef DEBUG
-  const int vsize = (signed) x.size();
+  const unsigned int vsize = x.size();
 #endif
 
   clear();
 
-  for(i=0; i<background_dimension; ++i) {
+  for(k=0; k<background_dimension; ++k) {
     xc.push_back(0.0);
 #ifdef DISCRETE
     xi.push_back(0);
@@ -336,12 +339,12 @@ void Geometry::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<dou
     assert(2*background_dimension == vsize);
 #endif
     for(i=0; i<N; ++i) {
-      for(j=0; j<background_dimension; ++j) {
-        xc[j] = x[2*j] + (x[2*j+1] - x[2*j])*RND.drandom();
+      for(k=0; k<background_dimension; ++k) {
+        xc[k] = x[2*k] + (x[2*k+1] - x[2*k])*RND.drandom();
       }
 #ifdef DISCRETE
-      for(j=0; j<background_dimension; ++j) {
-        xi[j] = INT64(xc[j]/space_quantum);
+      for(k=0; k<background_dimension; ++k) {
+        xi[k] = INT64(xc[k]/space_quantum);
       }
       coordinates.push_back(xi);
 #else
@@ -354,12 +357,12 @@ void Geometry::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<dou
     assert(background_dimension*N == vsize);
 #endif
     for(i=0; i<N; ++i) {
-      for(j=0; j<background_dimension; ++j) {
-        xc[j] = x[background_dimension*i + j];
+      for(k=0; k<background_dimension; ++k) {
+        xc[k] = x[background_dimension*i + k];
       }
 #ifdef DISCRETE
-      for(j=0; j<background_dimension; ++j) {
-        xi[j] = INT64(xc[j]/space_quantum);
+      for(k=0; k<background_dimension; ++k) {
+        xi[k] = INT64(xc[k]/space_quantum);
       }
       coordinates.push_back(xi);
 #else
@@ -404,7 +407,8 @@ void Geometry::multiple_vertex_addition(int N,double mu,double sigma)
 {
   // Should this method operate on the assumption that we're starting from an empty geometry?
   // For the moment (December 6, 2014), we will suppose so...
-  int i,j,k;
+  int i,j;
+  unsigned int k;
   std::vector<double> xc;
 #ifdef DISCRETE
   std::vector<INT64> xi;
@@ -412,19 +416,19 @@ void Geometry::multiple_vertex_addition(int N,double mu,double sigma)
 
   clear();
 
-  for(i=0; i<background_dimension; ++i) {
+  for(k=0; k<background_dimension; ++k) {
     xc.push_back(0.0);
 #ifdef DISCRETE
     xi.push_back(0);
 #endif
   }
   for(i=0; i<N; ++i) {
-    for(j=0; j<background_dimension; ++j) {
-      xc[j] = RND.nrandom(mu,sigma);
+    for(k=0; k<background_dimension; ++k) {
+      xc[k] = RND.nrandom(mu,sigma);
     }
 #ifdef DISCRETE
-    for(j=0; j<background_dimension; ++j) {
-      xi[j] = INT64(xc[j]/space_quantum);
+    for(k=0; k<background_dimension; ++k) {
+      xi[k] = INT64(xc[k]/space_quantum);
     }
     coordinates.push_back(xi);
 #else
@@ -471,13 +475,16 @@ void Geometry::multiple_vertex_addition(const std::vector<std::vector<double> >&
 {
   clear();
 
+  int i,j;
+  unsigned int k;
+
   nvertex = (signed) source.size();
 #ifdef DISCRETE
   INT64 n;
   std::vector<INT64> xi;
-  for(int i=0; i<nvertex; ++i) {
-    for(int j=0; j<(signed) source[i].size(); ++j) {
-      n = INT64(source[i][j]/space_quantum);
+  for(i=0; i<nvertex; ++i) {
+    for(k=0; k<source[i].size(); ++k) {
+      n = INT64(source[i][k]/space_quantum);
       xi.push_back(n);
     }
     coordinates.push_back(xi);
@@ -490,7 +497,6 @@ void Geometry::multiple_vertex_addition(const std::vector<std::vector<double> >&
 
   if (!high_memory) return;
 
-  int i,j,k;
   const int npair = nvertex*(nvertex-1)/2;
 #ifdef DISCRETE
   INT64 delta;
@@ -524,16 +530,18 @@ void Geometry::multiple_vertex_addition(const std::vector<std::vector<double> >&
 double Geometry::dot_product(const std::vector<double>& vx,const std::vector<double>& vy) const
 {
   double output = 0.0;
+  unsigned int i;
   if (uniform) {
-    for(int i=0; i<background_dimension; ++i) {
+    for(i=0; i<background_dimension; ++i) {
       output += vx[i]*vy[i];
     }
     return output;
   }
-  int i,k = 0,n = (signed) vx.size(),m = (signed) vy.size();
+  unsigned int l,k = 0,n = vx.size(),m = vy.size();
   std::vector<double> vlx = vx;
   std::vector<double> vly = vy;
-  int l = n;
+
+  l = n;
 
   if (n < m) {
     for(i=n; i<m; ++i) {
@@ -633,9 +641,10 @@ int Geometry::vertex_order(int n,int m) const
 #else
   double sum;
 #endif
+  unsigned int i;
 
   sum = -(coordinates[n][0] - coordinates[m][0])*(coordinates[n][0] - coordinates[m][0]);
-  for(int i=1; i<background_dimension; ++i) {
+  for(i=1; i<background_dimension; ++i) {
     sum += (coordinates[n][i] - coordinates[m][i])*(coordinates[n][i] - coordinates[m][i]);
   }
 #ifdef DISCRETE
@@ -659,7 +668,8 @@ void Geometry::create(int n,std::string& type)
     nvertex = ipow(n,background_dimension);
     if (!high_memory) return;
 
-    int l,p,q,s,alpha;
+    int p,q,s,alpha;
+    unsigned int l;
 #ifdef DISCRETE
     INT64 delta;
 #else
@@ -669,8 +679,8 @@ void Geometry::create(int n,std::string& type)
 
     for(i=0; i<nvertex; ++i) {
       s = i;
-      for(j=background_dimension; j>=1; j--) {
-        p = ipow(n,j-1);
+      for(l=background_dimension; l>=1; l--) {
+        p = ipow(n,l-1);
         q = s/p;
         x.push_back(q);
         s -= p*q;
@@ -797,7 +807,7 @@ void Geometry::vertex_difference(int n,int m,std::vector<double>& delta) const
 {
   if (relational) throw std::runtime_error("Illegal geometric method (vertex_difference) call for relational model!");
 
-  int i;
+  unsigned int i;
 
   delta.clear();
   if (uniform) {
@@ -812,10 +822,11 @@ void Geometry::vertex_difference(int n,int m,std::vector<double>& delta) const
     }
     return;
   }
-  int d1 = (signed) coordinates[n].size();
-  int d2 = (signed) coordinates[m].size();
-  int k=0,l = d1;
+  unsigned int d1 = coordinates[n].size();
+  unsigned int d2 = coordinates[m].size();
+  unsigned int k = 0,l = d1;
   std::vector<double> vlx,vly;
+
 #ifdef DISCRETE
   for(i=0; i<d1; ++i) {
     vlx.push_back(space_quantum*double(coordinates[n][i]));
@@ -850,8 +861,9 @@ void Geometry::vertex_difference(int n,int m,std::vector<double>& delta) const
 double Geometry::inner_product(const Matrix<double>& L,const std::vector<int>& offset) const
 {
   if (relational) return 0.0;
-  const int nv = L.get_nrow();
-  int i,j,k,nelements;
+  const unsigned int nv = L.get_nrow();
+  int l;
+  unsigned int i,j,k,nelements;
   double value,result[nv][background_dimension],sum[background_dimension];
   double energy = 0.0;
   std::vector<double> Lx;
@@ -862,7 +874,7 @@ double Geometry::inner_product(const Matrix<double>& L,const std::vector<int>& o
       sum[j] = 0.0;
     }
     L.get_row(Lx,Lc,i);
-    nelements = (signed) Lx.size();
+    nelements = Lx.size();
     for(j=0; j<nelements; ++j) {
       for(k=0; k<background_dimension; ++k) {
 #ifdef DISCRETE
@@ -879,34 +891,17 @@ double Geometry::inner_product(const Matrix<double>& L,const std::vector<int>& o
 
   for(i=0; i<background_dimension; ++i) {
     value = 0.0;
-    for(j=0; j<nvertex; ++j) {
-      if (offset[j] == -1) continue;
+    for(l=0; l<nvertex; ++l) {
+      if (offset[l] == -1) continue;
 #ifdef DISCRETE
-      value += result[offset[j]][i]*space_quantum*double(coordinates[j][i]);
+      value += result[offset[l]][i]*space_quantum*double(coordinates[l][i]);
 #else
-      value += result[offset[j]][i]*coordinates[j][i];
+      value += result[offset[l]][i]*coordinates[l][i];
 #endif
     }
     energy += value;
   }
   return energy;
-}
-
-void Geometry::reciprocate()
-{
-#ifdef DISCRETE
-
-#else
-  if (relational) {
-    const int n = (signed) distances.size();
-    for(int i=0; i<n; ++i) {
-      distances[i] = 1.0/distances[i];
-    }
-  }
-  else {
-
-  }
-#endif
 }
 
 void Geometry::rollback()
@@ -1002,25 +997,26 @@ void Geometry::vertex_addition(const std::set<int>& antecedents)
         nvertex++;
       }
       else {
+        unsigned int k;
         std::vector<double> xc,avg_x;
-        for(i=0; i<background_dimension; ++i) {
+        for(k=0; k<background_dimension; ++k) {
           avg_x.push_back(0.0);
         }
         for(it=antecedents.begin(); it!=antecedents.end(); ++it) {
           j = *it;
-          for(i=0; i<background_dimension; ++i) {
+          for(k=0; k<background_dimension; ++k) {
 #ifdef DISCRETE
-            avg_x[i] += space_quantum*double(coordinates[j][i]);
+            avg_x[k] += space_quantum*double(coordinates[j][k]);
 #else
-            avg_x[i] += coordinates[j][i];
+            avg_x[k] += coordinates[j][k];
 #endif
           }
         }
-        for(i=0; i<background_dimension; ++i) {
-          avg_x[i] /= na;
+        for(k=0; k<background_dimension; ++k) {
+          avg_x[k] /= na;
         }
-        for(i=0; i<background_dimension; ++i) {
-          xc.push_back(RND.nrandom(avg_x[i],0.5));
+        for(k=0; k<background_dimension; ++k) {
+          xc.push_back(RND.nrandom(avg_x[k],0.5));
         }
         vertex_addition(xc);
       }
@@ -1071,7 +1067,9 @@ void Geometry::vertex_addition(int parent,double mutation)
       nvertex++;
     }
     else {
-      for(i=0; i<background_dimension; ++i) {
+      unsigned int l;
+
+      for(l=0; l<background_dimension; ++l) {
         alpha = -10.0 + 20.0*RND.drandom();
         x.push_back(alpha);
       }
@@ -1107,7 +1105,7 @@ void Geometry::vertex_addition(int parent,double mutation)
       nvertex++;
     }
     else {
-      int q,p = RND.irandom(background_dimension);
+      unsigned int q,p = RND.irandom(background_dimension);
       double r = RND.drandom(0.1+0.5*mutation,0.2+mutation);
       get_coordinates(parent,x);
       alpha = RND.drandom(0.0,2.0*M_PI);
@@ -1128,9 +1126,11 @@ void Geometry::geometry_restoration()
     distances[vperturb] = original[0];
     return;
   }
-  int i,j,kt = 0;
+  int i,kt = 0;
+  unsigned int j;
+
   for(i=0; i<nvertex; ++i) {
-    for(j=0; j<(signed) coordinates[i].size(); ++j) {
+    for(j=0; j<coordinates[i].size(); ++j) {
       if (kt == vperturb) {
         coordinates[i][j] = original[0];
         return;
@@ -1211,7 +1211,8 @@ bool Geometry::adjust_dimension(const std::vector<int>& vdimension)
 {
   if (relational || uniform) return false;
   
-  int i,j,n,m;
+  int i;
+  unsigned int j,n,m;
   std::set<int> vmodified;
 #ifdef DISCRETE
   std::vector<INT64> x;
@@ -1222,8 +1223,8 @@ bool Geometry::adjust_dimension(const std::vector<int>& vdimension)
   for(i=0; i<nvertex; ++i) {
     if (vdimension[i] == -1) continue;
     // First check to see if the dimension has changed...
-    m = vdimension[i];
-    n = (signed) coordinates[i].size();
+    m = (signed) vdimension[i];
+    n = coordinates[i].size();
     if (m <= background_dimension) {
       if (n != background_dimension) {
         vmodified.insert(i);
@@ -1269,6 +1270,7 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
   assert(background_dimension > 1 && euclidean && uniform && !relational);
 #endif
   int i,j,k;
+  unsigned int l;
   double r,v[background_dimension];
 #ifdef DISCRETE
   INT64 base[background_dimension];
@@ -1348,16 +1350,16 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
 #pragma omp parallel for default(shared) private(i,j,k,base,v,r,sum)
 #endif
     for(i=0; i<nvertex; ++i) {
-      for(j=0; j<background_dimension; ++j) {
-        base[j] = coordinates[i][j];
+      for(l=0; l<background_dimension; ++l) {
+        base[l] = coordinates[i][l];
       }
       for(j=0; j<nvertex; ++j) {
         if (i == j) continue;
-        for(k=0; k<background_dimension; ++k) {
+        for(l=0; l<background_dimension; ++l) {
 #ifdef DISCRETE
-          v[k] = space_quantum*double(coordinates[j][k] - base[k]);
+          v[l] = space_quantum*double(coordinates[j][l] - base[l]);
 #else
-          v[k] = coordinates[j][k] - base[k];
+          v[l] = coordinates[j][l] - base[l];
 #endif
         }
         r = get_distance(i,j,false);
@@ -1383,7 +1385,8 @@ void Geometry::compute_distances(const std::set<int>& vmodified)
 {
   if (relational || !high_memory) return;
 
-  int i,j,k,n1,n2,in1;
+  int i,j,in1;
+  unsigned int n1,n2,k;
   std::set<int>::const_iterator it;
 #ifdef DISCRETE
   INT64 delta;
@@ -1417,7 +1420,7 @@ void Geometry::compute_distances(const std::set<int>& vmodified)
   else {
     for(it=vmodified.begin(); it!=vmodified.end(); ++it) {
       i = *it;
-      n1 = (signed) coordinates[i].size();
+      n1 = coordinates[i].size();
       for(j=0; j<i; ++j) {
         in1 = j*nvertex - j*(j+1)/2;
         delta = pfactor*(coordinates[i][0] - coordinates[j][0])*(coordinates[i][0] - coordinates[j][0]);
@@ -1430,7 +1433,7 @@ void Geometry::compute_distances(const std::set<int>& vmodified)
       }
       in1 = i*nvertex - i*(i+1)/2;
       for(j=1+i; j<nvertex; ++j) {
-        n2 = (signed) coordinates[j].size();
+        n2 = coordinates[j].size();
         n2 = (n1 <= n2) ? n1 : n2;
         delta = pfactor*(coordinates[i][0] - coordinates[j][0])*(coordinates[i][0] - coordinates[j][0]);
         for(k=1; k<n2; ++k) {
@@ -1446,7 +1449,8 @@ void Geometry::compute_distances()
 {
   if (relational || !high_memory) return;
 
-  int i,j,k,in1;
+  int i,j,in1;
+  unsigned int k;
   const int npair = nvertex*(nvertex-1)/2;
 #ifdef DISCRETE
   INT64 delta;
@@ -1481,16 +1485,16 @@ void Geometry::compute_distances()
     }
   }
   else {
-    int n1,n2;
+    unsigned int n1,n2;
 #ifdef _OPENMP
 #pragma omp parallel for default(shared) private(i,j,k,n1,n2,in1,delta) schedule(dynamic,1)
 #endif
     for(i=0; i<nvertex; ++i) {
-      n1 = (signed) coordinates[i].size();
+      n1 = coordinates[i].size();
       in1 = i*nvertex - i*(i+1)/2;
       for(j=1+i; j<nvertex; ++j) {
         delta = pfactor*(coordinates[i][0] - coordinates[j][0])*(coordinates[i][0] - coordinates[j][0]);
-        n2 = (signed) coordinates[j].size();
+        n2 = coordinates[j].size();
         n2 = (n1 <= n2) ? n1 : n2;
         for(k=1; k<n2; ++k) {
           delta += (coordinates[i][k] - coordinates[j][k])*(coordinates[i][k] - coordinates[j][k]);
@@ -1501,20 +1505,23 @@ void Geometry::compute_distances()
   }
 }
 
-int Geometry::compute_coordinates(std::vector<double>& x) const
+unsigned int Geometry::compute_coordinates(std::vector<double>& x) const
 {
-  int i,j,k,edim = 0;
+  int i;
+  unsigned int k,edim = 0;
+
   x.clear();
 
   if (!relational) {
+    unsigned int j;
     // Calculate the maximum simplicial dimension...
     for(i=0; i<nvertex; ++i) {
-      j = (signed) coordinates[i].size();
+      j = coordinates[i].size();
       if (j > edim) edim = j;
     }
     // Pad with zeroes as necessary...
     for(i=0; i<nvertex; ++i) {
-      k = (signed) coordinates[i].size();
+      k = coordinates[i].size();
       for(j=0; j<k; ++j) {
 #ifdef DISCRETE 
         x.push_back(space_quantum*double(coordinates[i][j]));
@@ -1528,98 +1535,14 @@ int Geometry::compute_coordinates(std::vector<double>& x) const
     }
     return edim;
   }
-#ifdef DEBUG
-  assert(euclidean);
-#endif
-  /*
-  int k,in1,its = 0;
-  double b,lambda,err,err_old = 0.0,delta,sum;
-  std::vector<double> xnew,cdistance,BZ,Delta;
-  const int M = 150;
-  const double cutoff = 0.00001;
-  const double pfactor = 1.0/double(nvertex);
+  if (!euclidean) throw std::runtime_error("If the geometry is relational it must also be Euclidean in the Geometry::compute_coordinates method!");
 
-  for(i=0; i<nvertex; ++i) {
-    in1 = nvertex*i - i*(i+1)/2;
-    for(j=0; j<nvertex; ++j) {
-      BZ.push_back(0.0);
-    }
-    for(j=0; j<background_dimension; ++j) {
-      x.push_back(-10.0 + 20.0*RND.drandom());
-      xnew.push_back(0.0);
-    }
-    for(j=1+i; j<nvertex; ++j) {
-      Delta[in1+j-(1+i)] = std::sqrt(distances[compute_index(i,j)]);
-      cdistance.push_back(0.0);
-    }
-  }
+  if (nvertex < 2) throw std::invalid_argument("The number of vertices must be greater than unity in the Geometry::compute_coordinates method!");
 
-  for(i=0; i<nvertex; ++i) {
-    in1 = nvertex*i - i*(i+1)/2;
-    for(j=1+i; j<nvertex; ++j) {
-      sum = 0.0;
-      for(k=0; k<background_dimension; ++k) {
-        sum += (x[i*background_dimension+k]-x[j*background_dimension+k])*(x[i*background_dimension+k]-x[j*background_dimension+k]);
-      }
-      sum = std::sqrt(sum);
-      cdistance[in1+j-(i+1)] = sum;
-      lambda = Delta[in1+j-(i+1)];
-      err_old += (sum - lambda)*(sum - lambda);
-    }
-  }
-
-  do {
-    for(i=0; i<nvertex; ++i) {
-      in1 = nvertex*i - i*(i+1)/2;
-      for(j=1+i; j<nvertex; ++j) {
-        delta = Delta[in1+j-(i+1)];
-        b = -delta/cdistance[in1+j-(i+1)];
-        BZ[i*nvertex+j] = b;
-        BZ[j*nvertex+i] = b;
-      }
-    }
-    for(i=0; i<nvertex; ++i) {
-      sum = 0.0;
-      for(j=0; j<nvertex; ++j) {
-        if (i == j) continue;
-        sum += BZ[nvertex*i+j];
-      }
-      BZ[nvertex*i+i] = -sum;
-    }
-    for(i=0; i<nvertex; ++i) {
-      for(j=0; j<background_dimension; ++j) {
-        sum = 0.0;
-        for(k=0; k<nvertex; ++k) {
-          sum += BZ[i*nvertex+k]*x[background_dimension*k+j];
-        }
-        xnew[background_dimension*i+j] = pfactor*sum;
-      }
-    }
-    err = 0.0;
-    for(i=0; i<nvertex; ++i) {
-      in1 = nvertex*i - i*(i+1)/2;
-      for(j=1+i; j<nvertex; ++j) {
-        sum = 0.0;
-        for(k=0; k<background_dimension; ++k) {
-          sum += (xnew[i*background_dimension+k]-xnew[j*background_dimension+k])*(xnew[i*background_dimension+k]-xnew[j*background_dimension+k]);
-        }
-        sum = std::sqrt(sum);
-        cdistance[in1+j-(i+1)] = sum;
-        lambda = Delta[in1+j-(i+1)];
-        err += (sum - lambda)*(sum - lambda);
-      }
-    }
-    if (err < cutoff || std::abs(err - err_old) < cutoff) break;
-    x = xnew;
-    err_old = err;
-    its++;
-  } while(its <= M);
-  */
-  assert(nvertex > 1);
-  int info,nv = nvertex,nwork = 3*nvertex - 1;
+  int j,info,nv = nvertex,nwork = 3*nvertex - 1;
   char jtype='V',tsp='N',uplo='U';
   double zero = 0.0,alpha = 1.0;
-  std::vector<int> usable;
+  bool usable[nvertex];
   const double pfactor = 1.0/double(nvertex);
   double* J = new double[nvertex*nvertex];
   double* A = new double[nvertex*nvertex];
@@ -1630,7 +1553,7 @@ int Geometry::compute_coordinates(std::vector<double>& x) const
 
   // Put matrices in column-major form...
   for(i=0; i<nvertex; ++i) {
-    usable.push_back(0);
+    usable[i] = false;
     for(j=0; j<nvertex; ++j) {
       alpha = (j == i) ? 1.0 - pfactor : -pfactor;
       J[nvertex*j+i] = alpha;
@@ -1646,20 +1569,18 @@ int Geometry::compute_coordinates(std::vector<double>& x) const
   dsyev_(&jtype,&uplo,&nv,B,&nv,w,work,&nwork,&info);
   if (info != 0) throw std::runtime_error("Error in coordinate calculation!");
   for(i=0; i<nvertex; ++i) {
-    if (w[i] > 0.01) {
+    if (w[i] > std::numeric_limits<double>::epsilon()) {
       edim++;
-      usable[i] = 1;
+      usable[i] = true;
     }
   }
   std::vector<double> lmatrix,qmatrix;
-  for(i=0; i<edim; ++i) {
-    for(j=0; j<edim; ++j) {
-      lmatrix.push_back(0.0);
-    }
+  for(k=0; k<edim*edim; ++k) {
+    lmatrix.push_back(0.0);
   }
   k = 0;
   for(i=0; i<nvertex; ++i) {
-    if (w[i] > 0.01) {
+    if (w[i] > std::numeric_limits<double>::epsilon()) {
       lmatrix[edim*k+k] = std::sqrt(w[i]);
       k++;
     }
@@ -1672,12 +1593,12 @@ int Geometry::compute_coordinates(std::vector<double>& x) const
   }
   for(i=0; i<nvertex; ++i) {
     for(j=0; j<nvertex; ++j) {
-      if (usable[j] == 1) qmatrix.push_back(J[nvertex*i+j]);
+      if (usable[j]) qmatrix.push_back(J[nvertex*i+j]);
     }
   }
   for(i=0; i<nvertex; ++j) {
-    for(j=0; j<edim; ++j) {
-      x.push_back(qmatrix[edim*i+j]*lmatrix[edim*j+j]);
+    for(k=0; k<edim; ++k) {
+      x.push_back(qmatrix[edim*i+k]*lmatrix[edim*k+k]);
     }
   }
   delete[] A;
