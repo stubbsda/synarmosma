@@ -35,19 +35,7 @@ Solver<kind>::~Solver()
 
 namespace SYNARMOSMA {
   template<>
-  double Solver<double>::a1(double t) const
-  {
-    // The first complement to the homotopy function,
-    // s(t) = a1(t)*F(x) + a2(t)*x
-    // We have the conditions on a1(t) (0 <= t <= 1) that 
-    // it is continuous and
-    // a1(0) = 0
-    // a1(1) = 1
-    double output = t;
-    return output;
-  }
-
-  template<>
+  /// This method has been specialized for the complex base type since in this case we can have a path that wanders across the complex plane in getting from (0,0) to (1,0).
   std::complex<double> Solver<std::complex<double> >::a1(double t) const
   {
     // The first complement to the homotopy function,
@@ -56,25 +44,13 @@ namespace SYNARMOSMA {
     // it is continuous and
     // a1(0) = 0
     // a1(1) = 1
-    std::complex<double> i(0.0,1.0);
+    const std::complex<double> i(0.0,1.0);
     std::complex<double> output = std::sin(M_PI/2.0*t + 5.0*i*t*(t - 1.0));
     return output;
   }
 
   template<>
-  double Solver<double>::a2(double t) const
-  {
-    // The second complement to the homotopy function,
-    // s(t) = a1(t)*F(x) + a2(t)*x
-    // We have the conditions on a2(t) (0 <= t <= 1) that 
-    // it is continuous and
-    // a2(0) = 1
-    // a2(1) = 0
-    double output = 1.0 - t;
-    return output;
-  }
-
-  template<>
+  /// This method has been specialized for the complex base type since in this case we can have a path that wanders across the complex plane in getting from (1,0) to (0,0).
   std::complex<double> Solver<std::complex<double> >::a2(double t) const
   {
     // The second complement to the homotopy function,
@@ -83,10 +59,36 @@ namespace SYNARMOSMA {
     // it is continuous and
     // a2(0) = 1
     // a2(1) = 0
-    std::complex<double> i(0.0,1.0);
+    const std::complex<double> i(0.0,1.0);
     std::complex<double> output = (1.0 - t)*std::exp(10.0*i*t);
     return output;
   }
+}
+
+template<class kind>
+kind Solver<kind>::a1(double t) const
+{
+  // The first complement to the homotopy function,
+  // s(t) = a1(t)*F(x) + a2(t)*x
+  // We have the conditions on a1(t) (0 <= t <= 1) that 
+  // it is continuous and
+  // a1(0) = 0
+  // a1(1) = 1
+  kind output = kind(t);
+  return output;
+}
+
+template<class kind>
+kind Solver<kind>::a2(double t) const
+{
+  // The second complement to the homotopy function,
+  // s(t) = a1(t)*F(x) + a2(t)*x
+  // We have the conditions on a2(t) (0 <= t <= 1) that 
+  // it is continuous and
+  // a2(0) = 1
+  // a2(1) = 0
+  kind output = 1.0 - kind(t);
+  return output;
 }
 
 template<class kind>
@@ -185,23 +187,7 @@ bool Solver<kind>::compute_dependency_graph(Graph* G) const
 
 namespace SYNARMOSMA {
   template<>
-  bool Solver<double>::direct_solver(std::vector<double>& x) const
-  {
-    int info,one = 1,n = dimension;
-    int pivots[dimension];
-    double A[dimension*dimension];
-    bool output = false;
-
-    J->convert(A,'c');
-
-    dgesv_(&n,&one,A,&n,pivots,&x[0],&n,&info);
-
-    if (info == 0) output = true;
-
-    return output;
-  }
-
-  template<>
+  /// This method is specialized for the complex base type because the LAPACK routine doesn't have the same name as in the case of a double or float.
   bool Solver<std::complex<double> >::direct_solver(std::vector<std::complex<double> >& x) const
   {
     int info,one = 1,n = dimension;
@@ -217,6 +203,24 @@ namespace SYNARMOSMA {
 
     return output;
   }
+}
+
+template<class kind>
+bool Solver<kind>::direct_solver(std::vector<kind>& x) const
+{
+  // This implementation is strictly for doubles in fact, due to the use of the "dgesv" LAPACK routine...
+  int info,one = 1,n = dimension;
+  int pivots[dimension];
+  kind A[dimension*dimension];
+  bool output = false;
+
+  J->convert(A,'c');
+
+  dgesv_(&n,&one,A,&n,pivots,&x[0],&n,&info);
+
+  if (info == 0) output = true;
+
+  return output;
 }
 
 template<class kind>
@@ -353,20 +357,7 @@ int Solver<kind>::forward_step()
 
 namespace SYNARMOSMA {
   template<>
-  void Solver<double>::initialize_base_solution(double mean,double range)
-  {
-    unsigned int i;
-    const double lbound = mean - 0.5*range;
-    const double ubound = mean + 0.5*range;
-
-    base_solution.clear();
-
-    for(i=0; i<dimension; ++i) {
-      base_solution.push_back(RND.drandom(lbound,ubound));
-    }
-  }
-
-  template<>
+  /// This method is a specialized form for the complex base type, since in this case both the real and imaginary parts of the random initial state need to be handled.
   void Solver<std::complex<double> >::initialize_base_solution(double mean,double range)
   {
     unsigned int i;
@@ -381,6 +372,20 @@ namespace SYNARMOSMA {
       beta = RND.drandom(lbound,ubound);
       base_solution.push_back(std::complex<double>(alpha,beta));
     }
+  }
+}
+
+template<class kind>
+void Solver<kind>::initialize_base_solution(double mean,double range)
+{
+  unsigned int i;
+  const double lbound = mean - 0.5*range;
+  const double ubound = mean + 0.5*range;
+
+  base_solution.clear();
+
+  for(i=0; i<dimension; ++i) {
+    base_solution.push_back(kind(RND.drandom(lbound,ubound)));
   }
 }
 

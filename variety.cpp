@@ -23,6 +23,7 @@ Variety<kind>::Variety(int n)
 
 namespace SYNARMOSMA {
   template<>
+  /// This constructor is specialized for the rational base class because in this case the characteristic must be zero naturally.
   Variety<Rational>::Variety(int n,int p) 
   {
     if (n < 1) throw std::invalid_argument("The number of equations in the variety must be greater than zero!");
@@ -108,6 +109,7 @@ void Variety<kind>::allocate()
 
 namespace SYNARMOSMA {
   template<>
+  /// This method is an instantiation of generate_coefficient() for the case of a rational number, where we need to generate a random numerator and denominator. 
   Rational Variety<Rational>::generate_coefficient(int L) const
   {
     int n = RND.irandom(-L*L,L*L);
@@ -117,6 +119,7 @@ namespace SYNARMOSMA {
   }
 
   template<>
+  /// This method is an instantiation of generate_coefficient() for the case of a multiprecision integer, which requires using the NTL::to_ZZ method.
   NTL::ZZ Variety<NTL::ZZ>::generate_coefficient(int L) const
   {
     int t = (characteristic > 0) ? RND.irandom(characteristic) : RND.irandom(-L,L);
@@ -208,6 +211,7 @@ void Variety<kind>::clear()
 
 namespace SYNARMOSMA {
   template<>
+  /// This method is an instantiation of read_equations() for the case of a rational number, as we need to handle the situation of reading in the numerator and denominator separately for each coefficient.
   int Variety<Rational>::read_equations(std::ifstream& s)
   {
     unsigned int i,j,k,l1,l2,n,m;
@@ -240,6 +244,7 @@ namespace SYNARMOSMA {
   }
 
   template<>
+  /// This method is an instantiation of read_equations() for the case of a multiprecision integer, needed for the calling of the read_ZZ method to handle very large integers.
   int Variety<NTL::ZZ>::read_equations(std::ifstream& s)
   {
     unsigned int i,j,k,l1,l2,n,m;
@@ -302,6 +307,7 @@ int Variety<kind>::read_equations(std::ifstream& s)
 
 namespace SYNARMOSMA {
   template<>
+  /// This method is an instantiation of write_equations() for the case of a rational number, needed because of the necessity of handling the numerator and denominator separately.
   int Variety<Rational>::write_equations(std::ofstream& s) const
   {
     unsigned int i,j,k,l,n,m;
@@ -331,6 +337,7 @@ namespace SYNARMOSMA {
   }
 
   template<>
+  /// This method is an instantiation of write_equations() for the case of a multiprecision integer, needed so that the write_ZZ routine can be called to handle the possibility of very large numbers.
   int Variety<NTL::ZZ>::write_equations(std::ofstream& s) const
   {
     unsigned int i,j,k,l,n,m;

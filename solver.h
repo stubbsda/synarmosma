@@ -9,6 +9,9 @@ namespace SYNARMOSMA {
   /// An abstract template class representing a Newton-Raphson solver of a system of nonlinear algebraic equations over a floating point base type.
   class Solver {
    protected:
+    /// This enumerated class lists the two methods available for solving the linear system at each 
+    /// stage of the Newton-Raphson solver: a direct method (using a LAPACK routine) or a native iterative 
+    /// solver from the Matrix class.
     enum class Linear_Solver
     {
         direct,
