@@ -56,6 +56,7 @@ Geometry::~Geometry()
 
 void Geometry::initialize(bool type,bool model,bool flat,bool hmemory,int D)
 {
+  if (D < 1) throw std::invalid_argument("The background dimension of the geometry must be greater than zero!");
   clear();
   euclidean = type;
   relational = model;
@@ -79,16 +80,20 @@ void Geometry::clear()
 
 bool Geometry::consistent() const
 {
-#ifdef DEBUG
-  assert(nvertex == (signed) coordinates.size());
-#endif
   int i,j;
+  const int nc = (signed) coordinates.size();
+  const int nd = (signed) distances.size();
+
+  if (nvertex != nc) {
+    std::cout << "Illegal length for Geometry::coordinates " << nc << "  " << nvertex << std::endl;
+    return false;
+  }
 
   if (!relational) {
     for(i=0; i<nvertex; ++i) {
-      for(j=0; j<(signed) coordinates[i].size(); ++j) {
+      for(j=0; j<nc; ++j) {
         if (std::isnan(coordinates[i][j])) {
-          std::cout << "Nan at " << i << " and " << j << std::endl;
+          std::cout << "NaN in Geometry::coordinates at " << i << " and " << j << std::endl;
           return false;
         }
       }
@@ -97,24 +102,24 @@ bool Geometry::consistent() const
 
   for(i=0; i<nvertex; ++i) {
     for(j=1+i; j<nvertex; ++j) {
-      if (std::isnan(get_distance(i,j,false))) {
-        std::cout << i << "  " << j << std::endl;
+      if (std::isnan(get_squared_distance(i,j,false))) {
+        std::cout << "NaN in Geometry::get_squared_distance for " << i << "  " << j << std::endl;
         std::cout << coordinates[i].size() << "  " << coordinates[j].size() << std::endl;
         return false;
       }
     }
   }
 
-  if (!high_memory) return true;
+  if (!high_memory && !relational) return true;
 
-  if ((nvertex*(nvertex-1))/2 != (signed) distances.size()) {
-    std::cout << distances.size() << "  " << nvertex << "  " << (nvertex*(nvertex-1))/2 << std::endl;
+  if ((nvertex*(nvertex-1))/2 != nd) {
+    std::cout << "Illegal length for Geometry::distances " << nd << "  " << nvertex << "  " << (nvertex*(nvertex-1))/2 << std::endl;
     return false;
   }
 
-  for(i=0; i<(signed) distances.size(); ++i) {
+  for(i=0; i<nd; ++i) {
     if (std::isnan(distances[i])) {
-      std::cout << i << "  " << distances[i] << std::endl;
+      std::cout << "NaN in Geometry::distances at " << i << "  " << distances[i] << std::endl;
       return false;
     }
   }
@@ -283,9 +288,8 @@ double Geometry::perceptual_divergence(const double* raxis,double theta,const do
   // a) raxis is a unit vector 
   // b) 0 <= theta < 2*pi
   // c) dimension = 3
-#ifdef DEBUG
-  assert(uniform && !relational && background_dimension == 3);  
-#endif
+  if (!uniform || !euclidean || relational || background_dimension != 3) throw std::invalid_argument("The geometry is of the wrong type for the Geometry::perceptual_divergence method!");
+
   int i,j;
   double ct,st,d1,xt,q0,temp[3],delta,sum = 0.0;
 
@@ -315,15 +319,14 @@ double Geometry::perceptual_divergence(const double* raxis,double theta,const do
 
 void Geometry::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<double>& x)
 {
+  if (relational) throw std::invalid_argument("The Geometry::multiple_vertex_addition method is not compatible with a relational geometry!");
   int i,j;
   unsigned int k;
   std::vector<double> xc;
 #ifdef DISCRETE
   std::vector<INT64> xi;
 #endif
-#ifdef DEBUG
   const unsigned int vsize = x.size();
-#endif
 
   clear();
 
@@ -335,9 +338,8 @@ void Geometry::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<dou
   }
 
   if (unf_rnd) {
-#ifdef DEBUG
-    assert(2*background_dimension == vsize);
-#endif
+    if (2*background_dimension != vsize) throw std::invalid_argument("The vector argument in Geometry::multiple_vertex_addition has the wrong length!");
+
     for(i=0; i<N; ++i) {
       for(k=0; k<background_dimension; ++k) {
         xc[k] = x[2*k] + (x[2*k+1] - x[2*k])*RND.drandom();
@@ -353,9 +355,8 @@ void Geometry::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<dou
     }    
   }
   else {
-#ifdef DEBUG
-    assert(background_dimension*N == vsize);
-#endif
+    if (N*background_dimension != vsize) throw std::invalid_argument("The vector argument in Geometry::multiple_vertex_addition has the wrong length!");
+
     for(i=0; i<N; ++i) {
       for(k=0; k<background_dimension; ++k) {
         xc[k] = x[background_dimension*i + k];
@@ -405,8 +406,7 @@ void Geometry::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<dou
 
 void Geometry::multiple_vertex_addition(int N,double mu,double sigma)
 {
-  // Should this method operate on the assumption that we're starting from an empty geometry?
-  // For the moment (December 6, 2014), we will suppose so...
+  if (relational) throw std::invalid_argument("The Geometry::multiple_vertex_addition method is not compatible with a relational geometry!");
   int i,j;
   unsigned int k;
   std::vector<double> xc;
@@ -454,8 +454,6 @@ void Geometry::multiple_vertex_addition(int N,double mu,double sigma)
     distances.push_back(0.0);
 #endif
   }
-  // We need to set nvertex here before we start calling the compute_index
-  // method
 
 #ifdef _OPENMP
 #pragma omp parallel for default(shared) private(i,j,k,delta) schedule(dynamic,1)
@@ -473,10 +471,11 @@ void Geometry::multiple_vertex_addition(int N,double mu,double sigma)
 
 void Geometry::multiple_vertex_addition(const std::vector<std::vector<double> >& source)
 {
-  clear();
-
+  if (relational) throw std::invalid_argument("The Geometry::multiple_vertex_addition method is not compatible with a relational geometry!");
   int i,j;
   unsigned int k;
+
+  clear();
 
   nvertex = (signed) source.size();
 #ifdef DISCRETE
@@ -493,7 +492,6 @@ void Geometry::multiple_vertex_addition(const std::vector<std::vector<double> >&
 #else
   coordinates = source;
 #endif
-
 
   if (!high_memory) return;
 
@@ -524,7 +522,7 @@ void Geometry::multiple_vertex_addition(const std::vector<std::vector<double> >&
       }
       distances[compute_index(i,j)] = delta;
     }
-  }  
+  }
 }
 
 double Geometry::dot_product(const std::vector<double>& vx,const std::vector<double>& vy) const
@@ -532,7 +530,8 @@ double Geometry::dot_product(const std::vector<double>& vx,const std::vector<dou
   double output = 0.0;
   unsigned int i;
   if (uniform) {
-    for(i=0; i<background_dimension; ++i) {
+    output = (euclidean) ? vx[0]*vy[0] : -vx[0]*vy[0];
+    for(i=1; i<background_dimension; ++i) {
       output += vx[i]*vy[i];
     }
     return output;
@@ -556,6 +555,7 @@ double Geometry::dot_product(const std::vector<double>& vx,const std::vector<dou
       k++;
     }
   }
+  output = (euclidean) ? vx[0]*vy[0] : -vx[0]*vy[0];
   for(i=0; i<l; ++i) {
     output += vlx[i]*vly[i];
   }
@@ -607,12 +607,7 @@ void Geometry::load(const Geometry* source)
   vperturb = source->vperturb;
   background_dimension = source->background_dimension;
   distances = source->distances;
-  if (relational) {
-
-  }
-  else {
-    coordinates = source->coordinates;
-  }
+  if (!relational) coordinates = source->coordinates;
 }
 
 void Geometry::store(Geometry* target) const
@@ -624,36 +619,7 @@ void Geometry::store(Geometry* target) const
   target->vperturb = vperturb;
   target->background_dimension = background_dimension;
   target->distances = distances;
-  if (relational) {
-
-  }
-  else {
-    target->coordinates = coordinates;
-  }
-}
-
-int Geometry::vertex_order(int n,int m) const
-{
-  if (relational || euclidean) return -1;
-
-#ifdef DISCRETE
-  INT64 sum;
-#else
-  double sum;
-#endif
-  unsigned int i;
-
-  sum = -(coordinates[n][0] - coordinates[m][0])*(coordinates[n][0] - coordinates[m][0]);
-  for(i=1; i<background_dimension; ++i) {
-    sum += (coordinates[n][i] - coordinates[m][i])*(coordinates[n][i] - coordinates[m][i]);
-  }
-#ifdef DISCRETE
-  if (sum > 0) return -1;
-#else
-  if (sum > 0.0) return -1;
-#endif
-  int output = (coordinates[n][0] < coordinates[m][0]) ? 1 : 0;
-  return output;
+  if (!relational) target->coordinates = coordinates;
 }
 
 void Geometry::create(int n,std::string& type)
@@ -799,12 +765,13 @@ void Geometry::create(int n,std::string& type)
     }
   }
   else {
-    throw std::invalid_argument("Unrecognized spatial type in Geometry class!");
+    throw std::invalid_argument("Unrecognized spatial type in Geometry::create method!");
   }
 }
 
 void Geometry::vertex_difference(int n,int m,std::vector<double>& delta) const
 {
+  if (n == m) throw std::invalid_argument("The vertex arguments in Geometry::vertex_difference must be distinct!");
   if (relational) throw std::runtime_error("Illegal geometric method (vertex_difference) call for relational model!");
 
   unsigned int i;
@@ -861,6 +828,8 @@ void Geometry::vertex_difference(int n,int m,std::vector<double>& delta) const
 double Geometry::inner_product(const Matrix<double>& L,const std::vector<int>& offset) const
 {
   if (relational) return 0.0;
+  if (nvertex != (signed) L.get_ncolumn()) throw std::invalid_argument("The matrix does not conform to the geometry in the Geometry::inner_product method!");
+  if (nvertex != (signed) offset.size()) throw std::invalid_argument("The size of the offset vector does not conform to the geometry in the Geometry::inner_product method!");
   const unsigned int nv = L.get_nrow();
   int l;
   unsigned int i,j,k,nelements;
@@ -904,58 +873,54 @@ double Geometry::inner_product(const Matrix<double>& L,const std::vector<int>& o
   return energy;
 }
 
-void Geometry::rollback()
+void Geometry::rollback(bool minimal)
 {
-  if (relational) {
-    int i,j = 0;
-    for(i=0; i<nvertex; ++i) {
-      if (i == vperturb) continue;
-      distances[compute_index(i,vperturb)] = original[j];
-      j++;
+  if (vperturb == -1) std::runtime_error("An unperturbed geometry cannot be rolled back!");
+
+  if (minimal) {
+    if (relational) {
+      distances[vperturb] = original[0];
+    }
+    else {
+      int i,kt = 0;
+      unsigned int j;
+
+      for(i=0; i<nvertex; ++i) {
+        for(j=0; j<coordinates[i].size(); ++j) {
+          if (kt == vperturb) {
+            coordinates[i][j] = original[0];
+            return;
+          }
+          kt++;
+        }
+      }
     }
   }
   else {
-    coordinates[vperturb] = original;
-  }
-}
-
-void Geometry::vertex_perturbation(int v)
-{
-  vperturb = v;
-  if (relational) {
-    int i,j;
-
-    original.clear();
-    for(i=0; i<nvertex; ++i) {
-      if (i == v) continue;
-      j = compute_index(i,v);
-      original.push_back(distances[j]);
-#ifdef DISCRETE
-      distances[j] += INT64(RND.irandom(-50,50));
-#else
-      distances[j] += RND.nrandom(0.0,0.5);
-#endif
+    if (relational) {
+      int i,j = 0;
+      for(i=0; i<nvertex; ++i) {
+        if (i == vperturb) continue;
+        distances[compute_index(i,vperturb)] = original[j];
+        j++;
+      }
+    }
+    else {
+      coordinates[vperturb] = original;
     }
   }
-  else {
-    int k = RND.irandom(background_dimension);
-    original = coordinates[v];
-#ifdef DISCRETE
-    coordinates[v][k] += INT64(RND.irandom(-10,10));
-#else
-    coordinates[v][k] += RND.nrandom(0.0,0.1);
-#endif
-  }
+  vperturb = -1;
+  original.clear();
 }
 
-void Geometry::vertex_addition(const std::set<int>& antecedents)
+int Geometry::vertex_addition(const std::set<int>& antecedents)
 {
   if (antecedents.empty()) {
     vertex_addition(-1);
   }
   else {
     if (RND.drandom() < 0.25) {
-      vertex_addition(RND.irandom(antecedents));
+      return vertex_addition(RND.irandom(antecedents));
     }
     else {
       int i,j;
@@ -995,6 +960,7 @@ void Geometry::vertex_addition(const std::set<int>& antecedents)
         }
         distances = ndistances;
         nvertex++;
+        return nvertex;
       }
       else {
         unsigned int k;
@@ -1018,13 +984,13 @@ void Geometry::vertex_addition(const std::set<int>& antecedents)
         for(k=0; k<background_dimension; ++k) {
           xc.push_back(RND.nrandom(avg_x[k],0.5));
         }
-        vertex_addition(xc);
+        return vertex_addition(xc);
       }
     }
   }
 }
 
-void Geometry::vertex_addition(int parent,double mutation)
+int Geometry::vertex_addition(int parent,double mutation)
 {
   int i,j,k = 0;
   double alpha;
@@ -1118,31 +1084,13 @@ void Geometry::vertex_addition(int parent,double mutation)
       vertex_addition(x);
     }
   }
-}
-
-void Geometry::geometry_restoration()
-{
-  if (relational) {
-    distances[vperturb] = original[0];
-    return;
-  }
-  int i,kt = 0;
-  unsigned int j;
-
-  for(i=0; i<nvertex; ++i) {
-    for(j=0; j<coordinates[i].size(); ++j) {
-      if (kt == vperturb) {
-        coordinates[i][j] = original[0];
-        return;
-      }
-      kt++;
-    }
-  }
+  return nvertex;
 }
 
 void Geometry::mutation(int v,bool by_vertex,bool complete,double severity)
 {
-  int i;
+  if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal vertex value in Geometry::mutation method!");
+
 #ifdef DISCRETE
   INT64 alpha = INT64((RND.nrandom(0.0,severity)/space_quantum));
 #else
@@ -1152,7 +1100,7 @@ void Geometry::mutation(int v,bool by_vertex,bool complete,double severity)
   if (by_vertex) {
     vperturb = v;
     if (relational) {
-      int j;
+      int i,j;
 
       original.clear();
       for(i=0; i<nvertex; ++i) {
@@ -1168,9 +1116,11 @@ void Geometry::mutation(int v,bool by_vertex,bool complete,double severity)
       }
     }
     else {
+      unsigned int i;
+
       original = coordinates[v];
       if (complete) {
-        for(i=0; i<(signed) coordinates[v].size(); ++i) {
+        for(i=0; i<coordinates[v].size(); ++i) {
 #ifdef DISCRETE
           alpha = INT64((RND.nrandom(0.0,severity)/space_quantum));
 #else
@@ -1180,8 +1130,8 @@ void Geometry::mutation(int v,bool by_vertex,bool complete,double severity)
         }
       }
       else {
-        i = (signed) coordinates[v].size();
-        coordinates[v][RND.irandom(i)] += alpha;
+        i = coordinates[v].size();
+        coordinates[v][RND.irandom(i)] += RND.nrandom(0.0,severity);
       }
     }
   }
@@ -1193,9 +1143,10 @@ void Geometry::mutation(int v,bool by_vertex,bool complete,double severity)
       distances[v] += alpha;
       return;
     }
-    int j,kt = 0;
+    int i,kt = 0;
+    unsigned int j;
     for(i=0; i<nvertex; ++i) {
-      for(j=0; j<(signed) coordinates[i].size(); ++j) {
+      for(j=0; j<coordinates[i].size(); ++j) {
         if (kt == v) {
           original.push_back(coordinates[i][j]);
           coordinates[i][j] += alpha;
@@ -1209,6 +1160,7 @@ void Geometry::mutation(int v,bool by_vertex,bool complete,double severity)
 
 bool Geometry::adjust_dimension(const std::vector<int>& vdimension)
 {
+  if (nvertex != (signed) vdimension.size()) throw std::invalid_argument("The length of the dimension vector must be equal to the number of vertices!");
   if (relational || uniform) return false;
   
   int i;
@@ -1264,11 +1216,10 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
 {
   R.clear();
   angles.clear();
-  // This method supposes that we are working in Euclidean n-space with a 
+  // This method supposes that we are working in Euclidean n-space (n > 1) with a 
   // uniform, absolute geometry
-#ifdef DEBUG
-  assert(background_dimension > 1 && euclidean && uniform && !relational);
-#endif
+  if (background_dimension < 2 || !euclidean || !uniform || relational) throw std::invalid_argument("The geometry is of the wrong type for the Geometry::compute_relational_matrices method!");
+
   int i,j,k;
   unsigned int l;
   double r,v[background_dimension];
@@ -1300,7 +1251,7 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
         v[0] = coordinates[j][0] - base[0];
         v[1] = coordinates[j][1] - base[1];
 #endif
-        R[j+nvertex*i] = std::sqrt(get_distance(i,j,false));
+        R[j+nvertex*i] = std::sqrt(get_squared_distance(i,j,false));
         angles[0][j+nvertex*i] = M_PI + std::atan2(v[1],v[0]);
       }
     }
@@ -1329,7 +1280,7 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
         v[1] = coordinates[j][1] - base[1];
         v[2] = coordinates[j][2] - base[2];
 #endif
-        r = std::sqrt(get_distance(i,j,false));
+        r = std::sqrt(get_squared_distance(i,j,false));
         R[j+nvertex*i] = r;
         angles[0][j+nvertex*i] = std::acos(v[2]/r);
         angles[1][j+nvertex*i] = M_PI + std::atan2(v[1],v[0]); 
@@ -1362,7 +1313,7 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
           v[l] = coordinates[j][l] - base[l];
 #endif
         }
-        r = get_distance(i,j,false);
+        r = get_squared_distance(i,j,false);
         R[j+nvertex*i] = std::sqrt(r);
         sum = 0.0;
         for(k=0; k<nm2; ++k) {
@@ -1381,7 +1332,7 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
   }
 }
 
-void Geometry::compute_distances(const std::set<int>& vmodified)
+void Geometry::compute_squared_distances(const std::set<int>& vmodified)
 {
   if (relational || !high_memory) return;
 
@@ -1445,7 +1396,7 @@ void Geometry::compute_distances(const std::set<int>& vmodified)
   }
 }
 
-void Geometry::compute_distances()
+void Geometry::compute_squared_distances()
 {
   if (relational || !high_memory) return;
 
@@ -1557,7 +1508,7 @@ unsigned int Geometry::compute_coordinates(std::vector<double>& x) const
     for(j=0; j<nvertex; ++j) {
       alpha = (j == i) ? 1.0 - pfactor : -pfactor;
       J[nvertex*j+i] = alpha;
-      D[nvertex*j+i] = get_distance(i,j,false); 
+      D[nvertex*j+i] = std::sqrt(get_squared_distance(i,j,false)); 
     }
   }
   // Now form the matrix B = -0.5*J*D2*J
@@ -1567,7 +1518,7 @@ unsigned int Geometry::compute_coordinates(std::vector<double>& x) const
   dgemm_(&tsp,&tsp,&nv,&nv,&nv,&alpha,A,&nv,J,&nv,&zero,B,&nv);
   // Now compute the eigenvalues and eigenvectors of B
   dsyev_(&jtype,&uplo,&nv,B,&nv,w,work,&nwork,&info);
-  if (info != 0) throw std::runtime_error("Error in coordinate calculation!");
+  if (info != 0) throw std::runtime_error("Error in Geometry::compute_coordinates calculation!");
   for(i=0; i<nvertex; ++i) {
     if (w[i] > std::numeric_limits<double>::epsilon()) {
       edim++;
@@ -1620,10 +1571,9 @@ double SYNARMOSMA::geometry_change(const Geometry* g1,const Geometry* g2)
 #else
   double gdelta = 0.0;
 #endif
-#ifdef DEBUG
-  assert(g1->relational == g2->relational);
-  assert(g1->euclidean == g2->euclidean);
-#endif
+  if (g1->euclidean != g2->euclidean) throw std::invalid_argument("The two geometries in geometry_change are inconsistent!");
+  if (g1->relational != g2->relational) throw std::invalid_argument("The two geometries in geometry_change are inconsistent!");
+
   if (g1->nvertex < g2->nvertex) {
     nva = g1->nvertex;
     arg1 = false;
