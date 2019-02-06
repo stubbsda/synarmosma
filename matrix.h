@@ -75,6 +75,8 @@ namespace SYNARMOSMA {
     inline void increment(unsigned int,unsigned int,kind);
     /// This method returns the number of rows in this matrix.
     inline unsigned int get_nrow() const {return nrow;};
+    /// This method returns the number of rows in this matrix.
+    inline unsigned int get_ncolumn() const {return ncolumn;};
     /// This method computes the matrix's density, i.e. the number of non-zero elements divided by the total number of elements, and returns this value.
     inline double density() const {return double(number_nonzero())/double(nrow*ncolumn);};
     /// This method computes the number of non-zero elements in this matrix and returns this value.
