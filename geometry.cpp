@@ -988,6 +988,7 @@ int Geometry::vertex_addition(const std::set<int>& antecedents)
       }
     }
   }
+  return nvertex;
 }
 
 int Geometry::vertex_addition(int parent,double mutation)
@@ -1206,7 +1207,7 @@ bool Geometry::adjust_dimension(const std::vector<int>& vdimension)
     }
   }
   if (!vmodified.empty()) {
-    compute_distances(vmodified);
+    compute_squared_distances(vmodified);
     return true;
   }
   return false;
