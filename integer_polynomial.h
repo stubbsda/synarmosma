@@ -27,14 +27,31 @@ namespace SYNARMOSMA {
   Integer_Polynomial<kind> operator *(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);
 
   template<class kind>
-  // A class intended for low-degree polynomials since we store every coefficient, zero or not.
+  /// A class representing a low-degree polynomial over an integral domain, such as the integers or a Galois field. 
   class Integer_Polynomial {
    protected:
+    /// This non-negative property is the polynomial's degree, and thus also 
+    /// determines the length of Integer_Polynomial::terms which is equal to 
+    /// one plus the degree.
     unsigned int degree = 0;
+    /// This is the characteristic of the domain over which the integer polynomial is 
+    /// defined. For \f$\mathbf{Z}\f$ it is zero, for the Galois Field \f$\textrm{GF}(p^n)\f$ it 
+    /// is the prime number \f$p\f$. 
     unsigned int characteristic = 0;
+    /// This Boolean property is true if the integer polynomial cannot be factorized over its 
+    /// domain, i.e. it has no solutions over this domain. 
     bool irreducible = false;
+    /// This Boolean property is true if the integer polynomial has no constant term, i.e. 
+    /// \f$p(x) = a_d x^d + \dots + a_2 x^2 + a_1 x\f$ where \f$d\f$ is the degree.
     bool homogeneous = false;
+    /// This Boolean property is true if the coefficient of the highest term in the polynomial 
+    /// is one, so that \f$ p(x) = x^d + a_{d-1}x^{d-1} + \dots + a_1 x + a_0\f$ where \f$d\f$ 
+    /// is the degree.
     bool monic = false;
+    /// This is the principal property of the class and contains a list of the polynomial coefficients 
+    /// stored in a dense manner, so that this class is intended for low-degree polynomials and not one 
+    /// like \f$x^{250} - 7x +1\f$. The length of the vector is always Integer_Polynomial::degree plus 
+    /// one. 
     std::vector<kind> terms;
     /// The value 0, stored in the correct data type for this instantiation of 
     /// the template class.
@@ -46,63 +63,68 @@ namespace SYNARMOSMA {
     /// the template class.
     static const kind unity;
   
+    /// This method constructs the polynomial \f$p(x) = x^d + x^{d-1} + \dots + x + 1\f$ where \f$d\f$ is Integer_Polynomial::degree.
     void initialize();
-    inline void simplify();
+    /// This method calls scale_coefficients() and then verifies that the degree corresponds to the highest non-zero coefficient and sets the values of Integer_Polynomial::monic and Integer_Polynomial::homogeneous.
+    void simplify();
+    /// This method ensures that all of the coefficients of the polynomial lie in the correct domain (i.e. modulo the characteristic \f$p\f$ when \f$p > 0\f$).
+    void scale_coefficients();
+    /// This method writes the content of the polynomial itself in binary format to an output stream and is used by the serialize() method; it returns the number of bytes written.
     int write_terms(std::ofstream&) const;
+    /// This method reads the content of the polynomial itself in binary format from an input stream is used by the deserialize() method; it returns the number of bytes read.
     int read_terms(std::ifstream&);
    public:
+    /// The default constructor which does nothing. 
     Integer_Polynomial();
+    /// This constructor accepts as its argument the degree \f$d\f$ of the polynomial and constructs the polynomial \f$x^d + x^{d-1} + \dots + x + 1\f$.
     Integer_Polynomial(unsigned int);
+    /// This constructor accepts as its first argument the degree \f$d\f$ of the polynomial, while the second argument is the characteristic of the domain of definition. The constructor builds the polynomial \f$x^d + x^{d-1} + \dots + x + 1\f$.
     Integer_Polynomial(unsigned int,unsigned int);
+    /// This constructor uses its argument as the value for Integer_Polynomial::terms and sets the other class properties appropriately by calling the simplify() method.
     Integer_Polynomial(const std::vector<kind>&);
+    /// This constructor uses its argument as the value for Integer_Polynomial::terms and the second argument as the characteristic of the domain of definition. The constructor sets the other class properties appropriately by calling the simplify() method.
     Integer_Polynomial(const std::vector<kind>&,unsigned int);
+    /// The destructor which does nothing in this case.
     ~Integer_Polynomial();
+    /// The overloaded assignment operator for this class, which first calls clear() and then behaves exactly like the copy constructor for this class.
     Integer_Polynomial& operator =(const Integer_Polynomial&);
+    /// This overloaded unary negation operator multiplies every element of the Integer_Polynomial::terms vector by -1 and then calls the simplify() method.
     Integer_Polynomial& operator -(const Integer_Polynomial&);
+    /// The standard copy constructor - it calls the clear() method and then copies over all properties from the source instance to this one.
     Integer_Polynomial(const Integer_Polynomial&);
+    /// This method takes the current instance and reduces its coefficients modulo \f$p\f$, the method's argument, which must be a prime number. The output is an instance of the Integer_Polynomial class over the integers.
     Integer_Polynomial<int> reduce(unsigned int);
+    /// This method evaluates the polynomial at the method's argument \f$\alpha\f$, returning the value of \f$p(\alpha)\f$.
     kind evaluate(kind);
+    /// This method takes its argument and sets Integer_Polynomial::degree to this value, then calls initialize().
     void generate(unsigned int);
+    /// This method returns the value of the degree.
     inline unsigned int get_degree() const {return degree;};
+    /// This method returns true if this is the zero polynomial and false otherwise.
     inline bool is_null() const;
+    /// This method returns the value of the coefficient specified by the method's unique argument.
     kind get_value(unsigned int) const;
+    /// This method sets the coefficient specified by the second argument to the value specified by the first argument.
     void set_value(kind,unsigned int);
+    /// This method clears the vector Integer_Polynomial::terms and restores all the scalar properties to their default value.
     void clear();
+    /// This method writes the instance properties to a binary disk file and returns the number of bytes written to the file.
     int serialize(std::ofstream&) const;
+    /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
     int deserialize(std::ifstream&);
+    /// This method computes and returns the formal derivative of the polynomial, i.e. \f$p'(x) = d a_d x^{d-1} + \dots 2 a_2 x + a_1\f$. 
     Integer_Polynomial<kind> derivative() const;
+    /// This overloading of the ostream operator writes the polynomial to the screen in a "pretty print" format.
     friend std::ostream& operator << <>(std::ostream&,const Integer_Polynomial<kind>&);
+    /// This overloaded operator tests the two polynomial for equality, first checking if they have the same degree and then testing the two coefficient vectors element by element.
     friend bool operator == <>(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);
+    /// This overloaded addition operator adds together the two polynomial arguments according to the standard mathematical convention and then calls the simplify() method on the resulting output.
     friend Integer_Polynomial<kind> operator +<>(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);
+    /// This overloaded multiplication operator multiplies a polynomial (the second argument) by a scalar (the first argument) and then calls the simplify() method on the resulting output.
     friend Integer_Polynomial<kind> operator *<>(kind,const Integer_Polynomial<kind>&);
+    /// This overloaded multiplication operator multiplies two polynomials together according to the standard mathematical convention and then calls the simplify() method on the resulting output.
     friend Integer_Polynomial<kind> operator *<>(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);
   };
-
-  template<class kind>
-  void Integer_Polynomial<kind>::simplify()
-  {
-    unsigned int i,d = 0;
-    if (characteristic > 0) {
-      for(i=0; i<=degree; ++i) {
-        terms[i] = terms[i] % characteristic;
-      }
-    }
-    for(i=0; i<=degree; ++i) {
-      if (terms[i] == Integer_Polynomial<kind>::zero) continue;
-      d = i;
-    }
-    if (d < degree) {
-      std::vector<kind> nterms;
-
-      for(i=0; i<=d; ++i) {
-        nterms.push_back(terms[i]);
-      }
-      terms = nterms;
-      degree = d;
-    }
-    if (terms[degree] == Integer_Polynomial<kind>::unity) monic = true;
-    if (terms[0] == Integer_Polynomial<kind>::zero) homogeneous = true;
-  }
 
   template<class kind> 
   bool Integer_Polynomial<kind>::is_null() const

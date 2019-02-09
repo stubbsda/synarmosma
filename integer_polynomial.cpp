@@ -27,54 +27,11 @@ Integer_Polynomial<kind>::Integer_Polynomial(unsigned int n,unsigned int p)
   degree = n;
   initialize();
 }
-/*
-namespace SYNARMOSMA {
-  template<>
-  void Integer_Polynomial<NTL::ZZ>::simplify()
-  {
-    unsigned int i,d = 0;
-    for(i=0; i<=degree; ++i) {
-      if (terms[i] == NTL::to_ZZ(0)) continue;
-      d = i;
-    }
-    if (d < degree) {
-      std::vector<NTL::ZZ> nterms;
 
-      for(i=0; i<=d; ++i) {
-        nterms.push_back(terms[i]);
-      }
-      terms = nterms;
-      degree = d;
-    }
-    if (terms[degree] == NTL::to_ZZ(1)) monic = true;
-    if (terms[0] == NTL::to_ZZ(0)) homogeneous = true;
-  }
-}
-
-template<class kind>
-void Integer_Polynomial<kind>::simplify()
-{
-  unsigned int i,d = 0;
-  for(i=0; i<=degree; ++i) {
-    if (terms[i] == kind(0)) continue;
-    d = i;
-  }
-  if (d < degree) {
-    std::vector<kind> nterms;
-
-    for(i=0; i<=d; ++i) {
-      nterms.push_back(terms[i]);
-    }
-    terms = nterms;
-    degree = d;
-  }
-  if (terms[degree] == kind(1)) monic = true;
-  if (terms[0] == kind(0)) homogeneous = true;
-}
-*/
 template<class kind>
 Integer_Polynomial<kind>::Integer_Polynomial(const std::vector<kind>& t)
 {
+  if (t.empty()) return;
   unsigned int i;
 
   degree = t.size() - 1;
@@ -94,13 +51,13 @@ Integer_Polynomial<kind>::Integer_Polynomial(const std::vector<kind>& t,unsigned
   unsigned int i;
 
   characteristic = p;
+  if (t.empty()) return;
+
   degree = t.size() - 1;
   for(i=0; i<t.size(); ++i) {
     terms.push_back(t[i]);
   }
-  irreducible = false;
-  homogeneous = false;
-  monic = false;
+
   simplify();
 }
 
@@ -144,6 +101,7 @@ void Integer_Polynomial<kind>::generate(unsigned int d)
 
 namespace SYNARMOSMA {
   template<>
+  /// This method is an instantiation of write_terms() for the case of a polynomial over multiprecision integers, needed so that the write_ZZ routine can be called to handle the possibility of very large numbers.
   int Integer_Polynomial<NTL::ZZ>::write_terms(std::ofstream& s) const
   {
     unsigned int i;
@@ -187,6 +145,7 @@ int Integer_Polynomial<kind>::serialize(std::ofstream& s) const
 
 namespace SYNARMOSMA {
   template<>
+  /// This method is an instantiation of read_terms() for the case of a polynomial over multiprecision integers, needed so that the read_ZZ routine can be called to handle the possibility of very large numbers.
   int Integer_Polynomial<NTL::ZZ>::read_terms(std::ifstream& s)
   {
     unsigned int i;
@@ -246,6 +205,71 @@ void Integer_Polynomial<kind>::initialize()
   simplify();
 }
 
+namespace SYNARMOSAM {
+  template<>
+  void Integer_Polynomial<NTL::ZZ>::scale_coefficients()
+  {
+    if (characteristic == 0) return;
+
+    unsigned int i;
+    NTL::ZZ q,base = NTL::to_ZZ(characteristic);
+
+    for(i=0; i<=degree; ++i) {
+      q = terms[i];
+      if (q < Integer_Polynomial<NTL::ZZ>::zero) {
+        do {
+          q += base;
+          if (q >= Integer_Polynomial<NTL::ZZ>::zero) break;
+        } while(true);
+      }
+      terms[i] = q % base;
+    }
+  }
+}
+
+template<class kind>
+void Integer_Polynomial<kind>::scale_coefficients()
+{
+  if (characteristic == 0) return;
+
+  unsigned int i;
+  kind q;
+
+  for(i=0; i<=degree; ++i) {
+    q = terms[i];
+    if (q < Integer_Polynomial<kind>::zero) {
+      do {
+        q += characteristic;
+        if (q >= Integer_Polynomial<kind>::zero) break;
+      } while(true);
+    }
+    terms[i] = q % characteristic;
+  }
+}
+
+template<class kind>
+void Integer_Polynomial<kind>::simplify()
+{
+  unsigned int i,d = 0;
+
+  scale_coefficients();
+  for(i=0; i<=degree; ++i) {
+    if (terms[i] == Integer_Polynomial<kind>::zero) continue;
+    d = i;
+  }
+  if (d < degree) {
+    std::vector<kind> nterms;
+
+    for(i=0; i<=d; ++i) {
+      nterms.push_back(terms[i]);
+    }
+    terms = nterms;
+    degree = d;
+  }
+  if (terms[degree] == Integer_Polynomial<kind>::unity) monic = true;
+  if (terms[0] == Integer_Polynomial<kind>::zero) homogeneous = true;
+}
+
 template<class kind>
 Integer_Polynomial<kind>& Integer_Polynomial<kind>::operator =(const Integer_Polynomial<kind>& source)
 {
@@ -273,8 +297,10 @@ Integer_Polynomial<kind>& Integer_Polynomial<kind>::operator -(const Integer_Pol
   irreducible = source.irreducible;
   terms = source.terms;  
   for(i=0; i<=degree; ++i) {
-    terms[i] = neg1*terms[i];
+    terms[i] = Integer_Polynomial<kind>::neg1*terms[i];
   }
+
+  simplify();
 
   return *this;
 }
@@ -306,17 +332,19 @@ void Integer_Polynomial<kind>::set_value(kind x,unsigned int n)
 
 namespace SYNARMOSMA {
   template<>
+  /// This method is an instantiation of the evaluate() method for the case of a multiprecision integer, needed to handle the modulus calculation with a multiprecision representation of the characteristic.
   NTL::ZZ Integer_Polynomial<NTL::ZZ>::evaluate(NTL::ZZ x)
   {
     if (characteristic > 0) {
       if (x >= characteristic) throw std::invalid_argument("Argument exceeds field characteristic!");  
     }
     int i;
-    NTL::ZZ y = NTL::to_ZZ(0);
+    NTL::ZZ y = Integer_Polynomial<NTL::ZZ>::zero;
+
     for(i=degree; i>=0; --i) {
       y = y*x + terms[i];
     }
-    if (characteristic > 1) y = y % characteristic;    
+    if (characteristic > 0) y = y % NTL::to_ZZ(characteristic);    
     return y;
   }
 }
@@ -333,16 +361,18 @@ kind Integer_Polynomial<kind>::evaluate(kind x)
   for(i=degree; i>0; --i) {
     y = y*x + terms[i];
   }
-  if (characteristic > 1) y = y % characteristic;
+  if (characteristic > 0) y = y % characteristic;
   return y;
 }
 
 namespace SYNARMOSMA {
   template<>
+  /// This method is an instantiation of the derivative() method, needed to handle the conversion of the formal differentiation expression for multiprecision integers.
   Integer_Polynomial<NTL::ZZ> Integer_Polynomial<NTL::ZZ>::derivative() const
   {
     unsigned int i;
     Integer_Polynomial<NTL::ZZ> output(degree-1);
+
     for(i=0; i<degree-1; ++i) {
       output.set_value(NTL::to_ZZ(1+i)*terms[i+1],i);
     }
@@ -365,6 +395,7 @@ Integer_Polynomial<kind> Integer_Polynomial<kind>::derivative() const
 
 namespace SYNARMOSMA {
   template<>
+  /// This method is an instantiation of the reduce() method, needed to handle the conversion of the NTL::ZZ coefficients to integers of "long" type.
   Integer_Polynomial<int> Integer_Polynomial<NTL::ZZ>::reduce(unsigned int p)
   {
     if (!NTL::ProbPrime(p)) throw std::invalid_argument("Integer_Polynomial must be reduced over a prime characteristic!");
@@ -375,7 +406,14 @@ namespace SYNARMOSMA {
     std::vector<int> nterms;
 
     for(i=0; i<=degree; ++i) {
-      q = terms[i] % base;
+      q = terms[i];
+      if (q < Integer_Polynomial<NTL::ZZ>::zero) {
+        do {
+          q += base;
+          if (q >= Integer_Polynomial<NTL::ZZ>::zero) break;
+        } while(true);
+      }
+      q = q % base;
       NTL::conv(temp,q);
       nterms.push_back(temp);
     }
@@ -390,10 +428,19 @@ Integer_Polynomial<int> Integer_Polynomial<kind>::reduce(unsigned int p)
   if (!NTL::ProbPrime(p)) throw std::invalid_argument("Integer_Polynomial must be reduced over a prime characteristic!");
   
   unsigned int i;
+  kind q;
   std::vector<int> nterms;
 
   for(i=0; i<=degree; ++i) {
-    nterms.push_back(convert(terms[i],p));
+    q = terms[i];
+    if (q < Integer_Polynomial<kind>::zero) {
+      do {
+        q += base;
+        if (q >= Integer_Polynomial<kind>::zero) break;
+      } while(true);
+    }
+    q = q % p;
+    nterms.push_back(q);
   }
   Integer_Polynomial<int> output(nterms,p);
   return output;

@@ -56,17 +56,57 @@ void Polynomial<kind>::clear()
   monic = false;
 }
 
-template<class kind>
-void Polynomial<kind>::generate(unsigned int d)
-{
-  clear();
+namespace SYNARMOSMA {
+  template<>
+  /// This method is an instantiation of simplify() for the case of a polynomial over the rationals, needed due to the special representation of the number 1 (= 1/1) in the Rational class.
+  void Polynomial<Rational>::simplify()
+  {
+    unsigned int i,d = 0;
+    const Rational unity(1);
 
-  degree = d;
-  initialize();
+    for(i=0; i<=degree; ++i) {
+      if (terms[i].is_null()) continue;
+      d = i;
+    }
+    if (d < degree) {
+      std::vector<Rational> nterms;
+
+      for(i=0; i<=d; ++i) {
+        nterms.push_back(terms[i]);
+      }
+      terms = nterms;
+      degree = d;
+    }
+    if (terms[degree] == unity) monic = true;
+    if (terms[0].is_null()) homogeneous = true;
+  }
+}
+
+template<class kind>
+void Polynomial<kind>::simplify()
+{
+  unsigned int i,d = 0;
+
+  for(i=0; i<=degree; ++i) {
+    if (std::abs(terms[i]) < std::numeric_limits<double>::epsilon()) continue;
+    d = i;
+  }
+  if (d < degree) {
+    std::vector<kind> nterms;
+
+    for(i=0; i<=d; ++i) {
+      nterms.push_back(terms[i]);
+    }
+    terms = nterms;
+    degree = d;
+  }
+  if (std::abs(terms[degree] - 1.0) == std::numeric_limits<double>::epsilon()) monic = true;
+  if (std::abs(terms[0]) < std::numeric_limits<double>::epsilon()) homogeneous = true;
 }
 
 namespace SYNARMOSMA {
   template<>
+  /// This method is an instantiation of write_terms() for the case of a polynomial over the rationals, needed so that the write_ZZ routine can be called to write the numerator and denominator.
   int Polynomial<Rational>::write_terms(std::ofstream& s) const
   {
     unsigned int i;
@@ -110,6 +150,7 @@ int Polynomial<kind>::serialize(std::ofstream& s) const
 
 namespace SYNARMOSMA {
   template<>
+  /// This method is an instantiation of read_terms() for the case of a polynomial over the rationals, needed so that the read_ZZ routine can be called to read the numerator and denominator.
   int Polynomial<Rational>::read_terms(std::ifstream& s)
   {
     unsigned int i;
@@ -157,23 +198,21 @@ int Polynomial<kind>::deserialize(std::ifstream& s)
 }
 
 template<class kind>
-void Polynomial<kind>::initialize()
+void Polynomial<kind>::initialize(int L)
 {
+  if (L < 1) throw std::invalid_argument("The argument for Polynomial::initialize must be positive!");
   unsigned int i;
   kind test;
   bool flag = true;
-  const kind zero = kind(0);
 
   for(i=0; i<degree; ++i) {
-    terms.push_back(kind(RND.irandom(-25,25)));
+    terms.push_back(kind(RND.irandom(-L,L)));
   }
-  do {
-    test = kind(RND.irandom(-25,25));
-    if (test != zero) flag = false;
-  } while(flag);
+
+  test = kind(RND.irandom(1,L));
+  if (RND.irandom(2) == 0) test = -test;
   terms.push_back(test);
 
-  irreducible = true;
   simplify();
 }
 
@@ -254,21 +293,6 @@ Polynomial<kind> Polynomial<kind>::derivative() const
     output.set_value(kind(1+i)*terms[i+1],i);
   }
   output.simplify();
-  return output;
-}
-
-template<class kind>
-Integer_Polynomial<int> Polynomial<kind>::reduce(unsigned int p)
-{
-  if (!NTL::ProbPrime(p)) throw std::invalid_argument("Polynomial must be reduced over a prime characteristic!");
-  
-  unsigned int i;
-  std::vector<int> nterms;
-
-  for(i=0; i<=degree; ++i) {
-    nterms.push_back(convert(terms[i],p));
-  }
-  Integer_Polynomial<int> output(nterms,p);
   return output;
 }
 

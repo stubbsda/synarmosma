@@ -348,15 +348,17 @@ namespace SYNARMOSMA
         // First convert alpha(p) to an element of GF(p)
         py = std::get<0>(trio);
         NTL::conv(q,py.evaluate(z));
-        in1 = (unsigned int) q;
-        in1 = in1 % p;
+        in1 = std::abs(q % p);
+        //in1 = (unsigned int) q;
+        //in1 = in1 % p;
         if (in1 == 0) continue;
         term.coefficient = in1;
         // Next we need to convert beta(p) to an element of GF(p)
         py = std::get<1>(trio);
         NTL::conv(q,py.evaluate(z));
-        in1 = (unsigned int) q;
-        in1 = in1 % p;
+        in1 = std::abs(q % p);
+        //in1 = (unsigned int) q;
+        //in1 = in1 % p;
         duo.first = in1;
         // Finally we have to find out the exponent 
         duo.second = std::get<2>(trio);
@@ -365,8 +367,9 @@ namespace SYNARMOSMA
         term.exponents.clear();
       }
       NTL::conv(q,remainder.evaluate(z));
-      in1 = (unsigned int) q;
-      in1 = in1 % p;
+      in1 = std::abs(q % p);
+      //in1 = (unsigned int) q;
+      //in1 = in1 % p;
       output.set_remainder(i,in1);
     }
     output.compute_properties();
@@ -380,6 +383,7 @@ Variety<unsigned int> Functional_Equation<kind>::reduce(unsigned int p)
   if (!NTL::ProbPrime(p)) throw std::invalid_argument("Functional equation must be reduced over a prime!");
 
   unsigned int i,j,in1;
+  kind q;
   std::pair<unsigned int,unsigned int> duo;
   std::tuple<Integer_Polynomial<kind>,Integer_Polynomial<kind>,unsigned int> trio;
   Variety<unsigned int> output(p,p);
@@ -393,19 +397,23 @@ Variety<unsigned int> Functional_Equation<kind>::reduce(unsigned int p)
       trio = terms[j];
       // First convert alpha(p) to an element of GF(p)
       py = std::get<0>(trio);
-      in1 = convert(py.evaluate(i),p);
+      q = py.evaluate(i);
+      in1 = std::abs(q % p);
       if (in1 == 0) continue;
       term.coefficient = in1;
       // Next we need to convert beta(p) to an element of GF(p)
       py = std::get<1>(trio);
-      duo.first = convert(py.evaluate(i),p);
+      q = py.evaluate(i);
+      in1 = std::abs(q % p);
+      duo.first = in1; //convert(py.evaluate(i),p);
       // Finally we have to find out the exponent 
       duo.second = std::get<2>(trio);
       term.exponents.push_back(duo);
       output.add_term(i,term);
       term.exponents.clear();
     }
-    in1 = convert(remainder.evaluate(i),p);
+    q = remainder.evaluate(i);
+    in1 = std::abs(q % p); //convert(remainder.evaluate(i),p);
     output.set_remainder(i,in1);
   }
   output.compute_properties();
