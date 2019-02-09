@@ -195,7 +195,7 @@ namespace SYNARMOSMA {
       vx.clear();
     }
   }
-
+  /*
   void convert(unsigned char* p,int n)
   {
     unsigned int i;
@@ -213,7 +213,7 @@ namespace SYNARMOSMA {
       p[i] = temp[i];
     }
   }
-
+  */
   void split(const std::string& s,char delim,std::vector<std::string>& elements) 
   {
     std::stringstream ss(s);
