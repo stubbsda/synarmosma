@@ -52,7 +52,7 @@ namespace SYNARMOSMA {
     std::vector<kind> terms;
   
     /// This method constructs the polynomial \f$p(x) = a_d x^d + a_{d-1}x^{d-1} + \dots + a_1 x + a_0\f$ where \f$d\f$ is Polynomial::degree and the \f$a_i\f$ (\f$a_d\ne 0\f$) are uniform random variates on the interval \f$[-L,L]\f$ where \f$L\f$ is the method's argument.
-    void initialize(int);
+    void initialize(int = 25);
     /// This method verifies that the degree corresponds to the highest non-zero coefficient and sets the values of Polynomial::monic and Polynomial::homogeneous.
     void simplify();
     /// This method writes the content of the polynomial itself in binary format to an output stream and is used by the serialize() method; it returns the number of bytes written.

@@ -104,8 +104,6 @@ namespace SYNARMOSMA {
   void factorize(long,std::vector<std::pair<long,int> >&);
   int parity(const std::vector<int>&,const std::vector<int>&);
   int parity(const std::vector<int>&);
-  //void convert(unsigned char*,int);
-  //void convert(unsigned char*,float);
   void compute_smith_normal_form(std::vector<std::pair<int,int> >*,int,int);
   void vertex_difference(int,int,std::vector<double>&);
   double arithmetic_mean(const std::vector<double>&);

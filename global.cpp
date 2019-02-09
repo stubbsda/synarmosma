@@ -195,25 +195,7 @@ namespace SYNARMOSMA {
       vx.clear();
     }
   }
-  /*
-  void convert(unsigned char* p,int n)
-  {
-    unsigned int i;
-    unsigned char* temp = (unsigned char*)(&n);
-    for(i=0; i<sizeof(int); ++i) {
-      p[i] = temp[i];
-    }
-  }
 
-  void convert(unsigned char* p,float x)
-  {
-    unsigned int i;
-    unsigned char* temp = (unsigned char*)(&x);
-    for(i=0; i<sizeof(float); ++i) {
-      p[i] = temp[i];
-    }
-  }
-  */
   void split(const std::string& s,char delim,std::vector<std::string>& elements) 
   {
     std::stringstream ss(s);

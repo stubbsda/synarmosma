@@ -205,8 +205,9 @@ void Integer_Polynomial<kind>::initialize()
   simplify();
 }
 
-namespace SYNARMOSAM {
+namespace SYNARMOSMA {
   template<>
+  /// This method is an instantiation of the evaluate() method for the case of a multiprecision integer, needed to handle the modulus calculation with a multiprecision representation of the characteristic
   void Integer_Polynomial<NTL::ZZ>::scale_coefficients()
   {
     if (characteristic == 0) return;
@@ -435,7 +436,7 @@ Integer_Polynomial<int> Integer_Polynomial<kind>::reduce(unsigned int p)
     q = terms[i];
     if (q < Integer_Polynomial<kind>::zero) {
       do {
-        q += base;
+        q += p;
         if (q >= Integer_Polynomial<kind>::zero) break;
       } while(true);
     }
