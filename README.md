@@ -1,7 +1,7 @@
-The Synarmosma library consists of approximately 20,000 lines of C++ code and has been tested on 
-the Linux (x86, x86-64 and ARMv6), OS X (x86-64) and OpenBSD (x86 and x86-64) platforms. The 
-library's external dependencies consist of the Boost library (www.boost.org), Victor Shoup's 
-number-theoretic library NTL (www.shoup.net/ntl) and an implementation of LAPACK for certain dense 
+The Synarmosma library consists of approximately 20,000 lines of C++ code and has been developed 
+and tested in a Linux (x86, x86-64 and ARMv6) environment. The library's external dependencies 
+consist of the Boost library (www.boost.org), Victor Shoup's number-theoretic library NTL (www.shoup.net/ntl),
+the Gnu multiprecision library (www.gmplib.org) and an implementation of LAPACK for certain dense 
 matrix operations. The Synarmosma library is released under the Gnu Public License version 3.0 
 (see LICENSE.txt or www.fsf.org/licensing for details).   
 
@@ -11,8 +11,7 @@ of the Synarmosma library. The command <code>sudo make install</code> will insta
 location, /usr/local/synarmosma. If you don't have root access or don't wish to install the library 
 in a system directory, you can modify the value of <code>INSTALL_DIR</code> at the beginning of the Makefile to 
 some other directory, such as <code>$HOME/synarmosma</code>. The compilation of the Synarmosma library has been 
-tested on several Unix platforms, including OS X/x86-64, OpenBSD (x86 and x86-64) and Linux (x86, 
-x86-64 and ARMv6), using both the Gnu (g++) and Intel (icpc) compilers. In principle it should also 
+tested using both the Gnu (g++) and Intel (icpc) compilers in a Linux environment. In principle it should also 
 run under Windows using the Cygwin environment. Finally you can use <code>make clean</code> to delete all the 
 object files.   
 
