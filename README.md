@@ -20,6 +20,7 @@ are located at the beginning of the Makefile, where various compiler arguments a
 specified. The build variables are all described in the Makefile and in general the default values should 
 be safe on most Unix-like platforms. Certain methods within the library have been parallelized using 
 OpenMP, namely for the Geometry, Graph, Nexus and Matrix classes, so that a C++ compiler able to support 
-OpenMP is also desirable. 
+OpenMP is also desirable. The library's source code is documented using Doxygen with the configuration file
+<code>docs.config</code> that can be modified as needed. 
 
 For any questions, comments or suggestions, please contact info@synarmosma.org
