@@ -181,18 +181,25 @@ namespace SYNARMOSMA {
   {
     if (S.empty()) throw std::invalid_argument("The key argument must not be an empty set!");
 
-    unsigned int i,n = S.size();
+    unsigned int n = S.size();
     std::stringstream s;
     std::set<int>::const_iterator it;
-    i = 0;
-    for(it=S.begin(); it!=S.end(); ++it) {
-      if (i < (n-1)) {
-        s << *it << ":";
+
+    if (n == 1) {
+      it = S.begin();
+      s << *it;
+    }
+    else {
+      unsigned int i = 0;
+      for(it=S.begin(); it!=S.end(); ++it) {
+        if (i < (n-1)) {
+          s << *it << ":";
+        }
+        else {
+          s << *it;
+        }
+        ++i;
       }
-      else {
-        s << *it;
-      }
-      ++i;
     }
     return s.str();
   }

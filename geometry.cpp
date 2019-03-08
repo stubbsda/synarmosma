@@ -825,54 +825,6 @@ void Geometry::vertex_difference(int n,int m,std::vector<double>& delta) const
   }
 }
 
-double Geometry::inner_product(const Matrix<double>& L,const std::vector<int>& offset) const
-{
-  if (relational) return 0.0;
-  if (nvertex != (signed) L.get_ncolumn()) throw std::invalid_argument("The matrix does not conform to the geometry in the Geometry::inner_product method!");
-  if (nvertex != (signed) offset.size()) throw std::invalid_argument("The size of the offset vector does not conform to the geometry in the Geometry::inner_product method!");
-  const unsigned int nv = L.get_nrow();
-  int l;
-  unsigned int i,j,k,nelements;
-  double value,result[nv][background_dimension],sum[background_dimension];
-  double energy = 0.0;
-  std::vector<double> Lx;
-  std::vector<unsigned int> Lc;
-
-  for(i=0; i<nv; ++i) {
-    for(j=0; j<background_dimension; ++j) {
-      sum[j] = 0.0;
-    }
-    L.get_row(Lx,Lc,i);
-    nelements = Lx.size();
-    for(j=0; j<nelements; ++j) {
-      for(k=0; k<background_dimension; ++k) {
-#ifdef DISCRETE
-        sum[k] += space_quantum*double(coordinates[Lc[j]][k])*Lx[j];
-#else
-        sum[k] += coordinates[Lc[j]][k]*Lx[j];
-#endif
-      }
-    }
-    for(j=0; j<background_dimension; ++j) {
-      result[i][j] = sum[j];
-    }
-  }
-
-  for(i=0; i<background_dimension; ++i) {
-    value = 0.0;
-    for(l=0; l<nvertex; ++l) {
-      if (offset[l] == -1) continue;
-#ifdef DISCRETE
-      value += result[offset[l]][i]*space_quantum*double(coordinates[l][i]);
-#else
-      value += result[offset[l]][i]*coordinates[l][i];
-#endif
-    }
-    energy += value;
-  }
-  return energy;
-}
-
 void Geometry::rollback(bool minimal)
 {
   if (vperturb == -1) std::runtime_error("An unperturbed geometry cannot be rolled back!");
