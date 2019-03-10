@@ -1042,8 +1042,6 @@ int Geometry::vertex_addition(int parent,double mutation)
 
 void Geometry::mutation(int v,bool by_vertex,bool complete,double severity)
 {
-  if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal vertex value in Geometry::mutation method!");
-
 #ifdef DISCRETE
   INT64 alpha = INT64((RND.nrandom(0.0,severity)/space_quantum));
 #else
@@ -1051,6 +1049,7 @@ void Geometry::mutation(int v,bool by_vertex,bool complete,double severity)
 #endif
 
   if (by_vertex) {
+    if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal vertex value in Geometry::mutation method!");
     vperturb = v;
     if (relational) {
       int i,j;
