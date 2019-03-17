@@ -56,6 +56,8 @@ namespace SYNARMOSMA {
     inline void get_vertices(std::set<int>& v) const {v = vertices;};
     /// This method writes the content of the Cell::entourage set to the method's argument
     inline void get_entourage(std::set<int>& v) const {v = entourage;};
+    /// This method writes the content of the Cell::faces vector to the method's argument.
+    inline void get_faces(std::vector<std::set<int> >& v) const {v = faces;};
     /// This method returns the cardinality of Cell::vertices less one, i.e. the dimension of this simplex.
     inline int dimension() const {return (vertices.size() - 1);};
     /// This method returns true if the Cell::vertices contains the method's argument and false otherwise.

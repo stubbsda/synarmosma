@@ -22,7 +22,7 @@ LAPACK      = -llapack -lblas
 BOOST       = -lboost_system
 # All the necessary libraries: LAPACK, Boost, NTL and GMP 
 LIBS        = $(LAPACK) $(BOOST) -lntl -lgmp -lm
-# Where to install the Synarmosma library, requires root privileges
+# Where to install the Synarmosma library
 INSTALL_DIR = $(HOME)/fabrica/local
 # End of user-modifiable parameters!
 
