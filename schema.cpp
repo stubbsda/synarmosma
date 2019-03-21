@@ -231,6 +231,8 @@ void Schema::compute_distances(pair_index& output) const
 
 bool Schema::connected() const
 {
+  if (nvertex == 1) return true;
+
   int i,n = -1,p,m = 0;
   std::vector<int> ubiquity;
   std::set<int> change,nchange;

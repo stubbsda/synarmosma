@@ -75,6 +75,7 @@ Binary_Matrix::~Binary_Matrix()
 void Binary_Matrix::initialize(unsigned int n,unsigned int m)
 {
   if (n == 0 || m == 0) throw std::invalid_argument("The matrix dimensions must be greater than zero!");
+  clear();
   nrow = n;
   ncolumn = m;
   elements = new std::set<unsigned int>[nrow];

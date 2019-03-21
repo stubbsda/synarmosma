@@ -790,6 +790,7 @@ bool Nexus::orientable() const
   }
   orient[0] = 1;
   assemble_neighbours(ns,facets,0,proc);
+  if (proc.empty()) throw std::runtime_error("Error in neighbour assembly for Nexus::orientable method!");
   do {
     in1 = proc[0];
     current = facets[in1];
