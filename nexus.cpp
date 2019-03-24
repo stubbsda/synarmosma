@@ -758,10 +758,11 @@ bool Nexus::orientable() const
     return output;
   }
 
-  if (nvertex == 1) return true;
-
   const int nf = (signed) elements[dimension-1].size(); 
   const int ns = (signed) elements[dimension].size();
+
+  if (ns == 1) return true;
+
   int i,j,m,k,o,in1,check,vx[1+dimension],orient[ns],sorient[nf],sorientn[nf];
   bool nzero,found,failed = false;
   hash_map face_index;
