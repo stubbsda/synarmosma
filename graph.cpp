@@ -1449,6 +1449,8 @@ double Graph::entwinement() const
   // This method produces a real number between 0 and 1 that measures the
   // degree of "labyrinthicity" of the graph
   if (nvertex < 3) return 0.0;
+  // The complete graph has an entwinement of unity, of course...
+  if (size() == nvertex*(nvertex-1)/2) return 1.0;
 
   double output = 0.0;
   std::vector<double> w;
