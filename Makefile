@@ -32,15 +32,7 @@ vertex.o multitime.o binary_matrix.o integer_matrix_wrapper.o matrix_wrapper.o l
 functional_equation_wrapper.o homology.o homotopy.o poset.o lattice.o pseudograph.o solver_wrapper.o\
 directed_graph.o
 
-UNAME = $(shell uname)
-
-ifeq ($(UNAME),Darwin)
-  RPATH += -install_name $(INSTALL_DIR)/lib/libsynarmosma.so
-endif 
-
-ifeq ($(UNAME),Linux)
-  RPATH = -Wl,-rpath $(INSTALL_DIR)/lib
-endif 
+LD_FLAGS = -Wl,-rpath $(INSTALL_DIR)/lib
 
 install: synarmosma
 	mkdir -p $(INSTALL_DIR)/lib
@@ -49,11 +41,11 @@ install: synarmosma
 	install -p -m 444 *.h $(INSTALL_DIR)/include/synarmosma/
 
 test: install
-	$(CXX) -std=c++14 -Wall -march=native $(RPATH) -I$(INSTALL_DIR)/include -L$(INSTALL_DIR)/lib -o unit_test unit_testing.cpp -lsynarmosma $(LIBS)
+	$(CXX) -std=c++14 -Wall -march=native -Wl,-rpath $(INSTALL_DIR)/lib -I$(INSTALL_DIR)/include -L$(INSTALL_DIR)/lib -o unit_test unit_testing.cpp -lsynarmosma $(LIBS)
 	./unit_test
 
 synarmosma: $(OBJECTS) 
-	$(CXX) $(RPATH) $(LD_FLAGS) -o libsynarmosma.so $(OBJECTS) $(LIBS)   
+	$(CXX) $(LD_FLAGS) -o libsynarmosma.so $(OBJECTS) $(LIBS)   
 
 schema.o: schema.cpp schema.h global.h
 	$(CXX) $(CXX_FLAGS) -c schema.cpp
