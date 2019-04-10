@@ -32,7 +32,7 @@ vertex.o multitime.o binary_matrix.o integer_matrix_wrapper.o matrix_wrapper.o l
 functional_equation_wrapper.o homology.o homotopy.o poset.o lattice.o pseudograph.o solver_wrapper.o\
 directed_graph.o
 
-LD_FLAGS = -Wl,-rpath $(INSTALL_DIR)/lib
+LD_FLAGS += -Wl,-rpath $(INSTALL_DIR)/lib
 
 install: synarmosma
 	mkdir -p $(INSTALL_DIR)/lib
