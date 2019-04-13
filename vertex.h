@@ -14,7 +14,7 @@ namespace SYNARMOSMA {
     /// belongs. 
     int topological_dimension = 0;
     /// This property, either an unsigned 64 bit integer or a double precision floating point 
-    /// number, represents the energy of a vertex and should therefore always be positive. 
+    /// number, represents the energy of a vertex and should therefore always be non-negative. 
 #ifdef DISCRETE
     UINT64 energy = 0;
 #else
