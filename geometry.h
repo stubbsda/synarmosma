@@ -54,8 +54,6 @@ namespace SYNARMOSMA {
     /// space" dimension of the space.
     unsigned int background_dimension = 3; 
 
-    /// This method clears the vector properties and sets the scalar class properties to their default value.
-    void clear();
     /// This method accepts as its input an axis of rotation (the first argument), an angle (second argument), a translation vector (third argument) and finally a set of observational locations (the final argument), the perceived three-dimensional coordinates for each vertex. The method applies the rotation and translation to the coordinates of every vertex in the geometry and then computes the distance from this value to the observed vertex location, adds together these distances and returns their arithmetic mean.
     double perceptual_divergence(const double*,double,const double*,const double*) const;
     /// This method calculates the index into the vector Geometry::distances given the indices of two vertices, the method's arguments. 
@@ -75,6 +73,8 @@ namespace SYNARMOSMA {
     int serialize(std::ofstream&) const;
     /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
     int deserialize(std::ifstream&);
+    /// This method clears the vector properties and sets the scalar class properties to their default value.
+    void clear();
     /// This method loads the properties of the method's argument to the current instance.
     void load(const Geometry*);
     /// This method stores the properties of the current instance in the method's argument.
