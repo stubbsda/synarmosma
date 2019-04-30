@@ -520,7 +520,7 @@ namespace SYNARMOSMA {
       // Find minimum residual capacity of the edges along the
       // path filled by BFS or we can say find the maximum flow
       // through the path found.
-      path_flow = std::numeric_limits<int>::infinity();
+      path_flow = std::numeric_limits<int>::max();
       for(v=sink; v!=source; v=parent[v]) {
         u = parent[v];
         pr.first = u; pr.second = v;
