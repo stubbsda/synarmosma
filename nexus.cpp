@@ -399,7 +399,7 @@ bool Nexus::consistent() const
   return true;
 }
 
-int Nexus::compute_neighbour_graph(Graph*) const
+int Nexus::compute_neighbour_graph(Graph* G) const
 {
   if (dimension < 1) throw std::runtime_error("Cannot compute the neighbour graph of a 0-dimensional simplicial complex!");
 
