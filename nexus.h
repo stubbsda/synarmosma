@@ -67,6 +67,8 @@ namespace SYNARMOSMA {
     void compute_entourages();
     /// This method clears the neighbour sets and then recomputes them on the basis of the set of 1-simplices contained in the Nexus instance.
     void compute_neighbours();
+    /// This method computes the neighbour graph, i.e. the graph where each d-simplex is a vertex and an edge exists between two vertices if the corresponding d-simplices are adjacent. The method returns the size of the resulting graph, which is output in the method's unique argument.
+    int compute_neighbour_graph(Graph*) const;
     /// This method returns the dimensionality of this instance of the Nexus class.  
     inline int get_dimension() const {return dimension;};
     /// This method returns the number of simplices of a given dimension in this instance. 

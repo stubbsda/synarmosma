@@ -399,6 +399,28 @@ bool Nexus::consistent() const
   return true;
 }
 
+int Nexus::compute_neighbour_graph(Graph*) const
+{
+  if (dimension < 1) throw std::runtime_error("Cannot compute the neighbour graph of a 0-dimensional simplicial complex!");
+
+  int i,j;
+  const int n = (signed) elements[dimension].size();
+  
+  G->clear();
+
+  // Loop over all d-simplices in the complex and add a vertex...
+  for(i=0; i<n; ++i) {
+    G->add_vertex();
+  }
+  for(i=0; i<n; ++i) {
+    for(j=1+i; j<n; ++j) {
+      // Check if these two d-simplices are adjacent, i.e. if d of their respective 1+d vertices are the same.
+      if (affinity(elements[dimension][i],elements[dimension][j]) == dimension) G->add_edge(i,j);
+    }
+  }
+  return G->size();
+}
+
 void Nexus::compute_neighbours()
 {
   if (nvertex != (signed) neighbours.size()) throw std::runtime_error("Illegal value of the nvertex property in Nexus::compute_neighbours!");

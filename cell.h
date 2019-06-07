@@ -64,7 +64,7 @@ namespace SYNARMOSMA {
     inline bool contains(int) const;
     /// This method returns true if Cell::vertices is empty, false otherwise.
     inline bool empty() const {return vertices.empty();};
-    /// This method tests if the dimension of its two arguments is the same (if not it returns zero), then computes the intersection of the Cell::vertices property of its two arguments and returns the size of the resulting set.
+    /// This method tests if the dimension of its two arguments is the same (if not it throws an invalid argument exception), then computes and returns the cardinality of the intersection of the Cell::vertices property of its two arguments. 
     friend inline int affinity(const Cell&,const Cell&);
     /// This operator returns true if the Cell::vertices property of both its arguments is the same, false otherwise.
     friend inline bool operator ==(const Cell&,const Cell&);
@@ -115,19 +115,13 @@ namespace SYNARMOSMA {
 
   inline int affinity(const Cell& c1,const Cell& c2)
   {
-    int d = c1.dimension();
+    if (c1.dimension() != c2.dimension()) throw std::invalid_argument("The dimensions of the two arguments to the Cell::affinity method do not conform!");
 
-    if (d != c2.dimension()) return 0;
-
-    std::set<int>::const_iterator it,jt;
-    int i,j,nc = 0;
+    int nc = 0;
+    std::set<int>::const_iterator it;
 
     for(it=c1.vertices.begin(); it!=c1.vertices.end(); ++it) {
-      i = *it;
-      for(jt=c2.vertices.begin(); jt!=c2.vertices.end(); ++jt) {
-        j = *jt;
-        if (i == j) nc++;
-      }
+      if (c2.vertices.count(*it) > 0) nc++;
     }
 
     return nc;
