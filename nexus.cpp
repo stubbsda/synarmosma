@@ -676,7 +676,7 @@ bool Nexus::pseudomanifold(bool* boundary) const
   bool found,output = true;
   std::vector<int> candidates;
 
-  if (dimension == 0) return false;
+  if (dimension < 1) return false;
 
   *boundary = false;
 
@@ -688,9 +688,11 @@ bool Nexus::pseudomanifold(bool* boundary) const
     if (j == 1) *boundary = true;
   }
   // Next, dimensional homogeneity...
+  const int nd = (signed) elements[dimension].size();
+
   for(i=0; i<nvertex; ++i) {
     found = false;
-    for(j=0; j<(signed) elements[dimension].size(); ++j) {
+    for(j=0; j<nd; ++j) {
       if (elements[dimension][j].contains(i)) {
         found = true;
         break;
@@ -698,26 +700,27 @@ bool Nexus::pseudomanifold(bool* boundary) const
     }
     if (!found) return false;
   }
+  if (nd == 1) return true;
+
   // Finally, as this is a non-branching simplicial complex, next
   // check if it is strongly connected.
-  for(i=0; i<(signed) elements[dimension].size(); ++i) {
+  for(i=0; i<nd; ++i) {
     candidates.push_back(i);
   }
 
-  if (candidates.size() == 2) {
+  if (nd == 2) {
     // The simplest case: we just need to verify that these
     // two i-simplices differ by a single vertex
     if (affinity(elements[dimension][candidates[0]],elements[dimension][candidates[1]]) != dimension) return false;
   }
-  else if (candidates.size() > 2) {
+  else if (nd > 2) {
     int in1,k,l,nf,ni,off1,off2,vx[dimension+1];
     std::vector<int> vlist;
-    const int nc = (signed) candidates.size();
-    const int N = nc*(nc-1)/2;
+    const int N = nd*(nd - 1)/2;
     int* link = new int[N];
-    Graph* G = new Graph(nc);
+    Graph* G = new Graph(nd);
 
-    for(i=0; i<nc; ++i) {
+    for(i=0; i<nd; ++i) {
       elements[dimension][candidates[i]].get_vertices(vx);
       for(j=0; j<=dimension; ++j) {
         vlist.push_back(vx[j]);
@@ -726,14 +729,14 @@ bool Nexus::pseudomanifold(bool* boundary) const
 #ifdef _OPENMP
 #pragma omp parallel for default(shared) private(i,j,k,l,in1,ni,nf,off1,off2) schedule(dynamic,1)
 #endif
-    for(i=0; i<nc; ++i) {
-      ni = i*nc - i*(i+1)/2;
+    for(i=0; i<nd; ++i) {
+      ni = i*nd - i*(i + 1)/2;
       off1 = (1+dimension)*i;
-      for(j=1+i; j<nc; ++j) {
+      for(j=1+i; j<nd; ++j) {
         nf = 0;
-        off2 = (1+dimension)*j;
+        off2 = (1 + dimension)*j;
         for(k=0; k<=dimension; ++k) {
-          in1 = vlist[off1+k];
+          in1 = vlist[off1 + k];
           for(l=0; l<=dimension; ++l) {
             if (in1 == vlist[off2+l]) {
               nf++;
@@ -744,10 +747,10 @@ bool Nexus::pseudomanifold(bool* boundary) const
         link[ni+j-(i+1)] = (nf == dimension) ? 1 : 0;
       }
     }
-    for(i=0; i<nc; ++i) {
-      ni = i*nc - i*(i+1)/2;
-      for(j=1+i; j<nc; ++j) {
-        if (link[ni+j-(1+i)] == 1) G->add_edge(i,j,0.0);
+    for(i=0; i<nd; ++i) {
+      ni = i*nd - i*(i + 1)/2;
+      for(j=1+i; j<nd; ++j) {
+        if (link[ni + j-(1 + i)] == 1) G->add_edge(i,j,0.0);
       }
     }
     if (!G->connected()) output = false;
