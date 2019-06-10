@@ -412,10 +412,19 @@ int Nexus::compute_neighbour_graph(Graph* G) const
   for(i=0; i<n; ++i) {
     G->add_vertex();
   }
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared) private(i,j) schedule(dynamic,1)
+#endif
   for(i=0; i<n; ++i) {
     for(j=1+i; j<n; ++j) {
       // Check if these two d-simplices are adjacent, i.e. if d of their respective 1+d vertices are the same.
-      if (affinity(elements[dimension][i],elements[dimension][j]) == dimension) G->add_edge(i,j);
+      if (affinity(elements[dimension][i],elements[dimension][j]) == dimension) {
+#ifdef _OPENMP
+#pragma omp critical
+#endif
+        G->add_edge(i,j);
+      }
     }
   }
   return G->size();
@@ -673,7 +682,7 @@ void Nexus::ascend(int D,int n,std::vector<Cell>& out) const
 bool Nexus::pseudomanifold(bool* boundary) const
 {
   int i,j;
-  bool found,output = true;
+  bool found;
   std::vector<int> candidates;
 
   if (dimension < 1) return false;
@@ -687,7 +696,8 @@ bool Nexus::pseudomanifold(bool* boundary) const
     if (j > 2 || j < 1) return false;
     if (j == 1) *boundary = true;
   }
-  // Next, dimensional homogeneity...
+
+  // Next, check the dimensional homogeneity...
   const int nd = (signed) elements[dimension].size();
 
   for(i=0; i<nvertex; ++i) {
@@ -700,65 +710,16 @@ bool Nexus::pseudomanifold(bool* boundary) const
     }
     if (!found) return false;
   }
+
+  // Finally, as we have verified that this is a non-branching simplicial complex, 
+  // we next need to check if it is strongly connected. 
+  // If there's only a single d-simplex, then of course it's strong connected...
   if (nd == 1) return true;
-
-  // Finally, as this is a non-branching simplicial complex, next
-  // check if it is strongly connected.
-  for(i=0; i<nd; ++i) {
-    candidates.push_back(i);
-  }
-
-  if (nd == 2) {
-    // The simplest case: we just need to verify that these
-    // two i-simplices differ by a single vertex
-    if (affinity(elements[dimension][candidates[0]],elements[dimension][candidates[1]]) != dimension) return false;
-  }
-  else if (nd > 2) {
-    int in1,k,l,nf,ni,off1,off2,vx[dimension+1];
-    std::vector<int> vlist;
-    const int N = nd*(nd - 1)/2;
-    int* link = new int[N];
-    Graph* G = new Graph(nd);
-
-    for(i=0; i<nd; ++i) {
-      elements[dimension][candidates[i]].get_vertices(vx);
-      for(j=0; j<=dimension; ++j) {
-        vlist.push_back(vx[j]);
-      }
-    }
-#ifdef _OPENMP
-#pragma omp parallel for default(shared) private(i,j,k,l,in1,ni,nf,off1,off2) schedule(dynamic,1)
-#endif
-    for(i=0; i<nd; ++i) {
-      ni = i*nd - i*(i + 1)/2;
-      off1 = (1+dimension)*i;
-      for(j=1+i; j<nd; ++j) {
-        nf = 0;
-        off2 = (1 + dimension)*j;
-        for(k=0; k<=dimension; ++k) {
-          in1 = vlist[off1 + k];
-          for(l=0; l<=dimension; ++l) {
-            if (in1 == vlist[off2+l]) {
-              nf++;
-              break;
-            }
-          }
-        }
-        link[ni+j-(i+1)] = (nf == dimension) ? 1 : 0;
-      }
-    }
-    for(i=0; i<nd; ++i) {
-      ni = i*nd - i*(i + 1)/2;
-      for(j=1+i; j<nd; ++j) {
-        if (link[ni + j-(1 + i)] == 1) G->add_edge(i,j,0.0);
-      }
-    }
-    if (!G->connected()) output = false;
-    G->clear();
-    delete G;
-    delete[] link;
-  }
-  return output;
+  Graph G;
+  compute_neighbour_graph(&G);
+  // If the graph of d-simplices based on their adjacency is connected, then the 
+  // complex is strongly connected. 
+  return G.connected();
 }
 
 bool Nexus::orientable() const
