@@ -92,6 +92,8 @@ namespace SYNARMOSMA {
     bool planar() const;
     /// This method returns false if there is at least one vertex whose removal disconnects the graph, otherwise it returns true.
     bool biconnected() const;
+    /// This method returns the entropy of the graph, defined as the logarithm of the total number of paths of length N > 0, the method's argument, in the graph. This value is calculated by computing the N-th power of the adjacency matrix and then obtaining the sum of all its upper diagonal elements. When the argument is zero, the method uses as the length the value of Graph::nvertex less one.
+    double entropy(int = 0) const;
     /// This method computes the cosine similarity between two vertices u and v. This is defined to be the (u,v) element of the square of the adjacency matrix, divided by the square root of the product of the degree of u and v.
     double cosine_similarity(int,int) const;
     /// This method computes the length of the graph's largest cycle; it returns -1 if the graph is acyclic. 

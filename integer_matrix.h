@@ -11,13 +11,13 @@ namespace SYNARMOSMA {
   std::ostream& operator <<(std::ostream&,const Integer_Matrix<kind>&);
 
   template<class kind>
-  std::vector<kind>& operator *(const Integer_Matrix<kind>&,const std::vector<kind>&);
+  std::vector<kind> operator *(const Integer_Matrix<kind>&,const std::vector<kind>&);
 
   template<class kind>
-  Integer_Matrix<kind>& operator *(const Integer_Matrix<kind>&,const Integer_Matrix<kind>&);
+  Integer_Matrix<kind> operator *(const Integer_Matrix<kind>&,const Integer_Matrix<kind>&);
 
   template<class kind>
-  Integer_Matrix<kind>& operator +(const Integer_Matrix<kind>&,const Integer_Matrix<kind>&);
+  Integer_Matrix<kind> operator +(const Integer_Matrix<kind>&,const Integer_Matrix<kind>&);
 
   template<class kind>
   void permute(Integer_Matrix<kind>&,unsigned int,unsigned int,char);
@@ -156,7 +156,108 @@ namespace SYNARMOSMA {
     friend unsigned int normalize<>(Integer_Matrix<kind>&);
     /// This overloading of the ostream operator writes the matrix to the screen according to the same conventions as the display() method.
     friend std::ostream& operator << <>(std::ostream&,const Integer_Matrix<kind>&);
+    /// This overloading of the multiplication operator carries out the usual matrix multiplication adapted to the compressed storage format used by this class.
+    friend Integer_Matrix<kind> operator * <>(const Integer_Matrix<kind>&,const Integer_Matrix<kind>&);
+    /// This overloading of the multiplication operator carries out the usual matrix-vector multiplication adapted to the compressed storage format used by this class.
+    friend std::vector<kind> operator * <>(const Integer_Matrix<kind>&,const std::vector<kind>&);
+    /// This overloading of the addition operator carries out the usual element-wise matrix addition adapted to the compressed storage format used by this class.
+    friend Integer_Matrix<kind> operator + <>(const Integer_Matrix<kind>&,const Integer_Matrix<kind>&);
   };
+
+  template<class kind>
+  std::vector<kind> operator *(const Integer_Matrix<kind>& A,const std::vector<kind>& b)
+  {
+    if (A.ncolumn != b.size()) throw std::invalid_argument("The matrix and vector dimensions don't conform for multiplication!");
+    unsigned int i,j;
+    kind sum;
+    std::vector<kind> output;
+
+    for(i=0; i<A.nrow; ++i) {
+      sum = Integer_Matrix<kind>::zero;
+      for(j=0; j<A.elements[i].size(); ++j) {
+        sum += A.elements[i][j].first*b[A.elements[i][j].second];
+      }
+      output.push_back(sum);
+    }
+
+    return output;
+  }
+
+  template<class kind>
+  Integer_Matrix<kind> operator +(const Integer_Matrix<kind>& A,const Integer_Matrix<kind>& B)
+  {
+    if (A.nrow != B.nrow || A.ncolumn != B.ncolumn) throw std::invalid_argument("The dimensions of the two matrices don't conform for addition!");
+    unsigned int i,j,k,in1,cvalue;
+    bool found;
+    Integer_Matrix<kind> output(A.nrow,A.ncolumn);
+
+    output = A;
+
+    // Now the matrix addition itself...
+    for(i=0; i<B.nrow; ++i) {
+      for(j=0; j<B.elements[i].size(); ++j) {
+        in1 = B.elements[i][j].second;
+        found = false;
+        for(k=0; k<output.elements[i].size(); ++k) {
+          if (output.elements[i][k].second == in1) {
+            cvalue = k;
+            found = true;
+            break;
+          }
+        }
+        if (found) {
+          output.elements[i][cvalue].first += B.elements[i][j].first;        
+        }
+        else {
+          output.elements[i].push_back(B.elements[i][j]);
+        }
+      }
+    }
+    output.eliminate_zeros();
+    return output;
+  }
+
+  template<class kind>
+  Integer_Matrix<kind> operator *(const Integer_Matrix<kind>& A,const Integer_Matrix<kind>& B)
+  {
+    if (A.ncolumn != B.nrow) throw std::invalid_argument("The dimensions of the two matrices don't conform for multiplication!");
+    unsigned int i,j,k,l,in1;
+    kind sum;
+    Integer_Matrix<kind> output(A.nrow,B.ncolumn);
+
+    // Convert the matrix B to a column-oriented format...
+    std::vector<kind>* BC = new std::vector<kind>[B.ncolumn];
+    std::vector<unsigned int>* BC_row = new std::vector<unsigned int>[B.ncolumn];
+    for(l=0; l<B.ncolumn; ++l) {
+      for(i=0; i<B.nrow; ++i) {
+        for(j=0; j<B.elements[i].size(); ++j) {
+          if (B.elements[i][j].second == l) {
+            BC[l].push_back(B.elements[i][j].first);
+            BC_row[l].push_back(i);
+          }
+        }
+      }
+    }
+    // Now the matrix multiplication itself...
+    for(i=0; i<A.nrow; ++i) {
+      for(j=0; j<B.ncolumn; ++j) {
+        sum = Integer_Matrix<kind>::zero;
+        for(k=0; k<A.elements[i].size(); ++k) {
+          in1 = A.elements[i][k].second;
+          for(l=0; l<BC_row[j].size(); ++l) {
+            if (BC_row[j][l] == in1) {
+              sum += A.elements[i][k].first*BC[j][l];
+            }
+          }
+        }
+        output.elements[i].push_back(std::pair<kind,unsigned int>(sum,j));
+      }
+    }
+    output.eliminate_zeros();
+    delete[] BC;
+    delete[] BC_row;
+    return output;
+  }
 
   template<class kind>
   std::ostream& operator <<(std::ostream& os,const Integer_Matrix<kind>& source)

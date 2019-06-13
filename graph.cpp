@@ -1151,6 +1151,40 @@ bool Graph::biconnected() const
   return true;
 }
 
+double Graph::entropy(int n) const
+{
+  if (n < 0) throw std::invalid_argument("The argument of Graph::entropy must be positive!");
+  if (size() == 0) std::runtime_error("The entropy of a graph with no edges is undefined!");
+  if (n == 1) return std::log(size());
+  if (n == 0) n = nvertex - 1;
+
+  int i,j;
+  double sum = 0.0;
+  std::set<int>::const_iterator it;
+  Matrix<double> A(nvertex),B(nvertex);
+
+  for(i=0; i<nvertex; ++i) {
+    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+      j = *it;
+      if (i < j) {
+        A.set(i,j,1.0);
+        A.set(j,i,1.0);
+      }
+    }
+  }
+  B = A;
+  for(i=0; i<n-1; ++i) {
+    B = A*B;
+  }
+  for(i=0; i<nvertex; ++i) {
+    for(j=1+i; j<nvertex; ++j) {
+      sum += B.get(i,j);
+    }
+  }
+
+  return std::log(sum);
+}
+
 double Graph::return_probability(int base,int length,int ntrials) const
 {
   int i,j,next,current,sum = 0;
