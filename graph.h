@@ -166,6 +166,8 @@ namespace SYNARMOSMA {
     virtual int deserialize(std::ifstream&) override;
     /// This method writes the graph out to a disk file in the DOT format for visualization by GraphViz; the method's argument is the filename.
     virtual void write2disk(const std::string&) const;
+    /// This operator returns the tensor product of its two arguments; this product is a graph whose order is the square of the operands' order (which must be the same) and which has an edge between two vertices when the two pairs of vertices \f$(g_1,h_1)\f$ and \f$(g_2,h_2)\f$ are both neighbours in the respective operand graphs \f$G\f$ and \f$H\f$. Hence there is an edge in \f$G\otimes H\f$ when \f$g_1\f$ is a neighbour of \f$g_2\f$ in \f$G\f$ and \f$h_1\f$ is a neighbour of \f$h_2\f$ in \f$H\f$. 
+    friend Graph operator *(const Graph&,const Graph&);
   };
 
   double Graph::inverse_girth() const

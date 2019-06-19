@@ -1804,3 +1804,27 @@ int Graph::minimize_topology(int nsteps,double temperature,std::vector<double>& 
   // accepted
   return acceptance;
 }
+
+namespace SYNARMOSMA {
+  Graph operator *(const Graph& G,const Graph& H)
+  {
+    if (G.order() != H.order()) throw std::invalid_argument("The tensor product operands must have the same order!");
+    const int N = G.order(); 
+    if (N < 2) throw std::invalid_argument("The tensor product operands must have an order greater than one!");
+    const int N2 = N*N;
+
+    int i,j,g1,g2,h1,h2;
+    Graph output(N2);
+
+    for(i=0; i<N2; ++i) {
+      g1 = i/N;
+      h1 = i - N*g1;
+      for(j=1+i; j<N2; ++j) {
+        g2 = j/N;
+        h2 = j - N*g2;
+        if (G.connected(g1,g2) && H.connected(h1,h2)) output.add_edge(i,j);
+      }
+    }
+    return output;
+  }
+}
