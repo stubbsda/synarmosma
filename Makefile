@@ -142,16 +142,6 @@ clean:
 	rm -f *~
 	rm -f unit_test
 	rm -f libsynarmosma.so
-	rm -f $(BIBLIOTHEK)/lib/libsynarmosma.so
-	rm -rf $(BIBLIOTHEK)/include/synarmosma
-
-
-
-
-
-
-
-
-
-
+	rm -f $(INSTALL_DIR)/lib/libsynarmosma.so
+	rm -rf $(INSTALL_DIR)/include/synarmosma
 

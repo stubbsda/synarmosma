@@ -349,16 +349,12 @@ namespace SYNARMOSMA
         py = std::get<0>(trio);
         NTL::conv(q,py.evaluate(z));
         in1 = std::abs(q % p);
-        //in1 = (unsigned int) q;
-        //in1 = in1 % p;
         if (in1 == 0) continue;
         term.coefficient = in1;
         // Next we need to convert beta(p) to an element of GF(p)
         py = std::get<1>(trio);
         NTL::conv(q,py.evaluate(z));
         in1 = std::abs(q % p);
-        //in1 = (unsigned int) q;
-        //in1 = in1 % p;
         duo.first = in1;
         // Finally we have to find out the exponent 
         duo.second = std::get<2>(trio);
@@ -368,8 +364,6 @@ namespace SYNARMOSMA
       }
       NTL::conv(q,remainder.evaluate(z));
       in1 = std::abs(q % p);
-      //in1 = (unsigned int) q;
-      //in1 = in1 % p;
       output.set_remainder(i,in1);
     }
     output.compute_properties();
@@ -398,14 +392,16 @@ Variety<unsigned int> Functional_Equation<kind>::reduce(unsigned int p)
       // First convert alpha(p) to an element of GF(p)
       py = std::get<0>(trio);
       q = py.evaluate(i);
-      in1 = std::abs(q % p);
+      in1 = q % p;
+      if (in1 < 0) in1 *= -1;
       if (in1 == 0) continue;
       term.coefficient = in1;
       // Next we need to convert beta(p) to an element of GF(p)
       py = std::get<1>(trio);
       q = py.evaluate(i);
-      in1 = std::abs(q % p);
-      duo.first = in1; //convert(py.evaluate(i),p);
+      in1 = q % p;
+      if (in1 < 0) in1 *= -1;
+      duo.first = in1; 
       // Finally we have to find out the exponent 
       duo.second = std::get<2>(trio);
       term.exponents.push_back(duo);
@@ -413,7 +409,8 @@ Variety<unsigned int> Functional_Equation<kind>::reduce(unsigned int p)
       term.exponents.clear();
     }
     q = remainder.evaluate(i);
-    in1 = std::abs(q % p); //convert(remainder.evaluate(i),p);
+    in1 = q % p;
+    if (in1 < 0) in1 *= -1;
     output.set_remainder(i,in1);
   }
   output.compute_properties();

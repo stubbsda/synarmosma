@@ -214,13 +214,14 @@ namespace SYNARMOSMA {
 
     unsigned int i;
     NTL::ZZ q,base = NTL::to_ZZ(characteristic);
+    const NTL::ZZ z(0);
 
     for(i=0; i<=degree; ++i) {
       q = terms[i];
-      if (q < Integer_Polynomial<NTL::ZZ>::zero) {
+      if (q < z) {
         do {
           q += base;
-          if (q >= Integer_Polynomial<NTL::ZZ>::zero) break;
+          if (q >= z) break;
         } while(true);
       }
       terms[i] = q % base;
@@ -340,7 +341,7 @@ namespace SYNARMOSMA {
       if (x >= characteristic) throw std::invalid_argument("Argument exceeds field characteristic!");  
     }
     int i;
-    NTL::ZZ y = Integer_Polynomial<NTL::ZZ>::zero;
+    NTL::ZZ y(0);
 
     for(i=degree; i>=0; --i) {
       y = y*x + terms[i];
@@ -405,13 +406,14 @@ namespace SYNARMOSMA {
     long temp;
     NTL::ZZ q,base = NTL::to_ZZ(p);
     std::vector<int> nterms;
+    const NTL::ZZ z(0);
 
     for(i=0; i<=degree; ++i) {
       q = terms[i];
-      if (q < Integer_Polynomial<NTL::ZZ>::zero) {
+      if (q < z) {
         do {
           q += base;
-          if (q >= Integer_Polynomial<NTL::ZZ>::zero) break;
+          if (q >= z) break;
         } while(true);
       }
       q = q % base;
@@ -446,6 +448,4 @@ Integer_Polynomial<int> Integer_Polynomial<kind>::reduce(unsigned int p)
   Integer_Polynomial<int> output(nterms,p);
   return output;
 }
-
-
 
