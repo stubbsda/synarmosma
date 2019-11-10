@@ -753,7 +753,6 @@ bool Nexus::orientable() const
   bool nzero,found,failed = false;
   hash_map face_index;
   std::vector<int>::const_iterator vit;
-  std::stringstream s;
   std::set<int> S;
   std::vector<int> proc,nproc,vfacet,current;
   std::vector<int>* facets = new std::vector<int>[ns];

@@ -141,8 +141,6 @@ void Homology::compute_integral_native(const Nexus* NX)
   const int nvertex = NX->get_order();
   int i,j,d,p,v2[2];
   unsigned int k,r,ulimit,d1 = nvertex,d2 = NX->get_length(1);
-  std::string cx;
-  std::stringstream ss;
   std::vector<unsigned int> image,kernel,tgenerators;
   std::set<int> vx,vy,faces,S;
   std::set<int>::const_iterator it;
@@ -185,12 +183,7 @@ void Homology::compute_integral_native(const Nexus* NX)
     for(k=0; k<ulimit; ++k) {
       if (A->empty_row(k)) continue;
       alpha = A->get_first_nonzero(k);
-      if (alpha > 1) {
-        ss << alpha;
-        cx = ss.str();
-        tgenerators.push_back(boost::lexical_cast<int>(cx.c_str()));
-        ss.str("");
-      }
+      if (alpha > 1) tgenerators.push_back(alpha);
     }
     torsion[1] = tgenerators;
     tgenerators.clear();
@@ -221,12 +214,7 @@ void Homology::compute_integral_native(const Nexus* NX)
       for(k=0; k<ulimit; ++k) {
         if (A->empty_row(k)) continue;
         alpha = A->get_first_nonzero(k);
-        if (alpha > 1) {
-          ss << alpha;
-          cx = ss.str();
-          tgenerators.push_back(boost::lexical_cast<int>(cx.c_str()));
-          ss.str("");
-        }
+        if (alpha > 1) tgenerators.push_back(alpha);
       }
       torsion[d] = tgenerators;
       tgenerators.clear();
@@ -234,6 +222,8 @@ void Homology::compute_integral_native(const Nexus* NX)
     delete A;
   }
   else {
+    std::string cx;
+    std::stringstream sstream;
     NTL::ZZ alpha;
     Integer_Matrix<NTL::ZZ>* A = new Integer_Matrix<NTL::ZZ>(d1,d2);
 
@@ -267,10 +257,10 @@ void Homology::compute_integral_native(const Nexus* NX)
       if (A->empty_row(k)) continue;
       alpha = A->get_first_nonzero(k);
       if (alpha > Integer_Matrix<NTL::ZZ>::unity) {
-        ss << alpha;
-        cx = ss.str();
-        tgenerators.push_back(boost::lexical_cast<int>(cx.c_str()));
-        ss.str("");
+        sstream << alpha;
+        cx = sstream.str();
+        tgenerators.push_back(std::stoi(cx.c_str()));
+        sstream.str("");
       }
     }
     torsion[1] = tgenerators;
@@ -303,10 +293,10 @@ void Homology::compute_integral_native(const Nexus* NX)
         if (A->empty_row(k)) continue;
         alpha = A->get_first_nonzero(k);
         if (alpha > Integer_Matrix<NTL::ZZ>::unity) {
-          ss << alpha;
-          cx = ss.str();
-          tgenerators.push_back(boost::lexical_cast<int>(cx.c_str()));
-          ss.str("");
+          sstream << alpha;
+          cx = sstream.str();
+          tgenerators.push_back(std::stoi(cx.c_str()));
+          sstream.str("");
         }
       }
       torsion[d] = tgenerators;

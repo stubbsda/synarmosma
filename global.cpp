@@ -198,12 +198,12 @@ namespace SYNARMOSMA {
 
   void split(const std::string& s,char delim,std::vector<std::string>& elements) 
   {
-    std::stringstream ss(s);
+    std::stringstream sstream(s);
     std::string item;
 
     elements.clear();
 
-    while(std::getline(ss,item,delim)) {
+    while(std::getline(sstream,item,delim)) {
       elements.push_back(item);
     }
   }
