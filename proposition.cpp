@@ -210,6 +210,7 @@ void Proposition::set_atoms(const std::set<int>& atoms)
 {
   clear();
   if (atoms.empty()) return;
+  if (atoms.size() < Proposition::NP) throw std::invalid_argument("The number of atoms must not be less than the number of atomic propositions!");
   unsigned int nc = 1 + RND.irandom(atoms.size()/Proposition::NP);
   initialize(nc,atoms);
 }
