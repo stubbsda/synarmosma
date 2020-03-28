@@ -635,15 +635,85 @@ void Matrix<kind>::transpose(const Matrix<kind>& source)
 }
 
 template<class kind>
+Matrix<kind> Matrix<kind>::pow(unsigned int n) const
+{
+  if (n < 2) throw std::invalid_argument("The exponent must be greater than one for matrix exponentiation!");
+  
+  unsigned int i;
+  Matrix<kind> output,base(*this);
+
+  output = base;
+
+  for(i=1; i<n; ++i) {
+    output = output*base;
+  } 
+
+  return output;
+}
+
+template<class kind>
+void Matrix<kind>::get_column(std::vector<kind>& v,unsigned int c) const
+{
+  if (c >= ncolumn) throw std::invalid_argument("The column number argument is illegal for this matrix!");
+  unsigned int i,j;
+
+  v.clear();
+  for(i=0; i<nrow; ++i) {
+    v.push_back(kind(0.0));
+  }
+
+  for(i=0; i<nrow; ++i) {
+    for(j=0; j<elements[i].size(); ++j) {
+      if (c == elements[i][j].second) {
+        v[i] = elements[i][j].first;
+        break;
+      }
+    }
+  }
+}
+
+template<class kind>
+void Matrix<kind>::get_row(std::vector<kind>& v,unsigned int r) const
+{
+  if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
+  unsigned int i;
+
+  v.clear();
+  for(i=0; i<ncolumn; ++i) {
+    v.push_back(kind(0.0));
+  }
+
+  for(i=0; i<elements[r].size(); ++i) {
+    v[elements[r][i].second] = elements[r][i].first;
+  }
+}
+
+template<class kind>
 void Matrix<kind>::get_row(std::vector<kind>& v,std::vector<unsigned int>& c,unsigned int r) const
 {
   if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
   unsigned int i;
+
   v.clear();
   c.clear();
+
   for(i=0; i<elements[r].size(); ++i) {
     v.push_back(elements[r][i].first);
     c.push_back(elements[r][i].second);
+  }
+}
+
+template<class kind>
+void Matrix<kind>::set_row(const std::vector<kind>& v,unsigned int r)
+{
+  if (r >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
+  if (v.size() != ncolumn) throw std::invalid_argument("Wrong vector argument size in Matrix::set_row!");
+  unsigned int i;
+
+  elements[r].clear();
+  for(i=0; i<v.size(); ++i) {
+    if (std::abs(v[i]) < std::numeric_limits<double>::epsilon()) continue;
+    elements[r].push_back(std::pair<kind,unsigned int>(v[i],i));
   }
 }
 

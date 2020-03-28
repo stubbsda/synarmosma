@@ -30,7 +30,7 @@ OBJECTS = global.o random.o cell.o nexus.o schema.o group.o graph.o geometry.o w
 variety_wrapper.o polynomial_wrapper.o integer_polynomial_wrapper.o proposition.o propositional_system.o\
 vertex.o multitime.o binary_matrix.o integer_matrix_wrapper.o matrix_wrapper.o logic_graph.o edge.o\
 functional_equation_wrapper.o homology.o homotopy.o poset.o lattice.o pseudograph.o solver_wrapper.o\
-directed_graph.o
+directed_graph.o markov_chain.o
 
 LD_FLAGS += -Wl,-rpath $(INSTALL_DIR)/lib
 
@@ -55,6 +55,9 @@ lattice.o: lattice.cpp lattice.h poset.h random.h global.h
 
 poset.o: poset.cpp poset.h random.h global.h
 	$(CXX) $(CXX_FLAGS) -c poset.cpp
+
+markov_chain.o: markov_chain.cpp markov_chain.h matrix.h random.h global.h
+	$(CXX) $(CXX_FLAGS) -c markov_chain.cpp
 
 directed_graph.o: directed_graph.cpp directed_graph.h schema.h pseudograph.h matrix.h binary_matrix.h edge.h random.h global.h
 	$(CXX) $(CXX_FLAGS) -c directed_graph.cpp

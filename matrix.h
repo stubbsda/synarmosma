@@ -111,8 +111,16 @@ namespace SYNARMOSMA {
     void homotopy_scaling(kind,kind,Matrix<kind>*) const;
     /// This method uses the Gauss-Seidel iterative algorithm to attempt to solve the linear system \f$A x = b\f$, where \f$A\f$ is the current instance, \f$x\f$ and \f$b\f$ the first and second arguments. The third argument is the convergence threshold and the fourth the maximum number of iterations to perform. 
     void gauss_seidel_solver(std::vector<kind>&,const std::vector<kind>&,double,int);
+    /// This method takes as its input the final argument, a column index, and then writes the complete column vector (zeros included) in the first argument.
+    void get_column(std::vector<kind>&,unsigned int) const;
+    /// This method takes as its input the final argument, a row index, and then writes the complete row vector (zeros included) in the first argument.
+    void get_row(std::vector<kind>&,unsigned int) const;
     /// This method takes as its input the final argument, a row index, and then puts the content of this row in the two initial arguments, the first containing the values and the second the column indices.
     void get_row(std::vector<kind>&,std::vector<unsigned int>&,unsigned int) const;
+    /// This method takes as its input the final argument, a row index, and then changes the current values for this row to the non-zero elements of the first argument, which must be of length Matrix::nrow.
+    void set_row(const std::vector<kind>&,unsigned int);
+    /// This method computes and returns the value of the matrix raised to the power that is the method's argument, i.e. \f$B = A^n\f$.
+    Matrix<kind> pow(unsigned int) const;
     /// The overloaded assignment operator for this class, which first calls clear() and then behaves exactly like the copy constructor for this class.
     Matrix<kind>& operator =(const Matrix<kind>&);
     /// This overloading of the ostream operator writes the matrix to the screen according to the same conventions as the display() method.
