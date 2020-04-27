@@ -41,13 +41,13 @@ void Markov_Chain::mutate(double severity)
     sigma = pfactor*RND.drandom();
     if (vx[n] > vx[m]) {
       c = sigma*vx[n];
-      c = std::min(c,1.0 - vx[m]); 
+      c = std::min(c,1.0 - vx[m]);
       vx[n] -= c;
       vx[m] += c;
     }
     else {
       c = sigma*vx[m];
-      c = std::min(c,1.0 - vx[n]); 
+      c = std::min(c,1.0 - vx[n]);
       vx[m] -= c;
       vx[n] += c;
     }
@@ -55,7 +55,7 @@ void Markov_Chain::mutate(double severity)
     if (mtotal > pfactor) done = true;
   } while(!done);
 
-  assert(consistent());
+  if (!consistent()) throw std::runtime_error("Illegal transition matrix in Markov_Chain::mutate!");
 }
 
 bool Markov_Chain::consistent() const
@@ -100,7 +100,7 @@ void Markov_Chain::set_transition(const std::vector<double>& vx,unsigned int n)
   if (n >= N) throw std::invalid_argument("Illegal state value in Markov_Chain::set_transition!");
   if (vx.size() != N) throw std::invalid_argument("Illegal row vector length in Markov_Chain::set_transition!");
   transition_matrix->set_row(vx,n);
-  assert(consistent());
+  if (!consistent()) throw std::runtime_error("Illegal transition matrix in Markov_Chain::set_transition!");
 }
 
 void Markov_Chain::get_state(const std::vector<double>& cstate,std::vector<double>& output,int n) const

@@ -392,7 +392,7 @@ void Solver<kind>::initialize_base_solution(double mean,double range)
 template<class kind>
 bool Solver<kind>::solve(std::vector<kind>& output)
 {
-  int n;
+  int n = 0;
   double dt = 0.01;
   bool success = true;
 

@@ -6,7 +6,6 @@
 #include <iomanip>
 #include <fstream>
 #include <sstream>
-#include <cassert>
 #include <vector>
 #include <cmath>
 #include <set>

@@ -3,24 +3,24 @@ CXX         = g++
 # General flags for C++ compilation, assumes compiler with OpenMP support
 CXX_FLAGS   = -std=c++14 -Wall -march=native -fPIC -fopenmp
 # For debug mode
-DEBUG       = -g -DDEBUG
+DEBUG       = -g
 # Optimization values for the g++ on an x86-64 platform
 OPT         = -O3 -fstrict-aliasing -ftree-vectorize -funroll-loops
 # Choose either the debug or optimized version of the library
-#CXX_FLAGS  += $(OPT)
-CXX_FLAGS  += $(DEBUG)
+CXX_FLAGS  += $(OPT)
+#CXX_FLAGS  += $(DEBUG)
 # Use the 64 bit integer versions of the vertex energy and spatial geometry?
 #CXX_FLAGS += -DDISCRETE
 # Standard linking flags, shouldn't need to be changed
 LD_FLAGS    = -Wall -shared -fopenmp
 # Debug or optimized version for linking...
-#LD_FLAGS   += $(OPT)
-LD_FLAGS   += $(DEBUG)
+LD_FLAGS   += $(OPT)
+#LD_FLAGS   += $(DEBUG)
 # Name of the LAPACK and BLAS libraries on this platform
 LAPACK      = -llapack -lblas
 # The Boost library on this platform
 BOOST       = -lboost_system
-# All the necessary libraries: LAPACK, Boost, NTL and GMP 
+# All the necessary libraries: LAPACK, Boost, NTL and GMP
 LIBS        = $(LAPACK) $(BOOST) -lntl -lgmp -lm
 # Where to install the Synarmosma library
 INSTALL_DIR = $(HOME)/fabrica/local

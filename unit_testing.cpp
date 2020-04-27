@@ -1,4 +1,4 @@
-#include <vector>
+#include <cassert>
 
 #include "synarmosma/lattice.h"
 #include "synarmosma/polynomial.h"

@@ -21,7 +21,7 @@ Word::Word(unsigned int n,int m)
 
 Word::Word(const std::string& w)
 {
-  unsigned int i,j,n;
+  unsigned int i,j,n = 0;
   int e;
   char alphabet[] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
   Word temp;

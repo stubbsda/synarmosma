@@ -133,10 +133,10 @@ bool Proposition::evaluate(const std::unordered_map<int,bool>& atoms) const
 {
   int a;
   unsigned int i,j;
-  bool clause_value,atom_value,output = true; 
+  bool clause_value,atom_value,output = true;
   std::unordered_map<int,bool>::const_iterator qt;
   const unsigned int nc = get_size();
- 
+
   for(i=0; i<nc; ++i) {
     // If a single clause is false, the whole expression is false...
     clause_value = false;
@@ -144,9 +144,7 @@ bool Proposition::evaluate(const std::unordered_map<int,bool>& atoms) const
       a = clause[2*Proposition::NP*i+j];
       if (a == -1) break;
       qt = atoms.find(a);
-#ifdef DEBUG
       if (qt == atoms.end()) throw std::invalid_argument("Missing atomic proposition value in Proposition::evaluate method!");
-#endif
       atom_value = qt->second;
       if (clause[2*Proposition::NP*i+j+1] == 1) atom_value = !atom_value;
       clause_value = clause_value || atom_value;
@@ -175,9 +173,7 @@ bool Proposition::evaluate(const std::unordered_map<int,bool>& atoms,std::set<un
       a = clause[2*Proposition::NP*i+j];
       if (a == -1) break;
       qt = atoms.find(a);
-#ifdef DEBUG
       if (qt == atoms.end()) throw std::invalid_argument("Missing atomic proposition value in Proposition::evaluate method!");
-#endif
       atom_value = qt->second;
       if (clause[2*Proposition::NP*i+j+1] == 1) atom_value = !atom_value;
       clause_value = clause_value || atom_value;

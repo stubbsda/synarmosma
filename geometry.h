@@ -310,7 +310,7 @@ namespace SYNARMOSMA {
           k++;
         }
         delta = pfactor*(coordinates[l][0] - coordinates[nvertex][0])*(coordinates[l][0] - coordinates[nvertex][0]);
-        n2 = coordinates[i].size();
+        n2 = coordinates[l].size();
         n2 = (n2 > n1) ? n1 : n2;
         for(j=1; j<n2; ++j) {
           delta += (coordinates[l][j] - coordinates[nvertex][j])*(coordinates[l][j] - coordinates[nvertex][j]);
