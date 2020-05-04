@@ -1478,6 +1478,31 @@ void Graph::adjacency_eigenvalues(std::vector<double>& output) const
   }
 }
 
+double Graph::median_degree() const
+{
+  if (nvertex < 2) return 0.0;
+
+  const int N = max_degree();
+  int i,dcount[N+1],psum,sum = 0;
+
+  for(i=0; i<=N; ++i) {
+    dcount[i] = 0;
+  }
+  for(i=0; i<nvertex; ++i) {
+    dcount[neighbours[i].size()] += 1;
+  }
+  for(i=0; i<=N; ++i) {
+    psum = sum;
+    sum += dcount[i];
+    // A regular graph or one with an exact median, so exit...
+    if (dcount[i] == nvertex || 2*sum == nvertex) return double(i);
+    // Need to compute the corrected median...
+    if (2*sum > nvertex) break;
+  }
+  double output = double(i - 1) + (0.5*double(nvertex) - double(psum))/double(sum - psum);
+  return output;
+}
+
 double Graph::entwinement() const
 {
   // This method produces a real number between 0 and 1 that measures the

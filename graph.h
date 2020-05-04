@@ -106,7 +106,7 @@ namespace SYNARMOSMA {
     void tutte_polynomial(std::vector<Monomial<int> >&) const;
     /// This method accepts a vertex as its argument v and computes the percentage of the distinct pairs of neighbours of v whose members are also directly connected together.
     double clustering_coefficient(int) const;
-    /// This method computes the sum of clustering_coefficient(v) over all vertices v in the graph and divides this the number of vertices, which is then returned.
+    /// This method computes the sum of the clustering coefficient over all vertices in the graph and divides this by the number of vertices, which is then returned.
     double clustering_coefficient() const;
     /// This method sums the combinatorial distance between every distinct pair of vertices in the graph and divides this by the number of such pairs, returning the result.
     double mean_path_length() const;
@@ -128,6 +128,8 @@ namespace SYNARMOSMA {
     double percolation(bool) const;
     /// This method computes and returns the index of graph complexity discussed in the paper Klein et al., "Graph Cyclicity, Excess Conductance and Resistance Deficit", J. Math. Chem., 30:271-287 (2001).
     double cyclic_resistance() const;
+    /// This method computes and returns the median degree of the graph, i.e. the degree \f$d\f$ for which half the vertices in the graph have a degree less than or equal to \f$d\f$. This is in general a floating point number to account for the fact that it is unlikely that the sum of degree histogram bins is exactly half the vertices in the graph so the median has to be corrected. 
+    double median_degree() const;
     /// This method computes and returns the graph's entwinement. This is defined to be \f$(\lambda_\textrm{max} - \kappa)/(d_\textrm{max} - \kappa)\f$, where \f$\lambda_\textrm{max}\f$ is the largest eigenvalue of its adjacency matrix, \f$d_\textrm{max}\f$ the maximum degree and \f$\kappa = \max(d_\textrm{avg},\sqrt{d_\textrm{max}})\f$. 
     double entwinement() const;
     /// This method takes a set of vertices (the argument) and computes how many of its elements are boundary vertices of this set, i.e. possess at least neighbour which does not belong to the set of vertices, and returns this number.
