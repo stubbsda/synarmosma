@@ -1302,6 +1302,9 @@ void Geometry::compute_squared_distances(const std::set<int>& vmodified)
   if (uniform) {
     for(it=vmodified.begin(); it!=vmodified.end(); ++it) {
       i = *it;
+#ifdef _OPENMP
+#pragma omp parallel for default(shared) private(j,k,in1,delta)
+#endif
       for(j=0; j<i; ++j) {
         in1 = j*nvertex - j*(j+1)/2;
         delta = pfactor*(coordinates[i][0] - coordinates[j][0])*(coordinates[i][0] - coordinates[j][0]);
@@ -1311,6 +1314,9 @@ void Geometry::compute_squared_distances(const std::set<int>& vmodified)
         distances[in1+i-(1+j)] = delta;
       }
       in1 = i*nvertex - i*(i+1)/2;
+#ifdef _OPENMP
+#pragma omp parallel for default(shared) private(j,k,delta)
+#endif
       for(j=1+i; j<nvertex; ++j) {
         delta = pfactor*(coordinates[i][0] - coordinates[j][0])*(coordinates[i][0] - coordinates[j][0]);
         for(k=1; k<background_dimension; ++k) {
@@ -1324,6 +1330,9 @@ void Geometry::compute_squared_distances(const std::set<int>& vmodified)
     for(it=vmodified.begin(); it!=vmodified.end(); ++it) {
       i = *it;
       n1 = coordinates[i].size();
+#ifdef _OPENMP
+#pragma omp parallel for default(shared) private(j,k,in1,n2,delta)
+#endif
       for(j=0; j<i; ++j) {
         in1 = j*nvertex - j*(j+1)/2;
         delta = pfactor*(coordinates[i][0] - coordinates[j][0])*(coordinates[i][0] - coordinates[j][0]);
@@ -1335,6 +1344,9 @@ void Geometry::compute_squared_distances(const std::set<int>& vmodified)
         distances[in1+i-(1+j)] = delta;
       }
       in1 = i*nvertex - i*(i+1)/2;
+#ifdef _OPENMP
+#pragma omp parallel for default(shared) private(j,k,n2,delta)
+#endif
       for(j=1+i; j<nvertex; ++j) {
         n2 = coordinates[j].size();
         n2 = (n1 <= n2) ? n1 : n2;
