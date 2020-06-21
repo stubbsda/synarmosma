@@ -331,7 +331,7 @@ void Homology::compute_native(const Nexus* NX)
   // Now the higher order homology groups...
   if (field == Field::mod2) {
     // Note that torsion isn't possible in this case - all we need to do is compute the Betti numbers
-    int i,j,p,alpha;
+    int i,j,p;
     unsigned int r,k,d1 = NX->get_order(),d2 = NX->get_length(1); 
     std::vector<unsigned int> image,kernel;
     std::set<int> vx,vy,faces,S;
@@ -358,7 +358,7 @@ void Homology::compute_native(const Nexus* NX)
 
     for(d=2; d<=NX->get_dimension(); ++d) {
       d1 = NX->get_length(d-1);
-      d2 = NX->get_length(d); 
+      d2 = NX->get_length(d);
       A->initialize(d1,d2);
       for(k=0; k<d1; ++k) {
         NX->get_elements(d-1,k,vx);
@@ -366,8 +366,7 @@ void Homology::compute_native(const Nexus* NX)
         for(it=faces.begin(); it!=faces.end(); ++it) {
           j = *it;
           NX->get_elements(d,j,vy);
-          alpha = coincidence(vx,vy);
-          if (alpha != 0) A->set(k,j);   
+          if (coincidence(vx,vy) != 0) A->set(k,j);
         }
       }
       r = A->rank();

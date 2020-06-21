@@ -416,6 +416,9 @@ unsigned int Integer_Matrix<kind>::eliminate_zeros()
   unsigned int i,j,nmodify = 0;
   std::vector<std::pair<kind,unsigned int> > rvector;
 
+#ifdef _OPENMP
+#pragma omp parallel for default(shared) private(i,j,rvector) reduction(+:nmodify)
+#endif
   for(i=0; i<nrow; ++i) {
     rvector.clear();
     for(j=0; j<elements[i].size(); ++j) {
@@ -591,6 +594,9 @@ namespace SYNARMOSMA {
     kind wv = Integer_Matrix<kind>::zero;
 
     if (type == 'c') {
+#ifdef _OPENMP
+#pragma omp parallel for default(shared) private(i,j,fd1,fd2,wv) firstprivate(l)
+#endif
       for(i=0; i<A.nrow; ++i) {
         fd1 = false;
         fd2 = false;

@@ -193,15 +193,15 @@ double Binary_Matrix::density() const
 
 int Binary_Matrix::rank() const
 {
-  unsigned int i,j,k,r = 0;
+  unsigned int i,j,k,l,r = 0;
+  unsigned int cvector[ncolumn];
   bool found;
-  std::set<unsigned int> nzero;
+  std::set<unsigned int> holder;
   std::set<unsigned int>::const_iterator it;
-  Binary_Matrix wcopy(nrow,ncolumn);
+  Binary_Matrix wcopy(*this);
 
-  // Copy over the matrix into wcopy
-  for(i=0; i<nrow; ++i) {
-    wcopy.elements[i] = elements[i];
+  for(i=0; i<ncolumn; ++i) {
+    cvector[i] = 0;
   }
 
   for(k=0; k<ncolumn; ++k) {
@@ -212,48 +212,35 @@ int Binary_Matrix::rank() const
         break;
       }
     }
-    if (found) {
-      nzero = wcopy.elements[j];
-      wcopy.elements[j] = wcopy.elements[r];
-      wcopy.elements[r] = nzero;
-      for(i=0; i<r; ++i) {
-        if (wcopy.elements[i].count(k) == 0) continue;
-        nzero = wcopy.elements[i];
-        for(it=wcopy.elements[r].begin(); it!=wcopy.elements[r].end(); ++it) {
-          if (nzero.count(*it) > 0) {
-            nzero.erase(*it);
-          }
-          else {
-            nzero.insert(*it);
-          }
-        }
-        // Find the columns that appear twice in nzero and delete both...
-        wcopy.elements[i].clear();
-        for(it=nzero.begin(); it!=nzero.end(); ++it) {
-          wcopy.elements[i].insert(*it);
-        }
-      }
+    if (!found) continue;
+    // Swap rows "j" and "r"...
+    holder = wcopy.elements[j];
+    wcopy.elements[j] = wcopy.elements[r];
+    wcopy.elements[r] = holder;
 
-      for(i=r+1; i<nrow; ++i) {
-        if (wcopy.elements[i].count(k) == 0) continue;
-        nzero = wcopy.elements[i];
-        for(it=wcopy.elements[r].begin(); it!=wcopy.elements[r].end(); ++it) {
-          if (nzero.count(*it) > 0) {
-            nzero.erase(*it);
-          }
-          else {
-            nzero.insert(*it);
-          }
-        }
-        // Find the columns that appear twice in nzero and delete both...
-        wcopy.elements[i].clear();
-        for(it=nzero.begin(); it!=nzero.end(); ++it) {
-          wcopy.elements[i].insert(*it);
+#ifdef _OPENMP
+#pragma omp parallel for default(shared) private(i,l,it) firstprivate(cvector) schedule(dynamic,1)
+#endif
+    for(i=0; i<nrow; ++i) {
+      if (wcopy.elements[i].count(k) == 0 || i == r) continue;
+      for(it=wcopy.elements[i].begin(); it!=wcopy.elements[i].end(); ++it) {
+        cvector[*it] = 1;
+      }
+      for(it=wcopy.elements[r].begin(); it!=wcopy.elements[r].end(); ++it) {
+        l = *it;
+        cvector[l] = (cvector[l] == 1) ? 0 : 1;
+      }
+      wcopy.elements[i].clear();
+      for(l=0; l<ncolumn; ++l) {
+        if (cvector[l] == 1) {
+          wcopy.elements[i].insert(l);
+          cvector[l] = 0;
         }
       }
-      r++;      
     }
+    r++;
   }
+
   return (signed) r;
 }
 
