@@ -66,8 +66,8 @@ namespace SYNARMOSMA {
     int make_complete();
     /// This method first checks if the graph is consistent as an instance of the Schema class, then performs a series of sanity checks on the elements of the Graph::edges vector and returns true if everything is consistent.
     virtual bool consistent() const override;
-    /// Given a set of vertices (the first argument), this method calculates the set of edges (the second argument) connecting them to the rest of the graph, i.e. the "surface" which encloses the volume (the set of vertices).
-    void compute_surface(const std::set<int>&,std::set<int>&) const;
+    /// Given a set of vertices (the first argument), this method calculates the set of edges (the second argument) connecting them to the rest of the graph, i.e. the "surface" which encloses the volume (the set of vertices). The method returns the number of nodes in the first argument which lie on this surface, i.e. have at least one neighbour which lies outside the set of vertices that is the first argument.
+    int compute_surface(const std::set<int>&,std::set<int>&) const;
     /// This method determines if the vertex represented by its argument is part of a 3-cycle; if so, this 3-cycle is replaced by a Y topology among the three vertices by the addition of a new vertex. The method returns true if the transformation is successful, false otherwise.
     bool stellar_addition(int);
     /// This method carries out the inverse transformation of stellar_addition() - if the vertex given by the method's argument has a degree equal to three, then it is deleted and its three neighbours are placed in a 3-cycle among themselves. The method returns true if this is successful, false otherwise.
@@ -132,8 +132,6 @@ namespace SYNARMOSMA {
     double median_degree() const;
     /// This method computes and returns the graph's entwinement. This is defined to be \f$(\lambda_\textrm{max} - \kappa)/(d_\textrm{max} - \kappa)\f$, where \f$\lambda_\textrm{max}\f$ is the largest eigenvalue of its adjacency matrix, \f$d_\textrm{max}\f$ the maximum degree and \f$\kappa = \max(d_\textrm{avg},\sqrt{d_\textrm{max}})\f$. 
     double entwinement() const;
-    /// This method takes a set of vertices (the argument) and computes how many of its elements are boundary vertices of this set, i.e. possess at least neighbour which does not belong to the set of vertices, and returns this number.
-    int boundary_nodes(const std::set<int>&) const;
     /// This method computes the graph's completeness, i.e. the graph's size divided by \f$N(N-1)/2\f$, where \f$N\f$ is the graph's order; this measures how closely it approximates the complete graph on \f$N\f$ vertices.
     inline double completeness() const;
     /// This method computes the graph's circuit rank, defined to be the number of graph components minus the number of vertices plus the number of edges.

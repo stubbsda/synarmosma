@@ -375,27 +375,34 @@ int Graph::deserialize(std::ifstream& s)
   return count;
 }
 
-void Graph::compute_surface(const std::set<int>& vx,std::set<int>& surface) const
+int Graph::compute_surface(const std::set<int>& vx,std::set<int>& surface) const
 {
+  // This method returns the number of nodes which lie on the boundary of 
+  // the set of nodes contained in the method's argument. A node is on the 
+  // boundary if it has at least one edge which joins it to a vertex which 
+  // is not a member of the set "vx". This method will also compute the set 
+  // of surface edges, i.e. the set of edges which connect the nodes of vx 
+  // to the rest of the graph.
   int i,j;
-  std::set<int> S;
+  std::set<int> S,bnodes;
   hash_map::const_iterator qt;
   std::set<int>::const_iterator it,jt;
 
   surface.clear();
-  // We want to compute every edge that connects one of the vertices in vx to the 
-  // rest of the graph...
+ 
   for(it=vx.begin(); it!=vx.end(); ++it) {
     i = *it;
     for(jt=neighbours[i].begin(); jt!=neighbours[i].end(); ++jt) {
       j = *jt;
       if (vx.count(j) > 0) continue;
+      bnodes.insert(i);
       S.clear();
       S.insert(i); S.insert(j);
       qt = index_table.find(S);
       surface.insert(qt->second);
     }
   }
+  return (signed) bnodes.size();
 }
 
 void Graph::write2disk(const std::string& filename) const
@@ -419,28 +426,6 @@ void Graph::write2disk(const std::string& filename) const
   }
   s << "}" << std::endl;
   s.close();
-}
-
-int Graph::boundary_nodes(const std::set<int>& vx) const
-{
-  // This method computes the number of nodes which lie on the boundary of 
-  // the nodes contained in the method's argument. A node is on the boundary 
-  // if it has at least one edge which joins it to a vertex which is not a 
-  // member of the set "vx".
-  int i,nb = 0;
-  std::set<int>::const_iterator it,jt;
-
-  for(it=vx.begin(); it!=vx.end(); ++it) {
-    i = *it;
-    for(jt=neighbours[i].begin(); jt!=neighbours[i].end(); ++jt) {
-      // Check if this edge connects the vertex i to the rest of the graph...
-      if (vx.count(*jt) == 0) {
-        nb++;
-        break;
-      }
-    }
-  }
-  return nb;
 }
 
 void Graph::core(Graph* G,int k) const
@@ -1090,14 +1075,19 @@ double Graph::clustering_coefficient(int v) const
       if (neighbours[vx[i]].count(vx[j]) > 0 && neighbours[vx[j]].count(vx[i]) > 0) nf++;
     }
   }
-  np = n*(n-1)/2;
+  np = n*(n - 1)/2;
   return double(nf)/double(np);
 }
 
 double Graph::clustering_coefficient() const
 {
+  int i;
   double sum = 0.0;
-  for(int i=0; i<nvertex; ++i) {
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared) private(i) reduction(+:sum)
+#endif
+  for(i=0; i<nvertex; ++i) {
     sum += clustering_coefficient(i);
   }
   return sum/double(nvertex);
@@ -1108,6 +1098,9 @@ double Graph::mean_path_length() const
   int i,j;
   double sum = 0.0,npair = double(nvertex*(nvertex-1)/2);
 
+#ifdef _OPENMP
+#pragma omp parallel for default(shared) private(i,j) reduction(+:sum) schedule(dynamic,1)
+#endif
   for(i=0; i<nvertex; ++i) {
     for(j=1+i; j<nvertex; ++j) {
       sum += double(distance(i,j));
@@ -1244,8 +1237,6 @@ std::pair<double,double> Graph::random_walk(int L,double p,int ntrials) const
 
   std::pair<double,double> output(rho,sigma);
   return output;
-  //*mean = rho;
-  //*sdeviation = sigma;
 }
 
 void Graph::degree_distribution(bool logarithmic,std::vector<double>& histogram) const
@@ -1358,10 +1349,18 @@ int Graph::girth() const
 {
   if (nvertex < 1) throw std::invalid_argument("The girth cannot be calculated for a graph with no vertices!");
 
-  int i,j,p,q,alpha,length = 1 + size(),done[nvertex],parent[nvertex],dist[nvertex];
+  int length = 1 + size();
+#ifdef _OPENMP
+#pragma omp parallel default(shared)
+  {
+#endif
+  int i,j,p,q,alpha,done[nvertex],parent[nvertex],dist[nvertex];
   std::set<int> current,next;
   std::set<int>::const_iterator it,jt;
 
+#ifdef _OPENMP
+#pragma omp for
+#endif
   for(i=0; i<nvertex; ++i) {
     current.insert(i);
     parent[i] = -1;
@@ -1378,7 +1377,14 @@ int Graph::girth() const
           if (q == parent[p]) continue;
           if (done[q] == 1) {
             alpha = 1 + dist[p] + dist[q];
+#ifdef _OPENMP
+#pragma omp critical
+            {
+#endif
             if (alpha < length) length = alpha;
+#ifdef _OPENMP
+            }
+#endif
           }
           else {
             parent[q] = p;
@@ -1393,6 +1399,9 @@ int Graph::girth() const
     } while(true);
     current.clear();
   }
+#ifdef _OPENMP
+  }
+#endif
   // The graph is acyclic...
   if (length == (1 + size())) return -1;
   return length;
@@ -1414,10 +1423,9 @@ double Graph::algebraic_connectivity() const
   for(i=0; i<nvertex; ++i) {
     A[(nvertex+1)*i] = double(degree(i));
     for(j=1+i; j<nvertex; ++j) {
-      if (connected(i,j)) {
-        A[nvertex*i+j] = -1.0; 
-        A[nvertex*j+i] = -1.0;
-      }
+      if (!connected(i,j)) continue;
+      A[nvertex*i+j] = -1.0; 
+      A[nvertex*j+i] = -1.0;
     }
   }
 
@@ -1460,10 +1468,9 @@ void Graph::adjacency_eigenvalues(std::vector<double>& output) const
 
   for(i=0; i<nvertex; ++i) {
     for(j=1+i; j<nvertex; ++j) {
-      if (connected(i,j)) {
-        AD[nvertex*i+j] = 1.0; 
-        AD[nvertex*j+i] = 1.0;
-      }
+      if (!connected(i,j)) continue;
+      AD[nvertex*i+j] = 1.0; 
+      AD[nvertex*j+i] = 1.0;
     }
   }
 
@@ -1618,6 +1625,9 @@ double Graph::connectivity() const
 
   // The connectivity is just the sum
   // c = \sum_{edges} 1/sqrt{|v_i|*|v_j|}
+#ifdef _OPENMP
+#pragma omp parallel for default(shared) private(i,j,it) reduction(+:output)
+#endif
   for(i=0; i<nvertex; ++i) {
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
       j = *it;
