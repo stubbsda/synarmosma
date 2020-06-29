@@ -141,6 +141,12 @@ namespace SYNARMOSMA {
     output[2] = (unsigned char) (255.0*y*y);
   }
 
+  inline std::string complex2string(std::complex<double> z)
+  {
+    std::string output = "(" + std::to_string(z.real()) + "," + std::to_string(z.imag()) + ")";
+    return output; 
+  }
+
   inline std::string make_key(int x)
   {
     std::stringstream s;

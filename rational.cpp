@@ -85,6 +85,51 @@ void Rational::normalize()
   compute_height();
 }
 
+long Rational::agreeableness() const
+{
+  // First calculate the least common multiple M of the numerator 
+  // and denominator, then compute the prime decomposition of M. 
+  // This method then returns 
+  // sigma - nf + 1
+  // where sigma is the sum of all the factors and nf the number 
+  // of factors, counted with multiplicity. For example, given the 
+  // ratio 18/7 so that M = 18*7 = 2*3*3*7, the agreeableness will 
+  // be (2 + 3 + 3 + 7) - 4 + 1 = 12. According to Euler, the lower 
+  // the number, the more agreeable the pitch ratio.
+  if (n == 0) return -1;
+
+  long i,nf,sigma = 0;
+  NTL::ZZ c = NTL::GCD(NTL::abs(n),NTL::abs(d));
+  std::vector<NTL::ZZ> factors;
+  NTL::PrimeSeq s;
+  NTL::ZZ L,q,p = (n*d)/c;
+
+  if (p < 0) p = -p;
+
+  if (NTL::ProbPrime(p)) {
+    factors.push_back(p);
+  }
+  else {
+    L = NTL::to_ZZ(long(std::sqrt(NTL::to_long(p))));
+    do {
+      q = NTL::to_ZZ(s.next());
+      do {
+        if ((p % q) != 0) break;
+        factors.push_back(q);
+        p = p/q;
+      } while(true);
+      if (q > L) break;
+    } while(true);
+  }
+
+  nf = (signed) factors.size();
+  for(i=0; i<nf; ++i) {
+    sigma += NTL::to_long(factors[i]);
+  }
+
+  return sigma - nf + 1;
+}
+
 namespace SYNARMOSMA {
 
   Rational operator +(const Rational& r1,const Rational& r2)

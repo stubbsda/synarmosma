@@ -40,6 +40,8 @@ namespace SYNARMOSMA {
     Rational(const Rational&);
     /// A destructor that is empty.
     ~Rational();
+    /// This method returns the "suavitas" (agreeableness) of a ratio of two integers, as a pitch ratio, if this notion makes sense in this case; otherwise the method returns -1. The more consonant a pitch ratio is musically, the lower the value returned by this method, with the optimal value of 1 for the ratio 1:1.
+    long agreeableness() const;
     /// This method returns true if this rational number is zero and false otherwise.
     inline bool is_null() const {return (n == NTL::to_ZZ(0));};
     /// This method returns the numerator.
