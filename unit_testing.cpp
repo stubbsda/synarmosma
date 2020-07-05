@@ -22,6 +22,11 @@ int main(int argc,char** argv)
   SYNARMOSMA::Rational q1(1,5);
   SYNARMOSMA::Rational q2(2,3);
   assert((q1 + q2) == SYNARMOSMA::Rational(13,15));
+  std::vector<SYNARMOSMA::Rational> qx;
+  qx.push_back(SYNARMOSMA::Rational(1,2));
+  qx.push_back(SYNARMOSMA::Rational(9,8));
+  qx.push_back(SYNARMOSMA::Rational(3,5));
+  assert(SYNARMOSMA::compute_mean(qx,"Harmonic") == SYNARMOSMA::Rational(27,41));
 
   std::cout << "Testing rational polynomials..." << std::endl;
   SYNARMOSMA::Polynomial<SYNARMOSMA::Rational> p1(2),p2(3);
@@ -36,14 +41,14 @@ int main(int argc,char** argv)
   p1.deserialize(s2);
   s2.close();
   std::system("rm -f polynomial.dat");
-  assert(p1 == p2);  
+  assert(p1 == p2);
 
   std::cout << "Testing lattices and posets..." << std::endl;
   SYNARMOSMA::Lattice L(4);
   SYNARMOSMA::Poset P;
   P.power_set(7);
   assert(P.consistent());
- 
+
   // The Petersen graph
   name = "petersen";
   std::cout << "Testing Tutte polynomial computation..." << std::endl;
@@ -97,7 +102,7 @@ int main(int argc,char** argv)
       } while(true);
     }
   }
-  G2.clustering_coefficient(); 
+  G2.clustering_coefficient();
   G2.mean_path_length();
 
   std::cout << "Testing directed graphs..." << std::endl;
@@ -116,7 +121,7 @@ int main(int argc,char** argv)
   G3.add_edge(4,6,d1,7.0);
   G3.add_edge(5,2,d1,3.0);
   G3.add_edge(5,6,d1,11.0);
-  assert(G3.bipartite() == 1); 
+  assert(G3.bipartite() == 1);
   assert(G3.maximum_parents() == 3);
   assert(!G3.DAG());
   assert(!G3.singly_connected());
@@ -133,7 +138,7 @@ int main(int argc,char** argv)
   assert(qt->second == 1);
   assert(G3.compute_flow(0,6) == 15);
 
-  SYNARMOSMA::Directed_Graph G4; 
+  SYNARMOSMA::Directed_Graph G4;
   for(i=0; i<6; ++i) {
     G4.add_vertex();
   }
@@ -150,9 +155,9 @@ int main(int argc,char** argv)
   assert(G4.distance(0,2) == 2);
   assert(G4.distance(2,3) == -1);
   assert(G4.distance(3,2) == 1);
-  assert(G4.directedness() == 3); 
+  assert(G4.directedness() == 3);
   assert(G4.size() == 8);
-  
+
   std::cout << "Testing undirected graphs..." << std::endl;
   type = "complete";
   SYNARMOSMA::Graph G6(3,type);
