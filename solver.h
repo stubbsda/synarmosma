@@ -23,12 +23,12 @@ namespace SYNARMOSMA {
     /// out before the Solver declares the situation 
     /// to be non-convergent. 
     unsigned int max_its = 100;
-    /// The number of equations in the system, which is 
+    /// This property stores the number of equations in the system, which is 
     /// assumed to also be the number of independent variables. 
     unsigned int dimension = 0;
-    /// The epislon used to determine when the system is solved, 
+    /// This property is used to determine when the system is solved, 
     /// so that the norm of the error vector is less than this value.
-    double epsilon = 0.00001;
+    double error_threshold = 0.00001;
     /// This floating point property is only used when Solver::homotopy is 
     /// true, in which case it tracks the progress of the homotopy from 
     /// \f$t=0\f$ to \f$t=1\f$.  

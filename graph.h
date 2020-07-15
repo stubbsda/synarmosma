@@ -35,9 +35,9 @@ namespace SYNARMOSMA {
     /// The standard constructor which sets the number of vertices to the argument while the number of edges is left at zero.
     Graph(int);
     /// This is the constructor for "named" graphs - DÜRER, GOLOMB, HERSCHEL, PETERSEN and WAGNER - which have a fixed number of vertices and edges as well as topology.
-    Graph(std::string&);
+    Graph(const std::string&);
     /// This is the contructor for a category of named graphs that also require the number of vertices to be specified: COMPLETE, CHAIN, CYCLIC and CONNECTED. The latter constructs a graph on n vertices by adding edges randomly until the graph is connected. 
-    Graph(int,std::string&);
+    Graph(int,const std::string&);
     /// This constructor accepts the number of vertices n (the first argument) and a minimum degree (the second argument) to construct a scale-free graph on n vertices with that minimum degree.
     Graph(int,int);
     /// This constructor accepts the number of vertices n (the first argument) and a percentage (the second argument); this percentage is relative to the number of edges for a complete graph on n vertices. 

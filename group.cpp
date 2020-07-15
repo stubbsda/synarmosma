@@ -9,10 +9,10 @@ Group::Group()
 
 }
 
-Group::Group(std::string& type,unsigned int n)
+Group::Group(const std::string& type,unsigned int n)
 {
-  boost::to_upper(type);
-  if (type == "ORDER") {
+  std::string utype = boost::to_upper_copy(type);
+  if (utype == "ORDER") {
     // Here the user has specified the desired order of the 
     // group that is to be constructed
     Word w;
@@ -177,7 +177,7 @@ Group::Group(std::string& type,unsigned int n)
         throw std::invalid_argument("Group order > 8 is too high for constructor!");
     }
   }
-  else if (type == "DIHEDRAL") {
+  else if (utype == "DIHEDRAL") {
     // Dihedral group
     finite = true;
     abelian = (n > 2) ? false : true;
@@ -191,7 +191,7 @@ Group::Group(std::string& type,unsigned int n)
     relations.push_back(w2);
     relations.push_back(w5);
   }
-  else if (type == "BRAID") {
+  else if (utype == "BRAID") {
     // Braid group
     // B_1 = {e}, B_2 = (Z,+)
     unsigned int i,j;
@@ -215,7 +215,7 @@ Group::Group(std::string& type,unsigned int n)
       relations.push_back(w4*w2*w4*w1*w3*w1);
     }
   }
-  else if (type == "CYCLIC") {
+  else if (utype == "CYCLIC") {
     // Cyclic group
     finite = true;
     abelian = true;
@@ -226,14 +226,14 @@ Group::Group(std::string& type,unsigned int n)
     Word w(0,n);
     relations.push_back(w);
   }
-  else if (type == "SYMMETRIC") {
+  else if (utype == "SYMMETRIC") {
     // Symmetric group
     cardinality = factorial(n);
     finite = true;
     abelian = false;
     solvable = (n < 5) ? true : false;
   }
-  else if (type == "ALTERNATING") {
+  else if (utype == "ALTERNATING") {
     // Alternating group
     finite = true;
     cardinality = factorial(n)/2;

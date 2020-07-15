@@ -86,13 +86,6 @@ namespace SYNARMOSMA {
       disparate
   };
 
-  enum class Boolean
-  {
-      AND,
-      OR,
-      XOR
-  };
-
   UINT64 ipow(int,int);
   UINT64 factorial(int);
   UINT64 binomial(int,int);

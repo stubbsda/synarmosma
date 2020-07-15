@@ -15,11 +15,11 @@ Graph::Graph(int n) : Schema(n)
   if (n < 1) throw std::invalid_argument("The graph order must be greater than zero!");
 }
 
-Graph::Graph(std::string& name)
+Graph::Graph(const std::string& name)
 {
   // An assortment of "named" graphs...
-  boost::to_upper(name);
-  if (name == "DÜRER") {
+  std::string uname = boost::to_upper_copy(name);
+  if (uname == "DÜRER") {
     for(int i=0; i<12; ++i) {
       add_vertex();
     }
@@ -52,7 +52,7 @@ Graph::Graph(std::string& name)
 
     add_edge(10,11);
   }
-  else if (name == "GOLOMB") {
+  else if (uname == "GOLOMB") {
     for(int i=0; i<10; ++i) {
       add_vertex();
     }
@@ -81,7 +81,7 @@ Graph::Graph(std::string& name)
     add_edge(7,9);
     add_edge(8,9);
   }
-  else if (name == "HERSCHEL") {
+  else if (uname == "HERSCHEL") {
     for(int i=0; i<11; ++i) {
       add_vertex();
     }
@@ -111,7 +111,7 @@ Graph::Graph(std::string& name)
 
     add_edge(7,9);
   }
-  else if (name == "PETERSEN") {
+  else if (uname == "PETERSEN") {
     for(int i=0; i<10; ++i) {
       add_vertex();
     }
@@ -138,7 +138,7 @@ Graph::Graph(std::string& name)
         
     add_edge(7,9);
   }
-  else if (name == "WAGNER") {
+  else if (uname == "WAGNER") {
     for(int i=0; i<8; ++i) {
       add_vertex();
     }
@@ -156,13 +156,13 @@ Graph::Graph(std::string& name)
   }
 }
 
-Graph::Graph(int n,std::string& type) : Schema(n)
+Graph::Graph(int n,const std::string& type) : Schema(n)
 {
   if (n < 1) throw std::invalid_argument("The graph order must be greater than zero!");
   int i;
 
-  boost::to_upper(type);
-  if (type == "COMPLETE") {
+  std::string utype = boost::to_upper_copy(type);
+  if (utype == "COMPLETE") {
     // The complete graph on n vertices...
     int j;
 
@@ -172,13 +172,13 @@ Graph::Graph(int n,std::string& type) : Schema(n)
       }
     }
   }
-  else if (type == "CHAIN") {
+  else if (utype == "CHAIN") {
     // A minimally connected graph with n - 1 edges
     for(i=0; i<n-1; ++i) {
       add_edge(i,i+1);
     }
   }
-  else if (type == "CYCLIC") {
+  else if (utype == "CYCLIC") {
     // Much like the chain model except with a cyclic topology, 
     // thus a final edge connecting the end of the chain to its 
     // beginning
@@ -188,7 +188,7 @@ Graph::Graph(int n,std::string& type) : Schema(n)
     // The final edge that makes it cyclic
     add_edge(0,n-1); 
   }
-  else if (type == "CONNECTED") {
+  else if (utype == "CONNECTED") {
     // Create a random connected graph on n vertices - we keep adding 
     // random edges until the graph is connected
     if (n < 2) throw std::invalid_argument("The order of a connected graph must be greater than one!");

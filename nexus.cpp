@@ -181,15 +181,15 @@ bool Nexus::paste(const Cell& c)
   return false;
 }
 
-void Nexus::surface_construction(std::string& surface)
+void Nexus::surface_construction(const std::string& type)
 {
   // A method to construct certain standard surfaces for testing the correctness 
   // of the pseudomanifold and orientability routines...
   std::set<int> vx;
   
-  boost::to_upper(surface);
+  std::string utype = boost::to_upper_copy(type);
 
-  if (surface == "SPHERE") {
+  if (utype == "SPHERE") {
     // The 2-sphere $S^2$, which is an orientable pseudomanifold without boundary
     initialize(2,4);
 
@@ -209,7 +209,7 @@ void Nexus::surface_construction(std::string& surface)
     paste(vx);
     vx.clear();
   }
-  else if (surface == "PROJECTIVE_PLANE") {
+  else if (utype == "PROJECTIVE_PLANE") {
     // The real projective plane, a non-orientable pseudomanifold without boundary
     initialize(2,6);
 
@@ -253,7 +253,7 @@ void Nexus::surface_construction(std::string& surface)
     paste(vx);
     vx.clear();
   }
-  else if (surface == "TORUS") {
+  else if (utype == "TORUS") {
     // The torus $S^1 \times S^1$, an orientable pseudomanifold without boundary
     initialize(2,9);
 
@@ -329,7 +329,7 @@ void Nexus::surface_construction(std::string& surface)
     paste(vx);
     vx.clear();
   }
-  else if (surface == "MÖBIUS_STRIP") {
+  else if (utype == "MÖBIUS_STRIP") {
     // The Möbius strip, a non-orientable pseudomanifold with boundary
     initialize(2,8);
 
@@ -366,7 +366,7 @@ void Nexus::surface_construction(std::string& surface)
     vx.clear();
   }
   else {
-    throw std::invalid_argument("Unknown surface type in Nexus class!");
+    throw std::invalid_argument("Unrecognized surface type in Nexus::surface_construction method!");
   }
   regularization();
 }

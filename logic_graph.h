@@ -15,8 +15,8 @@ namespace SYNARMOSMA {
     /// neighbourhood, i.e. a vertex and its neighbours.
     std::vector<unsigned int> logical_breadth;
 
-    /// This method accepts a Boolean operator (by default AND) and uses propositional consistency according to it in order to determine how the graph topology should be organized; the method returns a value which measures the degree to which the graph topology diverges from this ideal. 
-    double rationalize_topology(const Boolean& = Boolean::AND);
+    /// This method accepts a Boolean operator specified by a string among "AND", "OR" and "XOR" (by default "AND") and uses propositional consistency according to it in order to determine how the graph topology should be organized; the method returns a value which measures the degree to which the graph topology diverges from this ideal. 
+    double rationalize_topology(const std::string& = std::string("AND"));
     /// This method computes the value of the vector Logic_Graph::logical_breadth and returns the total number of atomic propositions used in the entire graph.
     unsigned int compute_logical_breadth();
     /// This method first calls the Graph::fusion method on the arguments and if it returns true, then it calls the Propositional_System::drop_theorem method on the second argument and returns the value of this call.

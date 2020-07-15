@@ -40,8 +40,8 @@ namespace SYNARMOSMA {
     ~Propositional_System();
     /// This method clears the Propositional_System::theorems and Propositional_System::truth properties and sets the other properties to zero.
     void clear();
-    /// This method takes two elements of Propositional_System::theorems along with a Boolean operator among "AND", "OR" and "XOR", and computes the number of logical universes in which these two propositions are true according to the Boolean operator. 
-    unsigned int consistency(unsigned int,unsigned int,const Boolean&) const;
+    /// This method takes two elements of Propositional_System::theorems along with a Boolean operator specified by a string among "AND", "OR" and "XOR", and computes the number of logical universes in which these two propositions are true according to the Boolean operator. 
+    unsigned int consistency(unsigned int,unsigned int,const std::string&) const;
     /// This method tests whether or not a given proposition is implied by a set of other propositions, in which case it returns true. The first argument is the element of Propositional_System::theorems being tested, the second is the set of axioms, which are other elements of this same vector. A proposition q implies another p if (q or !p) is always true. 
     bool implication(unsigned int,const std::vector<unsigned int>&) const;
     /// This method constructs the directed graph of implications among the elements of Propositional_System::theorems; each proposition is a vertex and if one proposition p implies another q, then the edge p -> q is added to the graph.

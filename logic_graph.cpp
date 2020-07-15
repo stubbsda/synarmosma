@@ -147,7 +147,7 @@ unsigned int Logic_Graph::compute_logical_breadth()
   return ntotal;
 }
 
-double Logic_Graph::rationalize_topology(const Boolean& type)
+double Logic_Graph::rationalize_topology(const std::string& type)
 {
   // We begin this method with a complete graph topology, which is
   // obviously connected. At each iteration, we examine an edge to

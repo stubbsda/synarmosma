@@ -57,7 +57,7 @@ namespace SYNARMOSMA {
     /// This is the constructor for an Abelian group in canonical form, with the first argument the rank and the second the torsion coefficients.
     Group(unsigned int,const std::vector<unsigned int>&);
     /// This constructor accepts a series of potential values for the named group type (first argument) as well as an index, permitting the creation of a canonical presentation for such groups as the dihedral or cyclic.
-    Group(std::string&,unsigned int);
+    Group(const std::string&,unsigned int);
     /// The standard copy constructor.
     Group(const Group&);
     /// The standard deconstructor that does nothing in this case.

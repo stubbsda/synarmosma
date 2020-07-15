@@ -20,7 +20,7 @@ Solver<kind>::Solver(unsigned int N,double eps,unsigned int M,bool htype,bool ap
   if (eps < std::numeric_limits<double>::epsilon()) throw std::invalid_argument("The convergence threshold in the Solver class must be greater than zero!");
 
   dimension = N;
-  epsilon = eps;
+  error_threshold = eps;
   max_its = M;
   homotopy = htype;
   broyden = approx;
@@ -111,11 +111,11 @@ void Solver<kind>::compute_jacobian(const std::vector<kind>& x)
   for(i=0; i<dimension; ++i) {
     for(it=dependencies[i].begin(); it!=dependencies[i].end(); ++it) {
       j = *it;
-      w[j] += epsilon;
+      w[j] += error_threshold;
       F(w,y2);
       delta = y2[i] - y1[i];
-      JF->set(i,j,delta/epsilon);
-      w[j] -= epsilon;
+      JF->set(i,j,delta/error_threshold);
+      w[j] -= error_threshold;
     }
   }
   JF->homotopy_scaling(a1(t),a2(t),J);
@@ -145,7 +145,7 @@ double Solver<kind>::compute_dependencies()
     F(x,y);
     for(j=0; j<dimension; ++j) {
       delta = y[j] - w[j];
-      if (std::abs(delta) > epsilon) dependencies[j].insert(i);
+      if (std::abs(delta) > error_threshold) dependencies[j].insert(i);
     }
     x[i] -= kind(10.0);
   }
@@ -236,7 +236,7 @@ bool Solver<kind>::linear_solver(const std::vector<kind>& x,const std::vector<ki
     // Use the native Gauss-Seidel iterative solver in the Matrix class
     xnew = x;
     try {
-      J->gauss_seidel_solver(xnew,b,epsilon,100);
+      J->gauss_seidel_solver(xnew,b,error_threshold,100);
     }
     catch (std::runtime_error& e) {
       success = false;
@@ -300,7 +300,7 @@ int Solver<kind>::forward_step()
 #ifdef VERBOSE
     std::cout << "Iterative difference is " << xnorm << " at " << its << std::endl;
 #endif
-    if (xnorm < epsilon) break;
+    if (xnorm < error_threshold) break;
     F(xnew,fnew);
     for(i=0; i<dimension; ++i) {
       fnew[i] = a1(t)*fnew[i] + a2(t)*(xnew[i] - base_solution[i]); 
@@ -317,7 +317,7 @@ int Solver<kind>::forward_step()
 #ifdef VERBOSE
     std::cout << "Function norm is " << fnorm << " at " << its << std::endl;
 #endif
-    if (fnorm < epsilon) {
+    if (fnorm < error_threshold) {
       output = true;
       break;
     }
@@ -421,7 +421,7 @@ bool Solver<kind>::solve(std::vector<kind>& output)
         t -= dt;
       }
       if (n > 0) {
-        if (std::abs(1.0 - t) < epsilon) {
+        if (std::abs(1.0 - t) < error_threshold) {
 #ifdef VERBOSE
           std::cout << "Homotopy solver has converged, exiting..." << std::endl;
 #endif
@@ -440,7 +440,7 @@ bool Solver<kind>::solve(std::vector<kind>& output)
           t += dt;
         }
       }
-      if (dt < epsilon) {
+      if (dt < error_threshold) {
 #ifdef VERBOSE
         std::cout << "Homotopy method has failed, exiting..." << std::endl;
 #endif

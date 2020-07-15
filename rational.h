@@ -51,17 +51,17 @@ namespace SYNARMOSMA {
     /// This method returns the height.
     inline double get_height() const {return height;};
     /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of two integers.
-    inline friend Rational compute_mean(int,int,std::string = "ARITHMETIC");
+    inline friend Rational compute_mean(int,int,const std::string& = std::string("ARITHMETIC"));
     /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of an integer and an instance of the Rational class. 
-    inline friend Rational compute_mean(int,const Rational&,std::string = "ARITHMETIC");
+    inline friend Rational compute_mean(int,const Rational&,const std::string& = std::string("ARITHMETIC"));
     /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of an integer and an instance of the Rational class. 
-    inline friend Rational compute_mean(const Rational&,int,std::string = "ARITHMETIC");
+    inline friend Rational compute_mean(const Rational&,int,const std::string& = std::string("ARITHMETIC"));
     /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of two instances of the Rational class. 
-    inline friend Rational compute_mean(const Rational&,const Rational&,std::string = "ARITHMETIC");
+    inline friend Rational compute_mean(const Rational&,const Rational&,const std::string& = std::string("ARITHMETIC"));
     /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of a vector of integers.
-    inline friend Rational compute_mean(const std::vector<int>&,std::string = "ARITHMETIC");
+    inline friend Rational compute_mean(const std::vector<int>&,const std::string& = std::string("ARITHMETIC"));
     /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of a vector of instances of the Rational class.
-    inline friend Rational compute_mean(const std::vector<Rational>&,std::string = "ARITHMETIC");
+    inline friend Rational compute_mean(const std::vector<Rational>&,const std::string& = std::string("ARITHMETIC"));
     /// This method implements the unary negation operator for an instance of the Rational class.
     friend Rational operator -(const Rational&);
     /// This method implements the addition operator for two instances of the Rational class.
@@ -100,27 +100,27 @@ namespace SYNARMOSMA {
     friend std::ostream& operator <<(std::ostream&,const Rational&);
   };
 
-  Rational compute_mean(int a,int b,std::string type)
+  Rational compute_mean(int a,int b,const std::string& type)
   {
     return compute_mean(Rational(a),Rational(b),type);
   }
 
-  Rational compute_mean(int a,const Rational& b,std::string type)
+  Rational compute_mean(int a,const Rational& b,const std::string& type)
   {
     return compute_mean(Rational(a),b,type);
   }
 
-  Rational compute_mean(const Rational& a,int b,std::string type)
+  Rational compute_mean(const Rational& a,int b,const std::string& type)
   {
     return compute_mean(a,Rational(b),type);
   }
 
-  Rational compute_mean(const Rational& a,const Rational& b,std::string type)
+  Rational compute_mean(const Rational& a,const Rational& b,const std::string& type)
   {
-    boost::to_upper(type);
-    if (type != "ARITHMETIC" && type != "HARMONIC") throw std::invalid_argument("The type of the mean must be arithmetic or harmonic!");
+    std::string utype = boost::to_upper_copy(type);
+    if (utype != "ARITHMETIC" && utype != "HARMONIC") throw std::invalid_argument("The type of the mean must be arithmetic or harmonic!");
     Rational output;
-    if (type == "ARITHMETIC") {
+    if (utype == "ARITHMETIC") {
       output = Rational(1,2)*(a + b);
     }
     else {
@@ -133,7 +133,7 @@ namespace SYNARMOSMA {
     return output;
   }
 
-  Rational compute_mean(const std::vector<int>& vx,std::string type)
+  Rational compute_mean(const std::vector<int>& vx,const std::string& type)
   {
     unsigned int i,n = vx.size();
     std::vector<Rational> qx;
@@ -144,16 +144,16 @@ namespace SYNARMOSMA {
     return compute_mean(qx,type);
   }
 
-  Rational compute_mean(const std::vector<Rational>& vx,std::string type)
+  Rational compute_mean(const std::vector<Rational>& vx,const std::string& type)
   {
     unsigned int n = vx.size();
     if (n < 2) throw std::invalid_argument("Computing the mean requires at least two numbers!");
-    boost::to_upper(type);
-    if (type != "ARITHMETIC" && type != "HARMONIC") throw std::invalid_argument("The type of the mean must be arithmetic or harmonic!");
+    std::string utype = boost::to_upper_copy(type);
+    if (utype != "ARITHMETIC" && utype != "HARMONIC") throw std::invalid_argument("The type of the mean must be arithmetic or harmonic!");
     unsigned int i;
     Rational output(0);
 
-    if (type == "ARITHMETIC") {
+    if (utype == "ARITHMETIC") {
       for(i=0; i<n; ++i) {
         output = output + vx[i];
       }

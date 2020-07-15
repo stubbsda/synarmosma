@@ -95,20 +95,24 @@ int Propositional_System::deserialize(std::ifstream& s)
   return count;
 }
 
-unsigned int Propositional_System::consistency(unsigned int i,unsigned int j,const Boolean& type) const
+unsigned int Propositional_System::consistency(unsigned int i,unsigned int j,const std::string& type) const
 {
   if (i >= theorems.size() || j >= theorems.size()) throw std::invalid_argument("Illegal theorem index in Propositional_System class!");
   boost::dynamic_bitset<> temp(nuniverse);
 
-  if (type == Boolean::AND) {
+  std::string utype = boost::to_upper_copy(type);
+
+  if (utype == "AND") {
     temp = truth[i] & truth[j];
   }
-  else if (type == Boolean::OR) {
+  else if (utype == "OR") {
     temp = truth[i] | truth[j];
   }
-  else {
-    // Must be XOR...
+  else if (utype == "XOR") {
     temp = truth[i] ^ truth[j];
+  }
+  else {
+    throw std::invalid_argument("Unrecognized logical operator in Propositional_System::consistency method!");
   }
   return temp.count();
 }

@@ -622,15 +622,15 @@ void Geometry::store(Geometry* target) const
   if (!relational) target->coordinates = coordinates;
 }
 
-void Geometry::create(int n,std::string& type)
+void Geometry::create(int n,const std::string& type)
 {
   if (!relational) throw std::runtime_error("Illegal geometric method (initialize) call for absolute model!");
 
   distances.clear();
 
   int i,j;
-  boost::to_upper(type);
-  if (type == "CARTESIAN") {
+  std::string utype = boost::to_upper_copy(type);
+  if (utype == "CARTESIAN") {
     nvertex = ipow(n,background_dimension);
     if (!high_memory) return;
 
@@ -681,12 +681,12 @@ void Geometry::create(int n,std::string& type)
       x.clear();
     }
   }
-  else if (type == "SINGLETON") {
+  else if (utype == "SINGLETON") {
     // Nothing to do here as there's no relational geometry with just a
     // single vertex...
     nvertex = 1;
   }
-  else if (type == "RANDOM") {
+  else if (utype == "RANDOM") {
     nvertex = n;
     if (!high_memory) return;
     if (euclidean) {
@@ -718,7 +718,7 @@ void Geometry::create(int n,std::string& type)
       }
     }
   }
-  else if (type == "MONOPLEX") {
+  else if (utype == "MONOPLEX") {
     // In this case n is the monoplex dimension, so the number of vertices
     // is 1+n
     nvertex = 1 + n;

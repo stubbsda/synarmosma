@@ -40,7 +40,7 @@ namespace SYNARMOSMA {
     /// This method determines if the abstract simplicial complex represented by this Nexus instance is a pseudomanifold and returns true if this is so; the method's argument is a Boolean which is set to true if the Nexus instance is a pseudomanifold-with-boundary.
     bool pseudomanifold(bool*) const;
     /// This method builds a minimal simplicial complex reflecting the topology of one of a fixed set of know surface topologies: SPHERE (4), PROJECTIVE_PLANE (6), TORUS (9) and MÖBIUS_STRIP (8); the number in brackets indicates the number of vertices needed to represent this surface. 
-    void surface_construction(std::string&);
+    void surface_construction(const std::string& = std::string("SPHERE"));
     /// This method restores the inherited Schema properties to their default value and, if Nexus::dimension is greater than -1, frees the memory for Nexus::elements and Nexus::index_table, then sets Nexus::dimension to -1. 
     void clear() override;
     /// This method calls clear(), sets the value of Nexus::dimension to the argument and allocates the Nexus::elements and Nexus::index_table properties. 
