@@ -20,8 +20,9 @@ Normally the only parameters that a user should need to modify in order to build
 are located at the beginning of the Makefile, where various compiler arguments and libraries are all
 specified. The build variables are all described in the Makefile and in general the default values should
 be safe on most Unix-like platforms. Certain methods within the library have been parallelized using
-OpenMP, namely for the <code>Geometry</code>, <code>Graph</code>, <code>Nexus</code> and <code>Matrix</code>
-classes, so that a C++ compiler able to support OpenMP is also desirable. The library's source code is
+OpenMP, namely for the <code>Geometry</code>, <code>Graph</code> and <code>Nexus</code> classes along 
+with the library's matrix classes (<code>Matrix</code>, <code>Binary_Matrix</code>, <code>Integer_Matrix</code>), 
+so that a C++ compiler able to support OpenMP is also desirable. The library's source code is
 documented using [Doxygen](doxygen.nl) with the configuration file <code>docs.config</code> that can be
 modified as needed.
 
