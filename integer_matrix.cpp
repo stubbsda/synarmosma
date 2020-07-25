@@ -204,6 +204,31 @@ void Integer_Matrix<kind>::multiply(const std::vector<kind>& b,std::vector<kind>
 }
 
 template<class kind>
+bool Integer_Matrix<kind>::symmetric() const
+{
+  if (nrow != ncolumn) return false;
+  unsigned int i,j,k,c;
+  bool found;
+
+  for(i=0; i<nrow; ++i) {
+    for(j=0; j<elements[i].size(); ++j) {
+      c = elements[i][j].second;
+      if (c <= i) continue;
+      found = false;
+      for(k=0; k<elements[c].size(); ++k) {
+        if (elements[c][k].second == i) {
+          if (elements[c][k].first != elements[i][j].first) return false;
+          found = true;
+          break;
+        }
+      }
+      if (!found) return false;
+    }    
+  }
+  return true;
+}
+
+template<class kind>
 kind Integer_Matrix<kind>::determinant() const
 {
   if (nrow != ncolumn) throw std::runtime_error("The determinant can only be computed for square matrices!");

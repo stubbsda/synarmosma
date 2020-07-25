@@ -3,6 +3,8 @@
 #include "synarmosma/lattice.h"
 #include "synarmosma/polynomial.h"
 #include "synarmosma/directed_graph.h"
+#include "synarmosma/group.h"
+#include "synarmosma/integer_matrix.h"
 
 SYNARMOSMA::Random RND;
 
@@ -28,7 +30,7 @@ int main(int argc,char** argv)
   qx.push_back(SYNARMOSMA::Rational(3,5));
   assert(SYNARMOSMA::compute_mean(qx,"Harmonic") == SYNARMOSMA::Rational(27,41));
 
-  std::cout << "Testing rational polynomials..." << std::endl;
+  std::cout << "Testing polynomials..." << std::endl;
   SYNARMOSMA::Polynomial<SYNARMOSMA::Rational> p1(2),p2(3);
   SYNARMOSMA::Polynomial<SYNARMOSMA::Rational> r = p1 + p2;
   assert(r.get_degree() == 3);
@@ -43,16 +45,17 @@ int main(int argc,char** argv)
   std::system("rm -f polynomial.dat");
   assert(p1 == p2);
 
-  std::cout << "Testing lattices and posets..." << std::endl;
-  SYNARMOSMA::Lattice L(4);
+  std::cout << "Testing posets..." << std::endl;
   SYNARMOSMA::Poset P;
   P.power_set(7);
   assert(P.consistent());
+  std::cout << "Testing lattices..." << std::endl;
+  SYNARMOSMA::Lattice L(4);
+  assert(L.consistent());
 
   // The Petersen graph
-  name = "petersen";
-  std::cout << "Testing Tutte polynomial computation..." << std::endl;
-  SYNARMOSMA::Graph G(name);
+  std::cout << "Testing graphs..." << std::endl;
+  SYNARMOSMA::Graph G("Petersen");
   G.entwinement();
   G.vertex_centrality(foo,0.000001);
   std::vector<SYNARMOSMA::Monomial<int> > output;
@@ -62,6 +65,38 @@ int main(int argc,char** argv)
     if (output[i].exponents[0].second == 1 && output[i].exponents[1].second == 3) assert(output[i].coefficient == 65);
     if (output[i].exponents[0].second == 2 && output[i].exponents[1].second == 2) assert(output[i].coefficient == 105);
   }
+
+  SYNARMOSMA::Graph G2(n,"CYCLIC");
+  G2.clustering_coefficient();
+  G2.mean_path_length();
+  for(i=0; i<n; ++i) {
+    if (RND.drandom() < p) {
+      G2.drop_edge(i,(i+1)%n);
+      do {
+        j = RND.irandom(n);
+        if (i == j) continue;
+        if (G2.add_edge(i,j)) break;
+      } while(true);
+    }
+  }
+  G2.clustering_coefficient();
+  G2.mean_path_length();
+
+  SYNARMOSMA::Graph G6(3,"Complete");
+  assert(G6.connected());
+  assert(G6.circuit_rank() == 1);
+  assert(G6.order() == 3);
+  assert(G6.size() == 3);
+  assert(G6.stellar_addition(0) == 1);
+  assert(G6.connected());
+  assert(G6.circuit_rank() == 0);
+  assert(G6.order() == 4);
+  assert(G6.size() == 3);
+  assert(G6.stellar_deletion(3) == 1);
+  assert(G6.connected());
+  assert(G6.circuit_rank() == 1);
+  assert(G6.order() == 3);
+  assert(G6.size() == 3);
 
   std::cout << "Testing pseudographs..." << std::endl;
   SYNARMOSMA::Pseudograph CG1(4);
@@ -86,24 +121,6 @@ int main(int argc,char** argv)
   assert(cvector[6] == 1);
   assert(cvector[7] == 2);
   delete CG2;
-
-  std::cout << "Testing clustering coefficients..." << std::endl;
-  type = "cyclic";
-  SYNARMOSMA::Graph G2(n,type);
-  G2.clustering_coefficient();
-  G2.mean_path_length();
-  for(i=0; i<n; ++i) {
-    if (RND.drandom() < p) {
-      G2.drop_edge(i,(i+1)%n);
-      do {
-        j = RND.irandom(n);
-        if (i == j) continue;
-        if (G2.add_edge(i,j)) break;
-      } while(true);
-    }
-  }
-  G2.clustering_coefficient();
-  G2.mean_path_length();
 
   std::cout << "Testing directed graphs..." << std::endl;
   SYNARMOSMA::Directed_Graph G3;
@@ -158,23 +175,22 @@ int main(int argc,char** argv)
   assert(G4.directedness() == 3);
   assert(G4.size() == 8);
 
-  std::cout << "Testing undirected graphs..." << std::endl;
-  type = "complete";
-  SYNARMOSMA::Graph G6(3,type);
-  assert(G6.connected());
-  assert(G6.circuit_rank() == 1);
-  assert(G6.order() == 3);
-  assert(G6.size() == 3);
-  assert(G6.stellar_addition(0) == 1);
-  assert(G6.connected());
-  assert(G6.circuit_rank() == 0);
-  assert(G6.order() == 4);
-  assert(G6.size() == 3);
-  assert(G6.stellar_deletion(3) == 1);
-  assert(G6.connected());
-  assert(G6.circuit_rank() == 1);
-  assert(G6.order() == 3);
-  assert(G6.size() == 3);
+  std::cout << "Testing groups..." << std::endl;
+  SYNARMOSMA::Group H("DIHEDRAL",5);
+  std::set<unsigned int> S;
+  assert(H.consistent(S));
+  assert(H.get_order() == 10);
+  assert(H.get_solvability());
+
+  std::cout << "Testing integer matrices..." << std::endl;
+  SYNARMOSMA::Integer_Matrix<int> M(4,true);
+  M.set(0,2,-1);
+  M.set(1,0,4);
+  M.set(2,1,-3);
+  M.set(3,0,1);
+  M.set(3,1,-1);
+  assert(M.determinant() == 13);
+  assert(!M.symmetric());
 
   std::cout << "All tests passed successfully!" << std::endl;
   return 0;

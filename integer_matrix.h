@@ -128,6 +128,8 @@ namespace SYNARMOSMA {
     kind get_diagonal(unsigned int) const;
     /// This method obtains the vector of diagonal elements of the matrix, i.e. those elements whose row index is the same as their column index; the output vector will have a length of Integer_Matrix::nrow.
     void get_diagonal(std::vector<kind>&) const;
+    /// This method computes whether or not this instance of the class is a symmetric matrix (i.e. it is square and additionally equal to its transpose), returning true if this is so and false otherwise.
+    bool symmetric() const;
     /// This method computes and returns the determinant of the matrix, first checking that it is square and then calculating it by Laplace's formula, i.e. the sum of cofactors. 
     kind determinant() const;
     /// This method multiplies the matrix by the first argument of this method and writes the output into the second argument, after checking that the vector conforms to the matrix dimensions.

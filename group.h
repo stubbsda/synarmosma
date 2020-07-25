@@ -64,11 +64,15 @@ namespace SYNARMOSMA {
     ~Group();
     /// The overloaded assignment operator that copies over all the group properties.
     Group& operator =(const Group&);
-    /// This method simply returns the value of the rank property.
+    /// This method returns the value of the Group::rank property for this instance of the class.
     inline unsigned int get_rank() const {return rank;};
+    /// This method returns the value of the Group::cardinality property (i.e. the group's order) for this instance of the class.
+    inline unsigned int get_order() const {return cardinality;};
+    /// This method returns the value of the Group::solvable property for this instance of the class.
+    inline bool get_solvability() const {return solvable;};
     /// This method computes all of the letters in the collection of group relations (the first argument) and returns true if there are no letters which are not generators, false otherwise.
     bool consistent(std::set<unsigned int>&) const;
-    /// This method initializes the group presentation after the value of ngenerator has been specified (in the constructor) and where the argument is the number of relations, which are constructed randomly.
+    /// This method initializes the group presentation after the value of Group::ngenerator has been specified (in the constructor) and where the argument is the number of relations, which are constructed randomly.
     void initialize(unsigned int);
     /// This method initializes the group presentation, where the first argument is the number of generators and the second the accompanying relations.
     void initialize(unsigned int,const std::vector<Word>&);
@@ -78,7 +82,7 @@ namespace SYNARMOSMA {
     bool equivalent(const Word&,const Word&) const;
     /// This method attempts to simplify the group presentation by reducing the words in its relations to their most elementary form, such as eliminating duplicate relations, normalizing the words and using a relation like \f$ab^{-1}\f$ (which implies \f$a=b\f$) to reduce the number of generators.
     void reduce();
-    /// This method returns all the properties to their default values and empties the "relations" vector.
+    /// This method returns all the properties to their default values and empties the Group::relations vector.
     void clear();
     /// This method makes a new Abelian group from the current instance by adding the relation \f$aba^{-1}b^{-1}\f$ for each distinct pair of generators \f$a\f$ and \f$b\f$.
     Group abelianize() const;

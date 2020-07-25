@@ -350,6 +350,8 @@ bool Group::consistent(std::set<unsigned int>& alphabet) const
   std::set<unsigned int> S;
   std::set<unsigned int>::const_iterator it;
 
+  alphabet.clear();
+
   for(i=0; i<relations.size(); ++i) {
     relations[i].get_alphabet(S);
     for(it=S.begin(); it!=S.end(); ++it) {
