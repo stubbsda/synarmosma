@@ -146,7 +146,7 @@ void Homotopy::compute(const Nexus* NX)
   std::vector<unsigned int> s1,s2;
   std::vector<Word> relations;
   const unsigned int ne = NX->get_length(1);
-  const unsigned int nr = (NX->get_dimension() > 1) ? NX->get_length(2) : 0;
+  const unsigned int nr = (NX->dimension() > 1) ? NX->get_length(2) : 0;
 
   clear();
   // Sanity check...

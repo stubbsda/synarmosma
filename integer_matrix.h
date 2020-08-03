@@ -107,15 +107,15 @@ namespace SYNARMOSMA {
     /// This method sets the value of Integer_Matrix::nrow and Integer_Matrix::ncolumn to the two arguments and then allocates the memory for the Integer_Matrix::elements property.    
     void initialize(unsigned int,unsigned int);
     /// This method sets the value of the matrix element specified by the first two arguments to the third argument and, if the fourth argument is true, increments the value rather than overwriting it.
-    inline void set(unsigned int,unsigned int,kind,bool = false);
+    void set(unsigned int,unsigned int,kind,bool = false);
     /// This method increments the value of the element, specified by the two first arguments, by the third argument; if the element specified does not exist, this method has the same effect as the set() method.
-    inline void increment(unsigned int,unsigned int,kind);
+    void increment(unsigned int,unsigned int,kind);
     /// This method returns the number of rows in this matrix.
-    inline unsigned int get_nrow() const {return nrow;};
+    unsigned int get_nrow() const;
     /// This method returns the number of rows in this matrix.
-    inline unsigned int get_ncolumn() const {return ncolumn;};
+    unsigned int get_ncolumn() const;
     /// This method computes the matrix's density, i.e. the number of non-zero elements divided by the total number of elements, and returns this value.
-    inline double density() const {return double(number_nonzero())/double(nrow*ncolumn);};
+    double density() const;
     /// This method computes the number of non-zero elements in this matrix and returns this value.
     unsigned int number_nonzero() const; 
     /// This method determines if the row whose index is given by the argument contains any elements, returning true if the row is empty and false otherwise.
@@ -292,7 +292,25 @@ namespace SYNARMOSMA {
   }
 
   template<class kind>
-  void Integer_Matrix<kind>::set(unsigned int n,unsigned int m,kind v,bool increment)
+  inline unsigned int Integer_Matrix<kind>::get_nrow() const
+  {
+    return nrow;
+  }
+
+  template<class kind>
+  inline unsigned int Integer_Matrix<kind>::get_ncolumn() const
+  {
+    return ncolumn;
+  }
+
+  template<class kind>
+  inline double Integer_Matrix<kind>::density() const
+  {
+    return double(number_nonzero())/double(nrow*ncolumn);
+  }
+
+  template<class kind>
+  inline void Integer_Matrix<kind>::set(unsigned int n,unsigned int m,kind v,bool increment)
   {
     if (n >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
     if (m >= ncolumn) throw std::invalid_argument("The column number argument is illegal for this matrix!");
@@ -319,7 +337,7 @@ namespace SYNARMOSMA {
   }
 
   template<class kind>
-  void Integer_Matrix<kind>::increment(unsigned int n,unsigned int m,kind v)
+  inline void Integer_Matrix<kind>::increment(unsigned int n,unsigned int m,kind v)
   {
     if (n >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
     if (m >= ncolumn) throw std::invalid_argument("The column number argument is illegal for this matrix!");

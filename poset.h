@@ -36,7 +36,7 @@ namespace SYNARMOSMA {
     /// This method verifies that the poset's order property satisfies the axioms of an ordering, namely that is reflexive, anti-symmetric and transitive.
     virtual bool consistent() const;
     /// This method simply increments the property N by one. 
-    inline void add_element() {N += 1;};
+    void add_element();
     /// This method tests if the element given by the argument is a sink, i.e. its posteriority is the empty set.
     bool sink(int) const;
     /// This method tests if the element given by the argument is a sink, i.e. its anteriority is the empty set.
@@ -70,6 +70,10 @@ namespace SYNARMOSMA {
     /// This method accepts two elements x and y of the poset and returns "before" if x ~ y, "after" if x ~ y and "disparate" otherwise. 
     Relation get_order(int,int) const;
   };
+
+  inline void Poset::add_element() {
+    N += 1;
+  }
 }
 #endif
 

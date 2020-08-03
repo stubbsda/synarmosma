@@ -51,31 +51,61 @@ namespace SYNARMOSMA {
     /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
     virtual int deserialize(std::ifstream&);
     /// This method sets the Edge::flow property.
-    inline void set_flow(double f) {flow = f;};
+    void set_flow(double);
     /// This method extracts and returns the Edge::flow property.
-    inline double get_flow() const {return flow;};
+    double get_flow() const;
     /// This method sets the Edge::capacity property.
-    inline void set_capacity(double c) {capacity = c;};
+    void set_capacity(double);
     /// This method extracts and returns the Edge::capacity property.
-    inline double get_capacity() const {return capacity;};
+    double get_capacity() const;
     /// This method sets the Edge::direction property.
-    inline void set_direction(const Relation rho) {direction = rho;};
+    void set_direction(const Relation);
     /// This method extracts and returns the Edge::direction property.
-    inline Relation get_direction() const {return direction;};
+    Relation get_direction() const;
     /// This method returns the edge direction, considered from the ordering of the two arguments.
-    inline Relation get_direction(int,int) const;
+    Relation get_direction(int,int) const;
     /// This method copies the two vertices into the integer array argument, which is assumed to be of the form "int vx[2]".
-    inline void get_vertices(int*) const;
+    void get_vertices(int*) const;
     /// This method takes two arguments which are assumed to be the new values for the edge's vertices.
-    inline void set_vertices(int,int);
+    void set_vertices(int,int);
     /// This method inverts the edge's orientation - if the edge is undirected it does nothing and returns false, otherwise it reverses the edge's direction and returns true.
-    inline bool invert();
+    bool invert();
     /// This method returns 0 if the edge is undirected (disparate), +1 if low => high and -1 otherwise.
-    inline int get_parity() const;
+    int get_parity() const;
     friend class Graph;
   };
 
-  void Edge::set_vertices(int u,int v) 
+  inline void Edge::set_flow(double f)
+  {
+    flow = f;
+  }
+
+  inline double Edge::get_flow() const
+  {
+    return flow;
+  }
+
+  inline void Edge::set_capacity(double c)
+  {
+    capacity = c;
+  }
+
+  inline double Edge::get_capacity() const
+  {
+    return capacity;
+  }
+
+  inline void Edge::set_direction(const Relation rho)
+  {
+    direction = rho;
+  }
+
+  inline Relation Edge::get_direction() const
+  {
+    return direction;
+  }
+
+  inline void Edge::set_vertices(int u,int v) 
   {
     if (u == v) throw std::invalid_argument("The Edge class cannot be used for self-loops!");
 
@@ -87,19 +117,19 @@ namespace SYNARMOSMA {
     }
   }
 
-  void Edge::get_vertices(int* vx) const
+  inline void Edge::get_vertices(int* vx) const
   {
     vx[0] = low; vx[1] = high;
   }
 
-  int Edge::get_parity() const
+  inline int Edge::get_parity() const
   {
     if (direction == Relation::disparate) return 0;
     int output = (direction == Relation::before) ? 1 : -1;
     return output;
   }
 
-  bool Edge::invert()
+  inline bool Edge::invert()
   {
     if (direction == Relation::disparate) return false;
     if (direction == Relation::before) {
@@ -111,7 +141,7 @@ namespace SYNARMOSMA {
     return true;
   }
 
-  Relation Edge::get_direction(int u,int v) const
+  inline Relation Edge::get_direction(int u,int v) const
   {
     if ((u != low) && (u != high)) throw std::invalid_argument("The first argument of Edge::get_direction does not belong to the edge!"); 
     if ((v != low) && (v != high)) throw std::invalid_argument("The second argument of Edge::get_direction does not belong to the edge!"); 

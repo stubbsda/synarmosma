@@ -40,9 +40,9 @@ namespace SYNARMOSMA {
     /// This method uses the compute_bridges() method to compute all the bridges in the pseudograph - the output value of the method - and so assemble a list of candidate edges for contraction, i.e. those which are not bridges.
     int get_candidates(std::vector<int>&) const;
     /// This method simply returns the value of Pseudograph::nvertex, the order of the pseudograph.
-    inline int order() const {return nvertex;};
+    int order() const;
     /// This method calculates and returns the number of self-loops in this pseudograph.
-    inline int get_loops() const;
+    int get_loops() const;
     /// This method adds the edge joining the vertices indicated by the two arguments after checking that they lie within the appropriate range.
     void add_edge(int,int);
     /// This method fuses together two vertices (the first two arguments), removing any edges between them; it functions by replacing the greater of the two vertices by the lesser. The final argument is the output pseudograph in which the vertices have been fused.
@@ -51,7 +51,12 @@ namespace SYNARMOSMA {
     void remove(int,int,Pseudograph*) const;
   };
 
-  int Pseudograph::get_loops() const
+  inline int Pseudograph::order() const 
+  {
+    return nvertex;
+  }
+
+  inline int Pseudograph::get_loops() const
   {
     int i,sum = 0;
     for(i=0; i<nvertex; ++i) {

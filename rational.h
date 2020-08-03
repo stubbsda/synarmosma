@@ -4,6 +4,15 @@
 #define _rationalh
 
 namespace SYNARMOSMA {
+  class Rational;
+  int convert(const Rational&,int);
+  Rational compute_mean(int,int,const std::string& = std::string("ARITHMETIC"));
+  Rational compute_mean(int,const Rational&,const std::string& = std::string("ARITHMETIC"));
+  Rational compute_mean(const Rational&,int,const std::string& = std::string("ARITHMETIC"));
+  Rational compute_mean(const Rational&,const Rational&,const std::string& = std::string("ARITHMETIC"));
+  Rational compute_mean(const std::vector<int>&,const std::string& = std::string("ARITHMETIC"));
+  Rational compute_mean(const std::vector<Rational>&,const std::string& = std::string("ARITHMETIC"));
+
   /// A class representing rational numbers, i.e. a number of the form n/d where n and d are whole numbers.
   class Rational {
    private:
@@ -22,7 +31,7 @@ namespace SYNARMOSMA {
     /// This method turns the rational q into its reciprocal 1/q, i.e. n => d', d => n'.
     void invert();
     /// This method calculates the height property of the rational number.
-    inline void compute_height() {height = (NTL::abs(n) > NTL::abs(d)) ? NTL::log(NTL::abs(n)) : NTL::log(NTL::abs(d));};
+    void compute_height();
    public:
     /// The default constructor which sets the properties to their default value and exits.
     Rational();
@@ -43,25 +52,25 @@ namespace SYNARMOSMA {
     /// This method returns the "suavitas" (agreeableness) of a ratio of two integers, as a pitch ratio, if this notion makes sense in this case; otherwise the method returns -1. The more consonant a pitch ratio is musically, the lower the value returned by this method, with the optimal value of 1 for the ratio 1:1.
     long agreeableness() const;
     /// This method returns true if this rational number is zero and false otherwise.
-    inline bool is_null() const {return (n == NTL::to_ZZ(0));};
+    bool is_null() const;
     /// This method returns the numerator.
-    inline NTL::ZZ get_numerator() const {return n;};
+    NTL::ZZ get_numerator() const;
     /// This method returns the denominator.
-    inline NTL::ZZ get_denominator() const {return d;};
+    NTL::ZZ get_denominator() const;
     /// This method returns the height.
-    inline double get_height() const {return height;};
-    /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of two integers.
-    inline friend Rational compute_mean(int,int,const std::string& = std::string("ARITHMETIC"));
-    /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of an integer and an instance of the Rational class. 
-    inline friend Rational compute_mean(int,const Rational&,const std::string& = std::string("ARITHMETIC"));
-    /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of an integer and an instance of the Rational class. 
-    inline friend Rational compute_mean(const Rational&,int,const std::string& = std::string("ARITHMETIC"));
-    /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of two instances of the Rational class. 
-    inline friend Rational compute_mean(const Rational&,const Rational&,const std::string& = std::string("ARITHMETIC"));
-    /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of a vector of integers.
-    inline friend Rational compute_mean(const std::vector<int>&,const std::string& = std::string("ARITHMETIC"));
-    /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of a vector of instances of the Rational class.
-    inline friend Rational compute_mean(const std::vector<Rational>&,const std::string& = std::string("ARITHMETIC"));
+    double get_height() const;
+    /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of two integers; the default is to compute the arithmetic mean.
+    friend Rational compute_mean(int,int,const std::string&);
+    /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of an integer and an instance of the Rational class; the default is to compute the arithmetic mean.
+    friend Rational compute_mean(int,const Rational&,const std::string&);
+    /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of an integer and an instance of the Rational class; the default is to compute the arithmetic mean.
+    friend Rational compute_mean(const Rational&,int,const std::string&);
+    /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of two instances of the Rational class; the default is to compute the arithmetic mean.
+    friend Rational compute_mean(const Rational&,const Rational&,const std::string&);
+    /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of a vector of integers; the default is to compute the arithmetic mean.
+    friend Rational compute_mean(const std::vector<int>&,const std::string&);
+    /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of a vector of instances of the Rational class; the default is to compute the arithmetic mean.
+    friend Rational compute_mean(const std::vector<Rational>&,const std::string&);
     /// This method implements the unary negation operator for an instance of the Rational class.
     friend Rational operator -(const Rational&);
     /// This method implements the addition operator for two instances of the Rational class.
@@ -100,22 +109,47 @@ namespace SYNARMOSMA {
     friend std::ostream& operator <<(std::ostream&,const Rational&);
   };
 
-  Rational compute_mean(int a,int b,const std::string& type)
+  inline bool Rational::is_null() const
+  {
+    return (n == NTL::to_ZZ(0));
+  }
+
+  inline void Rational::compute_height() 
+  {
+    height = (NTL::abs(n) > NTL::abs(d)) ? NTL::log(NTL::abs(n)) : NTL::log(NTL::abs(d));
+  }
+
+  inline double Rational::get_height() const
+  {
+    return height;
+  }
+
+  inline NTL::ZZ Rational::get_numerator() const
+  {
+    return n;
+  }
+
+  inline NTL::ZZ Rational::get_denominator() const
+  {
+    return d;
+  }
+
+  inline Rational compute_mean(int a,int b,const std::string& type)
   {
     return compute_mean(Rational(a),Rational(b),type);
   }
 
-  Rational compute_mean(int a,const Rational& b,const std::string& type)
+  inline Rational compute_mean(int a,const Rational& b,const std::string& type)
   {
     return compute_mean(Rational(a),b,type);
   }
 
-  Rational compute_mean(const Rational& a,int b,const std::string& type)
+  inline Rational compute_mean(const Rational& a,int b,const std::string& type)
   {
     return compute_mean(a,Rational(b),type);
   }
 
-  Rational compute_mean(const Rational& a,const Rational& b,const std::string& type)
+  inline Rational compute_mean(const Rational& a,const Rational& b,const std::string& type)
   {
     std::string utype = boost::to_upper_copy(type);
     if (utype != "ARITHMETIC" && utype != "HARMONIC") throw std::invalid_argument("The type of the mean must be arithmetic or harmonic!");
@@ -133,7 +167,7 @@ namespace SYNARMOSMA {
     return output;
   }
 
-  Rational compute_mean(const std::vector<int>& vx,const std::string& type)
+  inline Rational compute_mean(const std::vector<int>& vx,const std::string& type)
   {
     unsigned int i,n = vx.size();
     std::vector<Rational> qx;
@@ -144,7 +178,7 @@ namespace SYNARMOSMA {
     return compute_mean(qx,type);
   }
 
-  Rational compute_mean(const std::vector<Rational>& vx,const std::string& type)
+  inline Rational compute_mean(const std::vector<Rational>& vx,const std::string& type)
   {
     unsigned int n = vx.size();
     if (n < 2) throw std::invalid_argument("Computing the mean requires at least two numbers!");
@@ -170,7 +204,5 @@ namespace SYNARMOSMA {
     output.normalize();
     return output;
   }
-
-  int convert(const Rational&,int);
 }
 #endif

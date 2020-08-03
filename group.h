@@ -64,12 +64,12 @@ namespace SYNARMOSMA {
     ~Group();
     /// The overloaded assignment operator that copies over all the group properties.
     Group& operator =(const Group&);
-    /// This method returns the value of the Group::rank property for this instance of the class.
-    inline unsigned int get_rank() const {return rank;};
     /// This method returns the value of the Group::cardinality property (i.e. the group's order) for this instance of the class.
-    inline unsigned int get_order() const {return cardinality;};
+    unsigned int order() const;
+    /// This method returns the value of the Group::rank property for this instance of the class.
+    unsigned int get_rank() const;
     /// This method returns the value of the Group::solvable property for this instance of the class.
-    inline bool get_solvability() const {return solvable;};
+    bool get_solvability() const;
     /// This method computes all of the letters in the collection of group relations (the first argument) and returns true if there are no letters which are not generators, false otherwise.
     bool consistent(std::set<unsigned int>&) const;
     /// This method initializes the group presentation after the value of Group::ngenerator has been specified (in the constructor) and where the argument is the number of relations, which are constructed randomly.
@@ -87,9 +87,9 @@ namespace SYNARMOSMA {
     /// This method makes a new Abelian group from the current instance by adding the relation \f$aba^{-1}b^{-1}\f$ for each distinct pair of generators \f$a\f$ and \f$b\f$.
     Group abelianize() const;
     /// This method returns the number of generators in this combinatorial group presentation.
-    inline unsigned int get_number_generators() const {return ngenerator;};
+    unsigned int get_number_generators() const;
     /// This method returns the number of relations in this combinatorial group presentation.
-    inline unsigned int get_number_relations() const {return relations.size();};
+    unsigned int get_number_relations() const;
     /// This method writes the instance properties to a binary disk file and returns the number of bytes written to the file.
     int serialize(std::ofstream&) const;
     /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
@@ -99,5 +99,30 @@ namespace SYNARMOSMA {
     /// The overloaded ostream operator writes out the group structure, beginning with a line listing the scalar properties (Abelian, free, solvable etc.) followed by a second line with the group's combinatorial presentation.
     friend std::ostream& operator <<(std::ostream&,const Group&);
   };
+
+  inline unsigned int Group::order() const
+  {
+    return cardinality;
+  }
+
+  inline unsigned int Group::get_rank() const 
+  {
+    return rank;
+  }
+
+  inline bool Group::get_solvability() const
+  {
+    return solvable;
+  }
+
+  inline unsigned int Group::get_number_generators() const 
+  {
+    return ngenerator;
+  }
+
+  inline unsigned int Group::get_number_relations() const 
+  {
+    return relations.size();
+  }
 }
 #endif

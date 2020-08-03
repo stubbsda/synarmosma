@@ -108,13 +108,37 @@ namespace SYNARMOSMA {
     /// This method computes the dependency graph among the system of equations - each equation corresponds to a vertex and if two equations have at least one independent variable in common, there is an edge connecting the corresponding vertices. The method returns the connectedness of this graph.
     bool compute_dependency_graph(Graph*) const;
     /// This is a public method that sets the Solver::method property to Linear_Solver::iterative.
-    inline void use_iterative() {method = Linear_Solver::iterative;};
+    void use_iterative();
     /// This is a public method that sets the Solver::method property to Linear_Solver::direct.
-    inline void use_direct() {method = Linear_Solver::direct;};
+    void use_direct();
     /// This is a public method that sets the Solver::homotopy property to true.
-    inline void use_homotopy() {homotopy = true;};
+    void use_homotopy();
     /// This is a public method that sets the Solver::broyden property to true.
-    inline void use_broyden() {broyden = true;};
+    void use_broyden();
   };
+
+  template<class kind>
+  inline void Solver<kind>::use_iterative() 
+  {
+    method = Linear_Solver::iterative;
+  }
+
+  template<class kind>
+  inline void Solver<kind>::use_direct() 
+  {
+    method = Linear_Solver::direct;
+  }
+
+  template<class kind>
+  inline void Solver<kind>::use_homotopy() 
+  {
+    homotopy = true;
+  }
+
+  template<class kind>
+  inline void Solver<kind>::use_broyden() 
+  {
+    broyden = true;
+  }
 }
 #endif

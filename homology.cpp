@@ -137,8 +137,8 @@ void Homology::compute_integral_native(const Nexus* NX)
 {
   if (field != Field::int32 && field != Field::multiprecision) throw std::runtime_error("The field type must be a signed integer or multi-precision integer for this Homology method!");
  
-  const int dimension = NX->get_dimension();
-  const int nvertex = NX->get_order();
+  const int dimension = NX->dimension();
+  const int nvertex = NX->order();
   int i,j,d,p,v2[2];
   unsigned int k,r,ulimit,d1 = nvertex,d2 = NX->get_length(1);
   std::vector<unsigned int> image,kernel,tgenerators;
@@ -332,7 +332,7 @@ void Homology::compute_native(const Nexus* NX)
   if (field == Field::mod2) {
     // Note that torsion isn't possible in this case - all we need to do is compute the Betti numbers
     int i,j,p;
-    unsigned int r,k,d1 = NX->get_order(),d2 = NX->get_length(1); 
+    unsigned int r,k,d1 = NX->order(),d2 = NX->get_length(1); 
     std::vector<unsigned int> image,kernel;
     std::set<int> vx,vy,faces,S;
     std::set<int>::const_iterator it;
@@ -341,7 +341,7 @@ void Homology::compute_native(const Nexus* NX)
     image.push_back(0);
     kernel.push_back(0);
 
-    for(i=0; i<NX->get_order(); ++i) {
+    for(i=0; i<NX->order(); ++i) {
       NX->get_neighbours(i,vx);
       for(it=vx.begin(); it!=vx.end(); ++it) {
         p = *it;
@@ -356,7 +356,7 @@ void Homology::compute_native(const Nexus* NX)
     image.push_back(r);
     kernel.push_back(d2 - r);
 
-    for(d=2; d<=NX->get_dimension(); ++d) {
+    for(d=2; d<=NX->dimension(); ++d) {
       d1 = NX->get_length(d-1);
       d2 = NX->get_length(d);
       A->initialize(d1,d2);
@@ -373,11 +373,11 @@ void Homology::compute_native(const Nexus* NX)
       image.push_back(r);
       kernel.push_back(d2 - r);
     }
-    for(d=1; d<NX->get_dimension(); ++d) {
+    for(d=1; d<NX->dimension(); ++d) {
       betti_number.push_back(kernel[d] - image[d+1]);
       torsion.push_back(null);
     }
-    betti_number.push_back(kernel[NX->get_dimension()]);
+    betti_number.push_back(kernel[NX->dimension()]);
     torsion.push_back(null);
     delete A;
   }
@@ -388,7 +388,7 @@ void Homology::compute_native(const Nexus* NX)
 
 void Homology::compute_gap(const Nexus* NX)
 {
-  if (NX->get_dimension() < 1) return;
+  if (NX->dimension() < 1) return;
   int n;
   std::string line;
   std::set<int>::const_iterator it;
@@ -418,7 +418,7 @@ void Homology::compute_gap(const Nexus* NX)
     betti_number.push_back(betti);
     torsion.push_back(null);
 
-    for(d=1; d<=NX->get_dimension(); ++d) {
+    for(d=1; d<=NX->dimension(); ++d) {
       std::ofstream s("input.gap");
       s << "A := [";
       d1 = NX->get_length(d-1);
@@ -488,11 +488,11 @@ void Homology::compute_gap(const Nexus* NX)
       image.push_back(r);
       kernel.push_back(d2 - r);
     }
-    for(d=1; d<NX->get_dimension(); ++d) {
+    for(d=1; d<NX->dimension(); ++d) {
       betti_number.push_back(kernel[d] - image[d+1]);
       torsion.push_back(null);
     }
-    betti_number.push_back(kernel[NX->get_dimension()]);
+    betti_number.push_back(kernel[NX->dimension()]);
     torsion.push_back(null);
     return;
   }
@@ -508,7 +508,7 @@ void Homology::compute_gap(const Nexus* NX)
   std::ofstream s("input.gap");
   s << "LoadPackage(\"simpcomp\");;" << std::endl;
   s << "complex := SCFromFacets([";
-  for(i=1; i<=NX->get_dimension(); ++i) {
+  for(i=1; i<=NX->dimension(); ++i) {
     n = (signed) NX->get_length(i);
     k = 0;
     for(j=0; j<n; ++j) {

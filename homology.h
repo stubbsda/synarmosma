@@ -63,15 +63,15 @@ namespace SYNARMOSMA {
     /// This method writes out the sequence of homology groups as a string, using a comma-separated list where each group has the format \f$[r; t_1,t_2,\dots,t_k]\f$ where \f$r\f$ is the Betti number and the \f$t_i\f$ are the elements of the torsion vector.
     std::string write() const;
     /// The standard "set" method that gives a value to the Homology::method property.
-    inline void set_method(Method m) {method = m;};
+    void set_method(Method);
     /// The standard "set" method that gives a value to the Homology::field property.
-    inline void set_field(Field f) {field = f;};
+    void set_field(Field);
     /// The standard "get" method that returns the current value of the Homology::method property.
-    inline Method get_method() const {return method;};
+    Method get_method() const;
     /// The standard "get" method that returns the current value of the Homology::field property.
-    inline Field get_field() const {return field;};
+    Field get_field() const;
     /// This method sets the argument to the vector of Betti numbers that have been calculated.
-    inline void get_betti_numbers(std::vector<unsigned int>& output) const {output = betti_number;}; 
+    void get_betti_numbers(std::vector<unsigned int>&) const; 
     /// This method clears the Homology::betti_number and Homology::torsion vectors and sets the other class properties to their default value.
     void clear();
     /// This method computes the homology groups of an instance of the Nexus class, i.e. an abstract simplicial complex.
@@ -81,5 +81,30 @@ namespace SYNARMOSMA {
     /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
     int deserialize(std::ifstream&);
   };
+
+  inline void Homology::set_method(Method m) 
+  {
+    method = m;
+  }
+
+  inline Homology::Method Homology::get_method() const 
+  {
+    return method;
+  }
+
+  inline void Homology::set_field(Field f) 
+  {
+    field = f;
+  }
+
+  inline Homology::Field Homology::get_field() const 
+  {
+    return field;
+  }
+
+  inline void Homology::get_betti_numbers(std::vector<unsigned int>& output) const
+  {
+    output = betti_number;
+  }
 }
 #endif 

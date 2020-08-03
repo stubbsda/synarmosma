@@ -418,6 +418,16 @@ void Directed_Graph::compute_distances(pair_index& output) const
   }
 }
 
+bool Directed_Graph::add_edge(int u,int v)
+{
+  return add_edge(u,v,Relation::disparate,0.0);
+}
+
+bool Directed_Graph::add_edge(int u,int v,double kappa)
+{
+  return add_edge(u,v,Relation::disparate,kappa);
+}
+
 bool Directed_Graph::add_edge(int u,int v,Relation d,double ell)
 {
   bool output = Graph::add_edge(u,v,ell);

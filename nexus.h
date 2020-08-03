@@ -11,7 +11,7 @@ namespace SYNARMOSMA {
     /// This integer property stores the dimension of the abstract simplicial complex, i.e. 
     /// the length of the array Nexus::elements less one; it is set when the instance of the 
     /// Nexus is constructed and cannot be changed. 
-    int dimension = -1;
+    int topological_dimension = -1;
     /// This property is an array of vectors of Cell type, each such vector corresponding to a 
     /// dimension. The 0-dimensional vector, Nexus::elements[0], is always empty as the number 
     /// of vertices is known from the Schema::nvertex property that this class inherits.  
@@ -48,7 +48,7 @@ namespace SYNARMOSMA {
     /// This method calls clear(), sets the value of Nexus::dimension to the first argument and the inherited nvertex property to the second argument. The method then allocates the Schema and Nexus properties.
     void initialize(int,int);
     /// This method functions like the other paste() method but uses a set containing the vertices that should be added to the Nexus instance.
-    inline bool paste(const std::set<int>& vx) {return paste(Cell(vx));};
+    bool paste(const std::set<int>&);
     /// This method adds a new Cell to this Nexus instance and returns true if it is genuinely new, false otherwise. Note that this method does not call regularization(), so it is the caller's responsibility to ensure that the Nexus is explicitly regularized.
     bool paste(const Cell&);
     /// This method ensures that this Nexus instance satisfies the entailment property for an abstract simplicial complex, i.e. if a D-simplex is part of the complex then so are all of its sub-simplices. The method returns the number of simplices that had to be added to regularize the complex.
@@ -69,54 +69,64 @@ namespace SYNARMOSMA {
     void compute_neighbours();
     /// This method computes the neighbour graph, i.e. the graph where each d-simplex is a vertex and an edge exists between two vertices if the corresponding d-simplices are adjacent. The method returns the size of the resulting graph, which is output in the method's unique argument.
     int compute_neighbour_graph(Graph*) const;
-    /// This method returns the dimensionality of this instance of the Nexus class.  
-    inline int get_dimension() const {return dimension;};
+    /// This method returns the value of Nexus::topological_dimension for this instance of the class.  
+    int dimension() const;
     /// This method returns the number of simplices of a given dimension in this instance. 
-    inline unsigned int get_length(int) const;
+    unsigned int get_length(int) const;
     /// This method returns the index of a Cell of a given dimension in the relevant Nexus::elements vector and -1 if this Cell can't be found.
-    inline int get_index(std::set<int>&) const;
+    int get_index(std::set<int>&) const;
     /// This method puts the vertices belonging to the Cell specified by the first two arguments - the dimension d and index in Nexus::elements[d] - into the integer array in the final argument.
-    inline void get_elements(int,int,int*) const;
+    void get_elements(int,int,int*) const;
     /// This method puts the vertices belonging to the Cell specified by the first two arguments - the dimension d and index in Nexus::elements[d] - into the integer set in the final argument.
-    inline void get_elements(int,int,std::set<int>&) const;
+    void get_elements(int,int,std::set<int>&) const;
     /// This method puts the entourage associated with the Cell specified by the first two arguments - the dimension d and index in Nexus::elements[d] - into the integer set in the final argument.
-    inline void get_entourage(int,int,std::set<int>&) const;
+    void get_entourage(int,int,std::set<int>&) const;
   };
 
-  unsigned int Nexus::get_length(int D) const 
+  inline bool Nexus::paste(const std::set<int>& vx) 
   {
-    if (D < 1 || D > dimension) throw std::invalid_argument("Illegal dimension value in Nexus::get_length!"); 
+    return paste(Cell(vx));
+  }
+
+  inline int Nexus::dimension() const
+  {
+    return topological_dimension;
+  }
+
+  inline unsigned int Nexus::get_length(int D) const 
+  {
+    if (D < 1 || D > topological_dimension) throw std::invalid_argument("Illegal dimension value in Nexus::get_length!"); 
     return elements[D].size();
   }
 
-  int Nexus::get_index(std::set<int>& S) const 
+  inline int Nexus::get_index(std::set<int>& S) const 
   {
     unsigned int D = S.size() - 1; 
-    if (D < 1 || D > (unsigned) dimension) throw std::invalid_argument("Illegal dimension value in Nexus::get_index!"); 
+    if (D < 1 || D > (unsigned) topological_dimension) throw std::invalid_argument("Illegal dimension value in Nexus::get_index!"); 
     hash_map::const_iterator qt = index_table[D].find(S); 
     if (qt != index_table[D].end()) return qt->second;
     return -1;
   }
 
-  void Nexus::get_elements(int D,int n,int* vx) const 
+  inline void Nexus::get_elements(int D,int n,int* vx) const 
   {
-    if (D < 1 || D > dimension) throw std::invalid_argument("Illegal dimension value in Nexus::get_elements!"); 
+    if (D < 1 || D > topological_dimension) throw std::invalid_argument("Illegal dimension value in Nexus::get_elements!"); 
     if (n < 0 || n >= (signed) elements[D].size()) throw std::invalid_argument("The simplex specified in Nexus::get_elements does not exist!");
 
     elements[D][n].get_vertices(vx);
   }
 
-  void Nexus::get_elements(int D,int n,std::set<int>& vx) const 
+  inline void Nexus::get_elements(int D,int n,std::set<int>& vx) const 
   {
-    if (D < 1 || D > dimension) throw std::invalid_argument("Illegal dimension value in Nexus::get_elements!"); 
+    if (D < 1 || D > topological_dimension) throw std::invalid_argument("Illegal dimension value in Nexus::get_elements!"); 
     if (n < 0 || n >= (signed) elements[D].size()) throw std::invalid_argument("The simplex specified in Nexus::get_elements does not exist!");
 
     elements[D][n].get_vertices(vx);
   }
 
-  void Nexus::get_entourage(int D,int n,std::set<int>& vx) const 
+  inline void Nexus::get_entourage(int D,int n,std::set<int>& vx) const 
   {
-    if (D < 1 || D > dimension) throw std::invalid_argument("Illegal dimension value in Nexus::get_entourage!"); 
+    if (D < 1 || D > topological_dimension) throw std::invalid_argument("Illegal dimension value in Nexus::get_entourage!"); 
     if (n < 0 || n >= (signed) elements[D].size()) throw std::invalid_argument("The simplex specified in Nexus::get_entourage does not exist!");
 
     elements[D][n].get_entourage(vx);

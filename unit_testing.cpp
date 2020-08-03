@@ -179,7 +179,7 @@ int main(int argc,char** argv)
   SYNARMOSMA::Group H("DIHEDRAL",5);
   std::set<unsigned int> S;
   assert(H.consistent(S));
-  assert(H.get_order() == 10);
+  assert(H.order() == 10);
   assert(H.get_solvability());
 
   std::cout << "Testing integer matrices..." << std::endl;

@@ -57,7 +57,7 @@ namespace SYNARMOSMA {
     /// This method accepts as its input an axis of rotation (the first argument), an angle (second argument), a translation vector (third argument) and finally a set of observational locations (the final argument), the perceived three-dimensional coordinates for each vertex. The method applies the rotation and translation to the coordinates of every vertex in the geometry and then computes the distance from this value to the observed vertex location, adds together these distances and returns their arithmetic mean.
     double perceptual_divergence(const double*,double,const double*,const double*) const;
     /// This method calculates the index into the vector Geometry::distances given the indices of two vertices, the method's arguments. 
-    inline int compute_index(int,int) const;
+    int compute_index(int,int) const;
    public:
     /// The default constructor which does nothing.
     Geometry();
@@ -88,7 +88,7 @@ namespace SYNARMOSMA {
     /// This method adds a vertex to the geometry; its unique argument is a set of parents for this new vertex. If the set is empty the vertex is placed randomly, otherwise its localization is a random Gaussian variate whose mean is the average of the location of its parents. The return value is the index of the new vertex.
     int vertex_addition(const std::set<int>&);
     /// This method adds a vertex to the geometry; its unique argument is the coordinates for the new vertex and it should only be called therefore when Geometry::relational is false. The return value is the index of the new vertex.
-    inline int vertex_addition(const std::vector<double>&);
+    int vertex_addition(const std::vector<double>&);
     /// This method adds multiple vertices to the geometry - it begins by calling the clear() method so that it starts from an empty geometry, then adds n vertices where n is the first argument. The second and third arguments are the mean and standard deviation for the coordinates of these n vertices; note that this method is not compatible with a relational geometry.
     void multiple_vertex_addition(int,double,double);
     /// This method adds multiple vertices to the geometry - it begins by calling the clear() method so that it starts from an empty geometry, then adds n vertices where n is the first argument. The second argument determines whether or not the coordinates are drawn from a uniform random distribution - if true the third argument must be a vector of length twice the Geometry::background_dimension containing the coordinate limits, if false then the third argument must contain all of the coordinates (and so be of length n times Geometry::background_dimension). Note that this method is not compatible with a relational geometry.
@@ -116,36 +116,61 @@ namespace SYNARMOSMA {
     /// If this method is called, then the geometry is restored to its original nature, based on the value of Geometry::vperturb and Geometry::original, after a call to vertex_perturbation(). The argument determines whether or not the rollback is minimal, based on the severity of the perturbation of the geometry.
     void rollback(bool);
     /// This method returns the value of the Geometry::euclidean property.
-    inline bool get_euclidean() const {return euclidean;};
+    bool get_euclidean() const;
     /// This method returns the value of the Geometry::relational property.
-    inline bool get_relational() const {return relational;};
+    bool get_relational() const;
     /// This method returns the value of the Geometry::uniform property.
-    inline bool get_uniform() const {return uniform;};
+    bool get_uniform() const;
     /// This method returns the value of the Geometry::high_memory property.
-    inline bool get_memory_type() const {return high_memory;};
+    bool get_memory_type() const;
     /// This method returns the value the Geometry::background_dimension property.
-    inline unsigned int dimension() const {return background_dimension;};
+    unsigned int dimension() const;
     /// This method adds the second argument to the value of Geometry::distances[n] (if the geometry is relational) or to the n-th element in Geometry::coordinates (if not).
-    inline void add(int,double);
+    void add(int,double);
     /// This method returns the nature of the temporal ordering between the two points indicated by the method's arguments: DISPARATE, BEFORE or AFTER. 
-    inline Relation get_temporal_order(int,int) const;
-    /// This method sets the value of the n-th element in Geometry::coordinates to its second argument by counting through each tuple from Geometry::coordinates[0][0]; if the geometry is relational it sets the value of Geometry::distances[n] to the second argument.
-    inline void set_element(int,double);
+    Relation get_temporal_order(int,int) const;
     /// This method computes and returns the quotient of the dot product of its two arguments, divided by the product of their norm, which in a Euclidean context is equal to the cosine of the angle between them. 
-    inline double get_argument(const std::vector<double>&,const std::vector<double>&) const;
+    double get_argument(const std::vector<double>&,const std::vector<double>&) const;
     /// This method gets the value of the n-th element in Geometry::coordinates by counting through each tuple from Geometry::coordinates[0][0]; if the geometry is relational it gets the value of Geometry::distances[n].
-    inline double get_element(int) const;
+    double get_element(int) const;
+    /// This method sets the value of the n-th element in Geometry::coordinates to its second argument by counting through each tuple from Geometry::coordinates[0][0]; if the geometry is relational it sets the value of Geometry::distances[n] to the second argument.
+    void set_element(int,double);
     /// This method returns the squared distance between the two vertices specified by its first two arguments; if the third argument is true, then the method will recompute the squared distance (this is meaningless if Geometry::relational is true). 
-    inline double get_squared_distance(int,int,bool) const;
+    double get_squared_distance(int,int,bool) const;
     /// This method computes and returns the squared distance between the point whose index is the first argument and the coordinate vector that is the second argument; this method is meaningless if Geometry::relational is true.
-    inline double get_squared_distance(int,const std::vector<double>&) const;
+    double get_squared_distance(int,const std::vector<double>&) const;
     /// This method gets the coordinate vector for the point whose index is the first argument and sets the second argument equal to this coordinate tuple.
-    inline void get_coordinates(int,std::vector<double>&) const;
+    void get_coordinates(int,std::vector<double>&) const;
     /// This method sets the coordinate vector for the point whose index is the first argument to the method's second argument. 
-    inline void set_coordinates(int,const std::vector<double>&);
+    void set_coordinates(int,const std::vector<double>&);
     /// This method computes the difference between two instances of this class, returning a non-negative floating point number; the greater the number, the more substantial the difference between the two geometries.
     friend double geometry_change(const Geometry*,const Geometry*);
   };
+
+  inline bool Geometry::get_euclidean() const
+  {
+    return euclidean;
+  }
+
+  inline bool Geometry::get_relational() const
+  {
+    return relational;
+  }
+
+  inline bool Geometry::get_uniform() const
+  {
+    return uniform;
+  }
+
+  inline bool Geometry::get_memory_type() const
+  {
+    return high_memory;
+  }
+
+  inline unsigned int Geometry::dimension() const
+  {
+    return background_dimension;
+  }
 
   inline int Geometry::compute_index(int v1,int v2) const
   {
@@ -167,7 +192,7 @@ namespace SYNARMOSMA {
     return n;
   }
 
-  Relation Geometry::get_temporal_order(int u,int v) const 
+  inline Relation Geometry::get_temporal_order(int u,int v) const 
   {
     if (u == v) throw std::invalid_argument("The vertex arguments in Geometry::get_temporal_order must be distinct!");
     Relation rho = Relation::disparate;
@@ -179,7 +204,7 @@ namespace SYNARMOSMA {
     return rho;
   }
 
-  double Geometry::get_argument(const std::vector<double>& vx,const std::vector<double>& vy) const
+  inline double Geometry::get_argument(const std::vector<double>& vx,const std::vector<double>& vy) const
   {
     double d,t,alpha,nv1 = norm(vx),nv2 = norm(vy);
 
@@ -195,7 +220,7 @@ namespace SYNARMOSMA {
     return alpha;
   }
 
-  double Geometry::get_element(int n) const
+  inline double Geometry::get_element(int n) const
   {
     if (relational) return distances[n];
 
@@ -209,7 +234,7 @@ namespace SYNARMOSMA {
     throw std::invalid_argument("Missing element in Geometry::get_element method!");
   }
 
-  void Geometry::set_element(int n,double alpha)
+  inline void Geometry::set_element(int n,double alpha)
   {
     if (relational) distances[n] = alpha;
 
@@ -227,7 +252,7 @@ namespace SYNARMOSMA {
     throw std::invalid_argument("Missing element in Geometry::set_element method!");
   }
 
-  void Geometry::add(int n,double alpha)
+  inline void Geometry::add(int n,double alpha)
   {
     if (relational) distances[n] += alpha;
 
@@ -245,7 +270,7 @@ namespace SYNARMOSMA {
     throw std::invalid_argument("Missing element in Geometry::add method!");
   }
 
-  int Geometry::vertex_addition(const std::vector<double>& x)
+  inline int Geometry::vertex_addition(const std::vector<double>& x)
   {
     if (relational) throw std::runtime_error("Illegal method call (Geometry::vertex_addition) for relational model!");
     if (x.size() < background_dimension) throw std::invalid_argument("The length of the vector argument of Geometry::vertex_addition must not be less than the background dimension!");
@@ -323,7 +348,7 @@ namespace SYNARMOSMA {
     return nvertex;
   }
 
-  void Geometry::get_coordinates(int v,std::vector<double>& x) const
+  inline void Geometry::get_coordinates(int v,std::vector<double>& x) const
   {
     if (relational) throw std::runtime_error("Illegal method call (Geometry::get_coordinates) for relational model!");
 #ifdef DISCRETE
@@ -337,7 +362,7 @@ namespace SYNARMOSMA {
 #endif
   }
 
-  void Geometry::set_coordinates(int v,const std::vector<double>& x)
+  inline void Geometry::set_coordinates(int v,const std::vector<double>& x)
   {
     if (relational) throw std::runtime_error("Illegal method call (Geometry::set_coordinates) for relational model!");
     if (x.size() < background_dimension) throw std::invalid_argument("The length of the vector argument of Geometry::set_coordinates must not be less than the background dimension!");
@@ -366,7 +391,7 @@ namespace SYNARMOSMA {
 #endif
   }
 
-  double Geometry::get_squared_distance(int v,const std::vector<double>& x) const 
+  inline double Geometry::get_squared_distance(int v,const std::vector<double>& x) const 
   {
     if (relational) throw std::runtime_error("Illegal method call (Geometry::get_squared_distance) for relational model!");
     if (x.size() < background_dimension) throw std::invalid_argument("The length of the vector argument of Geometry::get_squared_distance must not be less than the background dimension!");
@@ -399,7 +424,7 @@ namespace SYNARMOSMA {
     return delta;
   }
 
-  double Geometry::get_squared_distance(int v1,int v2,bool recompute) const
+  inline double Geometry::get_squared_distance(int v1,int v2,bool recompute) const
   {
     if (v1 == v2) throw std::invalid_argument("The vertex arguments in Geometry::get_squared_distance must be distinct!");
     if (relational && recompute) throw std::invalid_argument("The squared distances are fundamental in a relational geometry!");

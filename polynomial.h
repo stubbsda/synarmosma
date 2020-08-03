@@ -77,9 +77,9 @@ namespace SYNARMOSMA {
     /// This method evaluates the polynomial at the method's argument \f$\alpha\f$, returning the value of \f$p(\alpha)\f$.
     kind evaluate(kind);
     /// This method returns the value of the degree.
-    inline unsigned int get_degree() const {return degree;};
+    unsigned int get_degree() const;
     /// This method returns true if this is the zero polynomial and false otherwise.
-    inline bool is_null() const;
+    bool is_null() const;
     /// This method returns the value of the coefficient specified by the method's unique argument.
     kind get_value(unsigned int) const;
     /// This method sets the coefficient specified by the second argument to the value specified by the first argument.
@@ -104,9 +104,15 @@ namespace SYNARMOSMA {
     friend Polynomial<kind> operator *<>(const Polynomial<kind>&,const Polynomial<kind>&);
   };
 
+  template<class kind>
+  inline unsigned int Polynomial<kind>::get_degree() const
+  {
+    return degree;
+  }
+
   template<>
   /// This method is an instantiation of is_null() for the case of a polynomial over the rationals, needed to handle this case where the coefficients can be tested if they are exactly zero.
-  bool Polynomial<Rational>::is_null() const
+  inline bool Polynomial<Rational>::is_null() const
   {
     if (terms.empty()) return true;
     unsigned int i;
@@ -117,7 +123,7 @@ namespace SYNARMOSMA {
   }
 
   template<class kind> 
-  bool Polynomial<kind>::is_null() const
+  inline bool Polynomial<kind>::is_null() const
   {
     if (terms.empty()) return true;
     unsigned int i;

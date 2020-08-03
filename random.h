@@ -68,14 +68,14 @@ namespace SYNARMOSMA {
     Random();
     /// The destructor which frees the memory associated with the pointers Random::uniform, Random::VRG, Random::gaussian, Random::NRG and the other distributions, if the Random::poisson_allocated, Random::beta_allocated and Random::brn_allocated properties are true.
     ~Random();
-    /// This method allows the seed value to be set for the pseudo-random number generator.
-    inline void set_seed(unsigned long x) {s = x; BGT.seed(s);};
-    /// This method increments the seed value by one and then resets the pseudo-random number generator. 
-    inline void increment_seed() {s++; BGT.seed(s);};
-    /// This method decrements the seed value by one and then resets the pseudo-random number generator. 
-    inline void decrement_seed() {s--; BGT.seed(s);};
     /// This method returns the current value of the pseud-random number seed.
-    inline unsigned long get_seed() const {return s;};
+    unsigned long get_seed() const;
+    /// This method allows the seed value to be set for the pseudo-random number generator.
+    void set_seed(unsigned long);
+    /// This method increments the seed value by one and then resets the pseudo-random number generator. 
+    void increment_seed();
+    /// This method decrements the seed value by one and then resets the pseudo-random number generator. 
+    void decrement_seed();
     /// This method allocates the memory for the Random::root_beta property using the two arguments and sets Random::beta_allocated to true.
     void initialize_beta(double,double);
     /// This method allocates the memory for the Random::brn and Random::vbrn properties using the argument and sets Random::bernoulli_allocated to true.
@@ -119,5 +119,28 @@ namespace SYNARMOSMA {
     /// This method generates a vector (the first argument) of complex numbers of length n (the second argument); the real part of these numbers are uniform random variates on the interval [a,b) (the third and fourth arguments) and imaginary part either zero if the final argument is false or uniform random variates on [a,b) if it is true.
     void generate_random_vector(std::vector<std::complex<double> >&,int,double,double,bool = false);
   };
+
+  inline unsigned long Random::get_seed() const
+  {
+    return s;
+  }
+
+  inline void Random::set_seed(unsigned long x)
+  {
+    s = x; 
+    BGT.seed(s);
+  }
+
+  inline void Random::increment_seed() 
+  {
+    s++; 
+    BGT.seed(s);
+  }
+
+  inline void Random::decrement_seed()
+  {
+    s--;
+    BGT.seed(s);
+  }
 }
 #endif

@@ -9,10 +9,10 @@ namespace SYNARMOSMA {
    protected:
     /// This vector of signed integers contains the proposition, stored according to the 
     /// following system: the vector contains an integral number of clauses and each clause  
-    /// is of length 2*NP. It contains a non-negative integer (the index of the atomic 
-    /// proposition) followed by 0 or 1, which indicates if the atomic proposition has a 
-    /// NOT symbol. If the clause contains less than NP atomic propositions, then all of 
-    /// its subsequent elements are set to -1. 
+    /// has a length which is twice the value of Proposition::NP. It contains a non-negative 
+    /// integer (the index of the atomic proposition) followed by 0 or 1, which indicates if 
+    /// the atomic proposition has a NOT symbol. If the clause contains less than 
+    /// Proposition::NP atomic propositions, then all of its subsequent elements are set to -1. 
     std::vector<int> clause;
     /// This static property is an unsigned integer containing the maximum number of atomic 
     /// propositions in a clause.
@@ -46,28 +46,48 @@ namespace SYNARMOSMA {
     /// This method retains the same number of clauses and the same set of atomic propositions but otherwise completely regenerates the proposition.
     void mutate();
     /// This method clears the Proposition::clause vector.
-    inline void clear() {clause.clear();};
+    void clear();
     /// This method writes the instance properties to a binary disk file and returns the number of bytes written to the file.
     int serialize(std::ofstream&) const;
     /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
     int deserialize(std::ifstream&);
     /// This method sets the Proposition::clause vector to be equal to the method's argument, after checking that its length is an even multiple of Proposition::NP.
-    inline void set_clause(const std::vector<int>&);
+    void set_clause(const std::vector<int>&);
     /// This method sets the argument to the Proposition::clause vector.
-    inline void get_clause(std::vector<int>& c) const {c = clause;};
+    void get_clause(std::vector<int>&) const;
     /// This method returns the number of clauses in this proposition. 
-    inline unsigned int get_size() const {return clause.size()/(2*NP);}; 
+    unsigned int get_size() const; 
     /// This method returns the maximum number of atomic propositions in a clause.
-    inline static unsigned int get_clause_size() {return NP;};
+    static unsigned int get_clause_size();
     /// This method overloads the ostream operator to do a pretty print of the proposition, with the atomic propositions written as "p[n]" where n >= 1 is an integer and using the standard logical connectives ∧, ∨ and ¬.
     friend std::ostream& operator <<(std::ostream&,const Proposition&);
     /// This method overloads the & operator to carry out a conjunction of the two propositions, thereby creating an output proposition whose size is the sum of the size of the two arguments.
     friend Proposition operator &(const Proposition&,const Proposition&);
   };
 
-  void Proposition::set_clause(const std::vector<int>& c) {
-    if (c.size()%(2*NP) != 0) throw std::invalid_argument("The argument of the Proposition::set_clause method has an illegal length!"); 
+  inline void Proposition::clear() 
+  {
+    clause.clear();
+  }
+
+  inline void Proposition::set_clause(const std::vector<int>& c) {
+    if (c.size()%(2*Proposition::NP) != 0) throw std::invalid_argument("The argument of the Proposition::set_clause method has an illegal length!"); 
     clause = c;
+  }
+
+  inline void Proposition::get_clause(std::vector<int>& c) const
+  {
+    c = clause;
+  }
+
+  inline unsigned int Proposition::get_size() const 
+  {
+    return clause.size()/(2*Proposition::NP);
+  }
+
+  inline unsigned int Proposition::get_clause_size()
+  {
+    return Proposition::NP;
   }
 }
 #endif

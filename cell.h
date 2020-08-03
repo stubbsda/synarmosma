@@ -47,35 +47,40 @@ namespace SYNARMOSMA {
     /// This method clears the content of the Cell::vertices, Cell::entourage and Cell::faces properties.
     virtual void clear();
     /// This method checks if the argument is the vertex set of one of the faces of this n-simplex and returns true if this is the case.
-    inline bool face(const std::set<int>&) const;
+    bool face(const std::set<int>&) const;
     /// This method writes the content of the Cell::vertices set to the method's argument, which is assumed to be long enough to store all 1+n vertices. 
-    inline void get_vertices(int*) const;
+    void get_vertices(int*) const;
     /// This method writes the content of the Cell::vertices set to the method's argument, as a vector.
-    inline void get_vertices(std::vector<int>&) const;
+    void get_vertices(std::vector<int>&) const;
     /// This method writes the content of the Cell::vertices set to the method's argument.
-    inline void get_vertices(std::set<int>& v) const {v = vertices;};
+    void get_vertices(std::set<int>&) const;
     /// This method writes the content of the Cell::entourage set to the method's argument
-    inline void get_entourage(std::set<int>& v) const {v = entourage;};
+    void get_entourage(std::set<int>&) const;
     /// This method writes the content of the Cell::faces vector to the method's argument.
-    inline void get_faces(std::vector<std::set<int> >& v) const {v = faces;};
+    void get_faces(std::vector<std::set<int> >&) const;
     /// This method returns the cardinality of Cell::vertices less one, i.e. the dimension of this simplex.
-    inline int dimension() const {return (vertices.size() - 1);};
+    int dimension() const;
     /// This method returns true if the Cell::vertices contains the method's argument and false otherwise.
-    inline bool contains(int) const;
+    bool contains(int) const;
     /// This method returns true if Cell::vertices is empty, false otherwise.
-    inline bool empty() const {return vertices.empty();};
+    bool empty() const;
     /// This method tests if the dimension of its two arguments is the same (if not it throws an invalid argument exception), then computes and returns the cardinality of the intersection of the Cell::vertices property of its two arguments. 
-    friend inline int affinity(const Cell&,const Cell&);
+    friend int affinity(const Cell&,const Cell&);
     /// This operator returns true if the Cell::vertices property of both its arguments is the same, false otherwise.
-    friend inline bool operator ==(const Cell&,const Cell&);
+    friend bool operator ==(const Cell&,const Cell&);
     /// This operator returns true if the Cell::vertices property of both its arguments isn't the same and false otherwise.
-    friend inline bool operator !=(const Cell&,const Cell&);
+    friend bool operator !=(const Cell&,const Cell&);
     /// This operator returns true if the Cell::vertices property of the first argument is a subset of the Cell::vertices property of its second argument, false otherwise.
-    friend inline bool operator <=(const Cell&,const Cell&);
+    friend bool operator <=(const Cell&,const Cell&);
     /// This operator returns true if the Cell::vertices property of the first argument is a proper subset of the Cell::vertices property of its second argument, false otherwise.
-    friend inline bool operator <(const Cell&,const Cell&);
+    friend bool operator <(const Cell&,const Cell&);
     friend class Nexus;
   };
+
+  inline void Cell::get_vertices(std::set<int>& v) const
+  {
+    v = vertices;
+  }
 
   inline void Cell::get_vertices(std::vector<int>& v) const
   {
@@ -97,6 +102,26 @@ namespace SYNARMOSMA {
     }
   }  
 
+  inline void Cell::get_entourage(std::set<int>& v) const
+  {
+    v = entourage;
+  }
+
+  inline void Cell::get_faces(std::vector<std::set<int> >& v) const
+  {
+    v = faces;
+  }
+
+  inline int Cell::dimension() const
+  {
+    return (vertices.size() - 1);
+  }
+
+  inline bool Cell::empty() const
+  {
+    return vertices.empty();
+  }
+
   inline bool Cell::contains(int v) const
   {
     bool output = false;
@@ -104,7 +129,7 @@ namespace SYNARMOSMA {
     return output;
   }
 
-  bool Cell::face(const std::set<int>& f) const
+  inline bool Cell::face(const std::set<int>& f) const
   {
     if ((signed) f.size() != (dimension() - 1)) return false;
     for(int i=0; i<=dimension(); ++i) {

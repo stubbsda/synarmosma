@@ -686,6 +686,11 @@ bool Graph::drop_vertex(int v)
   return true;
 }
 
+bool Graph::add_edge(int v,int u)
+{
+  return add_edge(v,u,0.0);
+}
+
 bool Graph::add_edge(int v,int u,double kappa)
 {
   if (u == v) return false;

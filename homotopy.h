@@ -47,11 +47,16 @@ namespace SYNARMOSMA {
     /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
     int deserialize(std::ifstream&);
     /// This method returns the current value of the private property Homotopy::fitness for this instance of the class.
-    inline double get_fitness() const {return fitness;};
+    double get_fitness() const;
     /// This overloaded operator "mates" two homotopy sequences of the same length by computing a random division point and using the first argument's groups initially and the second argument's groups afterwards to assemble the homotopy sequence for the output instance.
     friend Homotopy operator +(const Homotopy&,const Homotopy&);
     /// This overloaded ostream operator writes out the vector Homotopy::sequence using the Group::compact_form method.
     friend std::ostream& operator <<(std::ostream&,const Homotopy&);
   };
+
+  inline double Homotopy::get_fitness() const 
+  {
+    return fitness;
+  }
 }
 #endif

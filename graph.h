@@ -53,7 +53,7 @@ namespace SYNARMOSMA {
     /// This method returns the topological energy of this graph, based on its genus.
     virtual double compute_energy() const;
     /// This method adds an edge to the graph between the two vertices specified in its two arguments, assuming an edge length of zero; the method returns true if this a new edge, false otherwise.
-    virtual inline bool add_edge(int u,int v) override {return add_edge(u,v,0.0);};
+    virtual bool add_edge(int,int) override;
     /// This method adds an edge to the graph between the two vertices specified in its first two arguments, while the third argument is the length of this edge; the method returns true if this is a new edge, false otherwise.
     virtual bool add_edge(int,int,double);
     /// This method deletes the edge connecting the two vertices specified in its arguments, returning true if there was an edge to delete and false otherwise.
@@ -99,7 +99,7 @@ namespace SYNARMOSMA {
     /// This method computes the length of the graph's largest cycle; it returns -1 if the graph is acyclic. 
     int girth() const;
     /// This method computes the inverse girth; if the graph is acyclic it returns zero.
-    inline double inverse_girth() const;
+    double inverse_girth() const;
     /// This method computes the complement of this graph, i.e. the graph with the same vertices but where two vertices are connected if and only if they are not connected in the original graph.
     void complement(Graph*) const;
     /// This method builds a pseudograph representation of the graph and then uses the defoliate() method to encode this pseudograph into a multivariate polynomial, the Tutte polynomial of the graph.
@@ -133,17 +133,17 @@ namespace SYNARMOSMA {
     /// This method computes and returns the graph's entwinement. This is defined to be \f$(\lambda_\textrm{max} - \kappa)/(d_\textrm{max} - \kappa)\f$, where \f$\lambda_\textrm{max}\f$ is the largest eigenvalue of its adjacency matrix, \f$d_\textrm{max}\f$ the maximum degree and \f$\kappa = \max(d_\textrm{avg},\sqrt{d_\textrm{max}})\f$. 
     double entwinement() const;
     /// This method computes the graph's completeness, i.e. the graph's size divided by \f$N(N-1)/2\f$, where \f$N\f$ is the graph's order; this measures how closely it approximates the complete graph on \f$N\f$ vertices.
-    inline double completeness() const;
+    double completeness() const;
     /// This method computes the graph's circuit rank, defined to be the number of graph components minus the number of vertices plus the number of edges.
-    inline int circuit_rank() const;
+    int circuit_rank() const;
     /// This method computes the graph's chromatic number, i.e. the smallest number of colours which can be used to colour the vertices such that no two neighbouring vertices share the same colour.
     int chromatic_number() const;
     /// This method returns the minimum degree of the graph.
-    inline int max_degree() const;
+    int max_degree() const;
     /// This method returns the maximum degree of the graph.
-    inline int min_degree() const;
+    int min_degree() const;
     /// This method returns the arithmetic mean of the vertex degrees of the graph.
-    inline double average_degree() const;
+    double average_degree() const;
     /// This method's argument represent a base vertex v, a length l and the number of trials n - the method carries out n random walks from v of length l and returns the percentage of these walks which return at least once to the starting vertex v.
     double return_probability(int,int,int = 100) const;
     /// This method uses the return_probability() method to do a general analysis of random walks on the graph topology. Its arguments are the length of the random walk, the percentage of vertices randomly selected that are used as a starting point and the number of walks per starting point. The method returns a pair of doubles, the average return probability and its standard deviation over the number of starting points.
@@ -157,9 +157,7 @@ namespace SYNARMOSMA {
     /// This method returns the value of the graph's genus; if the graph is planar this is just zero. For a non-planar graph, the method computes an upper and lower bound for the genus; if these coincide the method returns this value, otherwise it puts the two values in the method's argument and returns -1.
     int genus(std::vector<int>&) const;
     /// This method returns the size of the graph, i.e. the number of edges.
-    inline int size() const {return (signed) edges.size();};
-    /// This method returns the order of the graph, i.e. the number of vertices.
-    inline int order() const {return nvertex;};
+    int size() const;
     /// This method writes the graph's properties to a binary disk file and returns the number of bytes written to the file.
     virtual int serialize(std::ofstream&) const override;
     /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
@@ -170,7 +168,11 @@ namespace SYNARMOSMA {
     friend Graph operator *(const Graph&,const Graph&);
   };
 
-  double Graph::inverse_girth() const
+  inline int Graph::size() const {
+    return (signed) edges.size(); 
+  }
+
+  inline double Graph::inverse_girth() const
   {
     int output = girth();
     double g = 0.0;
@@ -179,7 +181,7 @@ namespace SYNARMOSMA {
     return g;
   }
 
-  int Graph::circuit_rank() const
+  inline int Graph::circuit_rank() const
   {
     int chi = size() - nvertex;
     if (connected()) return 1 + chi;
@@ -188,7 +190,7 @@ namespace SYNARMOSMA {
     return n + chi;
   }
 
-  int Graph::max_degree() const
+  inline int Graph::max_degree() const
   {
     int i,n,output = 0;
     for(i=0; i<nvertex; ++i) {
@@ -198,7 +200,7 @@ namespace SYNARMOSMA {
     return output;
   }
 
-  int Graph::min_degree() const
+  inline int Graph::min_degree() const
   {
     int i,n,output = 1 + size();
     for(i=0; i<nvertex; ++i) {
@@ -208,7 +210,7 @@ namespace SYNARMOSMA {
     return output;
   }
 
-  double Graph::average_degree() const
+  inline double Graph::average_degree() const
   {
     int i;
     double sum = 0.0;
@@ -218,7 +220,7 @@ namespace SYNARMOSMA {
     return sum/double(nvertex);
   }
 
-  double Graph::completeness() const
+  inline double Graph::completeness() const
   {
     double output = 0.0;
     if (nvertex == 1) return output;

@@ -32,11 +32,11 @@ namespace SYNARMOSMA {
     /// This method determines if the 1-skeleton is connected (i.e. every vertex can be reached by every other vertex) and returns true if this is the case.
     virtual bool connected() const;
     /// This method checks if there is a direction connection between the two vertex arguments, i.e. if an edge connects these two vertices, returning true if so.
-    inline bool connected(int,int) const;
+    bool connected(int,int) const;
     /// This method restores the Schema to its default state, with Schema::nvertex equal to zero and Schema::neighbours empty.
     virtual void clear();
     /// This method adds a vertex to the Schema, incrementing Schema::nvertex and adding a new empty set to Schema::neighbours; it returns the index of the newly created vertex.
-    inline int add_vertex();
+    int add_vertex();
     /// This method adds an edge between the two vertex arguments, returning false if such an edge exists already and true otherwise.
     virtual bool add_edge(int,int);
     /// This method removes the edge between the two vertex arguments, returning false if no such edge exists and true otherwise.
@@ -46,7 +46,7 @@ namespace SYNARMOSMA {
     /// This method computes the complete set of combinatorial distances in the schema and stores the result as an unordered map linking pairs of vertices (i,j) where i < j and the distance d between them. 
     virtual void compute_distances(pair_index&) const;
     /// This method verifies if every vertex has at least one edge and so a positive valence, returning true in this case.
-    inline bool positive_valence() const;
+    bool positive_valence() const;
     /// This method computes a spanning tree of this 1-skeleton assumed to be connected, i.e. a minimal subset of edges of the 1-skeleton which keeps it connected, returning the number of edges used; the method's argument stores the edges as pairs of vertices.   
     int spanning_tree(std::vector<int>&) const;
     /// This method analyzes the number of connected components in the 1-skeleton, returning the number of distinct components and to which component each vertex belongs, the method's argument.
@@ -54,14 +54,24 @@ namespace SYNARMOSMA {
     /// This method returns true if there are no self-loops, every neighbour exists and these neighbour lists are mutually consistent.
     virtual bool consistent() const;
     /// This method returns the value of Schema::nvertex.
-    inline int get_order() const {return nvertex;};
+    int order() const;
     /// This method writes the value of the neighbour set to the second argument for the vertex whose index is the first argument.
-    inline void get_neighbours(int n,std::set<int>& vx) const {vx = neighbours[n];};
+    void get_neighbours(int,std::set<int>&) const;
     /// This method returns the degree of vertex in its unique argument.
-    inline int degree(int) const;
+    int degree(int) const;
   };
 
-  int Schema::add_vertex()
+  inline int Schema::order() const 
+  {
+    return nvertex;
+  }
+
+  inline void Schema::get_neighbours(int n,std::set<int>& vx) const
+  {
+    vx = neighbours[n];
+  }
+
+  inline int Schema::add_vertex()
   {
     std::set<int> empty;
     int output = nvertex;
@@ -72,7 +82,7 @@ namespace SYNARMOSMA {
     return output;
   }
 
-  bool Schema::positive_valence() const
+  inline bool Schema::positive_valence() const
   {
     // This method just checks if there are any vertices with no connections,
     // in which case it returns false, true otherwise
@@ -82,13 +92,13 @@ namespace SYNARMOSMA {
     return true;
   }
 
-  int Schema::degree(int n) const
+  inline int Schema::degree(int n) const
   {
     if (n < 0 || n >= nvertex) throw std::invalid_argument("The vertex argument in Schema::degree does not exist!");
     return (signed) neighbours[n].size();
   }
 
-  bool Schema::connected(int n,int m) const
+  inline bool Schema::connected(int n,int m) const
   {
     // A method to check if the vertices n and m share a direct 
     // connection

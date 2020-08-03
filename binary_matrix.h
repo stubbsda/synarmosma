@@ -49,13 +49,13 @@ namespace SYNARMOSMA {
     /// This method writes the complete k-th row vector of the matrix to the second argument (assumed to be of size Binary_Matrix::ncolumn or more), where k is the first argument.
     void get_row(unsigned int,bool*) const;
     /// This method gets the indicated matrix element (row and column number), returning true if the element is 1 and false otherwise.
-    inline bool get(unsigned int,unsigned int) const;
+    bool get(unsigned int,unsigned int) const;
     /// This method sets the indicated matrix element (row and column number) to 1, returning true if the element had been 0, false otherwise. 
-    inline bool set(unsigned int,unsigned int);
+    bool set(unsigned int,unsigned int);
     /// This method sets the indicated matrix element (row and column number) to 0, returning true if the element had been 1, false otherwise. 
-    inline bool unset(unsigned int,unsigned int);
+    bool unset(unsigned int,unsigned int);
     /// This method inverts the indicated matrix element (row and column number), i.e. applies the "not" operator to it so 0 -> 1 and 1 -> 0.
-    inline void invert(unsigned int,unsigned int);
+    void invert(unsigned int,unsigned int);
     /// The overloaded ostream operator pretty prints the matrix, one line per row beginning and ending with square brackets, showing all elements as 0 or 1.
     friend std::ostream& operator <<(std::ostream&,const Binary_Matrix&);
     /// The overloaded unary "not" operator applies this same operator to all the elements of the matrix. 
@@ -66,7 +66,7 @@ namespace SYNARMOSMA {
     friend Binary_Matrix operator +(const Binary_Matrix&,const Binary_Matrix&);
   };
 
-  bool Binary_Matrix::get(unsigned int i,unsigned int j) const
+  inline bool Binary_Matrix::get(unsigned int i,unsigned int j) const
   {
     if (i >= nrow) throw std::invalid_argument("The row number argument is illegal for this binary matrix!");
     if (j >= ncolumn) throw std::invalid_argument("The column number argument is illegal for this binary matrix!");
@@ -74,7 +74,7 @@ namespace SYNARMOSMA {
     return output;
   }
 
-  bool Binary_Matrix::set(unsigned int i,unsigned int j) 
+  inline bool Binary_Matrix::set(unsigned int i,unsigned int j) 
   {
     if (i >= nrow) throw std::invalid_argument("The row number argument is illegal for this binary matrix!");
     if (j >= ncolumn) throw std::invalid_argument("The column number argument is illegal for this binary matrix!");
@@ -83,7 +83,7 @@ namespace SYNARMOSMA {
     return true;
   }
 
-  bool Binary_Matrix::unset(unsigned int i,unsigned int j)
+  inline bool Binary_Matrix::unset(unsigned int i,unsigned int j)
   {
     if (i >= nrow) throw std::invalid_argument("The row number argument is illegal for this binary matrix!");
     if (j >= ncolumn) throw std::invalid_argument("The column number argument is illegal for this binary matrix!");
@@ -94,7 +94,7 @@ namespace SYNARMOSMA {
     return false; 
   }
 
-  void Binary_Matrix::invert(unsigned int i,unsigned int j)
+  inline void Binary_Matrix::invert(unsigned int i,unsigned int j)
   {
     if (i >= nrow) throw std::invalid_argument("The row number argument is illegal for this binary matrix!");
     if (j >= ncolumn) throw std::invalid_argument("The column number argument is illegal for this binary matrix!");

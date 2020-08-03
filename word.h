@@ -34,9 +34,9 @@ namespace SYNARMOSMA {
     /// The destructor for this class, which does nothing.
     ~Word();
     /// This method calls clear on the vector "content" and so empties the word of its contents.
-    inline void clear() {content.clear();};
+    void clear();
     /// This method appends a new "letter" to the end of the word. 
-    inline void append(const std::pair<unsigned int,int>& term) {content.push_back(term);};
+    void append(const std::pair<unsigned int,int>&);
     /// This method computes the set of letters used in this word and returns the cardinality of this set.
     unsigned int get_alphabet(std::set<unsigned int>&) const;
     /// This operator has the same effect as calling the invert method on this instance of the Word class.
@@ -54,9 +54,9 @@ namespace SYNARMOSMA {
     /// This method creates a new word from the existing one by eliminating all of the letters whose index lies in the first argument, using the array of offset indices in the second argument. 
     Word reduce(const std::set<unsigned int>&,const unsigned int*) const;
     /// This method returns the length of the vector "content".
-    inline unsigned int length() const {return content.size();};
+    unsigned int length() const;
     /// This method returns true when the "content" vector is empty.
-    inline bool empty() const {return content.empty();};
+    bool empty() const;
     /// This method carries out a cyclic permutation based on its unique argument \f$k\f$, so that (ignoring exponents) if \f$w = x_0\cdots x_{n-1}\f$ then \f$w' = x_k x_{k+1}\cdots x_{n-1} x_0 x_1 \cdots x_{k-1}\f$. 
     Word permute(unsigned int) const;
     /// This method determines if the word consists of a single letter whose exponent is \f$\pm 1\f$ and returns true if this is so.
@@ -83,5 +83,25 @@ namespace SYNARMOSMA {
     friend int affinity(const Word&,const Word&,std::set<unsigned int>&);
     friend class Group;
   };
+
+  inline void Word::clear() 
+  {
+    content.clear();
+  }
+
+  inline void Word::append(const std::pair<unsigned int,int>& term)
+  {
+    content.push_back(term);
+  }
+
+  inline unsigned int Word::length() const
+  {
+    return content.size();
+  }
+
+  inline bool Word::empty() const 
+  {
+    return content.empty();
+  }
 }
 #endif

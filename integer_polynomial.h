@@ -99,9 +99,9 @@ namespace SYNARMOSMA {
     /// This method takes its argument and sets Integer_Polynomial::degree to this value, then calls initialize().
     void generate(unsigned int);
     /// This method returns the value of the degree.
-    inline unsigned int get_degree() const {return degree;};
+    unsigned int get_degree() const;
     /// This method returns true if this is the zero polynomial and false otherwise.
-    inline bool is_null() const;
+    bool is_null() const;
     /// This method returns the value of the coefficient specified by the method's unique argument.
     kind get_value(unsigned int) const;
     /// This method sets the coefficient specified by the second argument to the value specified by the first argument.
@@ -126,8 +126,14 @@ namespace SYNARMOSMA {
     friend Integer_Polynomial<kind> operator *<>(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);
   };
 
+  template<class kind>
+  inline unsigned int Integer_Polynomial<kind>::get_degree() const
+  {
+    return degree;
+  }
+
   template<class kind> 
-  bool Integer_Polynomial<kind>::is_null() const
+  inline bool Integer_Polynomial<kind>::is_null() const
   {
     if (terms.empty()) return true;
     unsigned int i;

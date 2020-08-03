@@ -13,7 +13,7 @@ Nexus::Nexus(int D) : Schema()
 
   elements = new std::vector<Cell>[1+D];
   index_table = new hash_map[1+D];
-  dimension = D;
+  topological_dimension = D;
 }
 
 Nexus::Nexus(const Nexus& source)
@@ -22,10 +22,10 @@ Nexus::Nexus(const Nexus& source)
 
   nvertex = source.nvertex;
   neighbours = source.neighbours;
-  dimension = source.dimension;
-  elements = new std::vector<Cell>[1+dimension];
-  index_table = new hash_map[1+dimension];
-  for(int i=0; i<=dimension; ++i) {
+  topological_dimension = source.topological_dimension;
+  elements = new std::vector<Cell>[1+topological_dimension];
+  index_table = new hash_map[1+topological_dimension];
+  for(int i=0; i<=topological_dimension; ++i) {
     elements[i] = source.elements[i];
     index_table[i] = source.index_table[i];
   }
@@ -39,10 +39,10 @@ Nexus& Nexus::operator =(const Nexus& source)
 
   nvertex = source.nvertex;
   neighbours = source.neighbours;
-  dimension = source.dimension;
-  elements = new std::vector<Cell>[1+dimension];
-  index_table = new hash_map[1+dimension];
-  for(int i=0; i<=dimension; ++i) {
+  topological_dimension = source.topological_dimension;
+  elements = new std::vector<Cell>[1+topological_dimension];
+  index_table = new hash_map[1+topological_dimension];
+  for(int i=0; i<=topological_dimension; ++i) {
     elements[i] = source.elements[i];
     index_table[i] = source.index_table[i];
   }
@@ -52,7 +52,7 @@ Nexus& Nexus::operator =(const Nexus& source)
 
 Nexus::~Nexus()
 {
-  if (dimension > -1) {
+  if (topological_dimension > -1) {
     delete[] elements;
     delete[] index_table;
   }
@@ -66,7 +66,7 @@ void Nexus::initialize(int D)
 
   elements = new std::vector<Cell>[1+D];
   index_table = new hash_map[1+D];
-  dimension = D;
+  topological_dimension = D;
 }
 
 void Nexus::initialize(int D,int n)
@@ -78,7 +78,7 @@ void Nexus::initialize(int D,int n)
 
   elements = new std::vector<Cell>[1+D];
   index_table = new hash_map[1+D];
-  dimension = D;
+  topological_dimension = D;
   nvertex = n;
   std::set<int> null;
   for(int i=0; i<nvertex; ++i) {
@@ -90,11 +90,11 @@ void Nexus::clear()
 {
   nvertex = 0;
   neighbours.clear();
-  if (dimension > -1) {
+  if (topological_dimension > -1) {
     delete[] elements;
     delete[] index_table;
   }
-  dimension = -1;
+  topological_dimension = -1;
 }
 
 int Nexus::serialize(std::ofstream& s) const
@@ -103,7 +103,7 @@ int Nexus::serialize(std::ofstream& s) const
   std::set<int>::const_iterator it;
 
   s.write((char*)(&nvertex),sizeof(int)); count += sizeof(int);
-  s.write((char*)(&dimension),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&topological_dimension),sizeof(int)); count += sizeof(int);
   for(i=0; i<nvertex; ++i) {
     j = (signed) neighbours[i].size();
     s.write((char*)(&j),sizeof(int)); count += sizeof(int);
@@ -112,7 +112,7 @@ int Nexus::serialize(std::ofstream& s) const
       s.write((char*)(&j),sizeof(int)); count += sizeof(int);
     }
   }
-  for(i=1; i<dimension; ++i) {
+  for(i=1; i<topological_dimension; ++i) {
     n = (signed) elements[i].size();
     s.write((char*)(&n),sizeof(int)); count += sizeof(int);
     for(j=0; j<n; ++j) {
@@ -131,10 +131,10 @@ int Nexus::deserialize(std::ifstream& s)
   clear();
 
   s.read((char*)(&nvertex),sizeof(int)); count += sizeof(int);
-  s.read((char*)(&dimension),sizeof(int)); count += sizeof(int);
-  if (dimension > -1) {
-    elements = new std::vector<Cell>[1+dimension];
-    index_table = new hash_map[1+dimension];
+  s.read((char*)(&topological_dimension),sizeof(int)); count += sizeof(int);
+  if (topological_dimension > -1) {
+    elements = new std::vector<Cell>[1+topological_dimension];
+    index_table = new hash_map[1+topological_dimension];
   }
   for(i=0; i<nvertex; ++i) {
     s.read((char*)(&n),sizeof(int)); count += sizeof(int);
@@ -145,7 +145,7 @@ int Nexus::deserialize(std::ifstream& s)
     neighbours.push_back(S);
     S.clear();
   }
-  for(i=1; i<dimension; ++i) {
+  for(i=1; i<topological_dimension; ++i) {
     s.read((char*)(&n),sizeof(int)); count += sizeof(int);
     for(j=0; j<n; ++j) {
       count += sigma.deserialize(s);
@@ -160,7 +160,7 @@ bool Nexus::paste(const Cell& c)
 {
   std::set<int> vx; 
   int m = c.dimension();
-  if (m > dimension) throw std::invalid_argument("The Cell being pasted to this Nexus instance has too high a dimension!");
+  if (m > topological_dimension) throw std::invalid_argument("The Cell being pasted to this Nexus instance has too high a dimension!");
 
   c.get_vertices(vx);
   hash_map::const_iterator qt = index_table[m].find(vx);
@@ -381,7 +381,7 @@ bool Nexus::consistent() const
   std::set<int> vx;
   hash_map::const_iterator qt;
 
-  for(i=dimension; i>1; i--) {
+  for(i=topological_dimension; i>1; i--) {
     ns = (signed) elements[i].size();
     for(j=0; j<ns; ++j) {
       // Verify that every vertex in this simplex exists...
@@ -401,10 +401,10 @@ bool Nexus::consistent() const
 
 int Nexus::compute_neighbour_graph(Graph* G) const
 {
-  if (dimension < 1) throw std::runtime_error("Cannot compute the neighbour graph of a 0-dimensional simplicial complex!");
+  if (topological_dimension < 1) throw std::runtime_error("Cannot compute the neighbour graph of a 0-dimensional simplicial complex!");
 
   int i,j;
-  const int n = (signed) elements[dimension].size();
+  const int n = (signed) elements[topological_dimension].size();
   
   G->clear();
 
@@ -419,7 +419,7 @@ int Nexus::compute_neighbour_graph(Graph* G) const
   for(i=0; i<n; ++i) {
     for(j=1+i; j<n; ++j) {
       // Check if these two d-simplices are adjacent, i.e. if d of their respective 1+d vertices are the same.
-      if (affinity(elements[dimension][i],elements[dimension][j]) == dimension) {
+      if (affinity(elements[topological_dimension][i],elements[topological_dimension][j]) == topological_dimension) {
 #ifdef _OPENMP
 #pragma omp critical
 #endif
@@ -450,7 +450,7 @@ void Nexus::compute_entourages()
   int i,j,k,ns;
   hash_map::const_iterator qt;
 
-  for(i=dimension; i>1; i--) {
+  for(i=topological_dimension; i>1; i--) {
     ns = (signed) elements[i].size();
     for(j=0; j<ns; ++j) {
       for(k=0; k<1+i; ++k) {
@@ -470,7 +470,7 @@ int Nexus::regularization()
   Cell S;
   hash_map::const_iterator qt;
 
-  for(i=dimension; i>=2; i--) {
+  for(i=topological_dimension; i>=2; i--) {
     n = (signed) elements[i].size();
     m = (signed) elements[i-1].size();
     for(j=0; j<n; ++j) {
@@ -499,7 +499,7 @@ void Nexus::closure(const std::set<std::set<int> >& S,Nexus* NX,int* offset) con
   int i,n,m;
   unsigned int j;
   std::set<int> vx,s;
-  std::vector<Cell>* cell_array = new std::vector<Cell>[1+dimension];
+  std::vector<Cell>* cell_array = new std::vector<Cell>[1+topological_dimension];
   hash_map::const_iterator qt;
   std::set<std::set<int> >::const_iterator st;
   std::set<int>::const_iterator it;
@@ -525,7 +525,7 @@ void Nexus::closure(const std::set<std::set<int> >& S,Nexus* NX,int* offset) con
   // will be its dimension
   n = 0;
   m = 0;
-  for(i=1; i<=dimension; ++i) {
+  for(i=1; i<=topological_dimension; ++i) {
     if (cell_array[i].empty()) continue;
     m = i;
     for(j=0; j<cell_array[i].size(); ++j) {
@@ -565,8 +565,8 @@ void Nexus::link(const std::set<std::set<int> >& S,std::vector<Cell>* cell_array
   int i,offset1[nvertex],offset2[nvertex];
   unsigned int j,k;
   bool found;
-  std::vector<Cell>* cell_array1 = new std::vector<Cell>[1+dimension];
-  std::vector<Cell>* cell_array2 = new std::vector<Cell>[1+dimension];
+  std::vector<Cell>* cell_array1 = new std::vector<Cell>[1+topological_dimension];
+  std::vector<Cell>* cell_array2 = new std::vector<Cell>[1+topological_dimension];
   std::set<int> vx;
   std::set<std::set<int> > sset;
   std::set<int>::const_iterator it;
@@ -577,7 +577,7 @@ void Nexus::link(const std::set<std::set<int> >& S,std::vector<Cell>* cell_array
   // with the first term
   star(S,cell_array1);
   // Now we need to convert cell_array to a set of strings...
-  for(i=0; i<=dimension; ++i) {
+  for(i=0; i<=topological_dimension; ++i) {
     for(j=0; j<cell_array1[i].size(); ++j) {
       sset.insert(cell_array1[i][j].vertices);
     }
@@ -587,7 +587,7 @@ void Nexus::link(const std::set<std::set<int> >& S,std::vector<Cell>* cell_array
   // Now the second term...
   closure(S,N2,offset2);
   sset.clear();
-  for(i=0; i<=N2->dimension; ++i) {
+  for(i=0; i<=N2->topological_dimension; ++i) {
     for(j=0; j<N2->elements[i].size(); ++j) {
       for(it=N2->elements[i][j].vertices.begin(); it!=N2->elements[i][j].vertices.end(); ++it) {
         vx.insert(offset2[*it]);
@@ -600,7 +600,7 @@ void Nexus::link(const std::set<std::set<int> >& S,std::vector<Cell>* cell_array
 
   // Finally, construct the output by taking every cell that exists in N1 and, if it doesn't also 
   // exist in cell_array2, adding it to cell_array
-  for(i=0; i<=N1->dimension; ++i) {
+  for(i=0; i<=N1->topological_dimension; ++i) {
     for(j=0; j<N1->elements[i].size(); ++j) {
       for(it=N1->elements[i][j].vertices.begin(); it!=N1->elements[i][j].vertices.end(); ++it) {
         vx.insert(offset1[*it]);
@@ -645,7 +645,7 @@ void Nexus::star(const std::set<std::set<int> >& S,std::vector<Cell>* output) co
     }
     ascend(n,m,clist);
   }
-  for(n=0; n<=dimension; ++n) {
+  for(n=0; n<=topological_dimension; ++n) {
     output[n].clear();
   }
   nc = (signed) clist.size();
@@ -666,7 +666,7 @@ void Nexus::star(const std::set<std::set<int> >& S,std::vector<Cell>* output) co
 
 void Nexus::ascend(int D,int n,std::vector<Cell>& out) const
 {
-  if (D < 1 && D > dimension) return;
+  if (D < 1 && D > topological_dimension) return;
 
   int i;
   std::set<int>::const_iterator it;
@@ -685,25 +685,25 @@ bool Nexus::pseudomanifold(bool* boundary) const
   bool found;
   std::vector<int> candidates;
 
-  if (dimension < 1) return false;
+  if (topological_dimension < 1) return false;
 
   *boundary = false;
 
   // First the non-branching requirement...
-  for(i=0; i<(signed) elements[dimension-1].size(); ++i) {
-    j = (signed) elements[dimension-1][i].entourage.size();
+  for(i=0; i<(signed) elements[topological_dimension-1].size(); ++i) {
+    j = (signed) elements[topological_dimension-1][i].entourage.size();
     // If the entourage size is ever 1, this is a pseudomanifold with boundary!
     if (j > 2 || j < 1) return false;
     if (j == 1) *boundary = true;
   }
 
   // Next, check the dimensional homogeneity...
-  const int nd = (signed) elements[dimension].size();
+  const int nd = (signed) elements[topological_dimension].size();
 
   for(i=0; i<nvertex; ++i) {
     found = false;
     for(j=0; j<nd; ++j) {
-      if (elements[dimension][j].contains(i)) {
+      if (elements[topological_dimension][j].contains(i)) {
         found = true;
         break;
       }
@@ -729,9 +729,9 @@ bool Nexus::orientable() const
 
   // If the spacetime complex consists of just a collection of
   // vertices, presumably it can always be "oriented"?
-  if (dimension < 1) return true;
+  if (topological_dimension < 1) return true;
 
-  if (dimension == 1) {
+  if (topological_dimension == 1) {
     int i,vx[2];
     Graph* G = new Graph(nvertex);
 
@@ -744,12 +744,12 @@ bool Nexus::orientable() const
     return output;
   }
 
-  const int nf = (signed) elements[dimension-1].size(); 
-  const int ns = (signed) elements[dimension].size();
+  const int nf = (signed) elements[topological_dimension-1].size(); 
+  const int ns = (signed) elements[topological_dimension].size();
 
   if (ns == 1) return true;
 
-  int i,j,m,k,o,in1,check,vx[1+dimension],orient[ns],sorient[nf],sorientn[nf];
+  int i,j,m,k,o,in1,check,vx[1+topological_dimension],orient[ns],sorient[nf],sorientn[nf];
   bool nzero,found,failed = false;
   hash_map face_index;
   std::vector<int>::const_iterator vit;
@@ -758,8 +758,8 @@ bool Nexus::orientable() const
   std::vector<int>* facets = new std::vector<int>[ns];
 
   for(i=0; i<ns; ++i) {
-    elements[dimension][i].get_vertices(vx);
-    for(j=0; j<=dimension; ++j) {
+    elements[topological_dimension][i].get_vertices(vx);
+    for(j=0; j<=topological_dimension; ++j) {
       vfacet.push_back(vx[j]);
     }
     facets[i] = vfacet;
@@ -767,7 +767,7 @@ bool Nexus::orientable() const
   }
 
   for(i=0; i<nf; ++i) {
-    elements[dimension-1][i].get_vertices(S);
+    elements[topological_dimension-1][i].get_vertices(S);
     face_index[S] = i;
   }
   
@@ -792,9 +792,9 @@ bool Nexus::orientable() const
       for(i=0; i<ns; ++i) {
         if (orient[i] == 0) continue;
         m = 0;
-        for(j=0; j<=dimension; ++j) {
+        for(j=0; j<=topological_dimension; ++j) {
           found = false;
-          for(k=0; k<=dimension; ++k) {
+          for(k=0; k<=topological_dimension; ++k) {
             if (current[j] == facets[i][k]) {
               found = true;
               break;
@@ -802,7 +802,7 @@ bool Nexus::orientable() const
           }
           if (found) m++;
         }
-        if (m < (dimension-1)) continue;
+        if (m < (topological_dimension-1)) continue;
         induced_orientation(nf,facets[i],orient[i],face_index,sorient);
         for(j=0; j<nf; ++j) {
           check = sorientn[j] + sorient[j];

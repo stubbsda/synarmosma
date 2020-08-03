@@ -55,20 +55,25 @@ namespace SYNARMOSMA {
     /// This method removes the proposition from the Propositional_System::theorems and Propositional_System::truth properties, corresponding to the proposition whose index is the method's unique argument.
     bool drop_theorem(unsigned int);
     /// This method returns the cardinality of the set Propositional_System::atoms.
-    inline unsigned int get_number_atoms() const {return atoms.size();};
+    unsigned int get_number_atoms() const;
     /// This method returns the number of logical universes in which a particular element of Propositional_System::theorems (specified by the method's unique argument) is true.
-    inline unsigned int bit_count(unsigned int) const;
+    unsigned int bit_count(unsigned int) const;
     /// This method sets the second argument to the set of atomic propositions for the proposition whose index is the first argument. 
-    inline void get_atoms(unsigned int i,std::set<int>& atoms) const;
+    void get_atoms(unsigned int,std::set<int>&) const;
   };
 
-  unsigned int Propositional_System::bit_count(unsigned int n) const
+  inline unsigned int Propositional_System::get_number_atoms() const 
+  {
+    return atoms.size();
+  }
+
+  inline unsigned int Propositional_System::bit_count(unsigned int n) const
   {
     if (n >= theorems.size()) throw std::invalid_argument("Illegal theorem index in Propositional_System class!");
     return truth[n].count();
   }
 
-  void Propositional_System::get_atoms(unsigned int n,std::set<int>& atoms) const 
+  inline void Propositional_System::get_atoms(unsigned int n,std::set<int>& atoms) const 
   {
     if (n >= theorems.size()) throw std::invalid_argument("Illegal theorem index in Propositional_System class!");
     theorems[n].get_atoms(atoms);

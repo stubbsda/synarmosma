@@ -83,7 +83,7 @@ namespace SYNARMOSMA {
     /// This method directly adds a new term, the second argument, to the equation specified by the first argument. 
     bool add_term(int,const Monomial<kind>&);
     /// This method sets the remainder to the value in the second argument for the equation specified by the first argument. 
-    inline void set_remainder(int,kind);
+    void set_remainder(int,kind);
     /// This method first checks if the variety is projective and, if not, adds a further variable to it so as to make each term homogeneous for each of the equations separately. 
     void make_projective();
     /// This method frees the memory associated with the Variety::equations property (if any has been allocated), clears the Variety::remainder and Variety::dependencies vectors and sets all of the class' properties back to their default values.
@@ -97,7 +97,7 @@ namespace SYNARMOSMA {
   };
 
   template<class kind>
-  void Variety<kind>::set_remainder(int n,kind r)
+  inline void Variety<kind>::set_remainder(int n,kind r)
   {
     if (n < 0 || n >= (signed) nequation) throw std::invalid_argument("Illegal equation number in Variety::set_remainder!");
 

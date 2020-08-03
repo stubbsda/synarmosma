@@ -68,17 +68,17 @@ namespace SYNARMOSMA {
     /// This method sets the value of Matrix::nrow and Matrix::ncolumn to the two arguments and then allocates the memory for the Matrix::elements property.    
     void initialize(unsigned int,unsigned int);
     /// This method sets the value of the matrix element specified by the first two arguments to the third argument and, if the fourth argument is true, increments the value rather than overwriting it.
-    inline void set(unsigned int,unsigned int,kind,bool = false);
+    void set(unsigned int,unsigned int,kind,bool = false);
     /// This method gets the value of the element specified by the two arguments, the row and column index respectively. 
-    inline kind get(unsigned int,unsigned int) const;
+    kind get(unsigned int,unsigned int) const;
     /// This method increments the value of the element, specified by the two first arguments, by the third argument; if the element specified does not exist, this method has the same effect as the set() method.
-    inline void increment(unsigned int,unsigned int,kind);
+    void increment(unsigned int,unsigned int,kind);
     /// This method returns the number of rows in this matrix.
-    inline unsigned int get_nrow() const {return nrow;};
+    unsigned int get_nrow() const;
     /// This method returns the number of rows in this matrix.
-    inline unsigned int get_ncolumn() const {return ncolumn;};
+    unsigned int get_ncolumn() const;
     /// This method computes the matrix's density, i.e. the number of non-zero elements divided by the total number of elements, and returns this value.
-    inline double density() const {return double(number_nonzero())/double(nrow*ncolumn);};
+    double density() const;
     /// This method computes the number of non-zero elements in this matrix and returns this value.
     unsigned int number_nonzero() const; 
     /// This method determines if the row whose index is given by the argument contains any elements, returning true if the row is empty and false otherwise.
@@ -90,7 +90,7 @@ namespace SYNARMOSMA {
     /// This method writes the matrix into a one-dimensional array (the first argument) whose length is the product of Matrix::nrow and Matrix::ncolumn, using either a row-oriented or column-oriented convention, specified by the second argument ('r' or 'c').
     void convert(kind*,char) const;
     /// This method extracts the diagonal element of the row whose index is the argument.
-    inline kind get_diagonal(unsigned int) const;
+    kind get_diagonal(unsigned int) const;
     /// This method obtains the vector of diagonal elements of the matrix, i.e. those elements whose row index is the same as their column index; the output vector will have a length of Matrix::nrow.
     void get_diagonal(std::vector<kind>&) const;
     /// This method checks if the matrix is diagonally dominant, i.e. if for every row \f$i\f$ the inequality \f$|a_{ii}| \ge \sum_{j=1, j\ne i}^N |a_{ij}|\f$ is satisfied, and returns true if this is the case.
@@ -259,7 +259,25 @@ namespace SYNARMOSMA {
   }
 
   template<class kind>
-  kind Matrix<kind>::get(unsigned int n,unsigned int m) const
+  inline unsigned int Matrix<kind>::get_nrow() const
+  {
+    return nrow;
+  }
+
+  template<class kind>
+  inline unsigned int Matrix<kind>::get_ncolumn() const
+  {
+    return ncolumn;
+  }
+
+  template<class kind>
+  inline double Matrix<kind>::density() const
+  {
+    return double(number_nonzero())/double(nrow*ncolumn);
+  }
+
+  template<class kind>
+  inline kind Matrix<kind>::get(unsigned int n,unsigned int m) const
   {
     if (n >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
     if (m >= ncolumn) throw std::invalid_argument("The column number argument is illegal for this matrix!");
@@ -277,7 +295,7 @@ namespace SYNARMOSMA {
   }
 
   template<class kind>
-  void Matrix<kind>::set(unsigned int n,unsigned int m,kind v,bool increment)
+  inline void Matrix<kind>::set(unsigned int n,unsigned int m,kind v,bool increment)
   {
     if (n >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
     if (m >= ncolumn) throw std::invalid_argument("The column number argument is illegal for this matrix!");
@@ -304,7 +322,7 @@ namespace SYNARMOSMA {
   }
 
   template<class kind>
-  void Matrix<kind>::increment(unsigned int n,unsigned int m,kind v)
+  inline void Matrix<kind>::increment(unsigned int n,unsigned int m,kind v)
   {
     if (n >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
     if (m >= ncolumn) throw std::invalid_argument("The column number argument is illegal for this matrix!");
@@ -327,7 +345,7 @@ namespace SYNARMOSMA {
   }
 
   template<class kind>
-  kind Matrix<kind>::get_diagonal(unsigned int n) const
+  inline kind Matrix<kind>::get_diagonal(unsigned int n) const
   {
     if (n >= nrow) throw std::invalid_argument("The row number argument is illegal for this matrix!");
     unsigned int i;
