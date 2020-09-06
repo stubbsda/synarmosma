@@ -1,4 +1,4 @@
-#include "matrix.cpp"
+#include "matrix.cxx"
 
 template class SYNARMOSMA::Matrix<double>;
 

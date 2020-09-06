@@ -15,7 +15,7 @@ Matrix<kind>::Matrix(unsigned int n,bool identity)
   nrow = n;
   ncolumn = n;
   elements = new std::vector<std::pair<kind,unsigned int> >[nrow];
-  if (identity) { 
+  if (identity) {
     unsigned int i;
     for(i=0; i<nrow; ++i) {
       elements[i].push_back(std::pair<kind,unsigned int>(kind(1.0),i));

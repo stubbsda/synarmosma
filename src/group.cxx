@@ -13,7 +13,7 @@ Group::Group(const std::string& type,unsigned int n)
 {
   std::string utype = boost::to_upper_copy(type);
   if (utype == "ORDER") {
-    // Here the user has specified the desired order of the 
+    // Here the user has specified the desired order of the
     // group that is to be constructed
     Word w;
     int alpha;

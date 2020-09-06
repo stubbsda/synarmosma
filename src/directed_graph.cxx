@@ -4,9 +4,9 @@ using namespace SYNARMOSMA;
 
 extern Random RND;
 
-Directed_Graph::Directed_Graph() : Graph() 
+Directed_Graph::Directed_Graph() : Graph()
 {
-  
+
 }
 
 Directed_Graph::Directed_Graph(int n) : Graph(n)
@@ -14,7 +14,7 @@ Directed_Graph::Directed_Graph(int n) : Graph(n)
   int i,j,nc = 0;
   double alpha;
   std::set<int> vx;
-  Relation d; 
+  Relation d;
 
   for(i=0; i<n; ++i) {
     for(j=1+i; j<n; ++j) {
@@ -30,7 +30,7 @@ Directed_Graph::Directed_Graph(int n) : Graph(n)
       else if (alpha < 0.3) {
         d = Relation::after;
         number_directed++;
-      }      
+      }
       edges.push_back(Edge(i,j,0.0,d));
       neighbours[i].insert(j);
       neighbours[j].insert(i);

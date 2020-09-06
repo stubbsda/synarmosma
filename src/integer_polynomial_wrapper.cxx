@@ -1,4 +1,4 @@
-#include "integer_polynomial.cpp"
+#include "integer_polynomial.cxx"
 
 namespace SYNARMOSMA {
   template<>

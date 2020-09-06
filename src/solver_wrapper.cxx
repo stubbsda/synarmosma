@@ -1,4 +1,4 @@
-#include "solver.cpp"
+#include "solver.cxx"
 
 template class SYNARMOSMA::Solver<double>;
 

@@ -4,12 +4,12 @@ using namespace SYNARMOSMA;
 
 Nexus::Nexus() : Schema()
 {
-  
+
 }
 
 Nexus::Nexus(int D) : Schema()
 {
-  if (D < 1) throw std::invalid_argument("The dimensionality of a Nexus instance must be greater than zero!"); 
+  if (D < 1) throw std::invalid_argument("The dimensionality of a Nexus instance must be greater than zero!");
 
   elements = new std::vector<Cell>[1+D];
   index_table = new hash_map[1+D];

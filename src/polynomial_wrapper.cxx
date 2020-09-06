@@ -1,4 +1,4 @@
-#include "polynomial.cpp"
+#include "polynomial.cxx"
 
 template class SYNARMOSMA::Polynomial<Rational>;
 template class SYNARMOSMA::Polynomial<double>;

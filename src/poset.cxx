@@ -11,7 +11,7 @@ Poset::Poset()
 
 Poset::Poset(int n)
 {
-  // We begin by assuming that every pair of points is 
+  // We begin by assuming that every pair of points is
   // disparate, so the hash map is empty
   if (n < 1) throw std::invalid_argument("A poset must have at least one element!");
   N = n;

@@ -1,4 +1,4 @@
-#include "integer_matrix.cpp"
+#include "integer_matrix.cxx"
 
 namespace SYNARMOSMA {
   template<>

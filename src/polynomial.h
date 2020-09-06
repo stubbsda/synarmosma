@@ -16,6 +16,9 @@ namespace SYNARMOSMA {
   bool operator ==(const Polynomial<kind>&,const Polynomial<kind>&);
 
   template<class kind>
+  bool operator !=(const Polynomial<kind>&,const Polynomial<kind>&);
+
+  template<class kind>
   Polynomial<kind> operator +(const Polynomial<kind>&,const Polynomial<kind>&);
 
   template<class kind>
@@ -242,6 +245,12 @@ namespace SYNARMOSMA {
       if (std::abs(p1.terms[i] - p2.terms[i]) > std::numeric_limits<double>::epsilon()) return false;
     }
     return true;
+  }
+
+  template<class kind>
+  bool operator !=(const Polynomial<kind>& p1,const Polynomial<kind>& p2)
+  {
+    return !(p1 == p2);
   }
 
   template<class kind>

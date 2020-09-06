@@ -15,6 +15,9 @@ namespace SYNARMOSMA {
   bool operator ==(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);
 
   template<class kind>
+  bool operator !=(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);
+
+  template<class kind>
   Integer_Polynomial<kind> operator +(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);
 
   template<class kind>
@@ -239,6 +242,12 @@ namespace SYNARMOSMA {
       if (p1.terms[i] != p2.terms[i]) return false;
     }
     return true;
+  }
+
+  template<class kind>
+  bool operator !=(const Integer_Polynomial<kind>& p1,const Integer_Polynomial<kind>& p2)
+  {
+    return !(p1 == p2);
   }
 
   template<class kind>

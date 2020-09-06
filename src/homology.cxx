@@ -3,7 +3,7 @@
 using namespace SYNARMOSMA;
 
 extern template const NTL::ZZ Integer_Matrix<NTL::ZZ>::neg1;
-extern template const NTL::ZZ Integer_Matrix<NTL::ZZ>::unity; 
+extern template const NTL::ZZ Integer_Matrix<NTL::ZZ>::unity;
 
 Homology::Homology()
 {

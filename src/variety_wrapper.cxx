@@ -1,4 +1,4 @@
-#include "variety.cpp"
+#include "variety.cxx"
 
 namespace SYNARMOSMA {
   template<>

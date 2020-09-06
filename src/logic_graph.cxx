@@ -11,7 +11,7 @@ Logic_Graph::Logic_Graph() : Graph()
 
 Logic_Graph::Logic_Graph(int n,double propositional_density) : Graph(n,true)
 {
-  // We will choose a number of atoms that is a multiple 
+  // We will choose a number of atoms that is a multiple
   // of the number of vertices...
   if (propositional_density < std::numeric_limits<double>::epsilon()) throw std::invalid_argument("The propositional density must be greater than zero!");
 
