@@ -1,5 +1,5 @@
-*.o
-libsynarmosma.so
-documentation
-unit_test
+src/*.o
+src/libsynarmosma.so
+test/unit_test
+documentation/synarmosma
 
