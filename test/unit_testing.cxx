@@ -4,11 +4,12 @@
 #include <synarmosma/group.h>
 #include <synarmosma/integer_matrix.h>
 
-SYNARMOSMA::Random RND;
+SYNARMOSMA::Random* RND;
 
 int main(int argc,char** argv)
 {
-  RND.set_seed(12);
+  RND = new SYNARMOSMA::Random;
+  RND->set_seed(12);
   std::string test = std::string(argv[1]);
 
   if (test == "Rational") {
@@ -41,7 +42,7 @@ int main(int argc,char** argv)
     P.power_set(7);
     if (!P.consistent()) return 1;
   }
-  else if (test == "Lattice") { 
+  else if (test == "Lattice") {
     SYNARMOSMA::Lattice L(4);
     if (!L.consistent()) return 1;
   }
@@ -63,10 +64,10 @@ int main(int argc,char** argv)
     H.clustering_coefficient();
     H.mean_path_length();
     for(i=0; i<n; ++i) {
-      if (RND.drandom() < 0.15) {
+      if (RND->drandom() < 0.15) {
         H.drop_edge(i,(i+1)%n);
         do {
-          j = RND.irandom(n);
+          j = RND->irandom(n);
           if (i == j) continue;
           if (H.add_edge(i,j)) break;
         } while(true);
@@ -102,7 +103,7 @@ int main(int argc,char** argv)
     H.add_edge(1,2);
     H.add_edge(2,3);
     G.contract(0,1,&H);
-    
+
     if (H.get_candidates(vx) != 0) return 1;
     if (vx.size() != 8) return 1;
     if (vx[0] != 0) return 1;
@@ -194,7 +195,7 @@ int main(int argc,char** argv)
     std::cerr << "Unrecognized test type!" << std::endl;
     return 1;
   }
-
+  delete RND;
   return 0;
 }
 
