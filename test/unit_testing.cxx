@@ -61,6 +61,7 @@ int main(int argc,char** argv)
       if (output[i].exponents[0].second == 2 && output[i].exponents[1].second == 2) if (output[i].coefficient != 105) return 1;
     }
 
+    if (H.compactness(2,3) != 7) return 1;
     H.clustering_coefficient();
     H.mean_path_length();
     for(i=0; i<n; ++i) {

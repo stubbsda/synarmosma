@@ -114,6 +114,8 @@ namespace SYNARMOSMA {
     int bridge_count() const;
     /// This method returns false if the graph contains a cycle of odd length and true otherwise.
     bool bipartite() const;
+    /// This method computes and returns the number of graph vertices which are \f$N\ge 0\f$ steps or less from the vertex which is the method's first argument, where \f$N\f$ is the second argument. 
+    int compactness(int,int) const;
     /// This method computes the graph's cyclicity, i.e. the percentage of edges whose deletion would not disconnect the graph.
     double cyclicity() const;
     /// This method computes and returns the value of the graph connectivity, defined as the sum over all edges of \f$1/\sqrt{\deg(u)\deg(v)}\f$, where \f$u\f$ and \f$v\f$ are the two vertices joined by the edge. 

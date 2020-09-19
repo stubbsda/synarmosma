@@ -590,6 +590,42 @@ bool Graph::bipartite() const
   return true;
 }
 
+int Graph::compactness(int v,int n) const
+{
+  if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal vertex argument in the Graph::compactness method!");
+  if (n < 0) throw std::invalid_argument("Illegal number of steps argument in the Graph::compactness method!");
+  
+  // The simplest case...
+  if (n == 0) return 1;
+  int l = 1 + (signed) neighbours[v].size();
+  // Check if the number of steps is one or if this graph is complete, in which case we're already done...
+  if (n == 1 || l == order()) return l;
+  int i,p,q;
+  std::set<int> next,current,vx = neighbours[v];
+  std::set<int>::const_iterator it,jt;
+
+  current = vx;
+  vx.insert(v);
+
+  for(i=2; i<=n; ++i) {
+    for(it=current.begin(); it!=current.end(); ++it) {
+      p = *it;
+      for(jt=neighbours[p].begin(); jt!=neighbours[p].end(); ++jt) {
+        q = *jt;
+        if (vx.count(q) > 0) continue;
+        next.insert(q);
+      }
+    }
+    if (next.empty()) break;
+    for(it=next.begin(); it!=next.end(); ++it) {
+      vx.insert(*it);
+    }
+    current = next;
+    next.clear();
+  }
+  return (signed) vx.size();
+}
+
 int Graph::eccentricity(int v) const
 {
   if (v < 0 || v >= nvertex) throw std::invalid_argument("The Graph::eccentricity argument must be a vertex of the graph!");
