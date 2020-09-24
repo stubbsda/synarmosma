@@ -2,8 +2,6 @@
 
 using namespace SYNARMOSMA;
 
-extern Random RND;
-
 Binary_Matrix::Binary_Matrix()
 {
 
@@ -29,6 +27,7 @@ Binary_Matrix::Binary_Matrix(unsigned int n,unsigned int m,float percent)
   if (percent > std::numeric_limits<float>::epsilon()) {
     unsigned int i,j;
     float alpha;
+    Random RND;
 
     for(i=0; i<nrow; ++i) {
       for(j=0; j<ncolumn; ++j) {

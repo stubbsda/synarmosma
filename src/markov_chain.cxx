@@ -2,20 +2,20 @@
 
 using namespace SYNARMOSMA;
 
-extern Random RND;
-
 Markov_Chain::Markov_Chain(unsigned int n,double severity)
 {
   if (n < 2) throw std::invalid_argument("The dimension of the Markov chain's state space must be greater than zero!");
   N = n;
   // The transition matrix will initially just be the identity matrix...
   transition_matrix = new Matrix<double>(N,true);
+  RND = new Random;
   mutate(severity);
 }
 
 Markov_Chain::~Markov_Chain()
 {
   if (N > 0) delete transition_matrix;
+  delete RND;
 }
 
 void Markov_Chain::mutate(double severity)
@@ -30,15 +30,15 @@ void Markov_Chain::mutate(double severity)
   const double pfactor = severity/double(N);
 
   do {
-    r = RND.irandom(N);
+    r = RND->irandom(N);
     transition_matrix->get_row(vx,r);
-    n = RND.irandom(N);
+    n = RND->irandom(N);
     do {
-      m = RND.irandom(N);
+      m = RND->irandom(N);
       if (m == n) continue;
       if (std::abs(vx[n] - vx[m]) > std::numeric_limits<double>::epsilon()) break;
     } while(true);
-    sigma = pfactor*RND.drandom();
+    sigma = pfactor*RND->drandom();
     if (vx[n] > vx[m]) {
       c = sigma*vx[n];
       c = std::min(c,1.0 - vx[m]);
@@ -132,7 +132,7 @@ int Markov_Chain::get_state(const std::vector<double>& cstate,int n) const
 {
   unsigned int i;
   int output = -1;
-  double sum = 0.0,alpha = RND.drandom();
+  double sum = 0.0,alpha = RND->drandom();
   std::vector<double> pvector;
 
   get_state(cstate,pvector,n);
@@ -154,7 +154,7 @@ int Markov_Chain::get_state(unsigned int n) const
   if (n >= N) throw std::invalid_argument("Illegal state value in Markov_Chain::get_state!");
   unsigned int i;
   int output = -1;
-  double sum = 0.0,alpha = RND.drandom();
+  double sum = 0.0,alpha = RND->drandom();
   std::vector<double> pvector;
 
   transition_matrix->get_row(pvector,n);
@@ -169,4 +169,34 @@ int Markov_Chain::get_state(unsigned int n) const
   if (output == -1) output = N - 1;
 
   return output;
+}
+
+int Markov_Chain::serialize(std::ofstream& s) const
+{
+  int count = 0;
+  unsigned long r = RND->get_seed();
+
+  s.write((char*)(&N),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&r),sizeof(int)); count += sizeof(long);
+  if (N > 0) count += transition_matrix->serialize(s);
+
+  return count;
+}
+
+int Markov_Chain::deserialize(std::ifstream& s)
+{
+  int count = 0;
+  unsigned long r;
+  if (N > 0) delete transition_matrix;
+
+  s.read((char*)(&N),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&r),sizeof(long)); count += sizeof(long);
+  if (N > 0) {
+    transition_matrix = new Matrix<double>(N,true);
+    count += transition_matrix->deserialize(s);
+  }
+
+  RND->set_seed(r);
+
+  return count;
 }

@@ -11,14 +11,14 @@ namespace SYNARMOSMA {
     std::set<int> atoms;
     /// A lattice is atomic if for every non-zero element \f$x\f$ of the lattice there exists an atom \f$a\f$ such that \f$a\sim x\f$.
     bool atomic = false;
-    /// This property is the element 0 of the lattice which satisfies \f$0 \sim x\f$ for all \f$x \ne 0\f$ in the lattice. 
+    /// This property is the element 0 of the lattice which satisfies \f$0 \sim x\f$ for all \f$x \ne 0\f$ in the lattice.
     int null = -1;
     /// This property is the element 1 of the lattice which satisfies \f$x \sim 1\f$ for all \f$x \ne 1\f$ in the lattice.
     int unity = -1;
-     
+
     /// This method calculates which lattice elements are atoms and, once this is done, whether or not the lattice is atomic.
     void compute_atoms();
-    /// This method calculates which of the lattice elements are the Lattice::null and Lattice::unity elements. 
+    /// This method calculates which of the lattice elements are the Lattice::null and Lattice::unity elements.
     void compute_bounds();
     /// This method randomly builds an ordering on the lattice elements such that it satisfies the axioms of a lattice and then calls the Lattice::compute_atoms and Lattice::compute_bounds methods to calculate all the properties of the lattice.
     void initialize();

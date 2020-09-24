@@ -85,6 +85,28 @@ void Rational::normalize()
   compute_height();
 }
 
+int Rational::serialize(std::ofstream& s) const
+{
+  int count = 0;
+
+  count += write_ZZ(s,n);
+  count += write_ZZ(s,d);
+
+  return count;
+}
+
+int Rational::deserialize(std::ifstream& s)
+{
+  int count = 0;
+
+  count += read_ZZ(s,n);
+  count += read_ZZ(s,d);
+
+  height = get_height();
+
+  return count;
+}
+
 long Rational::agreeableness() const
 {
   // First calculate the least common multiple M of the numerator 

@@ -2,8 +2,6 @@
 
 using namespace SYNARMOSMA;
 
-extern Random RND;
-
 Group::Group()
 {
 
@@ -15,10 +13,13 @@ Group::Group(const std::string& type,unsigned int n)
   if (utype == "ORDER") {
     // Here the user has specified the desired order of the
     // group that is to be constructed
-    Word w;
     int alpha;
+    Word w;
+    Random RND;
+  
     cardinality = n;
     finite = true;
+
     switch (n) {
       case 1:
         // Fairly simple, it's just the trivial group
@@ -598,9 +599,10 @@ void Group::initialize(unsigned int m)
   int e;
   unsigned int i,j,k,b,sum = 0;
   bool duplicate;
-  Word w;
   std::vector<unsigned int> length,base;
   std::vector<int> exponent;
+  Word w;
+  Random RND;
 
   for(i=0; i<m; ++i) {
    relations.push_back(w);
@@ -622,11 +624,11 @@ void Group::initialize(unsigned int m)
     j = RND.irandom(ngenerator);
     base.push_back(j);
     e = RND.irandom(1,10);
-    if (RND.drandom() < 0.5) e = -e;
+    if (RND.irandom(2) == 0) e = -e;
     exponent.push_back(e);
     for(j=1; j<length[i]; ++j) {
       e = RND.irandom(1,10);
-      if (RND.drandom() < 0.5) e = -e;
+      if (RND.irandom(2) == 0) e = -e;
       exponent.push_back(e);
       do {
         b = RND.irandom(ngenerator);

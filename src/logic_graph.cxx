@@ -2,8 +2,6 @@
 
 using namespace SYNARMOSMA;
 
-extern Random RND;
-
 Logic_Graph::Logic_Graph() : Graph()
 {
 
@@ -16,13 +14,14 @@ Logic_Graph::Logic_Graph(int n,double propositional_density) : Graph(n,true)
   if (propositional_density < std::numeric_limits<double>::epsilon()) throw std::invalid_argument("The propositional density must be greater than zero!");
 
   std::set<int> atoms;
+  Random RND;
+
   // Make sure this set has at least one member...
   atoms.insert(0);
   for(int i=1; i<nvertex; ++i) {
     if (RND.drandom() < propositional_density) atoms.insert(i);
   }
   logic = new Propositional_System(atoms,nvertex);
-
 }
 
 Logic_Graph::Logic_Graph(const Logic_Graph& source)
@@ -158,6 +157,7 @@ double Logic_Graph::rationalize_topology(const std::string& type)
   unsigned int m,n,rsum = 0,its = 0;
   std::vector<unsigned int> bcount;
   std::set<int>::const_iterator it;
+  Random RND;
   const unsigned int N = order()/2;
 
   make_complete();

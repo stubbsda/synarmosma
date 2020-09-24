@@ -2,8 +2,6 @@
 
 using namespace SYNARMOSMA;
 
-extern Random RND;
-
 Poset::Poset()
 {
 
@@ -425,6 +423,7 @@ void Poset::construct_ordering(double lambda)
   if (lambda < 0.0 || lambda > 1.0) throw std::invalid_argument("The desired poset totality must be between 0 and 1!");
   int u,v;
   double p = 0.0;
+  Random RND;
 
   do {
     u = RND.irandom(N);

@@ -2,8 +2,6 @@
 
 using namespace SYNARMOSMA;
 
-extern Random RND;
-
 Homotopy::Homotopy()
 {
 
@@ -79,6 +77,8 @@ void Homotopy::mutate(double severity)
   if ((severity - 1.0) > std::numeric_limits<double>::epsilon()) throw std::invalid_argument("The mutation severity must not be greater than one!");
   // If the severity is zero, then do nothing...
   if (severity < std::numeric_limits<double>::epsilon()) return;
+  Random RND;
+
   unsigned int n = RND.irandom(1,ulimit);
   unsigned int ng = sequence[n].get_number_generators();
   unsigned int mg = 1 + int(RND.drandom(severity*severity,2.5*severity)*double(ng));
@@ -307,9 +307,12 @@ namespace SYNARMOSMA {
   Homotopy operator +(const Homotopy& h1,const Homotopy& h2)
   {
     if (h1.ulimit != h2.ulimit) throw std::invalid_argument("Homotopy sequences of unequal length cannot be added!");
-    unsigned int i,bisection = 1 + RND.irandom(h1.ulimit - 1);
+
+    unsigned int i,bisection;
+    Random RND;
     Homotopy output;
 
+    bisection = 1 + RND.irandom(h1.ulimit - 1);
     output.ulimit = h1.ulimit;
     for(i=0; i<bisection; ++i) {
       output.sequence.push_back(h1.sequence[i]);

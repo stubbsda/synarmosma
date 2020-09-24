@@ -2,8 +2,6 @@
 
 using namespace SYNARMOSMA;
 
-extern Random RND;
-
 Directed_Graph::Directed_Graph() : Graph()
 {
 
@@ -15,6 +13,7 @@ Directed_Graph::Directed_Graph(int n) : Graph(n)
   double alpha;
   std::set<int> vx;
   Relation d;
+  Random RND;
 
   for(i=0; i<n; ++i) {
     for(j=1+i; j<n; ++j) {
@@ -48,6 +47,7 @@ Directed_Graph::Directed_Graph(int n,double p) : Graph(n)
   double alpha;
   std::set<int> vx;
   auto d = Relation::disparate;
+  Random RND;
 
   number_directed = 0;
 
@@ -455,6 +455,7 @@ bool Directed_Graph::mutate_edge(int u,int v)
 {
   if (u == v) return false;
   std::set<int> S;
+  Random RND;
   S.insert(u); S.insert(v);
   hash_map::const_iterator qt = index_table.find(S);
   if (qt == index_table.end()) return false;

@@ -2,8 +2,6 @@
 
 using namespace SYNARMOSMA;
 
-extern Random RND;
-
 template<class kind>
 Integer_Polynomial<kind>::Integer_Polynomial()
 {

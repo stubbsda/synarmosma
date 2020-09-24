@@ -4,12 +4,12 @@
 #define _wordh
 
 namespace SYNARMOSMA {
-  /// A class representing a word in an alphabet, that is an expression involving the finite product of atomic letters, raised to integer powers. 
+  /// A class representing a word in an alphabet, that is an expression involving the finite product of atomic letters, raised to integer powers.
   class Word {
    private:
-    /// The word is stored as a vector of pairs - the first element of the pair 
-    /// is the letter, an unsigned integer, while the second element of the pair 
-    /// is the letter's exponent, a non-zero integer. 
+    /// The word is stored as a vector of pairs - the first element of the pair
+    /// is the letter, an unsigned integer, while the second element of the pair
+    /// is the letter's exponent, a non-zero integer.
     std::vector<std::pair<unsigned int,int> > content;
 
     /// This method initializes the word to the form \f$w = x_0^{k_0}\cdots x_{n-1}^{k_{n-1}}\f$ where \f$n\f$ is the argument and the \f$k_i\f$ are randomly chosen between -10 and 10, excluding zero.
@@ -35,7 +35,7 @@ namespace SYNARMOSMA {
     ~Word();
     /// This method calls clear on the vector "content" and so empties the word of its contents.
     void clear();
-    /// This method appends a new "letter" to the end of the word. 
+    /// This method appends a new "letter" to the end of the word.
     void append(const std::pair<unsigned int,int>&);
     /// This method computes the set of letters used in this word and returns the cardinality of this set.
     unsigned int get_alphabet(std::set<unsigned int>&) const;
@@ -84,7 +84,7 @@ namespace SYNARMOSMA {
     friend class Group;
   };
 
-  inline void Word::clear() 
+  inline void Word::clear()
   {
     content.clear();
   }
@@ -99,7 +99,7 @@ namespace SYNARMOSMA {
     return content.size();
   }
 
-  inline bool Word::empty() const 
+  inline bool Word::empty() const
   {
     return content.empty();
   }

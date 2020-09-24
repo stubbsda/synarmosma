@@ -59,6 +59,10 @@ namespace SYNARMOSMA {
     NTL::ZZ get_denominator() const;
     /// This method returns the height.
     double get_height() const;
+    /// This method writes the Rational::n and Rational::d properties to a binary disk file and returns the number of bytes written to the file.
+    int serialize(std::ofstream&) const;
+    /// This method reads the Rational::n and Rational::d properties from a binary disk file, computes the Rational::height property and returns the number of bytes read.
+    int deserialize(std::ifstream&);
     /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of two integers; the default is to compute the arithmetic mean.
     friend Rational compute_mean(int,int,const std::string&);
     /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of an integer and an instance of the Rational class; the default is to compute the arithmetic mean.

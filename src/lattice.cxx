@@ -2,8 +2,6 @@
 
 using namespace SYNARMOSMA;
 
-extern Random RND;
-
 Lattice::Lattice() : Poset()
 {
 
@@ -119,6 +117,7 @@ void Lattice::initialize()
   if (N < 2) throw std::runtime_error("A lattice must have at least two elements!");
 
   int i,j,n1,n2,ndelta,delta = 2*N*(N-1);
+  Random RND;
 
   do {
     n1 = RND.irandom(N);

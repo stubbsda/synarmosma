@@ -2,8 +2,6 @@
 
 using namespace SYNARMOSMA;
 
-extern Random RND;
-
 Proposition::Proposition()
 {
 
@@ -11,8 +9,7 @@ Proposition::Proposition()
 
 Proposition::Proposition(const std::set<int>& atoms)
 {
-  unsigned int nc = 1 + RND.irandom(atoms.size()/Proposition::NP);
-  initialize(nc,atoms);
+  initialize(0,atoms);
 }
 
 Proposition::Proposition(unsigned int nc,const std::set<int>& atoms)
@@ -42,13 +39,16 @@ Proposition::~Proposition()
 void Proposition::initialize(unsigned int nc,const std::set<int>& atoms)
 {
   clear();
-  if (nc == 0 || atoms.empty()) return;
+  if (atoms.empty()) return;
 
   int a;
   unsigned int i,j,k;
   double alpha;
   std::set<int> used;
+  Random RND;
   const unsigned int na = atoms.size();
+
+  if (nc == 0) nc = 1 + RND.irandom(na/Proposition::NP);
 
   for(i=0; i<nc; ++i) {
     a = RND.irandom(atoms);
@@ -91,6 +91,7 @@ bool Proposition::satisfiable() const
   std::set<unsigned int> false_clauses;
   std::set<int>::const_iterator it;
   std::unordered_map<int,bool>::const_iterator qt;
+  Random RND;
 
   unsigned int natoms = get_atoms(atoms);
   for(it=atoms.begin(); it!=atoms.end(); ++it) {
@@ -207,8 +208,7 @@ void Proposition::set_atoms(const std::set<int>& atoms)
   clear();
   if (atoms.empty()) return;
   if (atoms.size() < Proposition::NP) throw std::invalid_argument("The number of atoms must not be less than the number of atomic propositions!");
-  unsigned int nc = 1 + RND.irandom(atoms.size()/Proposition::NP);
-  initialize(nc,atoms);
+  initialize(0,atoms);
 }
 
 int Proposition::serialize(std::ofstream& s) const

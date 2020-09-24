@@ -2,8 +2,6 @@
 
 using namespace SYNARMOSMA;
 
-extern Random RND;
-
 Word::Word()
 {
 
@@ -67,11 +65,12 @@ void Word::initialize(unsigned int n)
 
   unsigned int i;
   std::pair<unsigned int,int> doublet;
+  Random RND;
 
   for(i=0; i<n; ++i) {
     doublet.first = i; 
     doublet.second = RND.irandom(1,10);
-    if (RND.drandom() < 0.5) doublet.second *= -1;
+    if (RND.irandom(2) == 0) doublet.second *= -1;
     content.push_back(doublet);
   }
 }
@@ -237,6 +236,7 @@ Word Word::mutate() const
   std::set<unsigned int> S;
   std::pair<unsigned int,int> doublet;
   unsigned int m = get_alphabet(S);
+  Random RND;
 
   output.content = content;
 
@@ -247,7 +247,7 @@ Word Word::mutate() const
     output.content[0].first = content[0].first;
     do {
       n = RND.irandom(1,10);
-      if (RND.drandom() < 0.5) n *= 1;
+      if (RND.irandom(2) == 0) n *= 1;
       if (n != content[0].second) break;
     } while(true);
     output.content[0].second = n;
@@ -259,7 +259,7 @@ Word Word::mutate() const
       if (doublet.first != content[n].first) break;
     } while(true);
     doublet.second = RND.irandom(1,10);
-    if (RND.drandom() < 0.5) doublet.second = -doublet.second;
+    if (RND.irandom(2) == 0) doublet.second = -doublet.second;
     output.content[n] = doublet;
   }
 

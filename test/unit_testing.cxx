@@ -4,12 +4,8 @@
 #include <synarmosma/group.h>
 #include <synarmosma/integer_matrix.h>
 
-SYNARMOSMA::Random* RND;
-
 int main(int argc,char** argv)
 {
-  RND = new SYNARMOSMA::Random;
-  RND->set_seed(12);
   std::string test = std::string(argv[1]);
 
   if (test == "Rational") {
@@ -51,6 +47,7 @@ int main(int argc,char** argv)
     std::vector<double> vx;
     SYNARMOSMA::Graph G("Petersen"),H(n,"CYCLIC"),K(3,"Complete");
     std::vector<SYNARMOSMA::Monomial<int> > output;
+    SYNARMOSMA::Random RND; 
 
     G.entwinement();
     G.vertex_centrality(vx,0.000001);
@@ -62,13 +59,14 @@ int main(int argc,char** argv)
     }
 
     if (H.compactness(2,3) != 7) return 1;
+    RND.set_seed(12);
     H.clustering_coefficient();
     H.mean_path_length();
     for(i=0; i<n; ++i) {
-      if (RND->drandom() < 0.15) {
+      if (RND.drandom() < 0.15) {
         H.drop_edge(i,(i+1)%n);
         do {
-          j = RND->irandom(n);
+          j = RND.irandom(n);
           if (i == j) continue;
           if (H.add_edge(i,j)) break;
         } while(true);
@@ -196,7 +194,7 @@ int main(int argc,char** argv)
     std::cerr << "Unrecognized test type!" << std::endl;
     return 1;
   }
-  delete RND;
+
   return 0;
 }
 

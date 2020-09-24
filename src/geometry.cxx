@@ -2,8 +2,6 @@
 
 using namespace SYNARMOSMA;
 
-extern Random RND;
-
 Geometry::Geometry()
 {
 
@@ -339,6 +337,7 @@ void Geometry::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<dou
 
   if (unf_rnd) {
     if (2*background_dimension != vsize) throw std::invalid_argument("The vector argument in Geometry::multiple_vertex_addition has the wrong length!");
+    Random RND;
 
     for(i=0; i<N; ++i) {
       for(k=0; k<background_dimension; ++k) {
@@ -413,6 +412,7 @@ void Geometry::multiple_vertex_addition(int N,double mu,double sigma)
 #ifdef DISCRETE
   std::vector<INT64> xi;
 #endif
+  Random RND;
 
   clear();
 
@@ -539,6 +539,7 @@ double Geometry::dot_product(const std::vector<double>& vx,const std::vector<dou
   unsigned int l,k = 0,n = vx.size(),m = vy.size();
   std::vector<double> vlx = vx;
   std::vector<double> vly = vy;
+  Random RND;
 
   l = n;
 
@@ -687,6 +688,7 @@ void Geometry::create(int n,const std::string& type)
     nvertex = 1;
   }
   else if (utype == "RANDOM") {
+    Random RND;
     nvertex = n;
     if (!high_memory) return;
     if (euclidean) {
@@ -793,6 +795,7 @@ void Geometry::vertex_difference(int n,int m,std::vector<double>& delta) const
   unsigned int d2 = coordinates[m].size();
   unsigned int k = 0,l = d1;
   std::vector<double> vlx,vly;
+  Random RND;
 
 #ifdef DISCRETE
   for(i=0; i<d1; ++i) {
@@ -867,6 +870,8 @@ void Geometry::rollback(bool minimal)
 
 int Geometry::vertex_addition(const std::set<int>& antecedents)
 {
+  Random RND;
+
   if (antecedents.empty()) {
     vertex_addition(-1);
   }
@@ -948,6 +953,7 @@ int Geometry::vertex_addition(int parent,double mutation)
   int i,j,k = 0;
   double alpha;
   std::vector<double> x;
+  Random RND;
 
   if (parent == -1) {
     // No antecedent, so place the vertex randomly...
@@ -1042,6 +1048,8 @@ int Geometry::vertex_addition(int parent,double mutation)
 
 void Geometry::mutation(int v,bool by_vertex,bool complete,double severity)
 {
+  Random RND;
+
 #ifdef DISCRETE
   INT64 alpha = INT64((RND.nrandom(0.0,severity)/space_quantum));
 #else
@@ -1118,6 +1126,7 @@ bool Geometry::adjust_dimension(const std::vector<int>& vdimension)
   int i;
   unsigned int j,n,m;
   std::set<int> vmodified;
+  Random RND;
 #ifdef DISCRETE
   std::vector<INT64> x;
 #else

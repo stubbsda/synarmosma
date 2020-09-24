@@ -2,8 +2,6 @@
 
 using namespace SYNARMOSMA;
 
-extern Random RND;
-
 template<class kind>
 Variety<kind>::Variety()
 {
@@ -112,6 +110,8 @@ namespace SYNARMOSMA {
   /// This method is an instantiation of generate_coefficient() for the case of a rational number, where we need to generate a random numerator and denominator. 
   Rational Variety<Rational>::generate_coefficient(int L) const
   {
+    Random RND;
+
     int n = RND.irandom(-L*L,L*L);
     int d = RND.irandom(-L,L);
     Rational output(n,d);
@@ -122,6 +122,7 @@ namespace SYNARMOSMA {
   /// This method is an instantiation of generate_coefficient() for the case of a multiprecision integer, which requires using the NTL::to_ZZ method.
   NTL::ZZ Variety<NTL::ZZ>::generate_coefficient(int L) const
   {
+    Random RND;
     int t = (characteristic > 0) ? RND.irandom(characteristic) : RND.irandom(-L,L);
     NTL::ZZ output = NTL::to_ZZ(t);
     return output;
@@ -131,6 +132,7 @@ namespace SYNARMOSMA {
 template<class kind>
 kind Variety<kind>::generate_coefficient(int L) const
 {
+  Random RND;
   kind output = (characteristic > 0) ? RND.irandom(characteristic) : RND.irandom(-L,L);
   return output;
 }
@@ -145,6 +147,7 @@ void Variety<kind>::random_variety(unsigned int mdegree)
   std::pair<unsigned int,unsigned int> duo;
   bool good;
   kind rho;
+  Random RND;
 
   projective = false;
   for(i=0; i<nequation; ++i) {

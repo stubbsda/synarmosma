@@ -2,8 +2,6 @@
 
 using namespace SYNARMOSMA;
 
-extern Random RND;
-
 template<class kind>
 Solver<kind>::Solver(unsigned int N)
 {
@@ -31,6 +29,121 @@ template<class kind>
 Solver<kind>::~Solver()
 {
   if (dimension > 0) delete J;
+}
+
+template<class kind>
+void Solver<kind>::clear()
+{
+  max_its = 100;
+  error_threshold = 0.00001;
+  t = 1.0;
+  homotopy = false;
+  broyden = false;
+  method = Linear_Solver::iterative;
+  dependencies.clear();
+  current_solution.clear();
+  base_solution.clear();
+  if (dimension > 0) delete J;
+  dimension = 0;
+}
+
+template<class kind>
+int Solver<kind>::serialize(std::ofstream& s) const
+{
+  unsigned int i,j,n;
+  int count = 0;
+  kind x;
+  std::set<unsigned int> S;
+  std::set<unsigned int>::const_iterator it;
+
+  s.write((char*)(&max_its),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&dimension),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&homotopy),sizeof(int)); count += sizeof(bool);
+  s.write((char*)(&broyden),sizeof(int)); count += sizeof(bool);
+  s.write((char*)(&t),sizeof(int)); count += sizeof(double);
+  s.write((char*)(&error_threshold),sizeof(int)); count += sizeof(double);
+  n = (method == Linear_Solver::iterative) ? 0 : 1;
+  s.write((char*)(&n),sizeof(int)); count += sizeof(int); 
+  for(i=0; i<dimension; ++i) {
+    x = base_solution[i];
+    s.write((char*)(&x),sizeof(kind)); 
+  }
+  count += dimension*sizeof(kind);
+
+  for(i=0; i<dimension; ++i) {
+    x = current_solution[i];
+    s.write((char*)(&x),sizeof(kind)); 
+  }
+  count += dimension*sizeof(kind);
+
+  for(i=0; i<dimension; ++i) {
+    S = dependencies[i];
+    n = S.size();
+    s.write((char*)(&n),sizeof(int)); 
+    for(it=S.begin(); it!=S.end(); ++it) {
+      j = *it;
+      s.write((char*)(&j),sizeof(int));
+    }
+    count += (1+n)*sizeof(int);
+  }
+
+  if (dimension > 0) count += J->serialize(s);
+
+  return count;  
+}
+
+template<class kind>
+int Solver<kind>::deserialize(std::ifstream& s)
+{
+  unsigned int i,j,k,n;
+  int count = 0;
+  kind x;
+  std::set<unsigned int> S;
+
+  clear();
+
+  s.read((char*)(&max_its),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&dimension),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&homotopy),sizeof(int)); count += sizeof(bool);
+  s.read((char*)(&broyden),sizeof(int)); count += sizeof(bool);
+  s.read((char*)(&t),sizeof(int)); count += sizeof(double);
+  s.read((char*)(&error_threshold),sizeof(int)); count += sizeof(double);
+  s.read((char*)(&n),sizeof(int)); count += sizeof(int); 
+  if (n == 0) {
+    method = Linear_Solver::iterative;
+  }
+  else {
+    method = Linear_Solver::direct;
+  }
+
+  for(i=0; i<dimension; ++i) {
+    s.read((char*)(&x),sizeof(kind)); 
+    base_solution.push_back(x);
+  }
+  count += dimension*sizeof(kind);
+
+  for(i=0; i<dimension; ++i) {
+    s.read((char*)(&x),sizeof(kind));
+    current_solution.push_back(x); 
+  }
+  count += dimension*sizeof(kind);
+
+  for(i=0; i<dimension; ++i) {
+    s.read((char*)(&n),sizeof(int)); 
+    for(j=0; j<n; ++j) {
+      s.read((char*)(&k),sizeof(int));
+      S.insert(k);
+    }
+    dependencies.push_back(S); S.clear();
+    count += (1+n)*sizeof(int);
+  }
+
+  if (dimension > 0) {
+    J = new SYNARMOSMA::Matrix<kind>(dimension);
+    count += J->deserialize(s);
+  }
+
+  return count;  
 }
 
 namespace SYNARMOSMA {
@@ -129,6 +242,7 @@ double Solver<kind>::compute_dependencies()
   kind delta;
   std::set<unsigned int> null;
   std::vector<kind> w,x,y;
+  Random RND;
 
   dependencies.clear();
   for(i=0; i<dimension; ++i) {
@@ -362,6 +476,7 @@ namespace SYNARMOSMA {
   {
     unsigned int i;
     double alpha,beta;
+    Random RND;
     const double lbound = mean - 0.5*range;
     const double ubound = mean + 0.5*range;
 
@@ -379,6 +494,7 @@ template<class kind>
 void Solver<kind>::initialize_base_solution(double mean,double range)
 {
   unsigned int i;
+  Random RND;
   const double lbound = mean - 0.5*range;
   const double ubound = mean + 0.5*range;
 

@@ -2,8 +2,6 @@
 
 using namespace SYNARMOSMA;
 
-extern Random RND;
-
 template<class kind>
 Polynomial<kind>::Polynomial()
 {
@@ -203,6 +201,7 @@ void Polynomial<kind>::initialize(int L)
   if (L < 1) throw std::invalid_argument("The argument for Polynomial::initialize must be positive!");
   unsigned int i;
   kind test;
+  Random RND;
 
   for(i=0; i<degree; ++i) {
     terms.push_back(kind(RND.irandom(-L,L)));

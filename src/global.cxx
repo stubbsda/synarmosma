@@ -1,7 +1,5 @@
 #include "random.h"
 
-SYNARMOSMA::Random RND;
-
 namespace SYNARMOSMA {
   bool tuple_predicate(const std::tuple<int,int,double>& lhs,const std::tuple<int,int,double>& rhs)
   {

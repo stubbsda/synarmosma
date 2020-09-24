@@ -2,8 +2,6 @@
 
 using namespace SYNARMOSMA;
 
-extern Random RND;
-
 Graph::Graph()
 {
   // The empty graph, no vertices or edges...
@@ -194,6 +192,7 @@ Graph::Graph(int n,const std::string& type) : Schema(n)
     if (n < 2) throw std::invalid_argument("The order of a connected graph must be greater than one!");
 
     int u,v;
+    Random RND;
 
     do {
       do {
@@ -218,6 +217,7 @@ Graph::Graph(int n,int c) : Schema(n)
   // the minimum degree is c
   int i,j,k,sum;
   double rho;
+  Random RND;
 
   for(i=0; i<c+1; ++i) {
     for(j=(signed) neighbours[i].size(); j<c; ++j) {
@@ -252,6 +252,7 @@ Graph::Graph(int n,double p) : Schema(n)
   // the number of edges in the complete graph on n vertices, chosen randomly.
   int i,j;
   double alpha;
+  Random RND;
 
   for(i=0; i<n; ++i) {
     for(j=1+i; j<n; ++j) {
@@ -818,6 +819,7 @@ bool Graph::stellar_addition(int v)
   std::vector<std::tuple<int,int,int> > cycles;
   std::set<int> S = neighbours[v];
   std::set<int>::const_iterator it,jt;
+  Random RND;
 
   for(it=S.begin(); it!=S.end(); ++it) {
     n = *it;
@@ -850,6 +852,7 @@ bool Graph::fusion(int v,int u)
   if (u == v) return false;
   if (u == -1) {
     if (neighbours[v].empty()) return false;
+    Random RND;
     u = RND.irandom(neighbours[v]);
   }
   std::set<int> S = neighbours[u];
@@ -870,13 +873,17 @@ bool Graph::foliation_x(int v,int u)
 {
   if (u == v) return false;
   if (neighbours[v].empty()) return false;
-  if (u == -1) u = RND.irandom(neighbours[v]);
+  if (u == -1) {
+    Random RND;
+    u = RND.irandom(neighbours[v]);
+  }
   return drop_edge(v,u);
 }
 
 bool Graph::foliation_m(int v,int u)
 {
   if (u == -1) {
+    Random RND;
     do {
       u = RND.irandom(nvertex);
       if (u != v) break;
@@ -1005,6 +1012,8 @@ void Graph::defoliate(const Pseudograph* parent,std::vector<Monomial<int> >& tut
 {
   std::vector<int> cvector;
   int nb = parent->get_candidates(cvector);
+  Random RND;
+
   if (cvector.empty()) {
     int nl = parent->get_loops();
     Monomial<int> term;
@@ -1222,12 +1231,18 @@ double Graph::entropy(int n) const
 double Graph::return_probability(int base,int length,int ntrials) const
 {
   int i,j,next,current,sum = 0;
+  unsigned long s = (unsigned) std::time(nullptr);
   bool home;
-  double rho;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(shared) private(i,j,next,current,home) reduction(+:sum) schedule(dynamic,1)
+#pragma omp parallel default(shared) private(i,j,next,current,home) firstprivate(s)
+  {
+  s *= long(1 + omp_get_thread_num());
 #endif
+  Random RND;
+
+  RND.set_seed(s);
+#pragma omp for reduction(+:sum) schedule(dynamic,1)
   for(i=0; i<ntrials; ++i) {
     current = base;
     home = false;
@@ -1242,7 +1257,11 @@ double Graph::return_probability(int base,int length,int ntrials) const
     if (home) sum++;
   }
 
-  rho = double(sum)/double(ntrials);
+#ifdef _OPENMP
+  }
+#endif
+
+  double rho = double(sum)/double(ntrials);
   return rho;
 }
 
@@ -1253,6 +1272,7 @@ std::pair<double,double> Graph::random_walk(int L,double p,int ntrials) const
   std::set<int> vx;
   const int nbase = int(p*nvertex);
   double value[nbase];
+  Random RND;
 
   for(i=0; i<nbase; ++i) {
     do {
@@ -1332,6 +1352,7 @@ double Graph::percolation(bool site) const
   bool success;
   std::vector<int> csize,components;
   Graph* G = new Graph;
+  Random RND;
   const double NE = double(size());
   const double NV = double(nvertex);
   
@@ -1818,6 +1839,7 @@ int Graph::minimize_topology(int nsteps,double temperature,std::vector<double>& 
   int l,n,m,acceptance = 0;
   double alpha,boltzmann,E_old,current_energy;
   bool added;
+  Random RND;
 
   // Compute the initial geometric energy and store it in E_old
   energy_history.clear();

@@ -103,6 +103,8 @@ namespace SYNARMOSMA {
     Solver(unsigned int,double,unsigned int,bool,bool);
     /// The destructor frees the memory associated with Solver::J if Solver::dimension is greater than zero.
     ~Solver();
+    /// This method restores all of the instance's scalar properties to their default value, deletes the Solver::J property and clears the other extended properties.
+    void clear();
     /// This method is the main entry point for solving the system of equations; the unique argument is the initial guess (which only makes sense if Solver::homotopy is false) which upon exit will contain the solution, if the return value is true.
     bool solve(std::vector<kind>&);
     /// This method computes the dependency graph among the system of equations - each equation corresponds to a vertex and if two equations have at least one independent variable in common, there is an edge connecting the corresponding vertices. The method returns the connectedness of this graph.
@@ -115,6 +117,10 @@ namespace SYNARMOSMA {
     void use_homotopy();
     /// This is a public method that sets the Solver::broyden property to true.
     void use_broyden();
+    /// This method writes the instance properties to a binary disk file and returns the number of bytes written to the file.
+    int serialize(std::ofstream&) const;
+    /// This method calls the clear() method of the instance and then reads the properties from a binary disk file, returning the number of bytes read.
+    int deserialize(std::ifstream&);
   };
 
   template<class kind>
