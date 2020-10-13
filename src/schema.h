@@ -31,8 +31,8 @@ namespace SYNARMOSMA {
     virtual int deserialize(std::ifstream&);
     /// This method determines if the 1-skeleton is connected (i.e. every vertex can be reached by every other vertex) and returns true if this is the case.
     virtual bool connected() const;
-    /// This method checks if there is a direction connection between the two vertex arguments, i.e. if an edge connects these two vertices, returning true if so.
-    bool connected(int,int) const;
+    /// This method checks if there is a direct connection between the two vertex arguments, i.e. if an edge connects these two vertices, returning true if so.
+    virtual bool connected(int,int) const;
     /// This method restores the Schema to its default state, with Schema::nvertex equal to zero and Schema::neighbours empty.
     virtual void clear();
     /// This method adds a vertex to the Schema, incrementing Schema::nvertex and adding a new empty set to Schema::neighbours; it returns the index of the newly created vertex.
@@ -43,7 +43,9 @@ namespace SYNARMOSMA {
     virtual bool drop_edge(int,int);
     /// This method computes the combinatorial distance between the two vertex arguments, i.e. the smallest number of "hops" to get from the first argument to the second; if there is no such path (only possible if connected() is false), the method returns -1. 
     virtual int distance(int,int) const;
-    /// This method computes the complete set of combinatorial distances in the schema and stores the result as an unordered map linking pairs of vertices (i,j) where i < j and the distance d between them. 
+    /// This method computes a topological geodesic between two distinct vertices (source and target, the method's first two arguments), i.e. a path whose length is equal to the value returned by the distance() method. The path is stored in the method's final argument, as a sequence of neighbouring vertices whose final element is the target vertex (second argument); if no path exists the vector will be empty upon return. 
+    virtual void compute_shortest_path(int,int,std::vector<int>&) const;
+    /// This method computes the complete set of combinatorial distances in the schema and stores the result as an unordered map linking pairs of vertices \f$(i,j)\f$ where \f$i < j\f$ and the distance \f$d\f$ between them. 
     virtual void compute_distances(pair_index&) const;
     /// This method verifies if every vertex has at least one edge and so a positive valence, returning true in this case.
     bool positive_valence() const;
@@ -104,8 +106,7 @@ namespace SYNARMOSMA {
     // connection
     if (n < 0 || n >= nvertex) throw std::invalid_argument("A vertex argument in Schema::connected does not exist!");
     if (m < 0 || m >= nvertex) throw std::invalid_argument("A vertex argument in Schema::connected does not exist!");
-
-    if (n == m) return false;
+    if (n == m) throw std::invalid_argument("Vertex arguments are identical in the Schema::connected method!");
 
     // This edge exists...
     if (neighbours[n].count(m) > 0) return true;

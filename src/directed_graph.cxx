@@ -327,45 +327,117 @@ int Directed_Graph::distance(int u,int v) const
   // A method to calculate the topological distance from 
   // u to v; the method returns -1 if it is impossible to 
   // get from u to v.
+  if (u < 0 || u >= nvertex) throw std::invalid_argument("Illegal vertex argument in the Directed_Graph::distance method!");
+  if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal vertex argument in the Directed_Graph::distance method!");
+
   if (u == v) return 0;
 
-  int i,j,delta = -1,its = 1;
+  if (connected(u,v)) return 1;
+
+  // So, we'll have to use Dijkstra's algorithm then...
+  int i,n,p,md,base,l = -1;
   bool visited[nvertex];
-  std::set<int> S,current,next;
-  std::set<int>::const_iterator it,jt;
+  std::set<int> S;
+  std::vector<int> distance;
+  std::set<int>::const_iterator it;
   hash_map::const_iterator qt;
 
   for(i=0; i<nvertex; ++i) {
+    distance.push_back(-1);
     visited[i] = false;
   }
-  current.insert(u);
-  visited[u] = true;
+  distance[u] = 0;
   do {
-    for(it=current.begin(); it!=current.end(); ++it) {
-      i = *it;
-      for(jt=neighbours[i].begin(); jt!=neighbours[i].end(); ++jt) {
-        j = *jt;
-        if (visited[j]) continue;
-        S.clear();
-        S.insert(i); S.insert(j);
-        qt = index_table.find(S);
-        if (edges[qt->second].get_direction(i,j) == Relation::before) next.insert(j);
+    base = -1;
+    md = nvertex + 1;
+    for(i=0; i<nvertex; ++i) {
+      if (visited[i]) continue;
+      n = distance[i];
+      if (n == -1) continue;
+      if (n < md) {
+        md = n;
+        base = i;
       }
     }
-    if (next.empty()) break;
-    if (next.count(v) > 0) {
-      delta = its;
-      break;
+    if (base == -1 || base == v) break;
+    visited[base] = true;
+    n = distance[base] + 1;
+    for(it=neighbours[base].begin(); it!=neighbours[base].end(); ++it) {
+      p = *it;
+      S.clear();
+      S.insert(base); S.insert(p);
+      qt = index_table.find(S);
+      if (edges[qt->second].get_direction(base,p) != Relation::before) continue;   
+      if (distance[p] < 0 || distance[p] > n) distance[p] = n;
     }
-    for(it=next.begin(); it!=next.end(); ++it) {
-      visited[*it] = true;
-    }
-    current = next;
-    next.clear();
-    its++;
   } while(true);
+  if (base == v) l = md;
+  return l;
+}
 
-  return delta;
+void Directed_Graph::compute_shortest_path(int u,int v,std::vector<int>& path) const
+{
+  if (u < 0 || u >= nvertex) throw std::invalid_argument("Illegal vertex argument in the Directed_Graph::compute_shortest_path method!");
+  if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal vertex argument in the Directed_Graph::compute_shortest_path method!");
+  if (u == v) throw std::invalid_argument("Vertex arguments are identical in the Directed_Graph::compute_shortest_path method!");
+
+  path.clear();
+
+  if (connected(u,v)) {
+    path.push_back(v);
+    return;
+  }
+
+  // So, we'll have to use Dijkstra's algorithm then...
+  int i,n,p,md,base;
+  bool visited[nvertex];
+  std::set<int> S;
+  std::vector<int> distance,antecedent;
+  std::set<int>::const_iterator it;
+  hash_map::const_iterator qt;
+
+  for(i=0; i<nvertex; ++i) {
+    distance.push_back(-1);
+    antecedent.push_back(-1);
+    visited[i] = false;
+  }
+  distance[u] = 0;
+  do {
+    base = -1;
+    md = nvertex + 1;
+    for(i=0; i<nvertex; ++i) {
+      if (visited[i]) continue;
+      n = distance[i];
+      if (n == -1) continue;
+      if (n < md) {
+        md = n;
+        base = i;
+      }
+    }
+    if (base == -1 || base == v) break;
+    visited[base] = true;
+    n = distance[base] + 1;
+    for(it=neighbours[base].begin(); it!=neighbours[base].end(); ++it) {
+      p = *it;
+      S.clear();
+      S.insert(base); S.insert(p);
+      qt = index_table.find(S);
+      if (edges[qt->second].get_direction(base,p) != Relation::before) continue;     
+      if (distance[p] < 0 || distance[p] > n) {
+        distance[p] = n;
+        antecedent[p] = base;
+      }
+    }
+  } while(true);
+  if (base != v) return;
+  // Now calculate the reverse path...
+  do {
+    path.push_back(base);
+    base = antecedent[base];
+    if (base == u) break;
+  } while(true);
+  // And put it in the correct order before exiting...
+  std::reverse(path.begin(),path.end());
 }
 
 void Directed_Graph::compute_distances(pair_index& output) const

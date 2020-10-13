@@ -149,6 +149,9 @@ bool Schema::consistent() const
 
 int Schema::distance(int v1,int v2) const
 {
+  if (v1 < 0 || v1 >= nvertex) throw std::invalid_argument("Illegal vertex argument in the Schema::distance method!");
+  if (v2 < 0 || v2 >= nvertex) throw std::invalid_argument("Illegal vertex argument in the Schema::distance method!");
+
   // A method to calculate the topological distance
   // between the two vertices v1 and v2
   if (v1 == v2) return 0;
@@ -157,7 +160,7 @@ int Schema::distance(int v1,int v2) const
   if (connected(v1,v2)) return 1;
 
   // So, we'll have to use Dijkstra's algorithm then...
-  int i,n,v,md,base,l = -1;
+  int i,n,md,base,l = -1;
   bool visited[nvertex];
   std::vector<int> distance;
   std::set<int>::const_iterator it;
@@ -179,19 +182,74 @@ int Schema::distance(int v1,int v2) const
         base = i;
       }
     }
-    if (base == -1) break;
-    if (base == v2) {
-      l = md;
-      break;
-    }
+    if (base == -1 || base == v2) break;
     visited[base] = true;
+    n = distance[base] + 1;
     for(it=neighbours[base].begin(); it!=neighbours[base].end(); ++it) {
-      v = *it;
-      n = distance[base] + 1;
-      if (distance[v] < 0 || distance[v] > n) distance[v] = n;
+      if (distance[*it] < 0 || distance[*it] > n) distance[*it] = n;
     }
   } while(true);
+  if (base == v2) l = md;
   return l;
+}
+
+void Schema::compute_shortest_path(int v1,int v2,std::vector<int>& path) const
+{
+  if (v1 < 0 || v1 >= nvertex) throw std::invalid_argument("Illegal vertex argument in the Schema::compute_shortest_path method!");
+  if (v2 < 0 || v2 >= nvertex) throw std::invalid_argument("Illegal vertex argument in the Schema::compute_shortest_path method!");
+  if (v1 == v2) throw std::invalid_argument("Vertex arguments are identical in the Schema::compute_shortest_path method!");
+
+  path.clear();
+
+  if (connected(v1,v2)) {
+    path.push_back(v2);
+    return;
+  }
+
+  // So, we'll have to use Dijkstra's algorithm then...
+  int i,n,v,md,base;
+  bool visited[nvertex];
+  std::vector<int> distance,antecedent;
+  std::set<int>::const_iterator it;
+
+  for(i=0; i<nvertex; ++i) {
+    distance.push_back(-1);
+    antecedent.push_back(-1);
+    visited[i] = false;
+  }
+  distance[v1] = 0;
+  do {
+    base = -1;
+    md = nvertex + 1;
+    for(i=0; i<nvertex; ++i) {
+      if (visited[i]) continue;
+      n = distance[i];
+      if (n == -1) continue;
+      if (n < md) {
+        md = n;
+        base = i;
+      }
+    }
+    if (base == -1 || base == v2) break;
+    visited[base] = true;
+    n = distance[base] + 1;
+    for(it=neighbours[base].begin(); it!=neighbours[base].end(); ++it) {
+      v = *it;
+      if (distance[v] < 0 || distance[v] > n) {
+        distance[v] = n;
+        antecedent[v] = base;
+      }
+    }
+  } while(true);
+  if (base != v2) return;
+  // Now calculate the reverse path...
+  do {
+    path.push_back(base);
+    base = antecedent[base];
+    if (base == v1) break;
+  } while(true);
+  // And put it in the correct order before exiting...
+  std::reverse(path.begin(),path.end());
 }
 
 void Schema::compute_distances(pair_index& output) const

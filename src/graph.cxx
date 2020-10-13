@@ -649,6 +649,30 @@ int Graph::eccentricity(int v) const
   return output;  
 }
 
+int Graph::radius() const
+{
+  if (!connected()) return -1;
+  int i,t,output = size();
+
+  for(i=0; i<nvertex; ++i) {
+    t = eccentricity(i);
+    if (t < output) output = t;
+  }
+  return output;
+}
+
+int Graph::diameter() const
+{
+  if (!connected()) return -1;
+  int i,t,output = -1;
+
+  for(i=0; i<nvertex; ++i) {
+    t = eccentricity(i);
+    if (t > output) output = t;
+  }
+  return output;
+}
+
 bool Graph::planar() const
 {
   if (!connected()) throw std::runtime_error("To compute a graph's planarity it must be connected!");

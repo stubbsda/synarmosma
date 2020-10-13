@@ -45,6 +45,7 @@ int main(int argc,char** argv)
   else if (test == "Graph") {
     int i,j,n = 25;
     std::vector<double> vx;
+    std::vector<int> path;
     SYNARMOSMA::Graph G("Petersen"),H(n,"CYCLIC"),K(3,"Complete");
     std::vector<SYNARMOSMA::Monomial<int> > output;
     SYNARMOSMA::Random RND; 
@@ -57,6 +58,10 @@ int main(int argc,char** argv)
       if (output[i].exponents[0].second == 1 && output[i].exponents[1].second == 3) if (output[i].coefficient != 65) return 1;
       if (output[i].exponents[0].second == 2 && output[i].exponents[1].second == 2) if (output[i].coefficient != 105) return 1;
     }
+    if (G.radius() != 2) return 1;
+    G.compute_shortest_path(0,6,path);
+    if (path.size() != 2) return 1;
+    if (path[0] != 1 || path[1] != 6) return 1;
 
     if (H.compactness(2,3) != 7) return 1;
     RND.set_seed(12);

@@ -40,10 +40,14 @@ namespace SYNARMOSMA {
     double compute_flow(int,int) override;
     /// This method computes the oriented distance between the two vertices given as arguments, i.e. the length of the shortest path connecting the two vertices that only uses directed edges, returning -1 if no such path exists.
     int distance(int,int) const override;
-    /// This method computes the complete set of combinatorial distances (respecting the edge orientation) in the directed graph and stores the result as an unordered map linking pairs of vertices (i,j) where i < j and the distance d between them. 
+    /// This method computes a topological geodesic between two distinct vertices (source and target, the method's first two arguments), i.e. a path, respecting edge orientation, whose length is equal to the value returned by the distance() method. The path is stored in the method's final argument, as a sequence of neighbouring vertices whose final element is the target vertex (second argument); if no path exists the vector will be empty upon return. 
+    void compute_shortest_path(int,int,std::vector<int>&) const override;
+    /// This method computes the complete set of combinatorial distances (respecting the edge orientation) in the directed graph and stores the result as an unordered map linking pairs of vertices \f$(i,j)\f$ where \f$i < j\f$ and the distance \f$d\f$ between them. 
     void compute_distances(pair_index&) const override; 
     /// This method returns true if every vertex can reach every other vertex using an oriented path, false otherwise.
     bool connected() const override;
+    /// This method checks if there is a direct connection from the first argument to the second, i.e. if an edge with the correct orientation connects these two vertices, returning true if so.
+    bool connected(int,int) const override;
     /// This method changes the orientation of the edge connecting the two vertices that are the method's arguments; if the edge exists, the method returns true and modifies the direction according to the following algorithm. If the edge is undirected, a coin toss determines where it is forward or backward pointing; if the edge is forward or backward pointing, with 25% probability it is reversed and with 75% probability made undirected.
     bool mutate_edge(int,int);
     /// This method computes the number of directed edges in the graph, i.e. the value of Directed_Graph::number_directed.
@@ -88,6 +92,25 @@ namespace SYNARMOSMA {
       if (it->get_direction() == Relation::disparate) null++;
     }
     number_directed = size() - null;
+  }
+
+  inline bool Directed_Graph::connected(int u,int v) const
+  {
+    // A method to check if the vertices n and m share a direct 
+    // connection
+    if (u < 0 || u >= nvertex) throw std::invalid_argument("A vertex argument in Directed_Graph::connected does not exist!");
+    if (v < 0 || v >= nvertex) throw std::invalid_argument("A vertex argument in Directed_Graph::connected does not exist!");
+    if (u == v) throw std::invalid_argument("Vertex arguments are identical in the Directed_Graph::connected method!");
+
+    std::set<int> S;
+    hash_map::const_iterator qt;
+
+    S.insert(u); S.insert(v);
+    qt = index_table.find(S);
+    if (qt == index_table.end()) return false;
+    // So the edge exists, now check if it has the right orientation...
+    if (edges[qt->second].get_direction(u,v) != Relation::before) return false;
+    return true;
   }
 }
 #endif

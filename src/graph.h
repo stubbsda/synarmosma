@@ -84,21 +84,25 @@ namespace SYNARMOSMA {
     virtual int fission_m(int);
     /// This method computes the maximum network flow from a source vertex (first argument) to a sink vertex (second argument), returning the value of the flow.
     virtual double compute_flow(int,int);
-    /// This method computes the k-core of the graph and writes this new graph to its first argument, where k is the second argument. The k-core of a graph is the set of vertices (and their accompanying edges) whose degree is greater than or equal to k.
+    /// This method computes the \f$k\f$-core of the graph and writes this new graph to its first argument, where \f$k\f$ is the second argument. The \f$k\f$-core of a graph is the set of vertices (and their accompanying edges) whose degree is greater than or equal to \f$k\f$.
     void core(Graph*,int) const;
-    /// This method computes the eccentricity of a vertex, its unique argument and returns this value. The eccentricity of a vertex is the maximum combinatorial distance between it and every other vertex in the graph.
+    /// This method computes the eccentricity of a vertex, its unique argument, and returns this value; the eccentricity of a vertex is the maximum combinatorial distance between it and every other vertex in the graph.
     int eccentricity(int) const;
-    /// This method returns true if the graph is planar, false otherwise, using the Boost library to do the planarity testing.
+    /// This method returns the radius of the graph, i.e. the minimum of the vertex eccentricity over the entire set of vertices; if the graph is disconnected the method returns -1. 
+    int radius() const;
+    /// This method returns the diameter of the graph, i.e. the maximum of the vertex eccentricity over the entire set of vertices; if the graph is disconnected the method returns -1.
+    int diameter() const;
+    /// This method returns true if the graph is planar, false otherwise, using the Boost library (the Boyer-Myrvold test) to do the planarity testing.
     bool planar() const;
     /// This method returns false if there is at least one vertex whose removal disconnects the graph, otherwise it returns true.
     bool biconnected() const;
-    /// This method returns the entropy of the graph, defined as the logarithm of the total number of paths of length N > 0, the method's argument, in the graph. This value is calculated by computing the N-th power of the adjacency matrix and then obtaining the sum of all its upper diagonal elements. When the argument is zero, the method uses as the length the value of Graph::nvertex less one.
+    /// This method returns the entropy of the graph, defined as the logarithm of the total number of paths of length \f$N > 0\f$, the method's argument, in the graph. This value is calculated by computing the \f$N\f$-th power of the adjacency matrix and then obtaining the sum of all its upper diagonal elements. When the argument is zero, the method uses as the length the value of Graph::nvertex less one.
     double entropy(int = 0) const;
-    /// This method computes the cosine similarity between two vertices u and v. This is defined to be the (u,v) element of the square of the adjacency matrix, divided by the square root of the product of the degree of u and v.
+    /// This method returns the cosine similarity between two vertices \f$u\f$ and \f$v\f$. This is defined to be the \f$(u,v)\f$ element of the square of the adjacency matrix, divided by \f$\sqrt{\deg(u)\deg(v)}\f$.
     double cosine_similarity(int,int) const;
-    /// This method computes the length of the graph's largest cycle; it returns -1 if the graph is acyclic. 
+    /// This method returns the length of the graph's largest cycle; it returns -1 if the graph is acyclic. 
     int girth() const;
-    /// This method computes the inverse girth; if the graph is acyclic it returns zero.
+    /// This method returns the inverse girth; if the graph is acyclic it returns zero.
     double inverse_girth() const;
     /// This method computes the complement of this graph, i.e. the graph with the same vertices but where two vertices are connected if and only if they are not connected in the original graph.
     void complement(Graph*) const;
@@ -110,17 +114,17 @@ namespace SYNARMOSMA {
     double clustering_coefficient() const;
     /// This method sums the combinatorial distance between every distinct pair of vertices in the graph and divides this by the number of such pairs, returning the result.
     double mean_path_length() const;
-    /// This method computes the number of edges which are bridges, i.e. edges which if deleted would disconnect the graph.
+    /// This method returns the number of edges which are bridges, i.e. edges which if deleted would disconnect the graph.
     int bridge_count() const;
     /// This method returns false if the graph contains a cycle of odd length and true otherwise.
     bool bipartite() const;
-    /// This method computes and returns the number of graph vertices which are \f$N\ge 0\f$ steps or less from the vertex which is the method's first argument, where \f$N\f$ is the second argument. 
+    /// This method returns the number of graph vertices which are \f$N\ge 0\f$ steps or less from the vertex which is the method's first argument, where \f$N\f$ is the second argument. 
     int compactness(int,int) const;
-    /// This method computes the graph's cyclicity, i.e. the percentage of edges whose deletion would not disconnect the graph.
+    /// This method returns the graph's cyclicity, i.e. the percentage of edges whose deletion would not disconnect the graph.
     double cyclicity() const;
-    /// This method computes and returns the value of the graph connectivity, defined as the sum over all edges of \f$1/\sqrt{\deg(u)\deg(v)}\f$, where \f$u\f$ and \f$v\f$ are the two vertices joined by the edge. 
+    /// This method returns the value of the graph connectivity, defined as the sum over all edges of \f$1/\sqrt{\deg(u)\deg(v)}\f$, where \f$u\f$ and \f$v\f$ are the two vertices joined by the edge. 
     double connectivity() const;
-    /// This method computes and returns the value of the algebraic connectivity of the graph, i.e. the smallest non-zero eigenvalue of graph Laplacian.
+    /// This method returns the value of the algebraic connectivity of the graph, i.e. the smallest non-zero eigenvalue of graph Laplacian.
     double algebraic_connectivity() const;
     /// This method computes the eigenvector centrality, a vector whose length is equal to the graph's order and which measures each vertex's centrality or importance in the graph. The output is the method's first argument, while the second argument sets the tolerance for the recursion process that generates the centrality vector and the final argument determines whether or not Katz centrality is calculated.
     void vertex_centrality(std::vector<double>&,double,bool = false) const;
@@ -128,17 +132,17 @@ namespace SYNARMOSMA {
     void degree_distribution(bool,std::vector<double>&) const;
     /// This method computes the percentage of randomly selected vertices (site percolation) or edges (bond percolation) that need to be removed from the graph to eliminate its "giant component" and returns this percentage. If the argument is true the method uses site percolation, otherwise bond percolation. 
     double percolation(bool) const;
-    /// This method computes and returns the index of graph complexity discussed in the paper Klein et al., "Graph Cyclicity, Excess Conductance and Resistance Deficit", J. Math. Chem., 30:271-287 (2001).
+    /// This method returns the index of graph complexity discussed in the paper Klein et al., "Graph Cyclicity, Excess Conductance and Resistance Deficit", J. Math. Chem., 30:271-287 (2001).
     double cyclic_resistance() const;
-    /// This method computes and returns the median degree of the graph, i.e. the degree \f$d\f$ for which half the vertices in the graph have a degree less than or equal to \f$d\f$. This is in general a floating point number to account for the fact that it is unlikely that the sum of degree histogram bins is exactly half the vertices in the graph so the median has to be corrected. 
+    /// This method returns the median degree of the graph, i.e. the degree \f$d\f$ for which half the vertices in the graph have a degree less than or equal to \f$d\f$. This is in general a floating point number to account for the fact that it is unlikely that the sum of degree histogram bins is exactly half the vertices in the graph so the median has to be corrected. 
     double median_degree() const;
-    /// This method computes and returns the graph's entwinement. This is defined to be \f$(\lambda_\textrm{max} - \kappa)/(d_\textrm{max} - \kappa)\f$, where \f$\lambda_\textrm{max}\f$ is the largest eigenvalue of its adjacency matrix, \f$d_\textrm{max}\f$ the maximum degree and \f$\kappa = \max(d_\textrm{avg},\sqrt{d_\textrm{max}})\f$. 
+    /// This method returns the graph's entwinement. This is defined to be \f$(\lambda_\textrm{max} - \kappa)/(d_\textrm{max} - \kappa)\f$, where \f$\lambda_\textrm{max}\f$ is the largest eigenvalue of its adjacency matrix, \f$d_\textrm{max}\f$ the maximum degree and \f$\kappa = \max(d_\textrm{avg},\sqrt{d_\textrm{max}})\f$. 
     double entwinement() const;
-    /// This method computes the graph's completeness, i.e. the graph's size divided by \f$N(N-1)/2\f$, where \f$N\f$ is the graph's order; this measures how closely it approximates the complete graph on \f$N\f$ vertices.
+    /// This method returns the graph's completeness, i.e. the graph's size divided by \f$N(N-1)/2\f$, where \f$N\f$ is the graph's order; this measures how closely it approximates the complete graph on \f$N\f$ vertices.
     double completeness() const;
-    /// This method computes the graph's circuit rank, defined to be the number of graph components minus the number of vertices plus the number of edges.
+    /// This method returns the graph's circuit rank, defined to be the number of graph components minus the number of vertices plus the number of edges.
     int circuit_rank() const;
-    /// This method computes the graph's chromatic number, i.e. the smallest number of colours which can be used to colour the vertices such that no two neighbouring vertices share the same colour.
+    /// This method returns the graph's chromatic number, i.e. the smallest number of colours which can be used to colour the vertices such that no two neighbouring vertices share the same colour.
     int chromatic_number() const;
     /// This method returns the minimum degree of the graph.
     int max_degree() const;
