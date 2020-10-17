@@ -45,7 +45,7 @@ int main(int argc,char** argv)
   else if (test == "Graph") {
     int i,j,n = 25;
     std::vector<double> vx;
-    std::vector<int> path;
+    std::vector<int> path,bdry;
     SYNARMOSMA::Graph G("Petersen"),H(n,"CYCLIC"),K(3,"Complete");
     std::vector<SYNARMOSMA::Monomial<int> > output;
     SYNARMOSMA::Random RND; 
@@ -94,6 +94,14 @@ int main(int argc,char** argv)
     if (K.circuit_rank() != 1) return 1;
     if (K.order() != 3) return 1;
     if (K.size() != 3) return 1;
+
+    bdry.push_back(0); bdry.push_back(1);
+    SYNARMOSMA::Graph L(4,bdry);
+    if (L.order() != 16) return 1;
+    if (L.size() != 28) return 1;
+    if (!L.connected()) return 1;
+    if (L.max_degree() != 4) return 1;
+    if (L.min_degree() != 3) return 1;
   }
   else if (test == "Pseudograph") {
     std::vector<int> vx;

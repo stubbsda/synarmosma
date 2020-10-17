@@ -157,22 +157,19 @@ Graph::Graph(const std::string& name)
 Graph::Graph(int n,const std::string& type) : Schema(n)
 {
   if (n < 1) throw std::invalid_argument("The graph order must be greater than zero!");
-  int i;
 
   std::string utype = boost::to_upper_copy(type);
   if (utype == "COMPLETE") {
     // The complete graph on n vertices...
-    int j;
-
-    for(i=0; i<n; ++i) {
-      for(j=1+i; j<n; ++j) {
+    for(int i=0; i<n; ++i) {
+      for(int j=1+i; j<n; ++j) {
         add_edge(i,j);
       }
     }
   }
   else if (utype == "CHAIN") {
     // A minimally connected graph with n - 1 edges
-    for(i=0; i<n-1; ++i) {
+    for(int i=0; i<n-1; ++i) {
       add_edge(i,i+1);
     }
   }
@@ -180,7 +177,7 @@ Graph::Graph(int n,const std::string& type) : Schema(n)
     // Much like the chain model except with a cyclic topology, 
     // thus a final edge connecting the end of the chain to its 
     // beginning
-    for(i=0; i<n-1; ++i) {
+    for(int i=0; i<n-1; ++i) {
       add_edge(i,i+1);
     }
     // The final edge that makes it cyclic
@@ -213,8 +210,8 @@ Graph::Graph(int n,int c) : Schema(n)
 {
   if (n < 1) throw std::invalid_argument("The graph order must be greater than zero!");
   if (c < 1) throw std::invalid_argument("The minimum degree in the graph constructor must be greater than zero!");
-  // Construct a scale-free graph with n vertices where 
-  // the minimum degree is c
+
+  // Construct a scale-free graph with n vertices where the minimum degree is c
   int i,j,k,sum;
   double rho;
   Random RND;
@@ -259,6 +256,73 @@ Graph::Graph(int n,double p) : Schema(n)
       alpha = RND.drandom();
       if (alpha > p) continue;
       add_edge(i,j,0.0);
+    }
+  }
+}
+
+Graph::Graph(int n,std::vector<int>& btype)
+{
+  if (n < 2) throw std::invalid_argument("The number of vertices per dimension must be greater than one!");
+  int d = (signed) btype.size();
+  if (d < 2) throw std::invalid_argument("The number of dimensions must be greater than one!");
+  for(int i=0; i<d; ++i) {
+    if (btype[i] != 0 && btype[i] != 1) throw std::invalid_argument("The graph's boundary topology must be either linear or toroidal!");
+  }
+
+  // This constructor builds a graph with the topology of a rectangular or Cartesian lattice, of 
+  // dimensionality equal to the length of the vector btype and with n vertices per dimension. The 
+  // btype vector determines the nature of the boundary for each dimension: 0 means it is linear, 
+  // 1 means toroidal.
+  int i,j,k,p,q,in1,base;
+  std::set<int> S;
+  std::vector<int> vx,index;
+
+  nvertex = int(ipow(n,d));
+  for(i=0; i<nvertex; ++i) {
+    neighbours.push_back(S);
+  }
+
+  for(i=0; i<d; ++i) {
+    index.push_back(0);
+  }
+
+  for(i=0; i<nvertex; ++i) {
+    q = i;
+    for(j=0; j<d; ++j) {
+      base = ipow(n,d-1-j);
+      p = q/base;
+      index[j] = p;
+      q = q - p*base;
+    }
+    for(j=0; j<d; ++j) {
+      vx = index;
+      if (index[j] > 0) {
+        vx[j] -= 1;
+        in1 = 0;
+        for(k=0; k<d; ++k) {
+          in1 += ipow(n,d-1-k)*vx[k];
+        }
+        if (i < in1) add_edge(i,in1); 
+      }
+      else {
+        if (btype[j] == 1) {
+          vx[j] = n-1;
+          in1 = 0;
+          for(k=0; k<d; ++k) {
+            in1 += ipow(n,d-1-k)*vx[k];
+          }
+          if (i < in1) add_edge(i,in1); 
+        }
+      }
+      vx = index;
+      if (index[j] < n-1) {
+        vx[j] += 1;
+        in1 = 0;
+        for(k=0; k<d; ++k) {
+          in1 += ipow(n,d-1-k)*vx[k];
+        }
+        if (i < in1) add_edge(i,in1); 
+      }
     }
   }
 }

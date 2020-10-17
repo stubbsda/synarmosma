@@ -32,15 +32,17 @@ namespace SYNARMOSMA {
   public:
     /// The default constructor which does nothing. 
     Graph();
-    /// The standard constructor which sets the number of vertices to the argument while the number of edges is left at zero.
+    /// The standard constructor which sets the number of vertices \f$n > 0\f$ to the argument while the number of edges is left at zero.
     Graph(int);
     /// This is the constructor for "named" graphs - DÜRER, GOLOMB, HERSCHEL, PETERSEN and WAGNER - which have a fixed number of vertices and edges as well as topology.
     Graph(const std::string&);
-    /// This is the contructor for a category of named graphs that also require the number of vertices to be specified: COMPLETE, CHAIN, CYCLIC and CONNECTED. The latter constructs a graph on n vertices by adding edges randomly until the graph is connected. 
+    /// This is the contructor for a category of named graphs that also require the number of vertices \f$n > 0\f$ to be specified: COMPLETE, CHAIN, CYCLIC and CONNECTED. The latter constructs a graph on \f$n\f$ vertices by adding edges randomly until the graph is connected. 
     Graph(int,const std::string&);
-    /// This constructor accepts the number of vertices n (the first argument) and a minimum degree (the second argument) to construct a scale-free graph on n vertices with that minimum degree.
+    /// This constructor accepts the number of vertices \f$n > 0\f$ (the first argument) and a minimum degree \f$d > 0\f$ (the second argument) to construct a scale-free graph on \f$n\f$ vertices with minimum degree \f$d\f$.
     Graph(int,int);
-    /// This constructor accepts the number of vertices n (the first argument) and a percentage (the second argument); this percentage is relative to the number of edges for a complete graph on n vertices. 
+    /// This constructor accepts the number of vertices per dimension \f$n > 1\f$ (the first argument) and a vector of integers whose length is the number of dimensions \f$d > 1\f$. Each element of the vector must be either zero (indicating a linear boundary topology) or one (toroidal boundary topology). The constructor builds a graph of order \f$n^d\f$ with a \f$d\f$-dimensional rectangular lattice topology, possessing a linear or toroidal boundary at each dimension according to the second argument. 
+    Graph(int,std::vector<int>&);
+    /// This constructor accepts the number of vertices \f$n > 0\f$ (the first argument) and a percentage \f$ 0 < \rho < 1\f$ (the second argument); this percentage is relative to the number of edges for a complete graph on \f$n\f$ vertices. 
     Graph(int,double);
     /// The standard copy constructor - it copies over all properties from the source instance to this one.
     Graph(const Graph&);
