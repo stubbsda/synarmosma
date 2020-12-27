@@ -429,7 +429,7 @@ namespace SYNARMOSMA {
     if (v1 == v2) throw std::invalid_argument("The vertex arguments in Geometry::get_squared_distance must be distinct!");
     if (relational && recompute) throw std::invalid_argument("The squared distances are fundamental in a relational geometry!");
 
-    double l;
+    double l = 0.0;
 
     if (relational || (high_memory && !recompute)) {
 #ifdef DISCRETE
@@ -437,6 +437,7 @@ namespace SYNARMOSMA {
 #else
       l = distances[compute_index(v1,v2)];
 #endif
+      if (std::isnan(l)) throw std::runtime_error("NaN detected in Geometry::get_squared_distance for vertices " + std::to_string(v1) + " and " + std::to_string(v2)); 
       return l;
     }
 
