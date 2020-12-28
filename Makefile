@@ -12,8 +12,12 @@ install:
 test: install
 	cd test; $(MAKE)
 
+docs:
+	cd documentation; $(MAKE)
+
 clean:
 	cd src; $(MAKE) clean
+	cd documentation; $(MAKE) clean
 	rm -f test/unit_test
 	rm -f $(INSTALL_DIR)/lib/libsynarmosma.so
 	rm -rf $(INSTALL_DIR)/include/synarmosma

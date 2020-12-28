@@ -23,7 +23,7 @@ namely for the <code>Geometry</code>, <code>Graph</code> and <code>Nexus</code> 
 library's matrix classes (<code>Matrix</code>, <code>Binary_Matrix</code>, <code>Integer_Matrix</code>), 
 so that a C++ compiler able to support OpenMP is also desirable. The library's source code is documented 
 using [Doxygen](https://www.doxygen.nl) with the configuration file <code>documentation/docs.config</code> 
-that can be modified if desired. It is however sufficient to use the command <code>doxygen docs.config</code> 
+that can be modified if desired. It is however sufficient to use the command <code>make docs</code> 
 to create a set of HTML documents that will be installed in the <code>documentation/synarmosma</code> directory. 
 
 For any questions, comments or suggestions, please contact <info@synarmosma.org>
