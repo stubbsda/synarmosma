@@ -145,6 +145,19 @@ namespace SYNARMOSMA {
     return output; 
   }
 
+  inline void tokenize(const std::string& line,const char delimiter,std::vector<std::string>& elements)
+  {
+    std::string temp = line;
+    std::stringstream sstream;
+
+    sstream.str(line);
+    elements.clear();
+    while(getline(sstream,temp,delimiter)) {
+      elements.push_back(temp);
+      std::cout << temp << "  " << elements.size() << std::endl; 
+    }
+  }
+
   inline std::string make_key(int x)
   {
     std::stringstream s;
