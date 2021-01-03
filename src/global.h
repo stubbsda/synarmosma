@@ -154,7 +154,6 @@ namespace SYNARMOSMA {
     elements.clear();
     while(getline(sstream,temp,delimiter)) {
       elements.push_back(temp);
-      std::cout << temp << "  " << elements.size() << std::endl; 
     }
   }
 
