@@ -118,20 +118,6 @@ namespace SYNARMOSMA {
     return count;
   }
 
-  int parity(const std::vector<int>& v1,const std::vector<int>& v2)
-  {
-    if (v1.size() != v2.size()) throw std::invalid_argument("The parity arguments must be vectors of the same length!");
-
-    unsigned int i,n = 0;
-    for(i=0; i<v1.size(); ++i) {
-      if (v1[i] != v2[i]) n++;
-    }
-    if ((n % 2) != 0) throw std::runtime_error("The raw parity distance is not an even number!");
-    n /= 2;
-    int output = (n%2 == 0) ? 1 : -1;
-    return output;
-  }
-
   void cross_product(const std::vector<double>& x,const std::vector<double>& y,std::vector<double>& z)
   {
     if (x.size() != 3 || y.size() != 3) throw std::invalid_argument("The cross-product is only defined for 3-vectors!");
@@ -143,13 +129,16 @@ namespace SYNARMOSMA {
     z[2] = x[0]*y[1] - x[1]*y[0];
   }
 
-  void assemble_neighbours(int nfacets,const std::vector<int>* facets,int in1,std::vector<int>& N) 
+  void assemble_neighbours(int nfacets,const std::vector<int>* facets,int in1,std::vector<int>& output) 
   {
     std::vector<int> base = facets[in1];
-    int i,j,k,nfound,D = (signed) base.size();
+    int i,j,k,nfound;
     bool found;
+    const int D = (signed) base.size();
+    const int Dm1 = D - 1;
 
-    N.clear();
+    output.clear();
+
     for(i=0; i<nfacets; ++i) {
       if (i == in1) continue;
       // If facets[i] and base differ by a single vertex, they are neighbours 
@@ -164,8 +153,8 @@ namespace SYNARMOSMA {
         }
         if (found) nfound++;
       }
-      if (nfound < (D-1)) continue;
-      N.push_back(i);
+      if (nfound < Dm1) continue;
+      output.push_back(i);
     }
   }
 
@@ -194,18 +183,6 @@ namespace SYNARMOSMA {
     }
   }
 
-  void split(const std::string& s,char delim,std::vector<std::string>& elements) 
-  {
-    std::stringstream sstream(s);
-    std::string item;
-
-    elements.clear();
-
-    while(std::getline(sstream,item,delim)) {
-      elements.push_back(item);
-    }
-  }
-
   int element(const std::set<int>& vx)
   {
     if (vx.empty()) return -1;
@@ -222,14 +199,11 @@ namespace SYNARMOSMA {
   {
     int i,j;
     const int k = (signed) vx.size();
+
     vx[k-1] += 1;
     for(i=k-1; i>0; --i) {
-      if (vx[i] >= (n-k+1+i)) {
-        vx[i-1] += 1;
-      }
-      else {
-        break;
-      }
+      if (vx[i] < (n-k+1+i)) break;
+      vx[i-1] += 1;
     }
 
     if (vx[0] > (n - k)) return false;
@@ -238,6 +212,20 @@ namespace SYNARMOSMA {
       vx[j] = vx[j-1] + 1;
     }
     return true;
+  }
+
+  int parity(const std::vector<int>& v1,const std::vector<int>& v2)
+  {
+    if (v1.size() != v2.size()) throw std::invalid_argument("The parity arguments must be vectors of the same length!");
+
+    unsigned int i,n = 0;
+    for(i=0; i<v1.size(); ++i) {
+      if (v1[i] != v2[i]) n++;
+    }
+    if ((n % 2) != 0) throw std::runtime_error("The raw parity distance is not an even number!");
+    n /= 2;
+    int output = (n%2 == 0) ? 1 : -1;
+    return output;
   }
 
   int parity(const std::vector<int>& symbols)
@@ -324,6 +312,7 @@ namespace SYNARMOSMA {
 
   UINT64 binomial(int n,int k)
   {
+    if (n < 1 || k < 1) throw std::invalid_argument("The arguments of SYNARMOSMA::binomial must be positive!");
     int i,ulimit = (k < (n-k)) ? k : n - k;
     UINT64 output,num = 1,den = 1;
 
@@ -337,6 +326,8 @@ namespace SYNARMOSMA {
 
   UINT64 factorial(int x)
   {
+    if (x < 0) throw std::invalid_argument("The argument of SYNARMOSMA::factorial must be non-negative!");
+  
     UINT64 output = 1;
     for(int i=2; i<=x; ++i) {
       output *= (UINT64) i;
@@ -344,7 +335,7 @@ namespace SYNARMOSMA {
     return output;
   }
 
-  double dmap(double x,double L)
+  double renormalize(double x,double L)
   {
     // A function to map the variable x to the range [0,L], by 
     // adding or subtracting multiples of L
@@ -366,6 +357,8 @@ namespace SYNARMOSMA {
 
   double arithmetic_mean(const std::vector<double>& input)
   {
+    if (input.empty()) throw std::invalid_argument("The argument of SYNARMOSMA::arithmetic_mean must be non-empty!");
+
     int i,n = (signed) input.size();
     double sum = 0.0;
     for(i=0; i<n; ++i) {
@@ -376,6 +369,7 @@ namespace SYNARMOSMA {
 
   UINT64 ipow(int b,int n)
   {
+    if (b < 0 || n < 0) throw std::invalid_argument("The arguments of SYNARMOSMA::ipow must be non-negative!");
     UINT64 output = (UINT64) b;
     if (n == 0) return 1;
     for(int i=1; i<n; ++i) {
@@ -397,12 +391,29 @@ namespace SYNARMOSMA {
     }
   }
 
+  void split(const std::string& line,char delim,std::vector<std::string>& elements) 
+  {
+    std::string item;
+    std::stringstream sstream(line);
+
+
+    elements.clear();
+
+    while(std::getline(sstream,item,delim)) {
+      elements.push_back(item);
+    }
+  }
+
   void split(const std::vector<int>& p,std::vector<int>& c)
   {
     // This function takes the integer vector p of length n and
     // creates n sequences of length (n-1) obtained by removing
     // one element from p.
-    int i,j,n = (signed) p.size();
+    unsigned int i,j;
+    const unsigned int n = p.size();
+
+    c.clear();
+
     for(i=0; i<n; ++i) {
       for(j=0; j<n; ++j) {
         if (i == j) continue;
@@ -466,7 +477,7 @@ namespace SYNARMOSMA {
     }
   }
 
-  bool bfs(const pair_index& rgraph,int source,int sink,int nvertex,int* parent)
+  bool breadth_first_search(const pair_index& rgraph,int source,int sink,int nvertex,int* parent)
   {
     int u,v,kappa;
     std::pair<int,int> pr;
@@ -483,7 +494,7 @@ namespace SYNARMOSMA {
     q.push(source);
     visited[source] = true;
     parent[source] = -1; 
-    // Standard BFS Loop
+    // Standard breadth first search Loop
     do {
       u = q.front();
       q.pop();
@@ -499,31 +510,32 @@ namespace SYNARMOSMA {
         }
       }
     } while(!q.empty()); 
-    // If we reached sink in BFS starting from source, then return
+    // If we reached sink in breadth first search starting from source, then return
     // true, else false
     return(visited[sink] == true);
   }
 
-  int network_flow(pair_index& rgraph,int source,int sink,int nvertex)
+  int network_flow(const pair_index& rgraph,int source,int sink,int nvertex)
   {
     // An implementation of the Ford-Fulkerson algorithm with breadth-first search 
     // (the Edmonds-Karp variation) for computing the maximum flow in a network with 
     // integer capacity and flow
     int u,v,g,path_flow,parent[nvertex],max_flow = 0;
     std::pair<int,int> pr;
+    pair_index capacities = rgraph;
     pair_index::const_iterator pt;
 
     // Augment the flow while there is path from source to sink
-    while(bfs(rgraph,source,sink,nvertex,parent)) {
+    while(breadth_first_search(capacities,source,sink,nvertex,parent)) {
       // Find minimum residual capacity of the edges along the
-      // path filled by BFS or we can say find the maximum flow
-      // through the path found.
+      // path filled by a breadth first search or we can say find 
+      // the maximum flow through the path found.
       path_flow = std::numeric_limits<int>::max();
       for(v=sink; v!=source; v=parent[v]) {
         u = parent[v];
         pr.first = u; pr.second = v;
-        pt = rgraph.find(pr);
-        g = (pt == rgraph.end()) ? 0 : pt->second;
+        pt = capacities.find(pr);
+        g = (pt == capacities.end()) ? 0 : pt->second;
         path_flow = std::min(path_flow,g);
       }
       // Update residual capacities of the edges and reverse edges
@@ -531,9 +543,9 @@ namespace SYNARMOSMA {
       for(v=sink; v!=source; v=parent[v]) {
         u = parent[v];
         pr.first = u; pr.second = v;
-        rgraph[pr] -= path_flow;
+        capacities[pr] -= path_flow;
         pr.first = v; pr.second = u;
-        rgraph[pr] += path_flow;
+        capacities[pr] += path_flow;
       }
       // Add path flow to overall flow
       max_flow += path_flow;
