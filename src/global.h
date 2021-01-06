@@ -102,6 +102,7 @@ namespace SYNARMOSMA {
   void permute(std::vector<std::vector<int> >&,std::vector<int>&,const std::vector<int>&,int);
   void assemble_neighbours(int,const std::vector<int>*,int,std::vector<int>&);
   void induced_orientation(int,const std::vector<int>&,int,const hash_map&,int*);
+  /// This function computes the prime factorization of its first argument, storing the result of as a vector of pairs representing the prime number and its power.
   void factorize(long,std::vector<std::pair<long,int> >&);
   int parity(const std::vector<int>&,const std::vector<int>&);
   int parity(const std::vector<int>&);
@@ -132,7 +133,9 @@ namespace SYNARMOSMA {
   /// This function checks that its argument is a singleton set and if so, returns the set's unique element.
   int element(const std::set<int>&);
   bool next_combination(std::vector<int>&,int);
+  /// This function loops over the integers from 0 to N - 1 where N is the final argument, skipping the integer equal to the function's third argument. For each such integer, if the function doesn't find it in its first argument it is inserted in the second argument. 
   void complement(const std::set<int>&,std::set<int>&,int,int);
+  /// This function returns the incidence number of its two arguments, assumed to be of length N and N+1 respectively. If the first argument is obtained from the second by dropping the \f$k\f$-th element, the function returns \f$(-1)^k\f$. If there is at least one element of the first argument not in the second, the function returns zero.
   int coincidence(const std::set<int>&,const std::set<int>&);
   /// This function determines if its two arguments differ by less than machine epsilon, returning true when this is the case and false otherwise.
   bool double_equality(double,double);

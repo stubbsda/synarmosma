@@ -465,8 +465,12 @@ namespace SYNARMOSMA {
 
   void complement(const std::set<int>& input,std::set<int>& output,int self,int modulus)
   {
+    if (self < 0 || self > modulus) throw std::invalid_argument("Illegal 'self' argument value in SYNARMOSMA::complement function!"); 
+
     std::set<int>::const_iterator it;
+
     output.clear();
+
     for(int i=0; i<self; ++i) {
       it = std::find(input.begin(),input.end(),i);
       if (it == input.end()) output.insert(i);
