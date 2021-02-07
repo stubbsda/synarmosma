@@ -381,7 +381,7 @@ bool Nexus::consistent() const
   std::set<int> vx;
   hash_map::const_iterator qt;
 
-  for(i=topological_dimension; i>1; i--) {
+  for(i=topological_dimension; i>=2; i--) {
     ns = (signed) elements[i].size();
     for(j=0; j<ns; ++j) {
       // Verify that every vertex in this simplex exists...
