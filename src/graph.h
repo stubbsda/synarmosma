@@ -152,6 +152,10 @@ namespace SYNARMOSMA {
     int min_degree() const;
     /// This method returns the arithmetic mean of the vertex degrees of the graph.
     double average_degree() const;
+    /// This method returns true if the graph is Eulerian, i.e. it is connected and all of its vertices have even degree, and false otherwise.
+    virtual bool eulerian() const;
+    /// This method attempts to construct a Hamiltonian path in the graph (which must be connected) and which, if successful, is stored as a vector of vertices in the third argument. If the first argument is true the method attempts to construct a Hamiltonian cycle, while the second argument contains the number of attempts to be made. The optional fourth argument is the initial vertex; if it isn't provided a vertex is chosen at random. The method returns the number of attempts which were made to construct the path. 
+    virtual int compute_hamiltonian_path(bool,int,std::vector<int>&,int = -1) const;
     /// This method's argument represent a base vertex v, a length l and the number of trials n - the method carries out n random walks from v of length l and returns the percentage of these walks which return at least once to the starting vertex v.
     double return_probability(int,int,int = 100) const;
     /// This method uses the return_probability() method to do a general analysis of random walks on the graph topology. Its arguments are the length of the random walk, the percentage of vertices randomly selected that are used as a starting point and the number of walks per starting point. The method returns a pair of doubles, the average return probability and its standard deviation over the number of starting points.
@@ -170,8 +174,8 @@ namespace SYNARMOSMA {
     virtual int serialize(std::ofstream&) const override;
     /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
     virtual int deserialize(std::ifstream&) override;
-    /// This method writes the graph out to a disk file in the DOT format for visualization by GraphViz; the method's argument is the filename.
-    virtual void write2disk(const std::string&) const;
+    /// This method writes the graph out to a disk file in the DOT format for visualization by GraphViz; the method's first argument is the filename, the optional second argument is a vector of strings which are labels for the graph's vertices.
+    virtual void write2disk(const std::string&,const std::vector<std::string>& = std::vector<std::string>()) const;
     /// This operator returns the tensor product of its two arguments; this product is a graph whose order is the square of the operands' order (which must be the same) and which has an edge between two vertices when the two pairs of vertices \f$(g_1,h_1)\f$ and \f$(g_2,h_2)\f$ are both neighbours in the respective operand graphs \f$G\f$ and \f$H\f$. Hence there is an edge in \f$G\otimes H\f$ when \f$g_1\f$ is a neighbour of \f$g_2\f$ in \f$G\f$ and \f$h_1\f$ is a neighbour of \f$h_2\f$ in \f$H\f$. 
     friend Graph operator *(const Graph&,const Graph&);
   };
@@ -226,6 +230,16 @@ namespace SYNARMOSMA {
       sum += double(neighbours[i].size());
     }
     return sum/double(nvertex);
+  }
+
+  inline bool Graph::eulerian() const
+  {
+    if (!connected()) return false;
+
+    for(int i=0; i<nvertex; ++i) {
+      if (neighbours[i].size() % 2 != 0) return false;
+    }
+    return true;
   }
 
   inline double Graph::completeness() const

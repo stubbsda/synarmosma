@@ -160,7 +160,64 @@ int Directed_Graph::deserialize(std::ifstream& s)
 
 }
 
-void Directed_Graph::write2disk(const std::string& filename) const
+int Directed_Graph::out_degree(int v) const
+{
+  if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal vertex index in the Directed_Graph::out_degree method!");
+  int u,n = 0;
+  std::set<int> S;
+  std::set<int>::const_iterator it;
+  hash_map::const_iterator qt;
+
+  for(it=neighbours[v].begin(); it!=neighbours[v].end(); ++it) {
+    u = *it;
+    S.clear();
+    S.insert(v); S.insert(u);
+    qt = index_table.find(S);
+    // Does this edge point from v to u?
+    if (edges[qt->second].get_direction(v,u) == Relation::before) n++;
+  }     
+  return n;
+}
+
+int Directed_Graph::in_degree(int v) const
+{
+  if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal vertex index in the Directed_Graph::in_degree method!");
+  int u,n = 0;
+  std::set<int> S;
+  std::set<int>::const_iterator it;
+  hash_map::const_iterator qt;
+
+  for(it=neighbours[v].begin(); it!=neighbours[v].end(); ++it) {
+    u = *it;
+    S.clear();
+    S.insert(v); S.insert(u);
+    qt = index_table.find(S);
+    // Does this edge point from u to v?
+    if (edges[qt->second].get_direction(v,u) == Relation::after) n++;
+  }     
+  return n;
+}
+
+int Directed_Graph::neutral_degree(int v) const
+{
+  if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal vertex index in the Directed_Graph::neutral_degree method!");
+  int u,n = 0;
+  std::set<int> S;
+  std::set<int>::const_iterator it;
+  hash_map::const_iterator qt;
+
+  for(it=neighbours[v].begin(); it!=neighbours[v].end(); ++it) {
+    u = *it;
+    S.clear();
+    S.insert(v); S.insert(u);
+    qt = index_table.find(S);
+    // Does this edge have no orientation?
+    if (edges[qt->second].get_direction(v,u) == Relation::disparate) n++;
+  }     
+  return n;
+}
+
+void Directed_Graph::write2disk(const std::string& filename,const std::vector<std::string>& names) const
 {
   int i,j;
   Relation rho;
@@ -171,26 +228,57 @@ void Directed_Graph::write2disk(const std::string& filename) const
   std::ofstream s(filename,std::ios::trunc);
 
   s << "digraph G {" << std::endl;
-  // First all the elements in the poset...
-  for(i=0; i<nvertex; ++i) {
-    s << "  \"" << 1+i << "\";" << std::endl;
+  if (names.empty()) {
+    // First all the vertices...
+    for(i=0; i<nvertex; ++i) {
+      s << "  \"" << 1+i << "\";" << std::endl;
+    }
+    // Now the edges...
+    for(i=0; i<nvertex; ++i) {
+      for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+        j = *it;
+        // We assume no multi-edges...
+        if (i > j) continue;
+        S.clear();
+        S.insert(i); S.insert(j);
+        qt = index_table.find(S);
+        rho = edges[qt->second].get_direction(i,j);
+        if (rho == Relation::before) {
+          s << "  \"" << 1+i << "\" -> \"" << 1+j << "\";" << std::endl;
+        }
+        else if (rho == Relation::after) {
+          s << "  \"" << 1+j << "\" -> \"" << 1+i << "\";" << std::endl;
+        }
+        else {
+          s << "  \"" << 1+i << "\" -- \"" << 1+j << "\";" << std::endl;
+        }
+      }
+    }
   }
-  // Now the directed edges induced by the poset's ordering...
-  for(i=0; i<nvertex; ++i) {
-    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
-      j = *it;
-      S.clear();
-      S.insert(i); S.insert(j);
-      qt = index_table.find(S);
-      rho = edges[qt->second].get_direction(i,j);
-      if (rho == Relation::before) {
-        s << "  \"" << 1+i << "\" -> \"" << 1+j << "\";" << std::endl;
-      }
-      else if (rho == Relation::after) {
-        s << "  \"" << 1+j << "\" -> \"" << 1+i << "\";" << std::endl;
-      }
-      else {
-        s << "  \"" << 1+i << "\" -- \"" << 1+j << "\";" << std::endl;
+  else {
+    // First all the vertices...
+    for(i=0; i<nvertex; ++i) {
+      s << "  \"" << names[i] << "\";" << std::endl;
+    }
+    // Now the edges...
+    for(i=0; i<nvertex; ++i) {
+      for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+        j = *it;
+        // We assume no multi-edges...
+        if (i > j) continue;
+        S.clear();
+        S.insert(i); S.insert(j);
+        qt = index_table.find(S);
+        rho = edges[qt->second].get_direction(i,j);
+        if (rho == Relation::before) {
+          s << "  \"" << names[i] << "\" -> \"" << names[j] << "\";" << std::endl;
+        }
+        else if (rho == Relation::after) {
+          s << "  \"" << names[j] << "\" -> \"" << names[i] << "\";" << std::endl;
+        }
+        else {
+          s << "  \"" << names[i] << "\" -- \"" << names[j] << "\";" << std::endl;
+        }
       }
     }
   }
@@ -221,6 +309,119 @@ int Directed_Graph::maximum_parents() const
   }
 
   return max_parents;
+}
+
+bool Directed_Graph::eulerian() const
+{
+  if (!connected()) return false;
+
+  int i,j,n_in,n_out;
+  std::set<int> S;
+  std::set<int>::const_iterator jt;
+  hash_map::const_iterator qt;
+
+  for(i=0; i<nvertex; ++i) {
+    n_in = 0; n_out = 0;
+    for(jt=neighbours[i].begin(); jt!=neighbours[i].end(); ++jt) {
+      j = *jt;
+      S.clear();
+      S.insert(i); S.insert(j);
+      qt = index_table.find(S);
+      // Does this edge point from i to j?
+      if (edges[qt->second].get_direction(i,j) == Relation::before) {
+        n_out++;
+      }
+      else if (edges[qt->second].get_direction(i,j) == Relation::after) {
+        n_in++;
+      } 
+    }
+    if (n_in != n_out) return false;
+  }
+  return true;
+}
+
+int Directed_Graph::compute_hamiltonian_path(bool cycle,int nattempts,std::vector<int>& path,int start) const
+{
+  if (!connected()) {
+    path.clear();
+    return -1;
+  }
+  int i,u,v,w,l,n,svertex,winner;
+  bool visited[nvertex],solution;
+  std::vector<std::pair<int,int> > candidates;
+  std::set<int> S,next;
+  std::set<int>::const_iterator it,jt;
+  Random RND;
+  hash_map::const_iterator qt;
+
+  for(l=0; l<nattempts; ++l) {
+    svertex = (start == -1) ? RND.irandom(nvertex) : start;
+    path.clear();
+    path.push_back(svertex);
+    for(i=0; i<nvertex; ++i) {
+      visited[i] = false;
+    }
+    visited[svertex] = true;
+    do {
+      v = path.back();
+      for(it=neighbours[v].begin(); it!=neighbours[v].end(); ++it) {
+        u = *it;
+        if (visited[u]) continue;
+        S.clear();
+        S.insert(v); S.insert(u);
+        qt = index_table.find(S);
+        if (edges[qt->second].get_direction(v,u) != Relation::before) continue;
+        n = 0;
+        for(jt=neighbours[u].begin(); jt!=neighbours[u].end(); ++jt) {
+          w = *jt;
+          if (visited[w]) continue;
+          S.clear();
+          S.insert(u); S.insert(w);
+          qt = index_table.find(S);
+          if (edges[qt->second].get_direction(u,w) == Relation::before) n++;
+        } 
+        candidates.push_back(std::pair<int,int>(u,n));
+      }
+      if (candidates.empty()) break;
+      n = (signed) candidates.size();
+      std::sort(candidates.begin(),candidates.end(),pair_predicate_int);
+      u = candidates[0].second;
+      for(i=1; i<n; ++i) {
+        if (candidates[i].second == u) next.insert(candidates[i].first);
+      }
+      if (next.empty()) {
+        winner = candidates[0].first;
+      }
+      else {
+        next.insert(candidates[0].first);
+        winner = RND.irandom(next);
+        next.clear();
+      }
+      path.push_back(winner);
+      visited[winner] = true;
+      if ((signed) path.size() == nvertex) break;
+      candidates.clear();
+    } while(true);
+    // Check if this is a valid path, i.e. one which covers the whole graph...
+    if ((signed) path.size() < nvertex) continue;
+    solution = true;
+    for(i=0; i<nvertex; ++i) {
+      if (!visited[i]) {
+        solution = false;
+        break;
+      }
+    }
+    if (!solution) continue;
+    // So this is a Hamiltonian path, now we need to check if it is a cycle, if necessary...
+    if (!cycle) break; 
+    u = path.back();
+    if (neighbours[u].count(svertex) > 0) break;
+    solution = false;
+  }
+
+  if (!solution) path.clear();
+
+  return 1+l;
 }
 
 bool Directed_Graph::singly_connected() const

@@ -470,7 +470,81 @@ int Graph::compute_surface(const std::set<int>& vx,std::set<int>& surface) const
   return (signed) bnodes.size();
 }
 
-void Graph::write2disk(const std::string& filename) const
+int Graph::compute_hamiltonian_path(bool cycle,int nattempts,std::vector<int>& path,int start) const
+{
+  if (!connected()) {
+    path.clear();
+    return -1;
+  }
+  int i,u,v,l,n,svertex,winner;
+  bool visited[nvertex],solution;
+  std::vector<std::pair<int,int> > candidates;
+  std::set<int> next;
+  std::set<int>::const_iterator it,jt;
+  Random RND;
+
+  for(l=0; l<nattempts; ++l) {
+    svertex = (start == -1) ? RND.irandom(nvertex) : start;
+    path.clear();
+    path.push_back(svertex);
+    for(i=0; i<nvertex; ++i) {
+      visited[i] = false;
+    }
+    visited[svertex] = true;
+    do {
+      v = path.back();
+      for(it=neighbours[v].begin(); it!=neighbours[v].end(); ++it) {
+        u = *it;
+        if (visited[u]) continue;
+        n = 0;
+        for(jt=neighbours[u].begin(); jt!=neighbours[u].end(); ++jt) {
+          if (!visited[*jt]) n++;
+        } 
+        candidates.push_back(std::pair<int,int>(u,n));
+      }
+      if (candidates.empty()) break;
+      n = (signed) candidates.size();
+      std::sort(candidates.begin(),candidates.end(),pair_predicate_int);
+      u = candidates[0].second;
+      for(i=1; i<n; ++i) {
+        if (candidates[i].second == u) next.insert(candidates[i].first);
+      }
+      if (next.empty()) {
+        winner = candidates[0].first;
+      }
+      else {
+        next.insert(candidates[0].first);
+        winner = RND.irandom(next);
+        next.clear();
+      }
+      path.push_back(winner);
+      visited[winner] = true;
+      if ((signed) path.size() == nvertex) break;
+      candidates.clear();
+    } while(true);
+    // Check if this is a valid path, i.e. one which covers the whole graph...
+    if ((signed) path.size() < nvertex) continue;
+    solution = true;
+    for(i=0; i<nvertex; ++i) {
+      if (!visited[i]) {
+        solution = false;
+        break;
+      }
+    }
+    if (!solution) continue;
+    // So this is a Hamiltonian path, now we need to check if it is a cycle, if necessary...
+    if (!cycle) break; 
+    u = path.back();
+    if (neighbours[u].count(svertex) > 0) break;
+    solution = false;
+  }
+
+  if (!solution) path.clear();
+
+  return 1+l;
+}
+
+void Graph::write2disk(const std::string& filename,const std::vector<std::string>& names) const
 {
   int i,j;
   std::set<int>::const_iterator it;
@@ -478,15 +552,32 @@ void Graph::write2disk(const std::string& filename) const
   std::ofstream s(filename,std::ios::trunc);
 
   s << "graph G {" << std::endl;
-  // First all the elements in the poset...
-  for(i=0; i<nvertex; ++i) {
-    s << "  \"" << 1+i << "\";" << std::endl;
+  if (names.empty()) {
+    // First all the vertices...
+    for(i=0; i<nvertex; ++i) {
+      s << "  \"" << 1+i << "\";" << std::endl;
+    }
+    // Now the edges...
+    for(i=0; i<nvertex; ++i) {
+      for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+        j = *it;
+        if (i > j) continue;
+        s << "  \"" << 1+i << "\" -- \"" << 1+j << "\";" << std::endl;
+      }
+    }
   }
-  // Now the directed edges induced by the poset's ordering...
-  for(i=0; i<nvertex; ++i) {
-    for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
-      j = *it;
-      s << "  \"" << 1+i << "\" -- \"" << 1+j << "\";" << std::endl;
+  else {
+    // First all the vertices...
+    for(i=0; i<nvertex; ++i) {
+      s << "  \"" << names[i] << "\";" << std::endl;
+    }
+    // Now the edges...
+    for(i=0; i<nvertex; ++i) {
+      for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+        j = *it;
+        if (i > j) continue;
+        s << "  \"" << names[i] << "\" -- \"" << names[j] << "\";" << std::endl;
+      }
     }
   }
   s << "}" << std::endl;

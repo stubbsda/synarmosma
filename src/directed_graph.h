@@ -44,10 +44,20 @@ namespace SYNARMOSMA {
     void compute_shortest_path(int,int,std::vector<int>&) const override;
     /// This method computes the complete set of combinatorial distances (respecting the edge orientation) in the directed graph and stores the result as an unordered map linking pairs of vertices \f$(i,j)\f$ where \f$i < j\f$ and the distance \f$d\f$ between them. 
     void compute_distances(pair_index&) const override; 
+    /// This method returns true if the directed graph is Eulerian, i.e. it is connected and for each vertex the in-degree is equal to the out-degree, and false otherwise.
+    bool eulerian() const override;
+    /// This method attempts to construct a Hamiltonian path in the graph (which must be connected) and which, if successful, is stored as a vector of vertices in the third argument. If the first argument is true the method attempts to construct a Hamiltonian cycle, while the second argument contains the number of attempts to be made. The optional fourth argument is the initial vertex; if it isn't provided a vertex is chosen at random. The method returns the number of attempts which were made to construct the path. 
+    int compute_hamiltonian_path(bool,int,std::vector<int>&,int = -1) const override;
     /// This method returns true if every vertex can reach every other vertex using an oriented path, false otherwise.
     bool connected() const override;
     /// This method checks if there is a direct connection from the first argument to the second, i.e. if an edge with the correct orientation connects these two vertices, returning true if so.
     bool connected(int,int) const override;
+    /// This method returns the in degree of the vertex which is its argument, i.e. the number of directed edges which terminate at this vertex.
+    int in_degree(int) const;
+    /// This method returns the out degree of the vertex which is its argument, i.e. the number of directed edges which originate at this vertex.
+    int out_degree(int) const;
+    /// This method returns the number of undirected edges connecting the vertex which is the method's argument and so will always be zero unless the graph is partially directed. 
+    int neutral_degree(int) const;
     /// This method changes the orientation of the edge connecting the two vertices that are the method's arguments; if the edge exists, the method returns true and modifies the direction according to the following algorithm. If the edge is undirected, a coin toss determines where it is forward or backward pointing; if the edge is forward or backward pointing, with 25% probability it is reversed and with 75% probability made undirected.
     bool mutate_edge(int,int);
     /// This method computes the number of directed edges in the graph, i.e. the value of Directed_Graph::number_directed.
@@ -68,8 +78,8 @@ namespace SYNARMOSMA {
     unsigned int compute_sinks(std::set<int>&) const;
     /// This method computes the set of vertices of the directed graph which have no incoming edges and at least one outgoing edge, stored in the method's argument, and returns the number of sources found.
     unsigned int compute_sources(std::set<int>&) const;
-    /// This method writes the directed graph out to a disk file in the DOT format for visualization by GraphViz; the method's argument is the filename.
-    void write2disk(const std::string&) const override;
+    /// This method writes the directed graph to a disk file in the DOT format for visualization by GraphViz; the method's first argument is the filename, the optional second argument is a vector of strings which are labels for the graph's vertices..
+    void write2disk(const std::string&,const std::vector<std::string>& = std::vector<std::string>()) const override;
   };
 
   inline unsigned int Directed_Graph::directedness() const 

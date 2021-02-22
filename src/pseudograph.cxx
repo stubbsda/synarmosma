@@ -84,10 +84,50 @@ int Pseudograph::deserialize(std::ifstream& s)
   return count;
 }
 
+void Pseudograph::write2disk(const std::string& filename,const std::vector<std::string>& names) const
+{
+  int i,j;
+  std::vector<int>::const_iterator it;
+
+  std::ofstream s(filename,std::ios::trunc);
+
+  s << "graph G {" << std::endl;
+  if (names.empty()) {
+    // First all the vertices...
+    for(i=0; i<nvertex; ++i) {
+      s << "  \"" << 1+i << "\";" << std::endl;
+    }
+    // Now the edges...
+    for(i=0; i<nvertex; ++i) {
+      for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+        j = *it;
+        if (i > j) continue;
+        s << "  \"" << 1+i << "\" -- \"" << 1+j << "\";" << std::endl;
+      }
+    }
+  }
+  else {
+    // First all the vertices...
+    for(i=0; i<nvertex; ++i) {
+      s << "  \"" << names[i] << "\";" << std::endl;
+    }
+    // Now the edges...
+    for(i=0; i<nvertex; ++i) {
+      for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
+        j = *it;
+        if (i > j) continue;
+        s << "  \"" << names[i] << "\" -- \"" << names[j] << "\";" << std::endl;
+      }
+    }
+  }
+  s << "}" << std::endl;
+  s.close();  
+}
+
 void Pseudograph::add_edge(int u,int v)
 {
-  if (u < 0 || u >= nvertex) throw std::invalid_argument("Illegal value for the vertex index in Pseudograph::add_edge!");
-  if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal value for the vertex index in Pseudograph::add_edge!");
+  if (u < 0 || u >= nvertex) throw std::invalid_argument("Illegal vertex index in the Pseudograph::add_edge method!");
+  if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal vertex index in the Pseudograph::add_edge method!");
   neighbours[u].push_back(v);
   neighbours[v].push_back(u);
 }
@@ -182,8 +222,8 @@ void Pseudograph::contract(int u,int v,Pseudograph* output) const
   // This involves fusing together two vertices, so the output graph will have 
   // one less edge and one less vertex, which will mean re-indexing all of the 
   // neighbour vectors.
-  if (u < 0 || u >= nvertex) throw std::invalid_argument("Illegal value for the vertex index in Pseudograph::contract!");
-  if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal value for the vertex index in Pseudograph::contract!");
+  if (u < 0 || u >= nvertex) throw std::invalid_argument("Illegal vertex index in the Pseudograph::contract method!");
+  if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal vertex index in the Pseudograph::contract method!");
   int i,j,n,vmin,vmax; 
   bool first = true;
   std::vector<int> nvector;

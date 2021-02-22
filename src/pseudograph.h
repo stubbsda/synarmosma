@@ -49,6 +49,8 @@ namespace SYNARMOSMA {
     void contract(int,int,Pseudograph*) const;
     /// This method removes any edges between the two vertices that are the first arguments of the method, writing the new output pseudograph as the final argument.
     void remove(int,int,Pseudograph*) const;
+    /// This method writes the pseudograph to a disk file in the DOT format for visualization by GraphViz; the method's first argument is the filename, the optional second argument is a vector of strings which are labels for the pseudograph's vertices.
+    void write2disk(const std::string&,const std::vector<std::string>& = std::vector<std::string>()) const;
   };
 
   inline int Pseudograph::order() const 
