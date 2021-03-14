@@ -159,18 +159,24 @@ double Logic_Graph::rationalize_topology(const std::string& type)
   std::set<int>::const_iterator it;
   Random RND;
   const unsigned int N = order()/2;
+  const unsigned int na = logic->get_number_atoms();
+
+  UINT64 nuniverse = UINT64(ipow(2,na));
+  std::vector<boost::dynamic_bitset<> > truth(nuniverse);
 
   make_complete();
 
+  logic->compute_internal_logic(truth);
+
   for(i=0; i<nvertex; ++i) {
-    bcount.push_back(logic->bit_count(i));
+    bcount.push_back(truth[i].count());
   }
 
   do {
     m = RND.irandom(edges.size());
     its++;
     edges[m].get_vertices(vx);
-    n = logic->consistency(vx[0],vx[1],type);
+    n = logic->consistency(vx[0],vx[1],type,truth);
     // Keep this edge if the bit count is complete...
     if (n == bcount[vx[0]]) continue;
     // If not, drop it...
@@ -182,7 +188,7 @@ double Logic_Graph::rationalize_topology(const std::string& type)
   for(i=0; i<nvertex; ++i) {
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
       j = *it;
-      n = logic->consistency(i,j,type);
+      n = logic->consistency(i,j,type,truth);
       rsum += bcount[i] - n;
     }
   }
@@ -192,7 +198,8 @@ double Logic_Graph::rationalize_topology(const std::string& type)
 bool Logic_Graph::drop_vertex(int v)
 {
   if (Graph::drop_vertex(v)) {
-    if (logic->drop_theorem(v)) return true;
+    logic->drop_theorem(v); 
+    return true;
   }
   return false;
 }
@@ -200,7 +207,8 @@ bool Logic_Graph::drop_vertex(int v)
 bool Logic_Graph::fusion(int v,int u)
 {
   if (Graph::fusion(v,u)) {
-    if (logic->drop_theorem(u)) return true;
+    logic->drop_theorem(u); 
+    return true;
   }
   return false;
 }

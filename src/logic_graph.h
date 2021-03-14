@@ -39,7 +39,7 @@ namespace SYNARMOSMA {
     /// The standard overloaded assignment operator, which copies over the properties from the source instance.
     Logic_Graph& operator =(const Logic_Graph&);
     /// The destructor which releases the memory from Logic_Graph::logic if Logic_Graph::nvertex is greater than zero.
-    ~Logic_Graph() override;
+    virtual ~Logic_Graph() override;
     /// This method sets all the properties to their default value: zero vertices and empty edge and neighbour tables, as well as deleting the Logic_Graph::logic property.
     void clear() override;
     /// This method writes the instance properties to a binary disk file and returns the number of bytes written to the file.

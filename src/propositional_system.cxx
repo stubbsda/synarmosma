@@ -20,7 +20,6 @@ Propositional_System::Propositional_System(const Propositional_System& source)
   theorems = source.theorems;
   atoms = source.atoms;
   nuniverse = source.nuniverse;
-  truth = source.truth;
 }
 
 Propositional_System& Propositional_System::operator =(const Propositional_System& source)
@@ -30,7 +29,6 @@ Propositional_System& Propositional_System::operator =(const Propositional_Syste
   theorems = source.theorems;
   atoms = source.atoms;
   nuniverse = source.nuniverse;
-  truth = source.truth;
 
   return *this;
 }
@@ -44,7 +42,6 @@ void Propositional_System::clear()
 {
   nuniverse = 0;
   atoms.clear();
-  truth.clear();
   theorems.clear();
 }
 
@@ -55,7 +52,6 @@ void Propositional_System::initialize(unsigned int n)
   for(i=0; i<n; ++i) {
     theorems.push_back(Proposition(atoms));
   }
-  compute_internal_logic();
 }
 
 int Propositional_System::serialize(std::ofstream& s) const
@@ -89,15 +85,14 @@ int Propositional_System::deserialize(std::ifstream& s)
       atoms.insert(*it);
     }
   }
-  
-  compute_internal_logic();
+  nuniverse = UINT64(ipow(2,atoms.size()));
 
   return count;
 }
 
-unsigned int Propositional_System::consistency(unsigned int i,unsigned int j,const std::string& type) const
+unsigned int Propositional_System::consistency(unsigned int i,unsigned int j,const std::string& type,const std::vector<boost::dynamic_bitset<> >& truth) const
 {
-  if (i >= theorems.size() || j >= theorems.size()) throw std::invalid_argument("Illegal theorem index in Propositional_System class!");
+  if (i >= theorems.size() || j >= theorems.size()) throw std::invalid_argument("Illegal theorem index in the Propositional_System::consistency method!");
   boost::dynamic_bitset<> temp(nuniverse);
 
   std::string utype = boost::to_upper_copy(type);
@@ -112,27 +107,27 @@ unsigned int Propositional_System::consistency(unsigned int i,unsigned int j,con
     temp = truth[i] ^ truth[j];
   }
   else {
-    throw std::invalid_argument("Unrecognized logical operator in Propositional_System::consistency method!");
+    throw std::invalid_argument("Unrecognized logical operator in the Propositional_System::consistency method!");
   }
   return temp.count();
 }
 
-bool Propositional_System::implication(unsigned int n,const std::vector<unsigned int>& axioms) const
+bool Propositional_System::implication(unsigned int n,const std::vector<unsigned int>& axioms,const std::vector<boost::dynamic_bitset<> >& truth) const
 {
-  if (n >= theorems.size()) throw std::invalid_argument("Illegal theorem index in Propositional_System::implication!");
+  if (n >= theorems.size()) throw std::invalid_argument("Illegal theorem index in the Propositional_System::implication method!");
   unsigned int i;
   boost::dynamic_bitset<> temp(nuniverse);
 
   temp = truth[n];
   for(i=0; i<axioms.size(); ++i) {
-    if (axioms[i] >= theorems.size()) throw std::invalid_argument("Illegal axiom index in Propositional_System::implication!");
+    if (axioms[i] >= theorems.size()) throw std::invalid_argument("Illegal axiom index in the Propositional_System::implication method!");
     temp |= ~truth[axioms[i]];
   }
   if (temp.count() == nuniverse) return true;
   return false;
 }
 
-void Propositional_System::compute_internal_logic()
+void Propositional_System::compute_internal_logic(std::vector<boost::dynamic_bitset<> >& truth)
 {
   // The same basic idea as above, fill up the array of edge weights
   // with values but based on propositional logic rather than number
@@ -147,7 +142,7 @@ void Propositional_System::compute_internal_logic()
   const unsigned int n = theorems.size();
 
   truth.clear();
-  nuniverse = ipow(2,natom);
+  nuniverse = UINT64(ipow(2,natom));
   for(i=0; i<theorems.size(); ++i) {
     truth.push_back(boost::dynamic_bitset<>(nuniverse));
   }
@@ -180,12 +175,13 @@ void Propositional_System::compute_internal_logic()
   }
 }
 
-void Propositional_System::compute_implication_graph(Directed_Graph* G) const 
+void Propositional_System::compute_implication_graph(Directed_Graph* G,const std::vector<boost::dynamic_bitset<> >& truth) const
 {
   // This method must determine which propositions imply other propositions among
   // our collection, "theorems".
   int i,j;
   boost::dynamic_bitset<> temp(nuniverse),p1(nuniverse);
+
   const int nnode = (signed) theorems.size();
 
   G->clear();
@@ -205,25 +201,14 @@ unsigned int Propositional_System::add_theorem(const std::set<int>& a)
 {
   std::set<int>::const_iterator it;
   unsigned int n = theorems.size();
+
   theorems.push_back(Proposition(a));
+
   // Check to see if this proposition uses any new atomic propositions...
-  unsigned int na = atoms.size();
   for(it=a.begin(); it!=a.end(); ++it) {
     atoms.insert(*it);
   }
-  if (atoms.size() != na) {
-    compute_internal_logic();
-  }
-  else {
-    truth.push_back(boost::dynamic_bitset<>(nuniverse));
-  }
-  return n;
-}
+  nuniverse = UINT64(ipow(2,atoms.size()));
 
-bool Propositional_System::drop_theorem(unsigned int n)
-{
-  if (n >= theorems.size()) return false;
-  theorems.erase(theorems.begin() + n);
-  truth.erase(truth.begin() + n);
-  return true;
+  return n;
 }
