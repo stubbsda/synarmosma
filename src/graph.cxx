@@ -1194,7 +1194,7 @@ void Graph::defoliate(const Pseudograph* parent,std::vector<Monomial<int> >& tut
   Random RND;
 
   if (cvector.empty()) {
-    int nl = parent->get_loops();
+    int nl = parent->self_loops();
     Monomial<int> term;
     term.coefficient = 1;
     if (nb > 0) term.exponents.push_back(std::pair<unsigned int,unsigned int>(0,nb));
@@ -1231,7 +1231,7 @@ void Graph::tutte_polynomial(std::vector<Monomial<int> >& output) const
     for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
       j = *it;
       if (i > j) continue;
-      G->add_edge(i,j);
+      G->add_edge(i,j,Relation::disparate);
     }
   }
   defoliate(G,tutte);

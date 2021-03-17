@@ -106,14 +106,15 @@ int main(int argc,char** argv)
   else if (test == "Pseudograph") {
     std::vector<int> vx;
     SYNARMOSMA::Pseudograph G(4),H(4);
+    auto d = SYNARMOSMA::Relation::disparate;
 
-    G.add_edge(0,1); G.add_edge(0,2); G.add_edge(0,3);
-    G.add_edge(1,2);
-    G.add_edge(2,3);
+    G.add_edge(0,1,d); G.add_edge(0,2,d); G.add_edge(0,3,d);
+    G.add_edge(1,2,d);
+    G.add_edge(2,3,d);
 
-    H.add_edge(0,1); H.add_edge(0,2); H.add_edge(0,3);
-    H.add_edge(1,2);
-    H.add_edge(2,3);
+    H.add_edge(0,1,d); H.add_edge(0,2,d); H.add_edge(0,3,d);
+    H.add_edge(1,2,d);
+    H.add_edge(2,3,d);
     G.contract(0,1,&H);
 
     if (H.get_candidates(vx) != 0) return 1;

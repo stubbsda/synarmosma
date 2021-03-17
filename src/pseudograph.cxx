@@ -10,88 +10,211 @@ Pseudograph::Pseudograph()
 Pseudograph::Pseudograph(int order)
 {
   if (order <= 0) throw std::invalid_argument("The order of a pseudograph must be greater than zero!");
+
+  std::set<int> empty;
   nvertex = order;
-  neighbours = new std::vector<int>[nvertex];
+  for(int i=0; i<nvertex; ++i) {
+    entourage.push_back(std::pair<int,std::set<int> >(0,empty));
+  }
 }
 
 Pseudograph::Pseudograph(const Pseudograph& source)
 {
-  if (nvertex > 0) delete[] neighbours;
   nvertex = source.nvertex;
-  neighbours = new std::vector<int>[nvertex];
-  for(int i=0; i<nvertex; ++i) {
-    neighbours[i] = source.neighbours[i];
-  }
+  entourage = source.entourage;
+  edges = source.edges;
 }
 
 Pseudograph& Pseudograph::operator =(const Pseudograph& source)
 {
   if (this == &source) return *this;
 
-  if (nvertex > 0) delete[] neighbours;
   nvertex = source.nvertex;
-  neighbours = new std::vector<int>[nvertex];
-  for(int i=0; i<nvertex; ++i) {
-    neighbours[i] = source.neighbours[i];
-  }
+  entourage = source.entourage;
+  edges = source.edges;
 
   return *this;
 }
- 
+
 Pseudograph::~Pseudograph()
 {
-  if (nvertex > 0) delete[] neighbours;
+
 }
 
 void Pseudograph::clear()
 {
-  if (nvertex > 0) delete[] neighbours;
   nvertex = 0;
+  entourage.clear();
+  edges.clear();
 }
 
 int Pseudograph::serialize(std::ofstream& s) const
 {
-  int i,j,n,p,count = 0;
+  int i,n,p,count = 0;
+  std::set<int> T;
+  std::set<int>::const_iterator it;
 
   s.write((char*)(&nvertex),sizeof(int)); count += sizeof(int);
   for(i=0; i<nvertex; ++i) {
-    n = (signed) neighbours[i].size();
+    n = entourage[i].first;
     s.write((char*)(&n),sizeof(int)); count += sizeof(int);
-    for(j=0; j<n; ++j) {
-      p = neighbours[i][j];
+    T = entourage[i].second;
+    n = (signed) T.size();
+    s.write((char*)(&n),sizeof(int)); count += sizeof(int);
+    for(it=T.begin(); it!=T.end(); ++it) {
+      p = *it;
       s.write((char*)(&p),sizeof(int)); count += sizeof(int);
     }
   }
+
+  n = (signed) edges.size();
+  for(i=0; i<n; ++i) {
+    count += edges[i].serialize(s);
+  }
+
   return count;
 }
 
-int Pseudograph::deserialize(std::ifstream& s) 
+int Pseudograph::deserialize(std::ifstream& s)
 {
   int i,j,n,p,count = 0;
+  std::set<int> T;
+  std::pair<int,std::set<int> > pr;
+  Edge e;
 
   clear();
 
   s.read((char*)(&nvertex),sizeof(int)); count += sizeof(int);
-  neighbours = new std::vector<int>[nvertex];
   for(i=0; i<nvertex; ++i) {
     s.read((char*)(&n),sizeof(int)); count += sizeof(int);
+    pr.first = n;
+    s.read((char*)(&n),sizeof(int)); count += sizeof(int);
+    T.clear();
     for(j=0; j<n; ++j) {
       s.read((char*)(&p),sizeof(int)); count += sizeof(int);
-      neighbours[i].push_back(p);
+      T.insert(p);
     }
+    pr.second = T;
+    entourage.push_back(pr);
   }
+
+  s.read((char*)(&n),sizeof(int)); count += sizeof(int);
+  for(i=0; i<n; ++i) {
+    count += e.deserialize(s);
+    edges.push_back(e);
+  }
+
+  if (!consistent()) throw std::runtime_error("The Pseudograph instance read from disk is inconsistent!");
 
   return count;
 }
 
+bool Pseudograph::consistent() const
+{
+  if (nvertex < 0) return false;
+  int i,n,vx[2];
+  std::set<int> S;
+  std::set<int>::const_iterator it;
+  const int ne = (signed) edges.size();
+
+  for(i=0; i<nvertex; ++i) {
+    if (entourage[i].first < 0) return false;
+    S = entourage[i].second;
+    for(it=S.begin(); it!=S.end(); ++it) {
+      n = *it;
+      if (n < 0) return false;
+      if (n >= ne) return false;
+      edges[n].get_vertices(vx);
+      if (vx[0] < 0 || vx[0] >= nvertex) return false;
+      if (vx[1] < 0 || vx[1] >= nvertex) return false;
+      if (vx[0] != i && vx[1] != i) return false;
+    }
+  }
+  for(i=0; i<ne; ++i) {
+    edges[i].get_vertices(vx);
+    if (vx[0] < 0 || vx[0] >= nvertex) return false;
+    if (vx[1] < 0 || vx[1] >= nvertex) return false;
+    if (entourage[vx[0]].second.count(i) == 0) return false;
+    if (entourage[vx[1]].second.count(i) == 0) return false;
+  }
+
+  return true;
+}
+
+int Pseudograph::in_degree(int v) const
+{
+  int i,u,vx[2],n = 0;
+  std::set<int> S = entourage[v].second;
+  std::set<int>::const_iterator it;
+
+  for(it=S.begin(); it!=S.end(); ++it) {
+    i = *it;
+    if (edges[i].get_direction() == Relation::disparate) continue;
+    edges[i].get_vertices(vx);
+    u = (vx[0] == v) ? vx[1] : vx[0];
+    if (edges[i].get_direction(v,u) == Relation::after) n++;
+  }
+  return n;
+}
+
+int Pseudograph::out_degree(int v) const
+{
+  int i,u,vx[2],n = 0;
+  std::set<int> S = entourage[v].second;
+  std::set<int>::const_iterator it;
+
+  for(it=S.begin(); it!=S.end(); ++it) {
+    i = *it;
+    if (edges[i].get_direction() == Relation::disparate) continue;
+    edges[i].get_vertices(vx);
+    u = (vx[0] == v) ? vx[1] : vx[0];
+    if (edges[i].get_direction(v,u) == Relation::before) n++;
+  }
+  return n;
+}
+
+int Pseudograph::multi_degree(int u,int v) const
+{
+  int w,vx[2],n = 0;
+  std::set<int> S = entourage[u].second;
+  std::set<int>::const_iterator it;
+
+  for(it=S.begin(); it!=S.end(); ++it) {
+    edges[*it].get_vertices(vx);
+    w = (vx[0] == u) ? vx[1] : vx[0];
+    if (w == v) n++;
+  }
+
+  return n;
+}
+
+int Pseudograph::multi_degree(int u,int v,Relation d) const
+{
+  int w,vx[2],n = 0;
+  std::set<int> S = entourage[u].second;
+  std::set<int>::const_iterator it;
+
+  for(it=S.begin(); it!=S.end(); ++it) {
+    edges[*it].get_vertices(vx);
+    w = (vx[0] == u) ? vx[1] : vx[0];
+    if (w == v) {
+      if (edges[*it].get_direction() == d) n++;
+    }
+  }
+
+  return n;
+}
+
 void Pseudograph::write2disk(const std::string& filename,const std::vector<std::string>& names) const
 {
-  int i,j;
-  std::vector<int>::const_iterator it;
+  int i,j,n,vx[2];
+  std::set<int> S;
+  std::set<int>::const_iterator it;
+  Relation d;
 
   std::ofstream s(filename,std::ios::trunc);
 
-  s << "graph G {" << std::endl;
+  s << "digraph G {" << std::endl;
   if (names.empty()) {
     // First all the vertices...
     for(i=0; i<nvertex; ++i) {
@@ -99,10 +222,26 @@ void Pseudograph::write2disk(const std::string& filename,const std::vector<std::
     }
     // Now the edges...
     for(i=0; i<nvertex; ++i) {
-      for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
-        j = *it;
-        if (i > j) continue;
-        s << "  \"" << 1+i << "\" -- \"" << 1+j << "\";" << std::endl;
+      n = entourage[i].first;
+      for(j=0; j<n; ++j) {
+        s << "  \"" << 1+i << "\" -- \"" << 1+i << "\";" << std::endl;
+      }
+      S = entourage[i].second;
+      for(it=S.begin(); it!=S.end(); ++it) {
+        edges[*it].get_vertices(vx);
+        if (vx[0] > vx[1]) continue;
+        d = edges[*it].get_direction();
+        if (d == Relation::disparate) {
+          s << "  \"" << 1+vx[0] << "\" -- \"" << 1+vx[1] << "\";" << std::endl;
+        }
+        else {
+          if (d == Relation::before) {
+            s << "  \"" << 1+vx[0] << "\" -> \"" << 1+vx[1] << "\";" << std::endl;
+          }
+          else {
+            s << "  \"" << 1+vx[1] << "\" -> \"" << 1+vx[0] << "\";" << std::endl;
+          }
+        }
       }
     }
   }
@@ -113,38 +252,64 @@ void Pseudograph::write2disk(const std::string& filename,const std::vector<std::
     }
     // Now the edges...
     for(i=0; i<nvertex; ++i) {
-      for(it=neighbours[i].begin(); it!=neighbours[i].end(); ++it) {
-        j = *it;
-        if (i > j) continue;
-        s << "  \"" << names[i] << "\" -- \"" << names[j] << "\";" << std::endl;
+      n = entourage[i].first;
+      for(j=0; j<n; ++j) {
+        s << "  \"" << names[i] << "\" -- \"" << names[i] << "\";" << std::endl;
+      }
+      S = entourage[i].second;
+      for(it=S.begin(); it!=S.end(); ++it) {
+        edges[*it].get_vertices(vx);
+        if (vx[0] > vx[1]) continue;
+        d = edges[*it].get_direction();
+        if (d == Relation::disparate) {
+          s << "  \"" << names[vx[0]] << "\" -- \"" << names[vx[1]] << "\";" << std::endl;
+        }
+        else {
+          if (d == Relation::before) {
+            s << "  \"" << names[vx[0]] << "\" -> \"" << names[vx[1]] << "\";" << std::endl;
+          }
+          else {
+            s << "  \"" << names[vx[1]] << "\" -> \"" << names[vx[0]] << "\";" << std::endl;
+          }
+        }
       }
     }
   }
   s << "}" << std::endl;
-  s.close();  
+  s.close();
 }
 
-void Pseudograph::add_edge(int u,int v)
+void Pseudograph::add_edge(int u,int v,Relation d)
 {
   if (u < 0 || u >= nvertex) throw std::invalid_argument("Illegal vertex index in the Pseudograph::add_edge method!");
   if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal vertex index in the Pseudograph::add_edge method!");
-  neighbours[u].push_back(v);
-  neighbours[v].push_back(u);
+  // The simple case of a self-loop...
+  if (u == v) {
+    entourage[u].first += 1;
+    return;
+  }
+  // The more complex case of an edge between two distinct vertices...
+  int n = (signed) edges.size();
+  edges.push_back(Edge(u,v,0.0,d));
+  entourage[u].second.insert(n);
+  entourage[v].second.insert(n);
 }
 
 int Pseudograph::DFS_bridge(int u,int v,int dcount,int* low,int* pre,hash_map& bridge_index) const
 {
-  int w,output = 0,dc = dcount + 1;
-  std::vector<int>::const_iterator it;
+  int w,vx[2],output = 0,dc = dcount + 1;
+  std::set<int> S = entourage[v].second;
+  std::set<int>::const_iterator it;
 
   pre[v] = dc;
   low[v] = pre[v];
-  for(it=neighbours[v].begin(); it!=neighbours[v].end(); ++it) {
-    w = *it;
-    if (w == v) continue;
+  for(it=S.begin(); it!=S.end(); ++it) {
+    // We ignore directionality here...
+    edges[*it].get_vertices(vx);
+    w = (vx[0] == v) ? vx[1] : vx[0];
     if (pre[w] == -1) {
       output += DFS_bridge(v,w,dc,low,pre,bridge_index);
-      low[v] = std::min(low[v],low[w]); 
+      low[v] = std::min(low[v],low[w]);
       if (low[w] == pre[w]) {
         std::set<int> S;
         S.insert(v); S.insert(w);
@@ -177,56 +342,59 @@ int Pseudograph::compute_bridges(hash_map& bridge_index) const
 
 int Pseudograph::get_candidates(std::vector<int>& output) const
 {
-  // The return value is the number of bridges in this graph, while the 
-  // "output" vector is the list of potential edges for contraction or 
+  // The return value is the number of bridges in this graph, while the
+  // "output" vector is the list of potential edges for contraction or
   // deletion, listed by pairs of vertices.
-  int i,j,k,l,n,nb;
+  int i,j,nb,vx[2];
   bool first;
-  std::set<int> S;
+  std::set<int> S,T;
+  std::set<int>::const_iterator it;
   hash_map bridge_index;
   hash_map::const_iterator qt;
 
   nb = compute_bridges(bridge_index);
   output.clear();
   for(i=0; i<nvertex; ++i) {
-    n = (signed) neighbours[i].size();
     first = true;
-    for(j=0; j<n; ++j) {
-      k = neighbours[i][j];
-      if (k <= i) continue;
+    S = entourage[i].second;
+    for(it=S.begin(); it!=S.end(); ++it) {
+      edges[*it].get_vertices(vx);
+      j = (vx[0] == i) ? vx[1] : vx[0];
+      if (j < i) continue;
       // Check if this is a bridge
-      S.insert(i); S.insert(k);
-      qt = bridge_index.find(S);
+      T.insert(i); T.insert(j);
+      qt = bridge_index.find(T);
       if (qt == bridge_index.end()) {
-        output.push_back(i); output.push_back(k);
+        output.push_back(i); output.push_back(j);
       }
       else {
         // Since this is a multi-graph, we need to check for overcounting of bridges...
-        l = std::count(neighbours[i].begin(),neighbours[i].end(),k);
-        if (l > 1) {
+        if (multi_degree(i,j) > 1) {
           if (first) {
             nb -= 1;
             first = false;
           }
-          output.push_back(i); output.push_back(k);
+          output.push_back(i); output.push_back(j);
         }
       }
-      S.clear();
+      T.clear();
     }
   }
   return nb;
 }
 
-void Pseudograph::contract(int u,int v,Pseudograph* output) const
+bool Pseudograph::contract(int u,int v,Pseudograph* output) const
 {
-  // This involves fusing together two vertices, so the output graph will have 
-  // one less edge and one less vertex, which will mean re-indexing all of the 
+  // This involves fusing together two vertices, so the output graph will have
+  // one less edge and one less vertex, which will mean re-indexing all of the
   // neighbour vectors.
   if (u < 0 || u >= nvertex) throw std::invalid_argument("Illegal vertex index in the Pseudograph::contract method!");
   if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal vertex index in the Pseudograph::contract method!");
-  int i,j,n,vmin,vmax; 
-  bool first = true;
-  std::vector<int> nvector;
+  if (u == v) throw std::invalid_argument("The vertex indices must be distinct in the Pseudograph::contract method!");
+  int i,c,vmin,vmax,vx[2],ne,nv = output->nvertex;
+  std::set<int> S,eliminate;
+  std::set<int>::const_iterator it;
+  std::set<int>::reverse_iterator rit;
 
   if (u > v) {
     vmin = v;
@@ -237,82 +405,105 @@ void Pseudograph::contract(int u,int v,Pseudograph* output) const
     vmax = v;
   }
   // We will fuse vmax into vmin
-  for(i=0; i<nvertex; ++i) {
-    if (i == vmax) continue;
-    n = (signed) neighbours[i].size();
-    for(j=0; j<n; ++j) {
-      if (neighbours[i][j] == vmax) {
-        if (i == vmin) {
-          if (first) {
-            first = false;
-          }
-          else {
-            nvector.push_back(vmin);
-          }
-        }
-        else {
-          nvector.push_back(vmin);
-        }
-      }
-      else if (neighbours[i][j] > vmax) {
-        nvector.push_back(neighbours[i][j] - 1);
-      }
-      else {
-        nvector.push_back(neighbours[i][j]);
-      }
-    }
-    output->neighbours[i] = nvector;
-    nvector.clear();
+  S = output->entourage[vmax].second;
+  for(it=S.begin(); it!=S.end(); ++it) {
+    i = *it;
+    output->edges[i].get_vertices(vx);
+    if (vx[0] == vmin || vx[1] == vmin) eliminate.insert(i);
   }
-  n = (signed) neighbours[vmax].size();
-  for(i=0; i<n; ++i) {
-    j = neighbours[vmax][i];
-    if (j == vmin) {
-      continue;
-    }
-    else if (j == vmax) {
-      output->neighbours[vmin].push_back(vmin);
-    }
-    else if (j > vmax) {
-      output->neighbours[vmin].push_back(j-1);
-    }
-    else {
-      output->neighbours[vmin].push_back(j);
-    }
+  if (eliminate.empty()) return false;
+
+  // Add the self-loops of vmax to vmin and all but one of the vmin:vmax edges become 
+  // self-loops of vmin...
+  output->entourage[vmin].first += (eliminate.size() - 1) + output->entourage[vmax].first;
+
+  // Now remove the edge(s)...
+  for(rit=eliminate.rbegin(); rit!=eliminate.rend(); ++rit) {
+    c = *rit;
+    output->edges.erase(output->edges.begin() + c);
   }
-  for(i=vmax; i<nvertex-1; ++i) {
-    output->neighbours[i] = output->neighbours[i+1]; 
+
+  // Next re-index all of the vertex indices in the edges and remove the vertex...
+  ne = (signed) output->edges.size();
+  for(i=0; i<ne; ++i) {
+    output->edges[i].get_vertices(vx);
+    if (vx[0] > vmax) {
+      vx[0] -= 1;
+    }
+    else if (vx[0] == vmax) {
+      vx[0] = vmin;
+    }
+    if (vx[1] > vmax) {
+      vx[1] -= 1;
+    }
+    else if (vx[1] == vmax) {
+      vx[1] = vmin;
+    }
+    output->edges[i].set_vertices(vx[0],vx[1]);
+  }
+  for(i=vmax; i<nv-1; ++i) {
+    output->entourage[i] = output->entourage[i+1];
   }
   output->nvertex -= 1;
+
+  // Finally fix the vertex entourages...
+  for(i=0; i<output->nvertex; ++i) {
+    output->entourage[i].second.clear();
+  }
+  for(i=0; i<ne; ++i) {
+    output->edges[i].get_vertices(vx);
+    output->entourage[vx[0]].second.insert(i);
+    output->entourage[vx[1]].second.insert(i);
+  }
+
+  return true;
 }
 
-void Pseudograph::remove(int u,int v,Pseudograph* output) const
+bool Pseudograph::remove(int u,int v,Pseudograph* output) const
 {
-  // The much simpler case of removing an edge...
   if (u < 0 || u >= nvertex) throw std::invalid_argument("Illegal value for the vertex index in Pseudograph::remove!");
   if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal value for the vertex index in Pseudograph::remove!");
-  unsigned int i,n = output->neighbours[u].size();
-  bool first = true;
-  std::vector<int> t;
 
-  for(i=0; i<n; ++i) {
-    if (first && output->neighbours[u][i] == v) {
-      first = false;
-      continue;
-    }
-    t.push_back(output->neighbours[u][i]);
-  }
-  if (!first) output->neighbours[u] = t;
+  int i,j,candidate = -1,vx[2],nv = output->nvertex;
+  std::set<int> T,S = output->entourage[u].second;
+  std::set<int>::const_iterator it;
 
-  t.clear();
-  first = true;
-  n = output->neighbours[v].size();
-  for(i=0; i<n; ++i) {
-    if (first && output->neighbours[v][i] == u) {
-      first = false;
-      continue;
+  for(it=S.begin(); it!=S.end(); ++it) {
+    i = *it;
+    if (edges[i].get_direction() != Relation::disparate) continue;
+    edges[i].get_vertices(vx);
+    if (vx[0] == v || vx[1] == v) {
+      candidate = i;
+      break;
     }
-    t.push_back(output->neighbours[v][i]);
   }
-  if (!first) output->neighbours[v] = t;  
+  // Impossible to find an undirected edge connecting these two vertices...
+  if (candidate == -1) return false;
+
+  S.erase(candidate);
+  output->entourage[u].second = S;
+
+  S = output->entourage[v].second;
+  S.erase(candidate);
+  output->entourage[v].second = S;
+
+  // Now remove the edge and re-index all of the entourages...
+  for(i=0; i<nv; ++i) {
+    T.clear();
+    S = output->entourage[i].second;
+    for(it=S.begin(); it!=S.end(); ++it) {
+      j = *it;
+      if (j > candidate) {
+        T.insert(j - 1);
+      }
+      else {
+        T.insert(j);
+      }
+    }
+    output->entourage[i].second = T;
+  }
+  output->edges.erase(output->edges.begin() + candidate);
+
+  return true;
 }
+
