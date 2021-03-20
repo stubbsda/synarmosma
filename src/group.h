@@ -34,7 +34,7 @@ namespace SYNARMOSMA {
     /// This is true when this group belongs to the class of braid groups, which 
     /// means that it has a solvable word problem unlike the general case.
     bool braid = false;
-    /// Like the property "rank", the torsion is only meaningful in the context of 
+    /// Like the property Group::rank, the torsion is only meaningful in the context of 
     /// an Abelian group and reflects the extent to which the group possesses a finite 
     /// cyclic structure. If an Abelian group has a rank = 0 and an empty torsion 
     /// vector, then it is the trivial group. 

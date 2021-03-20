@@ -143,6 +143,8 @@ bool Pseudograph::consistent() const
 
 int Pseudograph::in_degree(int v) const
 {
+  if (v < 0 || v >= nvertex) throw std::invalid_argument("The Pseudograph::in_degree argument must be a vertex of the pseudograph!");
+
   int i,u,vx[2],n = 0;
   std::set<int> S = entourage[v].second;
   std::set<int>::const_iterator it;
@@ -159,6 +161,8 @@ int Pseudograph::in_degree(int v) const
 
 int Pseudograph::out_degree(int v) const
 {
+  if (v < 0 || v >= nvertex) throw std::invalid_argument("The Pseudograph::out_degree argument must be a vertex of the pseudograph!");
+
   int i,u,vx[2],n = 0;
   std::set<int> S = entourage[v].second;
   std::set<int>::const_iterator it;
@@ -175,6 +179,10 @@ int Pseudograph::out_degree(int v) const
 
 int Pseudograph::multi_degree(int u,int v) const
 {
+  if (u < 0 || u >= nvertex) throw std::invalid_argument("Illegal value for the vertex index in the Pseudograph::multi_degree method!");
+  if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal value for the vertex index in the Pseudograph::multi_degree method!");
+
+  if (u == v) return self_loops(u);
   int w,vx[2],n = 0;
   std::set<int> S = entourage[u].second;
   std::set<int>::const_iterator it;
@@ -190,6 +198,13 @@ int Pseudograph::multi_degree(int u,int v) const
 
 int Pseudograph::multi_degree(int u,int v,Relation d) const
 {
+  if (u < 0 || u >= nvertex) throw std::invalid_argument("Illegal value for the vertex index in the Pseudograph::multi_degree method!");
+  if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal value for the vertex index in the Pseudograph::multi_degree method!");
+
+  if (u == v) {
+    if (d != Relation::disparate) throw std::invalid_argument("In the Pseudograph class, self-loops are necessarily undirected!");
+    return self_loops(u);
+  }
   int w,vx[2],n = 0;
   std::set<int> S = entourage[u].second;
   std::set<int>::const_iterator it;
@@ -283,6 +298,7 @@ void Pseudograph::add_edge(int u,int v,Relation d)
 {
   if (u < 0 || u >= nvertex) throw std::invalid_argument("Illegal vertex index in the Pseudograph::add_edge method!");
   if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal vertex index in the Pseudograph::add_edge method!");
+
   // The simple case of a self-loop...
   if (u == v) {
     entourage[u].first += 1;
@@ -391,6 +407,7 @@ bool Pseudograph::contract(int u,int v,Pseudograph* output) const
   if (u < 0 || u >= nvertex) throw std::invalid_argument("Illegal vertex index in the Pseudograph::contract method!");
   if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal vertex index in the Pseudograph::contract method!");
   if (u == v) throw std::invalid_argument("The vertex indices must be distinct in the Pseudograph::contract method!");
+
   int i,c,vmin,vmax,vx[2],ne,nv = output->nvertex;
   std::set<int> S,eliminate;
   std::set<int>::const_iterator it;
@@ -461,8 +478,8 @@ bool Pseudograph::contract(int u,int v,Pseudograph* output) const
 
 bool Pseudograph::remove(int u,int v,Pseudograph* output) const
 {
-  if (u < 0 || u >= nvertex) throw std::invalid_argument("Illegal value for the vertex index in Pseudograph::remove!");
-  if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal value for the vertex index in Pseudograph::remove!");
+  if (u < 0 || u >= nvertex) throw std::invalid_argument("Illegal value for the vertex index in the Pseudograph::remove method!");
+  if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal value for the vertex index in the Pseudograph::remove method!");
 
   int i,j,candidate = -1,vx[2],nv = output->nvertex;
   std::set<int> T,S = output->entourage[u].second;

@@ -27,13 +27,13 @@ namespace SYNARMOSMA {
     Word(unsigned int,int);
     /// This constructor accepts a string of lower-case and upper-case letters (representing negative exponents) to build a word; thus an expression like "aaBcAf" would become \f$x_0^2 x_1^{-1}x_2 x_0^{-1}x_5\f$.
     Word(const std::string&);
-    /// The standard copy constructor that copies over the value of the "content" property.
+    /// The standard copy constructor that copies over the value of the Word::content property.
     Word(const Word&);
-    /// The overloaded assignment operator that copies over the value of the "content" property.
+    /// The overloaded assignment operator that copies over the value of the Word::content property.
     Word& operator =(const Word&);
     /// The destructor for this class, which does nothing.
     ~Word();
-    /// This method calls clear on the vector "content" and so empties the word of its contents.
+    /// This method calls clear on the vector Word::content and so empties the word of its contents.
     void clear();
     /// This method appends a new "letter" to the end of the word.
     void append(const std::pair<unsigned int,int>&);
@@ -49,13 +49,13 @@ namespace SYNARMOSMA {
     Word normalize() const;
     /// This method swaps every occurrence in the word of the second index by the first index, reversing the exponent's sign when the final argument is true, and reducing the index values by one when they are greater than the second argument. 
     Word swap(unsigned int,unsigned int,bool = false) const;
-    /// This method creates a new word from an existing one in a similar manner to the Word::normalize method, identifying pairs of adjacent letters with the same index and opposite but equal exponents, so that the pair can be eliminated.
+    /// This method creates a new word from an existing one in a similar manner to the normalize() method, identifying pairs of adjacent letters with the same index and opposite but equal exponents, so that the pair can be eliminated.
     Word reduce() const;
     /// This method creates a new word from the existing one by eliminating all of the letters whose index lies in the first argument, using the array of offset indices in the second argument. 
     Word reduce(const std::set<unsigned int>&,const unsigned int*) const;
-    /// This method returns the length of the vector "content".
+    /// This method returns the length of the vector Word::content.
     unsigned int length() const;
-    /// This method returns true when the "content" vector is empty.
+    /// This method returns true when the Word::content vector is empty.
     bool empty() const;
     /// This method carries out a cyclic permutation based on its unique argument \f$k\f$, so that (ignoring exponents) if \f$w = x_0\cdots x_{n-1}\f$ then \f$w' = x_k x_{k+1}\cdots x_{n-1} x_0 x_1 \cdots x_{k-1}\f$. 
     Word permute(unsigned int) const;
@@ -63,7 +63,7 @@ namespace SYNARMOSMA {
     bool trivial() const;
     /// This method returns true when the word has the form \f$w = x_p^n x_q^m\f$ with \f$p \ne q\f$ and \f$|n| = |m| =1\f$.
     bool alias() const;
-    /// This method verifies that none of the exponents in the "content" vector are equal to zero, returning true if this is so.
+    /// This method verifies that none of the exponents in the Word::content vector are equal to zero, returning true if this is so.
     bool legal() const;
     /// This method determines if the lowest index letter in the word occurs in at least two distinct locations with exponents whose sign differs, returning false in this case and true otherwise.
     bool homogeneous() const;
@@ -75,7 +75,7 @@ namespace SYNARMOSMA {
     friend bool operator ==(const Word&,const Word&);
     /// This overloaded operator simply uses the "==" operator to test the two words for equality and reverses the output.
     friend bool operator !=(const Word&,const Word&);
-    /// This overloaded operator concatenates the two words, calls the Word::normalize method on this product word and returns the output.
+    /// This overloaded operator concatenates the two words, calls the normalize() method on this product word and returns the output.
     friend Word operator *(const Word&,const Word&);
     /// This overloading of the ostream operator will print the word in a nice human-readable format with the letters as "x" with a subscript.
     friend std::ostream& operator <<(std::ostream&,const Word&);

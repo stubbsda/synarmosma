@@ -19,9 +19,9 @@ namespace SYNARMOSMA {
     /// an instance of the Proposition class.
     std::vector<Proposition> theorems;
 
-    /// This method computes the property Propositional_System::truth, first calculating the value of Propositional_System::nuniverse.
+    /// This method computes the property the truth value of each element of Propositional_System::theorems for each possible assignment of values to the atomic propositions in Propositional_System::atoms, storing the result in the method's argument.
     void compute_internal_logic(std::vector<boost::dynamic_bitset<> >&); 
-    /// This method has as its unique argument the number of theorems to be created, which are built randomly by the Proposition class, and then calls compute_internal_logic().
+    /// This method has as its unique argument the number of theorems to be created, which are built randomly by the Proposition class.
     void initialize(unsigned int);
    public:
     /// The default constructor which does nothing.
@@ -34,21 +34,21 @@ namespace SYNARMOSMA {
     Propositional_System& operator =(const Propositional_System&);
     /// The destructor which in the case of this class has nothing to do.
     ~Propositional_System();
-    /// This method clears the Propositional_System::theorems and Propositional_System::truth properties and sets the other properties to zero.
+    /// This method clears the Propositional_System::theorems and Propositional_System::atoms properties and sets Propositional_System::nuniverse to zero.
     void clear();
-    /// This method takes two elements of Propositional_System::theorems along with a Boolean operator specified by a string among "AND", "OR" and "XOR", and computes the number of logical universes in which these two propositions are true according to the Boolean operator. 
+    /// This method takes two elements of Propositional_System::theorems, the vector of dynamic bitsets computed in the compute_internal_logic() method and a Boolean operator specified by a string among "AND", "OR" and "XOR", and computes the number of logical universes in which these two propositions are true according to the Boolean operator. 
     unsigned int consistency(unsigned int,unsigned int,const std::string&,const std::vector<boost::dynamic_bitset<> >&) const;
-    /// This method tests whether or not a given proposition is implied by a set of other propositions, in which case it returns true. The first argument is the element of Propositional_System::theorems being tested, the second is the set of axioms, which are other elements of this same vector. A proposition q implies another p if (q or !p) is always true. 
+    /// This method tests whether or not a given proposition is implied by a set of other propositions, in which case it returns true. The first argument is the element of Propositional_System::theorems being tested, the second is the set of axioms, which are other elements of this same vector and the third if the vector of dynamic bitsets calculated by the compute_internal_logic() method. A proposition q implies another p if (q or !p) is always true. 
     bool implication(unsigned int,const std::vector<unsigned int>&,const std::vector<boost::dynamic_bitset<> >&) const;
-    /// This method constructs the directed graph of implications among the elements of Propositional_System::theorems; each proposition is a vertex and if one proposition p implies another q, then the edge p -> q is added to the graph.
+    /// This method constructs the directed graph of implications among the elements of Propositional_System::theorems; each proposition is a vertex and if one proposition p implies another q, then the edge p -> q is added to the graph. It requires the vector of dynamic bitsets calculated by the compute_internal_logic() method.
     void compute_implication_graph(Directed_Graph*,const std::vector<boost::dynamic_bitset<> >&) const;
     /// This method writes the instance properties to a binary disk file and returns the number of bytes written to the file.
     int serialize(std::ofstream&) const;
     /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
     int deserialize(std::ifstream&);
-    /// This method appends a new element to the vector Propositional_System::theorems, then checks to see if any new atomic propositions have to be added (in which case it calls compute_internal_logic()) and then returns the index of this new theorem.
+    /// This method appends a new element to the vector Propositional_System::theorems, then checks to see if any new atomic propositions have to be added, recomputing Propositional_System::nuniverse if so, and then returns the index of this new theorem.
     unsigned int add_theorem(const std::set<int>&);
-    /// This method removes the proposition from the Propositional_System::theorems and Propositional_System::truth properties, corresponding to the proposition whose index is the method's unique argument.
+    /// This method removes the proposition from the Propositional_System::theorems property, corresponding to the proposition whose index is the method's unique argument.
     void drop_theorem(unsigned int);
     /// This method returns the cardinality of the set Propositional_System::atoms.
     unsigned int get_number_atoms() const;

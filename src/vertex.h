@@ -29,8 +29,8 @@ namespace SYNARMOSMA {
     /// sense, this set thus represents the immediate past of this vertex-event. 
     std::set<int> anterior;
     /// This integer set contains the index of all vertices connected to this vertex, thus the 
-    /// elements of the "anterior" and "posterior" properties but also vertices connected by an 
-    /// undirected (spacelike) edge.
+    /// elements of the Vertex::anterior and Vertex::posterior properties but also vertices that 
+    /// are connected by an undirected (Relation::disparate) edge.
     std::set<int> neighbours;
     /// This property is a set of the index of all of the edges (as stored by the
     /// super class) which contain this vertex as an endpoint.
