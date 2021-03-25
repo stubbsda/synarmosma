@@ -3,6 +3,12 @@
 using namespace SYNARMOSMA;
 
 template<class kind>
+Solver<kind>::Solver()
+{
+
+}
+
+template<class kind>
 Solver<kind>::Solver(unsigned int N)
 {
   if (N == 0) throw std::invalid_argument("The Solver::dimension property must be greater than zero!");
@@ -35,6 +41,7 @@ template<class kind>
 void Solver<kind>::clear()
 {
   max_its = 100;
+  max_linear_its = 100;
   error_threshold = 0.00001;
   t = 1.0;
   homotopy = false;
@@ -57,29 +64,30 @@ int Solver<kind>::serialize(std::ofstream& s) const
   std::set<unsigned int>::const_iterator it;
 
   s.write((char*)(&max_its),sizeof(int)); count += sizeof(int);
+  s.write((char*)(&max_linear_its),sizeof(int)); count += sizeof(int);
   s.write((char*)(&dimension),sizeof(int)); count += sizeof(int);
   s.write((char*)(&homotopy),sizeof(int)); count += sizeof(bool);
   s.write((char*)(&broyden),sizeof(int)); count += sizeof(bool);
   s.write((char*)(&t),sizeof(int)); count += sizeof(double);
   s.write((char*)(&error_threshold),sizeof(int)); count += sizeof(double);
   n = (method == Linear_Solver::iterative) ? 0 : 1;
-  s.write((char*)(&n),sizeof(int)); count += sizeof(int); 
+  s.write((char*)(&n),sizeof(int)); count += sizeof(int);
   for(i=0; i<dimension; ++i) {
     x = base_solution[i];
-    s.write((char*)(&x),sizeof(kind)); 
+    s.write((char*)(&x),sizeof(kind));
   }
   count += dimension*sizeof(kind);
 
   for(i=0; i<dimension; ++i) {
     x = current_solution[i];
-    s.write((char*)(&x),sizeof(kind)); 
+    s.write((char*)(&x),sizeof(kind));
   }
   count += dimension*sizeof(kind);
 
   for(i=0; i<dimension; ++i) {
     S = dependencies[i];
     n = S.size();
-    s.write((char*)(&n),sizeof(int)); 
+    s.write((char*)(&n),sizeof(int));
     for(it=S.begin(); it!=S.end(); ++it) {
       j = *it;
       s.write((char*)(&j),sizeof(int));
@@ -89,7 +97,7 @@ int Solver<kind>::serialize(std::ofstream& s) const
 
   if (dimension > 0) count += J->serialize(s);
 
-  return count;  
+  return count;
 }
 
 template<class kind>
@@ -103,12 +111,13 @@ int Solver<kind>::deserialize(std::ifstream& s)
   clear();
 
   s.read((char*)(&max_its),sizeof(int)); count += sizeof(int);
+  s.read((char*)(&max_linear_its),sizeof(int)); count += sizeof(int);
   s.read((char*)(&dimension),sizeof(int)); count += sizeof(int);
   s.read((char*)(&homotopy),sizeof(int)); count += sizeof(bool);
   s.read((char*)(&broyden),sizeof(int)); count += sizeof(bool);
   s.read((char*)(&t),sizeof(int)); count += sizeof(double);
   s.read((char*)(&error_threshold),sizeof(int)); count += sizeof(double);
-  s.read((char*)(&n),sizeof(int)); count += sizeof(int); 
+  s.read((char*)(&n),sizeof(int)); count += sizeof(int);
   if (n == 0) {
     method = Linear_Solver::iterative;
   }
@@ -117,19 +126,19 @@ int Solver<kind>::deserialize(std::ifstream& s)
   }
 
   for(i=0; i<dimension; ++i) {
-    s.read((char*)(&x),sizeof(kind)); 
+    s.read((char*)(&x),sizeof(kind));
     base_solution.push_back(x);
   }
   count += dimension*sizeof(kind);
 
   for(i=0; i<dimension; ++i) {
     s.read((char*)(&x),sizeof(kind));
-    current_solution.push_back(x); 
+    current_solution.push_back(x);
   }
   count += dimension*sizeof(kind);
 
   for(i=0; i<dimension; ++i) {
-    s.read((char*)(&n),sizeof(int)); 
+    s.read((char*)(&n),sizeof(int));
     for(j=0; j<n; ++j) {
       s.read((char*)(&k),sizeof(int));
       S.insert(k);
@@ -143,7 +152,7 @@ int Solver<kind>::deserialize(std::ifstream& s)
     count += J->deserialize(s);
   }
 
-  return count;  
+  return count;
 }
 
 namespace SYNARMOSMA {
@@ -153,7 +162,7 @@ namespace SYNARMOSMA {
   {
     // The first complement to the homotopy function,
     // s(t) = a1(t)*F(x) + a2(t)*x
-    // We have the conditions on a1(t) (0 <= t <= 1) that 
+    // We have the conditions on a1(t) (0 <= t <= 1) that
     // it is continuous and
     // a1(0) = 0
     // a1(1) = 1
@@ -168,7 +177,7 @@ namespace SYNARMOSMA {
   {
     // The second complement to the homotopy function,
     // s(t) = a1(t)*F(x) + a2(t)*x
-    // We have the conditions on a2(t) (0 <= t <= 1) that 
+    // We have the conditions on a2(t) (0 <= t <= 1) that
     // it is continuous and
     // a2(0) = 1
     // a2(1) = 0
@@ -183,7 +192,7 @@ kind Solver<kind>::a1(double t) const
 {
   // The first complement to the homotopy function,
   // s(t) = a1(t)*F(x) + a2(t)*x
-  // We have the conditions on a1(t) (0 <= t <= 1) that 
+  // We have the conditions on a1(t) (0 <= t <= 1) that
   // it is continuous and
   // a1(0) = 0
   // a1(1) = 1
@@ -196,7 +205,7 @@ kind Solver<kind>::a2(double t) const
 {
   // The second complement to the homotopy function,
   // s(t) = a1(t)*F(x) + a2(t)*x
-  // We have the conditions on a2(t) (0 <= t <= 1) that 
+  // We have the conditions on a2(t) (0 <= t <= 1) that
   // it is continuous and
   // a2(0) = 1
   // a2(1) = 0
@@ -350,7 +359,7 @@ bool Solver<kind>::linear_solver(const std::vector<kind>& x,const std::vector<ki
     // Use the native Gauss-Seidel iterative solver in the Matrix class
     xnew = x;
     try {
-      J->gauss_seidel_solver(xnew,b,error_threshold,100);
+      J->gauss_seidel_solver(xnew,b,error_threshold,max_linear_its);
     }
     catch (std::runtime_error& e) {
       success = false;
@@ -380,7 +389,7 @@ int Solver<kind>::forward_step()
   }
   F(x,f);
   for(i=0; i<dimension; ++i) {
-    f[i] = a1(t)*f[i] + a2(t)*(x[i] - base_solution[i]); 
+    f[i] = a1(t)*f[i] + a2(t)*(x[i] - base_solution[i]);
   }
   compute_jacobian(x);
 
@@ -407,9 +416,9 @@ int Solver<kind>::forward_step()
       xdiff[i] = xnew[i] - x[i];
       q = std::abs(xdiff[i]);
       xnorm += q*q;
-    }    
+    }
     xnorm = std::sqrt(xnorm);
-    // Check to see if the new solution differs appreciably from 
+    // Check to see if the new solution differs appreciably from
     // the old one
 #ifdef VERBOSE
     std::cout << "Iterative difference is " << xnorm << " at " << its << std::endl;
@@ -472,7 +481,7 @@ int Solver<kind>::forward_step()
 namespace SYNARMOSMA {
   template<>
   /// This method is a specialized form for the complex base type, since in this case both the real and imaginary parts of the random initial state need to be handled.
-  void Solver<std::complex<double> >::initialize_base_solution(double mean,double range)
+  void Solver<std::complex<double> >::random_initialization(double mean,double range)
   {
     unsigned int i;
     double alpha,beta;
@@ -491,7 +500,7 @@ namespace SYNARMOSMA {
 }
 
 template<class kind>
-void Solver<kind>::initialize_base_solution(double mean,double range)
+void Solver<kind>::random_initialization(double mean,double range)
 {
   unsigned int i;
   Random RND;
@@ -509,21 +518,22 @@ template<class kind>
 bool Solver<kind>::solve(std::vector<kind>& output)
 {
   int n = 0;
-  double dt = 0.01;
   bool success = true;
 
   if (output.size() == dimension) {
     base_solution = output;
   }
   else {
-    initialize_base_solution(0.0,2.0);
+    random_initialization(0.0,2.0);
     output = base_solution;
   }
 
   current_solution = base_solution;
 
   if (homotopy) {
+    double dt = 0.01;
     bool converged = false;
+
     t = 0.01;
     do {
       try {
@@ -565,7 +575,7 @@ bool Solver<kind>::solve(std::vector<kind>& output)
       }
       if (t > 1.0) t = 1.0;
     } while(!converged);
-  } 
+  }
   else {
     try {
       n = forward_step();
@@ -576,6 +586,6 @@ bool Solver<kind>::solve(std::vector<kind>& output)
   }
 
   if (success) output = current_solution;
-  
+
   return success;
 }
