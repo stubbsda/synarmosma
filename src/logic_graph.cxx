@@ -56,6 +56,7 @@ Logic_Graph::~Logic_Graph()
 void Logic_Graph::clear()
 {
   if (nvertex > 0) delete logic;
+  logical_breadth.clear();
   nvertex = 0;
   edges.clear();
   index_table.clear();

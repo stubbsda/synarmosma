@@ -160,6 +160,106 @@ int Directed_Graph::deserialize(std::ifstream& s)
 
 }
 
+int Directed_Graph::build_lattice(int n,const std::vector<int>& btype,int time)
+{
+  if (n < 2) throw std::invalid_argument("The number of vertices per dimension in Directed_Graph::build_lattice must be greater than one!");
+  int d = (signed) btype.size();
+  if (d < 2) throw std::invalid_argument("The number of dimensions in Directed_Graph::build_lattice must be greater than one!");
+  if (time >= d) throw std::invalid_argument("The time dimension in Directed_Graph::build_lattice must not exceed the length of the boundary type vector!");
+  for(int i=0; i<d; ++i) {
+    if (btype[i] != 0 && btype[i] != 1) throw std::invalid_argument("The graph's boundary topology in in Directed_Graph::build_lattice must be either linear or toroidal!");
+  }
+  
+  // This constructor builds a graph with the topology of a rectangular or Cartesian lattice, of 
+  // dimensionality equal to the length of the vector btype and with n vertices per dimension. The 
+  // btype vector determines the nature of the boundary for each dimension: 0 means it is linear, 
+  // 1 means toroidal.
+  int i,j,k,p,q,in1,base;
+  std::set<int> S;
+  std::vector<int> vx,index;
+  Relation rho;
+
+  clear();
+
+  if (time >= 0) {
+    if (btype[time] == 1) std::cout << "Warning: This directed graph will have a toroidal time dimension!" << std::endl;
+  }
+
+  nvertex = int(ipow(n,d));
+  for(i=0; i<nvertex; ++i) {
+    neighbours.push_back(S);
+  }
+
+  for(i=0; i<d; ++i) {
+    index.push_back(0);
+  }
+
+  for(i=0; i<nvertex; ++i) {
+    q = i;
+    for(j=0; j<d; ++j) {
+      base = ipow(n,d-1-j);
+      p = q/base;
+      index[j] = p;
+      q = q - p*base;
+    }
+    for(j=0; j<d; ++j) {
+      if (j == time) {
+        rho = Relation::before;
+      }
+      else {
+        rho = Relation::disparate;
+      }
+      vx = index;
+      if (index[j] > 0) {
+        vx[j] -= 1;
+        in1 = 0;
+        for(k=0; k<d; ++k) {
+          in1 += ipow(n,d-1-k)*vx[k];
+        }
+        if (i < in1) {
+          add_edge(i,in1,rho);
+          if (rho == Relation::before) number_directed++;
+        } 
+      }
+      else {
+        if (btype[j] == 1) {
+          vx[j] = n-1;
+          in1 = 0;
+          for(k=0; k<d; ++k) {
+            in1 += ipow(n,d-1-k)*vx[k];
+          }
+          if (i < in1) {
+            add_edge(i,in1,rho);
+            if (rho == Relation::before) number_directed++;
+          } 
+        }
+      }
+      vx = index;
+      if (index[j] < n-1) {
+        vx[j] += 1;
+        in1 = 0;
+        for(k=0; k<d; ++k) {
+          in1 += ipow(n,d-1-k)*vx[k];
+        }
+        if (i < in1) {
+          add_edge(i,in1,rho); 
+          if (rho == Relation::before) number_directed++;
+        }
+      }
+    }
+  }
+  return size();
+}
+
+void Directed_Graph::clear()
+{
+  number_directed = 0;
+  nvertex = 0;
+  neighbours.clear();
+  edges.clear();
+  index_table.clear();
+}
+
 int Directed_Graph::out_degree(int v) const
 {
   if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal vertex index in the Directed_Graph::out_degree method!");

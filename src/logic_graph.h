@@ -40,7 +40,7 @@ namespace SYNARMOSMA {
     Logic_Graph& operator =(const Logic_Graph&);
     /// The destructor which releases the memory from Logic_Graph::logic if Logic_Graph::nvertex is greater than zero.
     virtual ~Logic_Graph() override;
-    /// This method sets all the properties to their default value: zero vertices and empty edge and neighbour tables, as well as deleting the Logic_Graph::logic property.
+    /// This method carries out all the operations of the Graph::clear() method and then clears the Logic_Graph::logical_breadth property and deletes the Logic_Graph::logic property.
     void clear() override;
     /// This method writes the instance properties to a binary disk file and returns the number of bytes written to the file.
     int serialize(std::ofstream&) const override;

@@ -29,6 +29,8 @@ namespace SYNARMOSMA {
     void defoliate(const Pseudograph*,std::vector<Monomial<int> >&) const;
     /// This method initializes the graph to the properties of its argument.
     void initialize(const Graph&);
+    /// This method accepts the number of vertices per dimension \f$n > 1\f$ (the first argument) and a vector of integers whose length is the number of dimensions \f$d > 1\f$; it returns the number of edges in the resulting lattice. Each element of the vector must be either zero (indicating a linear boundary topology) or one (toroidal boundary topology). The method builds a graph of order \f$n^d\f$ with a \f$d\f$-dimensional rectangular lattice topology, possessing a linear or toroidal boundary at each dimension according to the second argument. 
+    int build_lattice(int,const std::vector<int>&);
   public:
     /// The default constructor which does nothing. 
     Graph();
@@ -40,8 +42,8 @@ namespace SYNARMOSMA {
     Graph(int,const std::string&);
     /// This constructor accepts the number of vertices \f$n > 0\f$ (the first argument) and a minimum degree \f$d > 0\f$ (the second argument) to construct a scale-free graph on \f$n\f$ vertices with minimum degree \f$d\f$.
     Graph(int,int);
-    /// This constructor accepts the number of vertices per dimension \f$n > 1\f$ (the first argument) and a vector of integers whose length is the number of dimensions \f$d > 1\f$. Each element of the vector must be either zero (indicating a linear boundary topology) or one (toroidal boundary topology). The constructor builds a graph of order \f$n^d\f$ with a \f$d\f$-dimensional rectangular lattice topology, possessing a linear or toroidal boundary at each dimension according to the second argument. 
-    Graph(int,std::vector<int>&);
+    /// This constructor builds a graph with a regular lattice topology by calling the build_lattice() method using its two arguments.
+    Graph(int,const std::vector<int>&);
     /// This constructor accepts the number of vertices \f$n > 0\f$ (the first argument) and a percentage \f$ 0 < \rho < 1\f$ (the second argument); this percentage is relative to the number of edges for a complete graph on \f$n\f$ vertices. 
     Graph(int,double);
     /// The standard copy constructor - it copies over all properties from the source instance to this one.

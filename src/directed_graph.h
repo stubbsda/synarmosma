@@ -10,9 +10,11 @@ namespace SYNARMOSMA {
     /// This non-negative integer represents the number of graph edges which have a 
     /// direction, i.e. equal to Relation::before or Relation::after. 
     unsigned int number_directed = 0;
+
     /// This recursive method is used to compute whether or not this directed graph contains a cycle by constructing all possible outgoing paths of successively longer length and testing if the path has come back to its starting vertex, returning true if this is so.
     bool directed_cycle(const std::vector<int>&,int,int) const;
-
+    /// This method accepts the number of vertices per dimension \f$n > 1\f$ (the first argument), a vector of integers whose length is the number of dimensions \f$d > 1\f$ and a final argument, the index of the dimension whose edges should be forward-directed (representing time). If this final argument is negative, then all of the edges will be undirected. The method returns the number of edges in the resulting lattice. Each element of the vector must be either zero (indicating a linear boundary topology) or one (toroidal boundary topology). The method builds a directed graph of order \f$n^d\f$ with a \f$d\f$-dimensional rectangular lattice topology, possessing a linear or toroidal boundary at each dimension according to the second argument. The method prints a warning message if the time dimension has toroidal boundary conditions. 
+    int build_lattice(int,const std::vector<int>&,int = -1);
    public:
     /// The default constructor which does nothing.
     Directed_Graph();
@@ -36,6 +38,8 @@ namespace SYNARMOSMA {
     virtual bool add_edge(int,int,double) override;
     /// This method adds an edge between the vertices specified by the first two arguments, followed optionally by the orientation and length of the edge. The method returns false if the edge already exists. 
     virtual bool add_edge(int,int,Relation,double = 0.0);
+    /// This method carries out all the operations of the Graph::clear() method and then sets Directed_Graph::number_directed to zero.
+    virtual void clear() override;
     /// This method to compute the maximum network flow from a source vertex to a sink vertex, respecting the orientation of the graph's edges.
     double compute_flow(int,int) override;
     /// This method computes the oriented distance between the two vertices given as arguments, i.e. the length of the shortest path connecting the two vertices that only uses directed edges, returning -1 if no such path exists.

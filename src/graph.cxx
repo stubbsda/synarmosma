@@ -260,13 +260,51 @@ Graph::Graph(int n,double p) : Schema(n)
   }
 }
 
-Graph::Graph(int n,std::vector<int>& btype)
+Graph::Graph(int n,const std::vector<int>& btype)
 {
-  if (n < 2) throw std::invalid_argument("The number of vertices per dimension must be greater than one!");
+  build_lattice(n,btype);
+}
+
+Graph::Graph(const Graph& source)
+{
+  nvertex = source.nvertex;
+  neighbours = source.neighbours;
+  edges = source.edges;
+  index_table = source.index_table;
+}
+
+Graph& Graph::operator =(const Graph& source) 
+{
+  if (this == &source) return *this;
+
+  nvertex = source.nvertex;
+  neighbours = source.neighbours;
+  edges = source.edges;
+  index_table = source.index_table;
+
+  return *this;
+}
+
+Graph::~Graph()
+{
+
+}
+
+void Graph::initialize(const Graph& G)
+{
+  nvertex = G.nvertex;
+  neighbours = G.neighbours;
+  edges = G.edges;
+  index_table = G.index_table;  
+}
+
+int Graph::build_lattice(int n,const std::vector<int>& btype)
+{
+  if (n < 2) throw std::invalid_argument("The number of vertices per dimension in Graph::build_lattice must be greater than one!");
   int d = (signed) btype.size();
-  if (d < 2) throw std::invalid_argument("The number of dimensions must be greater than one!");
+  if (d < 2) throw std::invalid_argument("The number of dimensions in Graph::build_lattice must be greater than one!");
   for(int i=0; i<d; ++i) {
-    if (btype[i] != 0 && btype[i] != 1) throw std::invalid_argument("The graph's boundary topology must be either linear or toroidal!");
+    if (btype[i] != 0 && btype[i] != 1) throw std::invalid_argument("The graph's boundary topology in Graph::build_lattice must be either linear or toroidal!");
   }
 
   // This constructor builds a graph with the topology of a rectangular or Cartesian lattice, of 
@@ -276,6 +314,8 @@ Graph::Graph(int n,std::vector<int>& btype)
   int i,j,k,p,q,in1,base;
   std::set<int> S;
   std::vector<int> vx,index;
+
+  clear();
 
   nvertex = int(ipow(n,d));
   for(i=0; i<nvertex; ++i) {
@@ -325,39 +365,7 @@ Graph::Graph(int n,std::vector<int>& btype)
       }
     }
   }
-}
-
-Graph::Graph(const Graph& source)
-{
-  nvertex = source.nvertex;
-  neighbours = source.neighbours;
-  edges = source.edges;
-  index_table = source.index_table;
-}
-
-Graph& Graph::operator =(const Graph& source) 
-{
-  if (this == &source) return *this;
-
-  nvertex = source.nvertex;
-  neighbours = source.neighbours;
-  edges = source.edges;
-  index_table = source.index_table;
-
-  return *this;
-}
-
-Graph::~Graph()
-{
-
-}
-
-void Graph::initialize(const Graph& G)
-{
-  nvertex = G.nvertex;
-  neighbours = G.neighbours;
-  edges = G.edges;
-  index_table = G.index_table;  
+  return size();
 }
 
 bool Graph::consistent() const
