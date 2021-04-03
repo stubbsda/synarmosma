@@ -1,5 +1,4 @@
-#include "random.h"
-#include "rational.h"
+#include "global.h"
 
 #ifndef _integerpolynomialh
 #define _integerpolynomialh
