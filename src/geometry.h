@@ -5,10 +5,14 @@
 #define _geometryh
 
 namespace SYNARMOSMA {
+  template<class kind>
   class Geometry;
-  double geometry_change(const Geometry*,const Geometry*);
+
+  template<class kind>
+  double geometry_change(const Geometry<kind>*,const Geometry<kind>*);
 
   /// A class representing the geometry of a collection of points, stored either as coordinates or in relational form.
+  template<class kind>
   class Geometry {
    protected:
     /// This property represents the number of points or vertices whose geometry is 
@@ -19,24 +23,18 @@ namespace SYNARMOSMA {
     /// possibility of undoing such a change and without having to recalculate all of 
     /// inter-vertex distances. 
     int vperturb = -1;
-#ifdef DISCRETE
-    std::vector<INT64> original;
-    std::vector<INT64> distances;
-    std::vector<std::vector<INT64> > coordinates;
-#else
     /// This vector property is like Geometry::vperturb used to store the distance values 
     /// of the vertex whose geometry is perturbed so that they can be restored in case the 
     /// change is rolled back.
-    std::vector<double> original;
+    std::vector<kind> original;
     /// This vector property contains all of the (nvertex-1)*nvertex/2 squared distances between 
     /// the points. It is used when Geometry::relational is true or when Geometry::high_memory is 
     /// true to speed up geometry calculations by precomputing all the squared distances. 
-    std::vector<double> distances;
+    std::vector<kind> distances;
     /// This property stores the coordinates of each point, as a distinct vector, and of course 
     /// is meaningful only when Geometry::relational is false. The number of coordinates for each 
     /// point may not be the same, unless Geometry::uniform is true.
-    std::vector<std::vector<double> > coordinates;
-#endif
+    std::vector<std::vector<kind> > coordinates;
     /// This Boolean property determines whether the geometry is 
     /// Euclidean or Lorentzian.
     bool euclidean = true;
@@ -53,11 +51,17 @@ namespace SYNARMOSMA {
     /// This non-negative property corresponds to the asymptotic "flat 
     /// space" dimension of the space.
     unsigned int background_dimension = 3; 
+    /// This constant represents the smallest possible spatial separation between two vertices.
+    static const double space_quantum; 
 
     /// This method accepts as its input an axis of rotation (the first argument), an angle (second argument), a translation vector (third argument) and finally a set of observational locations (the final argument), the perceived three-dimensional coordinates for each vertex. The method applies the rotation and translation to the coordinates of every vertex in the geometry and then computes the distance from this value to the observed vertex location, adds together these distances and returns their arithmetic mean.
     double perceptual_divergence(const double*,double,const double*,const double*) const;
     /// This method calculates the index into the vector Geometry::distances given the indices of two vertices, the method's arguments. 
     int compute_index(int,int) const;
+    /// This method converts the first argument to a double and returns this, by multiplying it by Geometry::space_quantum raised to the power of the second argument.
+    double convert(kind,int = 1) const;
+    /// This method converts its argument to the base type of this class and returns this, by first dividing it by Geometry::space_quantum and then truncating the fractional part.
+    kind invert(double) const;
    public:
     /// The default constructor which does nothing.
     Geometry();
@@ -144,35 +148,72 @@ namespace SYNARMOSMA {
     /// This method sets the coordinate vector for the point whose index is the first argument to the method's second argument. 
     void set_coordinates(int,const std::vector<double>&);
     /// This method computes the difference between two instances of this class, returning a non-negative floating point number; the greater the number, the more substantial the difference between the two geometries.
-    friend double geometry_change(const Geometry*,const Geometry*);
+    friend double geometry_change<>(const Geometry<kind>*,const Geometry<kind>*);
   };
 
-  inline bool Geometry::get_euclidean() const
+  template<>
+  /// This method has been specialized for the double base type, since in this case the method does nothing - it just returns its first argument.
+  inline double Geometry<double>::convert(double x,int n) const
+  {
+    return x;
+  }
+
+  template<>
+  /// This method has been specialized for the double base type, since in this case the method does nothing - it just returns its first argument.
+  inline double Geometry<double>::invert(double x) const
+  {
+    return x;
+  }
+
+  template<class kind>
+  inline double Geometry<kind>::convert(kind x,int n) const
+  {
+    double pfactor = space_quantum;
+    for(int i=1; i<n; ++i) {
+      pfactor *= space_quantum;
+    }
+    return pfactor*double(x);
+  }
+
+  template<class kind>
+  inline kind Geometry<kind>::invert(double x) const
+  {
+    kind n = kind(x/space_quantum);
+    return n;
+  }
+
+  template<class kind>
+  inline bool Geometry<kind>::get_euclidean() const
   {
     return euclidean;
   }
 
-  inline bool Geometry::get_relational() const
+  template<class kind>
+  inline bool Geometry<kind>::get_relational() const
   {
     return relational;
   }
 
-  inline bool Geometry::get_uniform() const
+  template<class kind>
+  inline bool Geometry<kind>::get_uniform() const
   {
     return uniform;
   }
 
-  inline bool Geometry::get_memory_type() const
+  template<class kind>
+  inline bool Geometry<kind>::get_memory_type() const
   {
     return high_memory;
   }
 
-  inline unsigned int Geometry::dimension() const
+  template<class kind>
+  inline unsigned int Geometry<kind>::dimension() const
   {
     return background_dimension;
   }
 
-  inline int Geometry::compute_index(int v1,int v2) const
+  template<class kind>
+  inline int Geometry<kind>::compute_index(int v1,int v2) const
   {
     if (v1 == v2) throw std::invalid_argument("The vertex arguments in Geometry::compute_index must be distinct!");
     if (v1 < 0 || v1 >= nvertex) throw std::invalid_argument("The first vertex argument in Geometry::compute_index has an illegal value!");
@@ -192,7 +233,8 @@ namespace SYNARMOSMA {
     return n;
   }
 
-  inline Relation Geometry::get_temporal_order(int u,int v) const 
+  template<class kind>
+  inline Relation Geometry<kind>::get_temporal_order(int u,int v) const 
   {
     if (u == v) throw std::invalid_argument("The vertex arguments in Geometry::get_temporal_order must be distinct!");
     Relation rho = Relation::disparate;
@@ -204,7 +246,8 @@ namespace SYNARMOSMA {
     return rho;
   }
 
-  inline double Geometry::get_argument(const std::vector<double>& vx,const std::vector<double>& vy) const
+  template<class kind>
+  inline double Geometry<kind>::get_argument(const std::vector<double>& vx,const std::vector<double>& vy) const
   {
     double d,t,alpha,nv1 = norm(vx),nv2 = norm(vy);
 
@@ -220,7 +263,8 @@ namespace SYNARMOSMA {
     return alpha;
   }
 
-  inline double Geometry::get_element(int n) const
+  template<class kind>
+  inline double Geometry<kind>::get_element(int n) const
   {
     if (relational) return distances[n];
 
@@ -234,7 +278,8 @@ namespace SYNARMOSMA {
     throw std::invalid_argument("Missing element in Geometry::get_element method!");
   }
 
-  inline void Geometry::set_element(int n,double alpha)
+  template<class kind>
+  inline void Geometry<kind>::set_element(int n,double alpha)
   {
     if (relational) distances[n] = alpha;
 
@@ -252,7 +297,8 @@ namespace SYNARMOSMA {
     throw std::invalid_argument("Missing element in Geometry::set_element method!");
   }
 
-  inline void Geometry::add(int n,double alpha)
+  template<class kind>
+  inline void Geometry<kind>::add(int n,double alpha)
   {
     if (relational) distances[n] += alpha;
 
@@ -270,33 +316,19 @@ namespace SYNARMOSMA {
     throw std::invalid_argument("Missing element in Geometry::add method!");
   }
 
-  inline int Geometry::vertex_addition(const std::vector<double>& x)
+  template<class kind>
+  inline int Geometry<kind>::vertex_addition(const std::vector<double>& x)
   {
     if (relational) throw std::runtime_error("Illegal method call (Geometry::vertex_addition) for relational model!");
     if (x.size() < background_dimension) throw std::invalid_argument("The length of the vector argument of Geometry::vertex_addition must not be less than the background dimension!");
 
     unsigned int i;
-#ifdef DISCRETE
+    std::vector<kind> xt;
     unsigned int ulimit = (uniform) ? background_dimension : x.size();
-    INT64 n;
-    std::vector<INT64> xt;
     for(i=0; i<ulimit; ++i) {
-      n = INT64(x[i]/space_quantum);
-      xt.push_back(n);
+      xt.push_back(invert(x[i]));
     }
     coordinates.push_back(xt);
-#else
-    if (uniform) {
-      std::vector<double> xt;
-      for(i=0; i<background_dimension; ++i) {
-        xt.push_back(x[i]);
-      }
-      coordinates.push_back(xt);
-    }
-    else {
-      coordinates.push_back(x);
-    }
-#endif
 
     if (!high_memory) {
       nvertex++;
@@ -304,15 +336,9 @@ namespace SYNARMOSMA {
     }
 
     unsigned int j,k = 0;
-#ifdef DISCRETE
-    INT64 delta;
-    std::vector<INT64> ndistances;
-    const int pfactor = (euclidean) ? 1 : -1;
-#else
-    double delta;
-    std::vector<double> ndistances;
-    const double pfactor = (euclidean) ? 1.0 : -1.0;
-#endif
+    kind delta;
+    std::vector<kind> ndistances;
+    const kind pfactor = (euclidean) ? kind(1) : kind(-1);
 
     if (uniform) {
       for(int l=0; l<nvertex; ++l) {
@@ -348,63 +374,48 @@ namespace SYNARMOSMA {
     return nvertex;
   }
 
-  inline void Geometry::get_coordinates(int v,std::vector<double>& x) const
+  template<class kind>
+  inline void Geometry<kind>::get_coordinates(int v,std::vector<double>& x) const
   {
     if (relational) throw std::runtime_error("Illegal method call (Geometry::get_coordinates) for relational model!");
-#ifdef DISCRETE
-    x.clear();
     unsigned int i;
+
+    x.clear();
+
     for(i=0; i<coordinates[v].size(); ++i) {
-      x.push_back(space_quantum*double(coordinates[v][i]));
+      x.push_back(convert(coordinates[v][i]));
     }
-#else
-    x = coordinates[v];
-#endif
   }
 
-  inline void Geometry::set_coordinates(int v,const std::vector<double>& x)
+  template<class kind>
+  inline void Geometry<kind>::set_coordinates(int v,const std::vector<double>& x)
   {
     if (relational) throw std::runtime_error("Illegal method call (Geometry::set_coordinates) for relational model!");
     if (x.size() < background_dimension) throw std::invalid_argument("The length of the vector argument of Geometry::set_coordinates must not be less than the background dimension!");
 
     unsigned int i;
-#ifdef DISCRETE
+    std::vector<kind> xt;
     unsigned int ulimit = (uniform) ? background_dimension : x.size();
-    INT64 n;
-    std::vector<INT64> xt;
+    
     for(i=0; i<ulimit; ++i) {
-      n = INT64(x[i]/space_quantum);
-      xt.push_back(n);
+      xt.push_back(invert(x[i]));
     }
     coordinates[v] = xt;
-#else
-    if (uniform) {
-      std::vector<double> xt;
-      for(i=0; i<background_dimension; ++i) {
-        xt.push_back(x[i]);
-      }
-      coordinates[v] = xt;
-    }
-    else {
-      coordinates[v] = x;
-    }
-#endif
   }
 
-  inline double Geometry::get_squared_distance(int v,const std::vector<double>& x) const 
+  template<class kind>
+  inline double Geometry<kind>::get_squared_distance(int v,const std::vector<double>& x) const 
   {
     if (relational) throw std::runtime_error("Illegal method call (Geometry::get_squared_distance) for relational model!");
     if (x.size() < background_dimension) throw std::invalid_argument("The length of the vector argument of Geometry::get_squared_distance must not be less than the background dimension!");
 
-    unsigned int i;
-#ifdef DISCRETE    
+    unsigned int i;    
     std::vector<double> base;
+
     for(i=0; i<coordinates[v].size(); ++i) {
-      base.push_back(space_quantum*double(coordinates[v][i]));
+      base.push_back(convert(coordinates[v][i]));
     }
-#else
-    std::vector<double> base = coordinates[v];
-#endif
+
     double delta = (base[0] - x[0])*(base[0] - x[0]);
     if (!euclidean) delta = -delta;
 
@@ -424,7 +435,8 @@ namespace SYNARMOSMA {
     return delta;
   }
 
-  inline double Geometry::get_squared_distance(int v1,int v2,bool recompute) const
+  template<class kind>
+  inline double Geometry<kind>::get_squared_distance(int v1,int v2,bool recompute) const
   {
     if (v1 == v2) throw std::invalid_argument("The vertex arguments in Geometry::get_squared_distance must be distinct!");
     if (relational && recompute) throw std::invalid_argument("The squared distances are fundamental in a relational geometry!");
@@ -432,11 +444,7 @@ namespace SYNARMOSMA {
     double l = 0.0;
 
     if (relational || (high_memory && !recompute)) {
-#ifdef DISCRETE
-      l = space_quantum*double(distances[compute_index(v1,v2)]);
-#else
-      l = distances[compute_index(v1,v2)];
-#endif
+      l = convert(distances[compute_index(v1,v2)]);
       if (std::isnan(l)) throw std::runtime_error("NaN detected in Geometry::get_squared_distance for vertices " + std::to_string(v1) + " and " + std::to_string(v2)); 
       return l;
     }
@@ -450,20 +458,13 @@ namespace SYNARMOSMA {
       n = coordinates[v2].size();
       m = (m <= n) ? m : n;
     }
-#ifdef DISCRETE
-    INT64 q = (coordinates[v1][0] - coordinates[v2][0])*(coordinates[v1][0] - coordinates[v2][0]);
+
+    kind q = (coordinates[v1][0] - coordinates[v2][0])*(coordinates[v1][0] - coordinates[v2][0]);
     if (!euclidean) q = -q;
     for(n=1; n<m; ++n) {
       q += (coordinates[v1][n] - coordinates[v2][n])*(coordinates[v1][n] - coordinates[v2][n]);
     }
-    l = space_quantum*space_quantum*double(q);
-#else
-    l = (coordinates[v1][0] - coordinates[v2][0])*(coordinates[v1][0] - coordinates[v2][0]);
-    if (!euclidean) l = -l;
-    for(n=1; n<m; ++n) {
-      l += (coordinates[v1][n] - coordinates[v2][n])*(coordinates[v1][n] - coordinates[v2][n]);
-    }
-#endif
+    l = convert(q,2);
     return l;
   }
 }

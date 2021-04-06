@@ -1,10 +1,10 @@
 include ../Makefile.config
 
-OBJECTS = global.o random.o cell.o nexus.o schema.o group.o graph.o geometry.o word.o rational.o\
+OBJECTS = global.o random.o cell.o nexus.o schema.o group.o graph.o geometry_wrapper.o word.o rational.o\
 variety_wrapper.o polynomial_wrapper.o integer_polynomial_wrapper.o proposition.o propositional_system.o\
-vertex.o multitime.o binary_matrix.o integer_matrix_wrapper.o matrix_wrapper.o logic_graph.o edge.o\
-functional_equation_wrapper.o homology.o homotopy.o poset.o lattice.o pseudograph.o solver_wrapper.o\
-directed_graph.o markov_chain.o
+vertex_wrapper.o multitime.o binary_matrix.o integer_matrix_wrapper.o matrix_wrapper.o logic_graph.o edge.o\
+functional_equation_wrapper.o homology.o homotopy.o markov_chain.o lattice.o pseudograph.o solver_wrapper.o\
+directed_graph.o poset.o
 
 LD_FLAGS += -Wl,-rpath $(INSTALL_DIR)/lib
 
@@ -65,7 +65,7 @@ logic_graph.o: global.h random.h edge.h schema.h pseudograph.h matrix.h binary_m
 polynomial_wrapper.o: global.h rational.h polynomial.h random.h polynomial.cxx polynomial_wrapper.cxx
 	$(CXX) $(CXX_FLAGS) -c polynomial_wrapper.cxx
 
-integer_polynomial_wrapper.o: global.h integer_polynomial.h random.h integer_polynomial.cxx integer_polynomial_wrapper.cxx
+integer_polynomial_wrapper.o: global.h integer_polynomial.h integer_polynomial.cxx integer_polynomial_wrapper.cxx
 	$(CXX) $(CXX_FLAGS) -c integer_polynomial_wrapper.cxx
 
 variety_wrapper.o: global.h rational.h variety.h random.h variety.cxx variety_wrapper.cxx
@@ -80,14 +80,14 @@ propositional_system.o: global.h graph.h proposition.h propositional_system.h pr
 multitime.o: global.h multitime.h multitime.cxx
 	$(CXX) $(CXX_FLAGS) -c multitime.cxx
 
-vertex.o: global.h vertex.h random.h vertex.cxx
-	$(CXX) $(CXX_FLAGS) -c vertex.cxx
+vertex_wrapper.o: global.h vertex.h vertex.cxx vertex_wrapper.cxx
+	$(CXX) $(CXX_FLAGS) -c vertex_wrapper.cxx
 
 graph.o: graph.cxx graph.h edge.h schema.h pseudograph.h matrix.h binary_matrix.h random.h global.h
 	$(CXX) $(CXX_FLAGS) -c graph.cxx
 
-geometry.o: geometry.cxx geometry.h matrix.h random.h global.h 
-	$(CXX) $(CXX_FLAGS) -c geometry.cxx
+geometry_wrapper.o: geometry_wrapper.cxx geometry.cxx geometry.h matrix.h random.h global.h 
+	$(CXX) $(CXX_FLAGS) -c geometry_wrapper.cxx
 
 cell.o: cell.cxx cell.h global.h
 	$(CXX) $(CXX_FLAGS) -c cell.cxx

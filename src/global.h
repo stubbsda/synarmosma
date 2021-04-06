@@ -78,13 +78,6 @@ namespace SYNARMOSMA {
   using UINT64 = unsigned long long;
 #endif
 
-#ifdef DISCRETE
-  /// This constant represents the smallest possible energy value for a vertex.
-  const double energy_quantum = 1e-7;
-  /// This constant represents the smallest possible spatial separation between two vertices.
-  const double space_quantum = 1e-8;
-#endif
-
   template<class kind>
   /// A template class representing a monomial, i.e. an expression of the form \f$a \prod_{k=1}^m x_{j_k}^{n_k}\f$, with \f$j_k\f$ and \f$n_k\f$ non-negative integers.
   class Monomial {

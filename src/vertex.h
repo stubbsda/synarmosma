@@ -4,6 +4,7 @@
 #define _vertexh
 
 namespace SYNARMOSMA {
+  template<class kind>
   /// A class representing the vertex, node or 0-simplex of a simplicial complex of dimension greater than zero or the elements of a set.
   class Vertex {
    protected:
@@ -15,11 +16,7 @@ namespace SYNARMOSMA {
     int topological_dimension = 0;
     /// This property, either an unsigned 64 bit integer or a double precision floating point 
     /// number, represents the energy of a vertex and should therefore always be non-negative. 
-#ifdef DISCRETE
-    UINT64 energy = 0;
-#else
-    double energy = 0.0;
-#endif
+    kind energy = kind(0);
     /// This integer set contains the index of the vertices connected to this vertex by 
     /// outgoing directed edges. To the extent that the direction of an edge has a causal 
     /// sense, this set thus represents the immediate future of this vertex-event. 
@@ -35,6 +32,8 @@ namespace SYNARMOSMA {
     /// This property is a set of the index of all of the edges (as stored by the
     /// super class) which contain this vertex as an endpoint.
     std::set<int> entourage;
+    /// This constant represents the smallest possible energy value for a vertex.
+    static const double energy_quantum;
 
    public:
     /// The default constructor that sets all properties to their default value.
@@ -49,9 +48,9 @@ namespace SYNARMOSMA {
     bool zero_energy() const;
     /// This returns the energy of the vertex as a double precision number regardless of the storage format (UINT64 or double).
     double get_energy() const;
-    /// This method sets the energy value using a double, which if DISCRETE is then divided by the energy quantum to get an unsigned 64 bit integer.
+    /// This method sets the energy value using a double, which if the base type is UINT64 is then divided by the energy quantum to get an unsigned 64 bit integer.
     void set_energy(double);
-    /// This method increments the energy value using a double, which if DISCRETE is then divided by the energy quantum to get an unsigned 64 bit integer that can be added to the current value.
+    /// This method increments the energy value using a double, which if the base type is UINT64 is then divided by the energy quantum to get an unsigned 64 bit integer that can be added to the current value.
     void increment_energy(double);
     /// This method sets the energy property equal to zero.
     void nullify_energy();
@@ -63,52 +62,67 @@ namespace SYNARMOSMA {
     virtual void clear();
   };
 
-  inline bool Vertex::zero_energy() const
+  template<>
+  /// This method has been specialized for the UINT64 base type, since in this case the method can verify exactly that the energy is zero.
+  inline bool Vertex<UINT64>::zero_energy() const
   {
-#ifdef DISCRETE
-    bool output = (energy == 0) ? true : false;
-#else
+    return (energy == 0);
+  }
+
+  template<class kind>
+  inline bool Vertex<kind>::zero_energy() const
+  {
     bool output = (std::abs(energy) < std::numeric_limits<double>::epsilon()) ? true : false;
-#endif
     return output;
   }
 
-  inline void Vertex::nullify_energy()
+  template<class kind>
+  inline void Vertex<kind>::nullify_energy()
   {
-#ifdef DISCRETE
-    energy = 0;
-#else
-    energy = 0.0;
-#endif
+    energy = kind(0);
   }
 
-  inline void Vertex::increment_energy(double E)
+  template<>
+  /// This method has been specialized for the UINT64 base type, since in this case the argument must be divided by Vertex::energy_quantum and the fractional part truncated before incrementing Vertex::energy by it.
+  inline void Vertex<UINT64>::increment_energy(double E)
   {
     if (E <= std::numeric_limits<double>::epsilon()) throw std::invalid_argument("Vertex::increment_energy argument must be greater than zero!");
-#ifdef DISCRETE
     energy += UINT64(E/energy_quantum);
-#else
-    energy += E;
-#endif
   }
 
-  inline void Vertex::set_energy(double E)
+  template<class kind>
+  inline void Vertex<kind>::increment_energy(double E)
+  {
+    if (E <= std::numeric_limits<double>::epsilon()) throw std::invalid_argument("Vertex::increment_energy argument must be greater than zero!");
+    energy += E;
+  }
+
+  template<>
+  /// This method has been specialized for the UINT64 base type, since in this case the argument must be divided by Vertex::energy_quantum and the fractional part truncated before setting Vertex::energy to it.
+  inline void Vertex<UINT64>::set_energy(double E)
   {
     if (E <= std::numeric_limits<double>::epsilon()) throw std::invalid_argument("Vertex::set_energy argument must be greater than zero!");
-#ifdef DISCRETE
     energy = UINT64(E/energy_quantum);
-#else
-    energy = E;
-#endif
   }
 
-  inline double Vertex::get_energy() const
+  template<class kind>
+  inline void Vertex<kind>::set_energy(double E)
   {
-#ifdef DISCRETE
+    if (E <= std::numeric_limits<double>::epsilon()) throw std::invalid_argument("Vertex::set_energy argument must be greater than zero!");
+    energy = E;
+  }
+
+  template<>
+  /// This method has been specialized for the UINT64 base type, since in this case the Vertex::energy value must be converted to a double and then multiplied by Vertex::energy_quantum prior to be being returned.
+  inline double Vertex<UINT64>::get_energy() const
+  {
     return energy_quantum*double(energy);
-#else
+  }
+
+  template<class kind>
+  inline double Vertex<kind>::get_energy() const
+  {
     return energy;
-#endif
   }
 }
 #endif 

@@ -2,12 +2,14 @@
 
 using namespace SYNARMOSMA;
 
-Geometry::Geometry()
+template<class kind>
+Geometry<kind>::Geometry()
 {
 
 }
 
-Geometry::Geometry(const Geometry& source)
+template<class kind>
+Geometry<kind>::Geometry(const Geometry<kind>& source)
 {
   nvertex = source.nvertex;
   euclidean = source.euclidean;
@@ -25,7 +27,8 @@ Geometry::Geometry(const Geometry& source)
   }
 }
 
-Geometry& Geometry::operator =(const Geometry& source)
+template<class kind>
+Geometry<kind>& Geometry<kind>::operator =(const Geometry<kind>& source)
 {
   if (this == &source) return *this;
 
@@ -47,12 +50,14 @@ Geometry& Geometry::operator =(const Geometry& source)
   return *this;
 }
 
-Geometry::~Geometry()
+template<class kind>
+Geometry<kind>::~Geometry()
 {
 
 }
 
-void Geometry::initialize(bool type,bool model,bool flat,bool hmemory,int D)
+template<class kind>
+void Geometry<kind>::initialize(bool type,bool model,bool flat,bool hmemory,int D)
 {
   if (D < 1) throw std::invalid_argument("The background dimension of the geometry must be greater than zero!");
   clear();
@@ -63,7 +68,8 @@ void Geometry::initialize(bool type,bool model,bool flat,bool hmemory,int D)
   background_dimension = D;
 }
 
-void Geometry::clear()
+template<class kind>
+void Geometry<kind>::clear()
 {
   if (!relational) {
     for(int i=0; i<nvertex; ++i) {
@@ -76,7 +82,8 @@ void Geometry::clear()
   nvertex = 0;
 }
 
-bool Geometry::consistent() const
+template<class kind>
+bool Geometry<kind>::consistent() const
 {
   int i,j;
   const int nc = (signed) coordinates.size();
@@ -124,15 +131,12 @@ bool Geometry::consistent() const
   return true;
 }
 
-int Geometry::serialize(std::ofstream& s) const
+template<class kind>
+int Geometry<kind>::serialize(std::ofstream& s) const
 {
   int i,l,count = 0;
   unsigned int j,n = 0;
-#ifdef DISCRETE
-  INT64 x;
-#else
-  double x;
-#endif
+  kind x;
 
   s.write((char*)(&nvertex),sizeof(int)); count += sizeof(int);
   s.write((char*)(&background_dimension),sizeof(int)); count += sizeof(int);
@@ -145,11 +149,7 @@ int Geometry::serialize(std::ofstream& s) const
     for(i=0; i<nvertex; ++i) {
       for(l=1+i; l<nvertex; ++l) {
         x = distances[n];
-#ifdef DISCRETE
-        s.write((char*)(&x),sizeof(INT64)); count += sizeof(INT64);
-#else
-        s.write((char*)(&x),sizeof(double)); count += sizeof(double);
-#endif
+        s.write((char*)(&x),sizeof(kind)); count += sizeof(kind);
         n++;
       }
     }
@@ -159,11 +159,7 @@ int Geometry::serialize(std::ofstream& s) const
       for(i=0; i<nvertex; ++i) {
         for(j=0; j<background_dimension; ++j) {
           x = coordinates[i][j];
-#ifdef DISCRETE
-          s.write((char*)(&x),sizeof(INT64)); count += sizeof(INT64);
-#else
-          s.write((char*)(&x),sizeof(double)); count += sizeof(double);
-#endif
+          s.write((char*)(&x),sizeof(kind)); count += sizeof(kind);
         }
       }
     }
@@ -173,11 +169,7 @@ int Geometry::serialize(std::ofstream& s) const
         s.write((char*)(&n),sizeof(int)); count += sizeof(int);
         for(j=0; j<n; ++j) {
           x = coordinates[i][j];
-#ifdef DISCRETE
-          s.write((char*)(&x),sizeof(INT64)); count += sizeof(INT64);
-#else
-          s.write((char*)(&x),sizeof(double)); count += sizeof(double);
-#endif
+          s.write((char*)(&x),sizeof(kind)); count += sizeof(kind);
         }
       }
     }
@@ -185,11 +177,7 @@ int Geometry::serialize(std::ofstream& s) const
       for(i=0; i<nvertex; ++i) {
         for(l=1+i; l<nvertex; ++l) {
           x = distances[n];
-#ifdef DISCRETE
-          s.write((char*)(&x),sizeof(INT64)); count += sizeof(INT64);
-#else
-          s.write((char*)(&x),sizeof(double)); count += sizeof(double);
-#endif
+          s.write((char*)(&x),sizeof(kind)); count += sizeof(kind);
           n++;
         }
       }
@@ -198,15 +186,12 @@ int Geometry::serialize(std::ofstream& s) const
   return count;
 }
 
-int Geometry::deserialize(std::ifstream& s)
+template<class kind>
+int Geometry<kind>::deserialize(std::ifstream& s)
 {
   int i,j,n,count = 0;
   unsigned int k;
-#ifdef DISCRETE
-  INT64 x;
-#else
-  double x;
-#endif
+  kind x;
 
   clear();
 
@@ -220,29 +205,18 @@ int Geometry::deserialize(std::ifstream& s)
   if (relational) {
     for(i=0; i<nvertex; ++i) {
       for(j=1+i; j<nvertex; ++j) {
-#ifdef DISCRETE
-        s.read((char*)(&x),sizeof(INT64)); count += sizeof(INT64);
-#else
-        s.read((char*)(&x),sizeof(double)); count += sizeof(double);
-#endif
+        s.read((char*)(&x),sizeof(kind)); count += sizeof(kind);
         distances.push_back(x);
       }
     }
   }
   else {
-#ifdef DISCRETE
-    std::vector<INT64> xc;
-#else
-    std::vector<double> xc;
-#endif
+    std::vector<kind> xc;
+
     if (uniform) {
       for(i=0; i<nvertex; ++i) {
         for(k=0; k<background_dimension; ++k) {
-#ifdef DISCRETE
-          s.read((char*)(&x),sizeof(INT64)); count += sizeof(INT64);
-#else           
-          s.read((char*)(&x),sizeof(double)); count += sizeof(double);
-#endif
+          s.read((char*)(&x),sizeof(kind)); count += sizeof(kind);
           xc.push_back(x);
         }
         coordinates.push_back(xc);
@@ -253,11 +227,7 @@ int Geometry::deserialize(std::ifstream& s)
       for(i=0; i<nvertex; ++i) {
         s.read((char*)(&n),sizeof(int)); count += sizeof(int);
         for(j=0; j<n; ++j) {
-#ifdef DISCRETE
-          s.read((char*)(&x),sizeof(INT64)); count += sizeof(INT64);
-#else
-          s.read((char*)(&x),sizeof(double)); count += sizeof(double);
-#endif
+          s.read((char*)(&x),sizeof(kind)); count += sizeof(kind);
           xc.push_back(x);
         }
         coordinates.push_back(xc);
@@ -267,11 +237,7 @@ int Geometry::deserialize(std::ifstream& s)
     if (high_memory) {
       for(i=0; i<nvertex; ++i) {
         for(j=1+i; j<nvertex; ++j) {
-#ifdef DISCRETE
-          s.read((char*)(&x),sizeof(INT64)); count += sizeof(INT64);
-#else
-          s.read((char*)(&x),sizeof(double)); count += sizeof(double);
-#endif
+          s.read((char*)(&x),sizeof(kind)); count += sizeof(kind);
           distances.push_back(x);
         }
       }
@@ -280,7 +246,8 @@ int Geometry::deserialize(std::ifstream& s)
   return count;
 }
 
-double Geometry::perceptual_divergence(const double* raxis,double theta,const double* translation,const double* observed) const
+template<class kind>
+double Geometry<kind>::perceptual_divergence(const double* raxis,double theta,const double* translation,const double* observed) const
 {
   // The method assumes that
   // a) raxis is a unit vector 
@@ -315,24 +282,21 @@ double Geometry::perceptual_divergence(const double* raxis,double theta,const do
   return (sum/double(nvertex));
 }
 
-void Geometry::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<double>& x)
+template<class kind>
+void Geometry<kind>::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<double>& x)
 {
   if (relational) throw std::invalid_argument("The Geometry::multiple_vertex_addition method is not compatible with a relational geometry!");
   int i,j;
   unsigned int k;
   std::vector<double> xc;
-#ifdef DISCRETE
-  std::vector<INT64> xi;
-#endif
+  std::vector<kind> xi;
   const unsigned int vsize = x.size();
 
   clear();
 
   for(k=0; k<background_dimension; ++k) {
     xc.push_back(0.0);
-#ifdef DISCRETE
-    xi.push_back(0);
-#endif
+    xi.push_back(kind(0));
   }
 
   if (unf_rnd) {
@@ -343,14 +307,10 @@ void Geometry::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<dou
       for(k=0; k<background_dimension; ++k) {
         xc[k] = x[2*k] + (x[2*k+1] - x[2*k])*RND.drandom();
       }
-#ifdef DISCRETE
       for(k=0; k<background_dimension; ++k) {
-        xi[k] = INT64(xc[k]/space_quantum);
+        xi[k] = invert(xc[k]);
       }
       coordinates.push_back(xi);
-#else
-      coordinates.push_back(xc);
-#endif
     }    
   }
   else {
@@ -360,35 +320,23 @@ void Geometry::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<dou
       for(k=0; k<background_dimension; ++k) {
         xc[k] = x[background_dimension*i + k];
       }
-#ifdef DISCRETE
       for(k=0; k<background_dimension; ++k) {
-        xi[k] = INT64(xc[k]/space_quantum);
+        xi[k] = invert(xc[k]);
       }
       coordinates.push_back(xi);
-#else
-      coordinates.push_back(xc);
-#endif
     }
   }
   nvertex = N;
   if (!high_memory) return;
 
   const int npair = N*(N-1)/2;
-#ifdef DISCRETE
-  INT64 delta;
-  const int pfactor = (euclidean) ? 1 : -1;
-#else
-  double delta;
-  const double pfactor = (euclidean) ? 1.0 : -1.0;
-#endif
+  kind delta;
+  const kind pfactor = (euclidean) ? kind(1) : kind(-1);
 
   for(i=0; i<npair; ++i) {
-#ifdef DISCRETE
-    distances.push_back(0);
-#else
-    distances.push_back(0.0);
-#endif
+    distances.push_back(kind(0));
   }
+
 #ifdef _OPENMP
 #pragma omp parallel for default(shared) private(i,j,k,delta) schedule(dynamic,1)
 #endif
@@ -403,56 +351,40 @@ void Geometry::multiple_vertex_addition(int N,bool unf_rnd,const std::vector<dou
   }
 }
 
-void Geometry::multiple_vertex_addition(int N,double mu,double sigma)
+template<class kind>
+void Geometry<kind>::multiple_vertex_addition(int N,double mu,double sigma)
 {
   if (relational) throw std::invalid_argument("The Geometry::multiple_vertex_addition method is not compatible with a relational geometry!");
   int i,j;
   unsigned int k;
   std::vector<double> xc;
-#ifdef DISCRETE
-  std::vector<INT64> xi;
-#endif
+  std::vector<kind> xi;
   Random RND;
 
   clear();
 
   for(k=0; k<background_dimension; ++k) {
     xc.push_back(0.0);
-#ifdef DISCRETE
-    xi.push_back(0);
-#endif
+    xi.push_back(kind(0));
   }
   for(i=0; i<N; ++i) {
     for(k=0; k<background_dimension; ++k) {
       xc[k] = RND.nrandom(mu,sigma);
     }
-#ifdef DISCRETE
     for(k=0; k<background_dimension; ++k) {
-      xi[k] = INT64(xc[k]/space_quantum);
+      xi[k] = invert(xc[k]);
     }
     coordinates.push_back(xi);
-#else
-    coordinates.push_back(xc);
-#endif
   }
   nvertex = N;
   if (!high_memory) return;
 
   const int npair = N*(N-1)/2;
-#ifdef DISCRETE
-  INT64 delta;
-  const int pfactor = (euclidean) ? 1 : -1;
-#else
-  double delta;
-  const double pfactor = (euclidean) ? 1.0 : -1.0;
-#endif
+  kind delta;
+  const kind pfactor = (euclidean) ? kind(1) : kind(-1);
 
   for(i=0; i<npair; ++i) {
-#ifdef DISCRETE
-    distances.push_back(0);
-#else
-    distances.push_back(0.0);
-#endif
+    distances.push_back(kind(0));
   }
 
 #ifdef _OPENMP
@@ -469,7 +401,8 @@ void Geometry::multiple_vertex_addition(int N,double mu,double sigma)
   }
 }
 
-void Geometry::multiple_vertex_addition(const std::vector<std::vector<double> >& source)
+template<class kind>
+void Geometry<kind>::multiple_vertex_addition(const std::vector<std::vector<double> >& source)
 {
   if (relational) throw std::invalid_argument("The Geometry::multiple_vertex_addition method is not compatible with a relational geometry!");
   int i,j;
@@ -478,38 +411,23 @@ void Geometry::multiple_vertex_addition(const std::vector<std::vector<double> >&
   clear();
 
   nvertex = (signed) source.size();
-#ifdef DISCRETE
-  INT64 n;
-  std::vector<INT64> xi;
+  std::vector<kind> xi;
   for(i=0; i<nvertex; ++i) {
     for(k=0; k<source[i].size(); ++k) {
-      n = INT64(source[i][k]/space_quantum);
-      xi.push_back(n);
+      xi.push_back(invert(source[i][k]));
     }
     coordinates.push_back(xi);
     xi.clear();
   }
-#else
-  coordinates = source;
-#endif
 
   if (!high_memory) return;
 
   const int npair = nvertex*(nvertex-1)/2;
-#ifdef DISCRETE
-  INT64 delta;
-  const int pfactor = (euclidean) ? 1 : -1;
-#else
-  double delta;
-  const double pfactor = (euclidean) ? 1.0 : -1.0;
-#endif
+  kind delta;
+  const kind pfactor = (euclidean) ? kind(1) : kind(-1);
 
   for(i=0; i<npair; ++i) {
-#ifdef DISCRETE
-    distances.push_back(0);
-#else
-    distances.push_back(0.0);
-#endif
+    distances.push_back(kind(0));
   }
 #ifdef _OPENMP
 #pragma omp parallel for default(shared) private(i,j,k,delta) schedule(dynamic,1)
@@ -525,7 +443,8 @@ void Geometry::multiple_vertex_addition(const std::vector<std::vector<double> >&
   }
 }
 
-double Geometry::dot_product(const std::vector<double>& vx,const std::vector<double>& vy) const
+template<class kind>
+double Geometry<kind>::dot_product(const std::vector<double>& vx,const std::vector<double>& vy) const
 {
   double output = 0.0;
   unsigned int i;
@@ -563,7 +482,8 @@ double Geometry::dot_product(const std::vector<double>& vx,const std::vector<dou
   return output;
 }
 
-void Geometry::get_implied_vertices(int n,std::set<int>& vx) const
+template<class kind>
+void Geometry<kind>::get_implied_vertices(int n,std::set<int>& vx) const
 {
   int i,j;
   vx.clear();
@@ -599,7 +519,8 @@ void Geometry::get_implied_vertices(int n,std::set<int>& vx) const
   }
 }
 
-void Geometry::load(const Geometry* source)
+template<class kind>
+void Geometry<kind>::load(const Geometry* source)
 {
   nvertex = source->nvertex;
   euclidean = source->euclidean;
@@ -611,7 +532,8 @@ void Geometry::load(const Geometry* source)
   if (!relational) coordinates = source->coordinates;
 }
 
-void Geometry::store(Geometry* target) const
+template<class kind>
+void Geometry<kind>::store(Geometry* target) const
 {
   target->nvertex = nvertex;
   target->euclidean = euclidean;
@@ -623,9 +545,10 @@ void Geometry::store(Geometry* target) const
   if (!relational) target->coordinates = coordinates;
 }
 
-void Geometry::create(int n,const std::string& type)
+template<class kind>
+void Geometry<kind>::create(int n,const std::string& type)
 {
-  if (!relational) throw std::runtime_error("Illegal geometric method (initialize) call for absolute model!");
+  if (!relational) throw std::runtime_error("Illegal call of Geometry::create for absolute model!");
 
   distances.clear();
 
@@ -637,11 +560,7 @@ void Geometry::create(int n,const std::string& type)
 
     int p,q,s,alpha;
     unsigned int l;
-#ifdef DISCRETE
-    INT64 delta;
-#else
-    double delta;
-#endif
+    kind delta;
     std::vector<int> x,y;
 
     for(i=0; i<nvertex; ++i) {
@@ -662,19 +581,11 @@ void Geometry::create(int n,const std::string& type)
           s -= p*q;
         }
         y.push_back(s);
-#ifdef DISCRETE
-        delta = INT64((x[0] - y[0])*(x[0] - y[0]));
-#else
-        delta = double((x[0] - y[0])*(x[0] - y[0]));
-#endif
+        delta = kind((x[0] - y[0])*(x[0] - y[0]));
         if (!euclidean) delta = -delta;
         for(l=1; l<background_dimension; ++l) {
           alpha = (x[l] - y[l])*(x[l] - y[l]);
-#ifdef DISCRETE
-          delta += INT64(alpha);
-#else
-          delta += double(alpha);
-#endif
+          delta += kind(alpha);
         }
         distances.push_back(delta);
         y.clear();
@@ -694,27 +605,17 @@ void Geometry::create(int n,const std::string& type)
     if (euclidean) {
       for(i=0; i<nvertex; ++i) {
         for(j=1+i; j<nvertex; ++j) {
-#ifdef DISCRETE
-          distances.push_back(1 + INT64(RND.irandom(250)));
-#else
-          distances.push_back(0.25 + 10.0*RND.drandom());
-#endif
+          distances.push_back(invert(0.25 + 10.0*RND.drandom()));
         }
       }
     }
     else {
-#ifdef DISCRETE
-      INT64 alpha;
-#else
-      double alpha,r = 1.0 + double(background_dimension - 1);
-#endif
+      kind alpha;
+      double r = 1.0 + double(background_dimension - 1);
+
       for(i=0; i<nvertex; ++i) {
         for(j=1+i; j<nvertex; ++j) {
-#ifdef DISCRETE
-          alpha = -5 + 5*INT64(RND.irandom(background_dimension - 1));
-#else
-          alpha = -5.0 + 5.0*r*RND.drandom();
-#endif
+          alpha = invert(-5.0 + 5.0*r*RND.drandom());
           distances.push_back(alpha);
         }
       }
@@ -725,17 +626,11 @@ void Geometry::create(int n,const std::string& type)
     // is 1+n
     nvertex = 1 + n;
     if (!high_memory) return;
-#ifdef DISCRETE
-    const INT64 zero = 0;
-    const INT64 one = 1;
-    const INT64 m_one = -1;
-    const INT64 two = 2;
-#else
-    const double zero = 0.0;
-    const double one = 1.0;
-    const double m_one = -1.0;
-    const double two = 2.0;
-#endif
+    const kind zero = kind(0);
+    const kind one = kind(1);
+    const kind m_one = kind(-1);
+    const kind two = kind(2);
+
     if (euclidean) {
       // The distance from vertex 0 to the other vertices is unity...
       for(i=0; i<nvertex-1; ++i) {
@@ -771,10 +666,11 @@ void Geometry::create(int n,const std::string& type)
   }
 }
 
-void Geometry::vertex_difference(int n,int m,std::vector<double>& delta) const
+template<class kind>
+void Geometry<kind>::vertex_difference(int n,int m,std::vector<double>& delta) const
 {
   if (n == m) throw std::invalid_argument("The vertex arguments in Geometry::vertex_difference must be distinct!");
-  if (relational) throw std::runtime_error("Illegal geometric method (vertex_difference) call for relational model!");
+  if (relational) throw std::runtime_error("Illegal call of Geometry::vertex_difference for relational model!");
 
   unsigned int i;
 
@@ -782,11 +678,7 @@ void Geometry::vertex_difference(int n,int m,std::vector<double>& delta) const
   if (uniform) {
     double xd;
     for(i=0; i<background_dimension; ++i) {
-#ifdef DISCRETE
-      xd = space_quantum*double(coordinates[n][i] - coordinates[m][i]);
-#else
-      xd = coordinates[n][i] - coordinates[m][i];
-#endif
+      xd = convert(coordinates[n][i] - coordinates[m][i]);
       delta.push_back(xd);
     }
     return;
@@ -797,17 +689,12 @@ void Geometry::vertex_difference(int n,int m,std::vector<double>& delta) const
   std::vector<double> vlx,vly;
   Random RND;
 
-#ifdef DISCRETE
   for(i=0; i<d1; ++i) {
-    vlx.push_back(space_quantum*double(coordinates[n][i]));
+    vlx.push_back(convert(coordinates[n][i]));
   }
   for(i=0; i<d2; ++i) {
-    vly.push_back(space_quantum*double(coordinates[m][i]));
+    vly.push_back(convert(coordinates[m][i]));
   }
-#else
-  vlx = coordinates[n];
-  vly = coordinates[m];
-#endif
 
   if (d1 < d2) {
     for(i=d1; i<d2; ++i) {
@@ -828,7 +715,8 @@ void Geometry::vertex_difference(int n,int m,std::vector<double>& delta) const
   }
 }
 
-void Geometry::rollback(bool minimal)
+template<class kind>
+void Geometry<kind>::rollback(bool minimal)
 {
   if (vperturb == -1) std::runtime_error("An unperturbed geometry cannot be rolled back!");
 
@@ -868,7 +756,8 @@ void Geometry::rollback(bool minimal)
   original.clear();
 }
 
-int Geometry::vertex_addition(const std::set<int>& antecedents)
+template<class kind>
+int Geometry<kind>::vertex_addition(const std::set<int>& antecedents)
 {
   Random RND;
 
@@ -882,37 +771,23 @@ int Geometry::vertex_addition(const std::set<int>& antecedents)
     else {
       int i,j;
       std::set<int>::const_iterator it;
-      const double na = double(antecedents.size());
+      const kind na = kind(antecedents.size());
 
       if (relational) {
         int k = 0;
-#ifdef DISCRETE
-        INT64 l;
-        std::vector<INT64> ndistances;
-        const INT64 nt = INT64(antecedents.size());
-#else
-        double l;
-        std::vector<double> ndistances;
-#endif
+        kind l;
+        std::vector<kind> ndistances;
 
         for(i=0; i<nvertex; ++i) {
           for(j=1+i; j<nvertex; ++j) {
             ndistances.push_back(distances[k]);
             k++;
           }
-#ifdef DISCRETE
-          l = 0;
-          for(it=antecedents.begin(); it!=antecedents.end(); ++it) {
-            l += distances[compute_index(i,*it)];
-          }
-          l = l/nt;
-#else
-          l = 0.0;
+          l = kind(0);
           for(it=antecedents.begin(); it!=antecedents.end(); ++it) {
             l += distances[compute_index(i,*it)];
           }
           l = l/na;
-#endif
           ndistances.push_back(l);
         }
         distances = ndistances;
@@ -928,11 +803,7 @@ int Geometry::vertex_addition(const std::set<int>& antecedents)
         for(it=antecedents.begin(); it!=antecedents.end(); ++it) {
           j = *it;
           for(k=0; k<background_dimension; ++k) {
-#ifdef DISCRETE
-            avg_x[k] += space_quantum*double(coordinates[j][k]);
-#else
-            avg_x[k] += coordinates[j][k];
-#endif
+            avg_x[k] += convert(coordinates[j][k]);
           }
         }
         for(k=0; k<background_dimension; ++k) {
@@ -948,7 +819,8 @@ int Geometry::vertex_addition(const std::set<int>& antecedents)
   return nvertex;
 }
 
-int Geometry::vertex_addition(int parent,double mutation)
+template<class kind>
+int Geometry<kind>::vertex_addition(int parent,double mutation)
 {
   int i,j,k = 0;
   double alpha;
@@ -958,11 +830,7 @@ int Geometry::vertex_addition(int parent,double mutation)
   if (parent == -1) {
     // No antecedent, so place the vertex randomly...
     if (relational) {
-#ifdef DISCRETE
-      std::vector<INT64> ndistances;
-#else
-      std::vector<double> ndistances;
-#endif
+      std::vector<kind> ndistances;
 
       if (euclidean) {
         for(i=0; i<nvertex; ++i) {
@@ -1005,11 +873,7 @@ int Geometry::vertex_addition(int parent,double mutation)
     // Should be close to its parent vertex...
     if (relational) {
       double mu,sigma;
-#ifdef DISCRETE
-      std::vector<INT64> ndistances;
-#else
-      std::vector<double> ndistances;
-#endif
+      std::vector<kind> ndistances;
 
       for(i=0; i<nvertex; ++i) {
         for(j=1+i; j<nvertex; ++j) {
@@ -1046,15 +910,11 @@ int Geometry::vertex_addition(int parent,double mutation)
   return nvertex;
 }
 
-void Geometry::mutation(int v,bool by_vertex,bool complete,double severity)
+template<class kind>
+void Geometry<kind>::mutation(int v,bool by_vertex,bool complete,double severity)
 {
   Random RND;
-
-#ifdef DISCRETE
-  INT64 alpha = INT64((RND.nrandom(0.0,severity)/space_quantum));
-#else
-  double alpha = RND.nrandom(0.0,severity);
-#endif
+  kind alpha = invert(RND.nrandom(0.0,severity));
 
   if (by_vertex) {
     if (v < 0 || v >= nvertex) throw std::invalid_argument("Illegal vertex value in Geometry::mutation method!");
@@ -1067,11 +927,7 @@ void Geometry::mutation(int v,bool by_vertex,bool complete,double severity)
         if (i == v) continue;
         j = compute_index(v,i);
         original.push_back(distances[j]);
-#ifdef DISCRETE
-        alpha = INT64((RND.nrandom(0.0,severity)/space_quantum));
-#else
-        alpha = RND.nrandom(0.0,severity);
-#endif
+        alpha = invert(RND.nrandom(0.0,severity));
         distances[j] += alpha;
       }
     }
@@ -1081,11 +937,7 @@ void Geometry::mutation(int v,bool by_vertex,bool complete,double severity)
       original = coordinates[v];
       if (complete) {
         for(i=0; i<coordinates[v].size(); ++i) {
-#ifdef DISCRETE
-          alpha = INT64((RND.nrandom(0.0,severity)/space_quantum));
-#else
-          alpha = RND.nrandom(0.0,severity);
-#endif
+          alpha = invert(RND.nrandom(0.0,severity));
           coordinates[v][i] += alpha;
         }
       }
@@ -1118,7 +970,8 @@ void Geometry::mutation(int v,bool by_vertex,bool complete,double severity)
   }
 }
 
-bool Geometry::adjust_dimension(const std::vector<int>& vdimension)
+template<class kind>
+bool Geometry<kind>::adjust_dimension(const std::vector<int>& vdimension)
 {
   if (nvertex != (signed) vdimension.size()) throw std::invalid_argument("The length of the dimension vector must be equal to the number of vertices!");
   if (relational || uniform) return false;
@@ -1127,11 +980,7 @@ bool Geometry::adjust_dimension(const std::vector<int>& vdimension)
   unsigned int j,n,m;
   std::set<int> vmodified;
   Random RND;
-#ifdef DISCRETE
-  std::vector<INT64> x;
-#else
-  std::vector<double> x;
-#endif
+  std::vector<kind> x;
 
   for(i=0; i<nvertex; ++i) {
     if (vdimension[i] == -1) continue;
@@ -1173,7 +1022,8 @@ bool Geometry::adjust_dimension(const std::vector<int>& vdimension)
   return false;
 }
 
-void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<std::vector<double> >& angles) const
+template<class kind>
+void Geometry<kind>::compute_relational_matrices(std::vector<double>& R,std::vector<std::vector<double> >& angles) const
 {
   R.clear();
   angles.clear();
@@ -1184,11 +1034,7 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
   int i,j,k;
   unsigned int l;
   double r,v[background_dimension];
-#ifdef DISCRETE
-  INT64 base[background_dimension];
-#else
-  double base[background_dimension];
-#endif
+  kind base[background_dimension];
 
   // For the angles matrices, the last one is always the one that covers the range [0,2\pi), so 
   // all the others range over [0,\pi]
@@ -1205,13 +1051,8 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
       base[1] = coordinates[i][1];
       for(j=0; j<nvertex; ++j) {
         if (i == j) continue;
-#ifdef DISCRETE
-        v[0] = space_quantum*double(coordinates[j][0] - base[0]);
-        v[1] = space_quantum*double(coordinates[j][1] - base[1]);
-#else
-        v[0] = coordinates[j][0] - base[0];
-        v[1] = coordinates[j][1] - base[1];
-#endif
+        v[0] = convert(coordinates[j][0] - base[0]);
+        v[1] = convert(coordinates[j][1] - base[1]);
         R[j+nvertex*i] = std::sqrt(get_squared_distance(i,j,false));
         angles[0][j+nvertex*i] = M_PI + std::atan2(v[1],v[0]);
       }
@@ -1232,15 +1073,9 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
       base[2] = coordinates[i][2];
       for(j=0; j<nvertex; ++j) {
         if (i == j) continue;
-#ifdef DISCRETE
-        v[0] = space_quantum*double(coordinates[j][0] - base[0]);
-        v[1] = space_quantum*double(coordinates[j][1] - base[1]);
-        v[2] = space_quantum*double(coordinates[j][2] - base[2]);
-#else
-        v[0] = coordinates[j][0] - base[0];
-        v[1] = coordinates[j][1] - base[1];
-        v[2] = coordinates[j][2] - base[2];
-#endif
+        v[0] = convert(coordinates[j][0] - base[0]);
+        v[1] = convert(coordinates[j][1] - base[1]);
+        v[2] = convert(coordinates[j][2] - base[2]);
         r = std::sqrt(get_squared_distance(i,j,false));
         R[j+nvertex*i] = r;
         angles[0][j+nvertex*i] = std::acos(v[2]/r);
@@ -1268,11 +1103,7 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
       for(j=0; j<nvertex; ++j) {
         if (i == j) continue;
         for(l=0; l<background_dimension; ++l) {
-#ifdef DISCRETE
-          v[l] = space_quantum*double(coordinates[j][l] - base[l]);
-#else
-          v[l] = coordinates[j][l] - base[l];
-#endif
+          v[l] = convert(coordinates[j][l] - base[l]);
         }
         r = get_squared_distance(i,j,false);
         R[j+nvertex*i] = std::sqrt(r);
@@ -1293,20 +1124,16 @@ void Geometry::compute_relational_matrices(std::vector<double>& R,std::vector<st
   }
 }
 
-void Geometry::compute_squared_distances(const std::set<int>& vmodified)
+template<class kind>
+void Geometry<kind>::compute_squared_distances(const std::set<int>& vmodified)
 {
   if (relational || !high_memory) return;
 
   int i,j,in1;
   unsigned int n1,n2,k;
   std::set<int>::const_iterator it;
-#ifdef DISCRETE
-  INT64 delta;
-  const int pfactor = (euclidean) ? 1 : -1;
-#else
-  double delta;
-  const double pfactor = (euclidean) ? 1.0 : -1.0;
-#endif
+  kind delta;
+  const kind pfactor = (euclidean) ? kind(1) : kind(-1);
 
   if (uniform) {
     for(it=vmodified.begin(); it!=vmodified.end(); ++it) {
@@ -1369,28 +1196,20 @@ void Geometry::compute_squared_distances(const std::set<int>& vmodified)
   }
 }
 
-void Geometry::compute_squared_distances()
+template<class kind>
+void Geometry<kind>::compute_squared_distances()
 {
   if (relational || !high_memory) return;
 
   int i,j,in1;
   unsigned int k;
   const int npair = nvertex*(nvertex-1)/2;
-#ifdef DISCRETE
-  INT64 delta;
-  const int pfactor = (euclidean) ? 1 : -1;
-#else
-  double delta;
-  const double pfactor = (euclidean) ? 1.0 : -1.0;
-#endif
+  kind delta;
+  const kind pfactor = (euclidean) ? kind(1) : kind(-1);
 
   distances.clear();
   for(i=0; i<npair; ++i) {
-#ifdef DISCRETE
-    distances.push_back(0);
-#else
-    distances.push_back(0.0);
-#endif
+    distances.push_back(kind(0));
   }
 
   if (uniform) {
@@ -1429,7 +1248,8 @@ void Geometry::compute_squared_distances()
   }
 }
 
-unsigned int Geometry::compute_coordinates(std::vector<double>& x) const
+template<class kind>
+unsigned int Geometry<kind>::compute_coordinates(std::vector<double>& x) const
 {
   int i;
   unsigned int k,edim = 0;
@@ -1447,11 +1267,7 @@ unsigned int Geometry::compute_coordinates(std::vector<double>& x) const
     for(i=0; i<nvertex; ++i) {
       k = coordinates[i].size();
       for(j=0; j<k; ++j) {
-#ifdef DISCRETE 
-        x.push_back(space_quantum*double(coordinates[i][j]));
-#else
-        x.push_back(coordinates[i][j]);
-#endif
+        x.push_back(convert(coordinates[i][j]));
       }
       for(j=k; j<edim; ++j) {
         x.push_back(0.0);
@@ -1535,15 +1351,13 @@ unsigned int Geometry::compute_coordinates(std::vector<double>& x) const
   return edim;
 }
 
-double SYNARMOSMA::geometry_change(const Geometry* g1,const Geometry* g2)
+template<class kind>
+double SYNARMOSMA::geometry_change(const Geometry<kind>* g1,const Geometry<kind>* g2)
 {
   int i,j,nva;
   bool arg1 = true;
-#ifdef DISCRETE
-  INT64 gdelta = 0;
-#else
-  double gdelta = 0.0;
-#endif
+  kind gdelta = kind(0);
+
   if (g1->euclidean != g2->euclidean) throw std::invalid_argument("The two geometries in geometry_change are inconsistent!");
   if (g1->relational != g2->relational) throw std::invalid_argument("The two geometries in geometry_change are inconsistent!");
 
@@ -1555,11 +1369,7 @@ double SYNARMOSMA::geometry_change(const Geometry* g1,const Geometry* g2)
     nva = g2->nvertex;
   }
   if (g1->relational) {
-#ifdef DISCRETE
-    INT64 d1,d2;
-#else
-    double d1,d2;
-#endif
+    kind d1,d2;
 
     for(i=0; i<nva; ++i) {
       for(j=1+i; j<nva; ++j) {
@@ -1592,13 +1402,8 @@ double SYNARMOSMA::geometry_change(const Geometry* g1,const Geometry* g2)
   }
   else {
     int n1,n2,m;
-#ifdef DISCRETE
-    INT64 d;
-    const INT64 zero = 0;
-#else
-    double d;
-    const double zero = 0.0;
-#endif
+    kind d;
+    const kind zero = kind(0);
 
     for(i=0; i<nva; ++i) {
       n1 = (signed) g1->coordinates[i].size();
@@ -1647,9 +1452,5 @@ double SYNARMOSMA::geometry_change(const Geometry* g1,const Geometry* g2)
       }
     }
   }
-#ifdef DISCRETE
-  return space_quantum*double(gdelta);
-#else
-  return gdelta;
-#endif
+  return convert(gdelta);
 }
