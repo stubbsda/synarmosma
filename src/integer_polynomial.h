@@ -116,7 +116,7 @@ namespace SYNARMOSMA {
     int deserialize(std::ifstream&);
     /// This method computes and returns the formal derivative of the polynomial, i.e. \f$p'(x) = d a_d x^{d-1} + \dots 2 a_2 x + a_1\f$. 
     Integer_Polynomial<kind> derivative() const;
-    /// This overloading of the ostream operator writes the polynomial to the screen in a "pretty print" format.
+    /// This overloading of the ostream operator writes the instance of the Integer_Polynomial to the screen in a "pretty print" format.
     friend std::ostream& operator << <>(std::ostream&,const Integer_Polynomial<kind>&);
     /// This overloaded operator tests the two polynomial for equality, first checking if they have the same degree and then testing the two coefficient vectors element by element.
     friend bool operator == <>(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);

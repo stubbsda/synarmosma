@@ -51,7 +51,9 @@ namespace SYNARMOSMA {
     /// This non-negative property corresponds to the asymptotic "flat 
     /// space" dimension of the space.
     unsigned int background_dimension = 3; 
-    /// This constant represents the smallest possible spatial separation between two vertices.
+    /// This constant represents the smallest possible spatial separation between 
+    /// two vertices; it is only meaningful when this template class is instantiated 
+    /// with a discrete base type.
     static const double space_quantum; 
 
     /// This method accepts as its input an axis of rotation (the first argument), an angle (second argument), a translation vector (third argument) and finally a set of observational locations (the final argument), the perceived three-dimensional coordinates for each vertex. The method applies the rotation and translation to the coordinates of every vertex in the geometry and then computes the distance from this value to the observed vertex location, adds together these distances and returns their arithmetic mean.

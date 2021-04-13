@@ -32,7 +32,9 @@ namespace SYNARMOSMA {
     /// This property is a set of the index of all of the edges (as stored by the
     /// super class) which contain this vertex as an endpoint.
     std::set<int> entourage;
-    /// This constant represents the smallest possible energy value for a vertex.
+    /// This constant represents the smallest possible energy value for a 
+    /// vertex; it is only meaningful when this template class is instantiated 
+    /// with a discrete base type.
     static const double energy_quantum;
 
    public:

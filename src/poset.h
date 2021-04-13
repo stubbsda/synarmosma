@@ -1,4 +1,5 @@
 #include "random.h"
+#include "graph.h"
 
 #ifndef _poseth
 #define _poseth
@@ -21,9 +22,9 @@ namespace SYNARMOSMA {
    public:
     /// The default constructor which does nothing.
     Poset();
-    /// This constructor sets the value of the property N to the argument but otherwise does nothing, i.e. no ordering on the elements.
+    /// This constructor sets the value of the property Poset::N to the argument but otherwise does nothing, i.e. no ordering on the elements.
     Poset(int);
-    /// This constructor sets the value of the property N to the first argument and then calls the Poset::construct_ordering method with the second argument.
+    /// This constructor sets the value of the property Poset::N to the first argument and then calls the construct_ordering() method with the second argument.
     Poset(int,double); 
     /// The copy constructor.
     Poset(const Poset&);
@@ -31,11 +32,11 @@ namespace SYNARMOSMA {
     Poset& operator =(const Poset&);
     /// The destructor which does nothing.
     virtual ~Poset();
-    /// This method sets N to 0 and empties the contents of the property order.
+    /// This method sets Poset::N to 0 and empties the contents of the property order.
     virtual void clear();
     /// This method verifies that the poset's order property satisfies the axioms of an ordering, namely that is reflexive, anti-symmetric and transitive.
     virtual bool consistent() const;
-    /// This method simply increments the property N by one. 
+    /// This method simply increments the property Poset::N by one. 
     void add_element();
     /// This method tests if the element given by the argument is a sink, i.e. its posteriority is the empty set.
     bool sink(int) const;
@@ -51,7 +52,7 @@ namespace SYNARMOSMA {
     void compute_posteriority(int,std::set<int>&) const;
     /// This method accepts two elements x and y and adds the relation x ~ y to the order property of this poset, ensuring that the order continues to satisfy to be transitive; the method returns false if x = y or the relation already exists.
     bool set_order(int,int);
-    /// This  method accepts two elements x and y and removes the relation x ~ y or y ~ x from the poset while respecting transtivity; the method returns false if x = y or the relation is disparate. 
+    /// This method accepts two elements x and y and removes the relation x ~ y or y ~ x from the poset while respecting transtivity; the method returns false if x = y or the relation is disparate. 
     bool unset_order(int,int); 
     /// This method accepts two elements x and y and inverts their order, i.e. if x ~ y then y ~ x or vice-versa; the method returns false if x = y or the relation is disparate. 
     bool invert_order(int,int);
@@ -69,6 +70,8 @@ namespace SYNARMOSMA {
     void write_incastrature(const std::string&) const;
     /// This method accepts two elements x and y of the poset and returns "before" if x ~ y, "after" if x ~ y and "disparate" otherwise. 
     Relation get_order(int,int) const;
+    /// This method computes the covering graph \f$G(V,E)\f$ of the poset, i.e. the set of poset elements is \f$V\f$ while an edge exists between two vertices \f$x\f$ and \f$y\f$ if \f$y\f$ covers \f$x\f$. The method returns whether or not this graph is planar.  
+    bool compute_covering_graph(Graph*) const;
   };
 
   inline void Poset::add_element() {

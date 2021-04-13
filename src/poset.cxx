@@ -326,6 +326,24 @@ bool Poset::covered(int u,int v) const
   return sigma.empty(); 
 }
 
+bool Poset::compute_covering_graph(Graph* G) const
+{
+  int i,j;
+
+  G->clear();
+
+  for(i=0; i<N; ++i) {
+    G->add_vertex();
+  }
+  for(i=0; i<N; ++i) {
+    for(j=1+i; j<N; ++j) {
+      if (covered(i,j) || covered(j,i)) G->add_edge(i,j);
+    }
+  }
+  if (G->connected()) return G->planar();
+  return false;
+}
+
 bool Poset::sink(int n) const
 {
   // This is an element whose posteriority is null

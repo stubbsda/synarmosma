@@ -2,9 +2,9 @@ include ../Makefile.config
 
 OBJECTS = global.o random.o cell.o nexus.o schema.o group.o graph.o geometry_wrapper.o word.o rational.o\
 variety_wrapper.o polynomial_wrapper.o integer_polynomial_wrapper.o proposition.o propositional_system.o\
-vertex_wrapper.o multitime.o binary_matrix.o integer_matrix_wrapper.o matrix_wrapper.o logic_graph.o edge.o\
+vertex_wrapper.o multitime_wrapper.o binary_matrix.o integer_matrix_wrapper.o matrix_wrapper.o logic_graph.o\
 functional_equation_wrapper.o homology.o homotopy.o markov_chain.o lattice.o pseudograph.o solver_wrapper.o\
-directed_graph.o poset.o
+directed_graph.o poset.o edge.o
 
 LD_FLAGS += -Wl,-rpath $(INSTALL_DIR)/lib
 
@@ -17,7 +17,7 @@ schema.o: schema.cxx schema.h global.h
 lattice.o: lattice.cxx lattice.h poset.h random.h global.h
 	$(CXX) $(CXX_FLAGS) -c lattice.cxx
 
-poset.o: poset.cxx poset.h random.h global.h
+poset.o: poset.cxx poset.h random.h graph.h global.h
 	$(CXX) $(CXX_FLAGS) -c poset.cxx
 
 markov_chain.o: markov_chain.cxx markov_chain.h matrix.h random.h global.h
@@ -77,8 +77,8 @@ functional_equation_wrapper.o: global.h rational.h variety.h polynomial.h functi
 propositional_system.o: global.h graph.h proposition.h propositional_system.h propositional_system.cxx binary_matrix.h directed_graph.h
 	$(CXX) $(CXX_FLAGS) -c propositional_system.cxx
 
-multitime.o: global.h multitime.h multitime.cxx
-	$(CXX) $(CXX_FLAGS) -c multitime.cxx
+multitime_wrapper.o: global.h multitime.h multitime.cxx multitime_wrapper.cxx
+	$(CXX) $(CXX_FLAGS) -c multitime_wrapper.cxx
 
 vertex_wrapper.o: global.h vertex.h vertex.cxx vertex_wrapper.cxx
 	$(CXX) $(CXX_FLAGS) -c vertex_wrapper.cxx
