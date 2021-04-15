@@ -12,42 +12,42 @@ namespace SYNARMOSMA {
   template<class kind>
   std::ostream& operator <<(std::ostream&,const Variety<kind>&);
 
-  template<class kind>
   /// A class representing an algebraic variety, i.e. a finite system of algebraic equations in a set of unknowns, using the Monomial class. 
+  template<class kind>
   class Variety {
    protected:
-    /// This non-negative integer property stores the number of equations in 
+    /// This non-negative integer property stores the number of equations in
     /// the variety.
     unsigned int nequation = 0;
-    /// This non-negative integer property stores the number of variables in 
+    /// This non-negative integer property stores the number of variables in
     /// the variety and which are enumerated successively from zero, so \f$x_0, x_1, \dots, x_{n-1}\f$.
     unsigned int nvariable = 0;
-    /// This non-negative integer property is the characteristic of the domain 
-    /// over which this variety is defined: zero for the integers and rationals, 
+    /// This non-negative integer property is the characteristic of the domain
+    /// over which this variety is defined: zero for the integers and rationals,
     /// a prime number p for the Galois field GF(p).
     unsigned int characteristic = 0;
-    /// This Boolean property is true if all of the equations in the variety are 
+    /// This Boolean property is true if all of the equations in the variety are
     /// linear and false otherwise.
     bool linear = false;
-    /// This Boolean property is true if all the equations have a remainder term of 
+    /// This Boolean property is true if all the equations have a remainder term of
     /// zero and false otherwise.
     bool homogeneous = false;
-    /// This Boolean property is true if every term in a given equation has the same 
+    /// This Boolean property is true if every term in a given equation has the same
     /// total degree and false otherwise.
     bool projective = false;
-    /// This property is the heart of the class and stores the individual equations 
-    /// of the variety, each one as a vector of Monomial elements, with the size of 
+    /// This property is the heart of the class and stores the individual equations
+    /// of the variety, each one as a vector of Monomial elements, with the size of
     /// the array of vectors equal to Variety::nequation.
     std::vector<Monomial<kind> >* equations;
-    /// This vector stores the remainder term for each equation in the variety and 
-    /// thus should have a length equal to Variety::nequation. 
+    /// This vector stores the remainder term for each equation in the variety and
+    /// thus should have a length equal to Variety::nequation.
     std::vector<kind> remainder;
-    /// This property is a vector of integer sets, each element of which contains the 
+    /// This property is a vector of integer sets, each element of which contains the
     /// independent variables upon which this equation in the variety depends.
     std::vector<std::set<unsigned int> > dependencies;
     /// The value 0, stored in the correct data type for this instantiation of
     /// the template class.
-    static const kind zero;      
+    static const kind zero;
 
     /// This method allocates the memory for the array Variety::equations.
     void allocate();

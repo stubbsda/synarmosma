@@ -28,43 +28,43 @@ namespace SYNARMOSMA {
   template<class kind>
   Integer_Polynomial<kind> operator *(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);
 
+  /// A class representing a low-degree polynomial over an integral domain, such as the integers or a Galois field.
   template<class kind>
-  /// A class representing a low-degree polynomial over an integral domain, such as the integers or a Galois field. 
   class Integer_Polynomial {
    protected:
-    /// This non-negative property is the polynomial's degree, and thus also 
-    /// determines the length of Integer_Polynomial::terms which is equal to 
+    /// This non-negative property is the polynomial's degree, and thus also
+    /// determines the length of Integer_Polynomial::terms which is equal to
     /// one plus the degree.
     unsigned int degree = 0;
-    /// This is the characteristic of the domain over which the integer polynomial is 
-    /// defined. For \f$\mathbf{Z}\f$ it is zero, for the Galois Field \f$\textrm{GF}(p^n)\f$ it 
-    /// is the prime number \f$p\f$. 
+    /// This is the characteristic of the domain over which the integer polynomial is
+    /// defined. For \f$\mathbf{Z}\f$ it is zero, for the Galois Field \f$\textrm{GF}(p^n)\f$ it
+    /// is the prime number \f$p\f$.
     unsigned int characteristic = 0;
-    /// This Boolean property is true if the integer polynomial cannot be factorized over its 
-    /// domain, i.e. it has no solutions over this domain. 
+    /// This Boolean property is true if the integer polynomial cannot be factorized over its
+    /// domain, i.e. it has no solutions over this domain.
     bool irreducible = false;
-    /// This Boolean property is true if the integer polynomial has no constant term, i.e. 
+    /// This Boolean property is true if the integer polynomial has no constant term, i.e.
     /// \f$p(x) = a_d x^d + \dots + a_2 x^2 + a_1 x\f$ where \f$d\f$ is the degree.
     bool homogeneous = false;
-    /// This Boolean property is true if the coefficient of the highest term in the polynomial 
-    /// is one, so that \f$ p(x) = x^d + a_{d-1}x^{d-1} + \dots + a_1 x + a_0\f$ where \f$d\f$ 
+    /// This Boolean property is true if the coefficient of the highest term in the polynomial
+    /// is one, so that \f$ p(x) = x^d + a_{d-1}x^{d-1} + \dots + a_1 x + a_0\f$ where \f$d\f$
     /// is the degree.
     bool monic = false;
-    /// This is the principal property of the class and contains a list of the polynomial coefficients 
-    /// stored in a dense manner, so that this class is intended for low-degree polynomials and not one 
-    /// like \f$x^{250} - 7x +1\f$. The length of the vector is always Integer_Polynomial::degree plus 
-    /// one. 
+    /// This is the principal property of the class and contains a list of the polynomial coefficients
+    /// stored in a dense manner, so that this class is intended for low-degree polynomials and not one
+    /// like \f$x^{250} - 7x +1\f$. The length of the vector is always Integer_Polynomial::degree plus
+    /// one.
     std::vector<kind> terms;
-    /// The value 0, stored in the correct data type for this instantiation of 
+    /// The value 0, stored in the correct data type for this instantiation of
     /// the template class.
     static const kind zero;
-    /// The value -1, stored in the correct data type for this instantiation of 
+    /// The value -1, stored in the correct data type for this instantiation of
     /// the template class.
     static const kind neg1;
-    /// The value 1, stored in the correct data type for this instantiation of 
+    /// The value 1, stored in the correct data type for this instantiation of
     /// the template class.
     static const kind unity;
-  
+
     /// This method constructs the polynomial \f$p(x) = x^d + x^{d-1} + \dots + x + 1\f$ where \f$d\f$ is Integer_Polynomial::degree.
     void initialize();
     /// This method calls scale_coefficients() and then verifies that the degree corresponds to the highest non-zero coefficient and sets the values of Integer_Polynomial::monic and Integer_Polynomial::homogeneous.
@@ -82,7 +82,7 @@ namespace SYNARMOSMA {
     Integer_Polynomial(unsigned int);
     /// This constructor accepts as its first argument the degree \f$d\f$ of the polynomial, while the second argument is the characteristic of the domain of definition. The constructor builds the polynomial \f$x^d + x^{d-1} + \dots + x + 1\f$.
     Integer_Polynomial(unsigned int,unsigned int);
-    /// This constructor uses its argument as the value for Integer_Polynomial::terms and sets the other class properties appropriately by calling the simplify() method.
+    /// This constructor uses its argument as the value for Integer_Polynomial::terms, with the index of each element of the argument determining the coefficient degree, and sets the other class properties appropriately by calling the simplify() method.
     Integer_Polynomial(const std::vector<kind>&);
     /// This constructor uses its argument as the value for Integer_Polynomial::terms and the second argument as the characteristic of the domain of definition. The constructor sets the other class properties appropriately by calling the simplify() method.
     Integer_Polynomial(const std::vector<kind>&,unsigned int);

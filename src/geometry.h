@@ -15,46 +15,46 @@ namespace SYNARMOSMA {
   template<class kind>
   class Geometry {
    protected:
-    /// This property represents the number of points or vertices whose geometry is 
+    /// This property represents the number of points or vertices whose geometry is
     /// being described by this instance of the class.
     int nvertex = 0;
-    /// This property is used to store the index of the point whose geometry has been 
-    /// perturbed and allows the geometry to be changed in an atomic manner, with the 
-    /// possibility of undoing such a change and without having to recalculate all of 
-    /// inter-vertex distances. 
+    /// This property is used to store the index of the point whose geometry has been
+    /// perturbed and allows the geometry to be changed in an atomic manner, with the
+    /// possibility of undoing such a change and without having to recalculate all of
+    /// inter-vertex distances.
     int vperturb = -1;
-    /// This vector property is like Geometry::vperturb used to store the distance values 
-    /// of the vertex whose geometry is perturbed so that they can be restored in case the 
+    /// This vector property is like Geometry::vperturb used to store the distance values
+    /// of the vertex whose geometry is perturbed so that they can be restored in case the
     /// change is rolled back.
     std::vector<kind> original;
-    /// This vector property contains all of the (nvertex-1)*nvertex/2 squared distances between 
-    /// the points. It is used when Geometry::relational is true or when Geometry::high_memory is 
-    /// true to speed up geometry calculations by precomputing all the squared distances. 
+    /// This vector property contains all of the (nvertex-1)*nvertex/2 squared distances between
+    /// the points. It is used when Geometry::relational is true or when Geometry::high_memory is
+    /// true to speed up geometry calculations by precomputing all the squared distances.
     std::vector<kind> distances;
-    /// This property stores the coordinates of each point, as a distinct vector, and of course 
-    /// is meaningful only when Geometry::relational is false. The number of coordinates for each 
+    /// This property stores the coordinates of each point, as a distinct vector, and of course
+    /// is meaningful only when Geometry::relational is false. The number of coordinates for each
     /// point may not be the same, unless Geometry::uniform is true.
     std::vector<std::vector<kind> > coordinates;
-    /// This Boolean property determines whether the geometry is 
+    /// This Boolean property determines whether the geometry is
     /// Euclidean or Lorentzian.
     bool euclidean = true;
-    /// This Boolean property determines whether the geometry is 
-    /// based on a relational or absolute (coordinate-based) model 
+    /// This Boolean property determines whether the geometry is
+    /// based on a relational or absolute (coordinate-based) model
     /// of space.
     bool relational = false;
-    /// This Boolean property determines whether the geometry is 
+    /// This Boolean property determines whether the geometry is
     /// dimensionally uniform, i.e. each point has the same dimensionality.
     bool uniform = true;
-    /// This Boolean property determines whether to fill the Geometry::distances 
+    /// This Boolean property determines whether to fill the Geometry::distances
     /// vector and is only meaningful when Geometry::relational is false.
     bool high_memory = true;
-    /// This non-negative property corresponds to the asymptotic "flat 
+    /// This non-negative property corresponds to the asymptotic "flat
     /// space" dimension of the space.
-    unsigned int background_dimension = 3; 
-    /// This constant represents the smallest possible spatial separation between 
-    /// two vertices; it is only meaningful when this template class is instantiated 
+    unsigned int background_dimension = 3;
+    /// This constant represents the smallest possible spatial separation between
+    /// two vertices; it is only meaningful when this template class is instantiated
     /// with a discrete base type.
-    static const double space_quantum; 
+    static const double space_quantum;
 
     /// This method accepts as its input an axis of rotation (the first argument), an angle (second argument), a translation vector (third argument) and finally a set of observational locations (the final argument), the perceived three-dimensional coordinates for each vertex. The method applies the rotation and translation to the coordinates of every vertex in the geometry and then computes the distance from this value to the observed vertex location, adds together these distances and returns their arithmetic mean.
     double perceptual_divergence(const double*,double,const double*,const double*) const;

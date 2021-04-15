@@ -43,8 +43,8 @@ namespace SYNARMOSMA {
     Word operator !() const;
     /// This method returns the inverse of the word, i.e. a word with the order of letters reversed and the sign of all the exponents reversed.
     Word invert() const;
-    /// This method mutates the word, i.e. a random letter is selected from the word and converted to another letter; if the word contains just one letter then the exponent is altered to a randomly chosen value between -10 and 10, excluding zero.
-    Word mutate() const;
+    /// This method mutates the word, i.e. a random letter is selected from the word and converted to another letter with uniform probability; if the word contains just one letter then the exponent is altered to a randomly chosen value between -L and L, excluding zero, where L is the method's argument.
+    Word mutate(int) const;
     /// This method eliminates redundant elements of the word, fusing together adjacent letters which share the same index and dropping letters whose exponent is zero.
     Word normalize() const;
     /// This method swaps every occurrence in the word of the second index by the first index, reversing the exponent's sign when the final argument is true, and reducing the index values by one when they are greater than the second argument. 

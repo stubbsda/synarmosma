@@ -5,8 +5,8 @@
 #define _solverh
 
 namespace SYNARMOSMA {
-  template<class kind>
   /// An abstract template class representing a Newton-Raphson solver of a system of nonlinear algebraic equations over a floating point base type.
+  template<class kind>
   class Solver {
    protected:
     /// This enumerated class lists the two methods available for solving the linear system at each
@@ -23,9 +23,9 @@ namespace SYNARMOSMA {
     /// out before the Solver declares the situation
     /// to be non-convergent.
     unsigned int max_its = 100;
-    /// An integer property that controls the maximum number of Gauss-Seidel iterations 
-    /// performed on the linear solver when Solver::method is Linear_Solver::iterative. 
-    unsigned int max_linear_its = 100; 
+    /// An integer property that controls the maximum number of Gauss-Seidel iterations
+    /// performed on the linear solver when Solver::method is Linear_Solver::iterative.
+    unsigned int max_linear_its = 100;
     /// This property stores the number of equations in the system, which is
     /// assumed to also be the number of independent variables.
     unsigned int dimension = 0;

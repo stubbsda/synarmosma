@@ -19,17 +19,17 @@ namespace SYNARMOSMA {
   template<class kind>
   Matrix<kind> operator +(const Matrix<kind>&,const Matrix<kind>&);
 
-  template<class kind>
   /// A template class representing a general rectangular matrix over a floating point base type.
+  template<class kind>
   class Matrix {
    protected:
-    /// This property is heart of the Matrix class as it contains all of the 
-    /// elements stored in compressed form as an array of vectors. There is a 
-    /// vector for each row, with the vector's elements consisting of a pair. 
-    /// The first part of the pair is the value of the matrix element, the 
+    /// This property is heart of the Matrix class as it contains all of the
+    /// elements stored in compressed form as an array of vectors. There is a
+    /// vector for each row, with the vector's elements consisting of a pair.
+    /// The first part of the pair is the value of the matrix element, the
     /// second is the column index.
     std::vector<std::pair<kind,unsigned int> >* elements;
-    /// The number of rows of this  
+    /// The number of rows of this
     /// matrix.
     unsigned int nrow = 0;
     /// The number of columns of this 

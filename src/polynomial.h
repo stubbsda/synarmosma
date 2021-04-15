@@ -30,30 +30,30 @@ namespace SYNARMOSMA {
   template<class kind>
   Polynomial<kind> operator *(const Polynomial<kind>&,const Polynomial<kind>&);
 
-  template<class kind>
   /// A class representing a low-degree polynomial over a floating point domain, modelling a polynomial over the real or complex numbers.
+  template<class kind>
   class Polynomial {
    protected:
-    /// This non-negative property is the polynomial's degree, and thus also 
-    /// determines the length of Polynomial::terms which is equal to one plus 
+    /// This non-negative property is the polynomial's degree, and thus also
+    /// determines the length of Polynomial::terms which is equal to one plus
     /// the degree.
     unsigned int degree = 0;
-    /// This Boolean property is true if the polynomial cannot be factorized over its 
-    /// domain, i.e. it has no solutions over this domain; if the base type is the complex 
+    /// This Boolean property is true if the polynomial cannot be factorized over its
+    /// domain, i.e. it has no solutions over this domain; if the base type is the complex
     /// numbers then of course this is always false.
     bool irreducible = false;
-    /// This Boolean property is true if the polynomial has no constant term, i.e. 
+    /// This Boolean property is true if the polynomial has no constant term, i.e.
     /// \f$p(x) = a_d x^d + \dots + a_2 x^2 + a_1 x\f$ where \f$d\f$ is the degree.
     bool homogeneous = false;
-    /// This Boolean property is true if the coefficient of the highest term in the polynomial 
-    /// is one, so that \f$ p(x) = x^d + a_{d-1}x^{d-1} + \dots + a_1 x + a_0\f$ where \f$d\f$ 
+    /// This Boolean property is true if the coefficient of the highest term in the polynomial
+    /// is one, so that \f$ p(x) = x^d + a_{d-1}x^{d-1} + \dots + a_1 x + a_0\f$ where \f$d\f$
     /// is the degree.
     bool monic = false;
-    /// This is the principal property of the class and contains a list of the polynomial coefficients 
-    /// stored in a dense manner, so that this class is intended for low-degree polynomials and not one 
+    /// This is the principal property of the class and contains a list of the polynomial coefficients
+    /// stored in a dense manner, so that this class is intended for low-degree polynomials and not one
     /// like \f$x^{250} - 7x +1\f$. The length of the vector is always Polynomial::degree plus one.
     std::vector<kind> terms;
-  
+
     /// This method constructs the polynomial \f$p(x) = a_d x^d + a_{d-1}x^{d-1} + \dots + a_1 x + a_0\f$ where \f$d\f$ is Polynomial::degree and the \f$a_i\f$ (\f$a_d\ne 0\f$) are uniform random variates on the interval \f$[-L,L]\f$ where \f$L\f$ is the method's argument.
     void initialize(int = 25);
     /// This method verifies that the degree corresponds to the highest non-zero coefficient and sets the values of Polynomial::monic and Polynomial::homogeneous.
@@ -67,7 +67,7 @@ namespace SYNARMOSMA {
     Polynomial();
     /// This constructor accepts as its argument the degree \f$d\f$ of the polynomial and constructs the polynomial \f$x^d + x^{d-1} + \dots + x + 1\f$.
     Polynomial(unsigned int);
-    /// This constructor uses its argument as the value for Polynomial::terms and sets the other class properties appropriately by calling the simplify() method.
+    /// This constructor uses its argument as the value for Polynomial::terms, with the index of each element of the argument determining the coefficient degree, to the d and sets the other class properties appropriately by calling the simplify() method.
     Polynomial(const std::vector<kind>&);
     /// The destructor which does nothing.
     ~Polynomial();

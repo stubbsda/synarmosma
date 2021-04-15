@@ -14,25 +14,25 @@ namespace SYNARMOSMA {
   template<class kind>
   std::ostream& operator <<(std::ostream& s,const Functional_Equation<kind>&);
 
-  template<class kind>
   /// A template class representing a polynomial functional equation over a base type, which is the field for the equation's polynomial coefficients and arguments.
+  template<class kind>
   class Functional_Equation {
    protected:
-    /// This property contains the individual terms of the functional equation, in the form of a triple, which 
-    /// represent the mathematical expression \f$\sum_{i=1}^N q_i(x) F^i(p_i(x))\f$, where \f$q_i, p_i\in K[x]\f$ 
-    /// for all \f$1\le i\le N\f$, with \f$K\f$ the base field of this template class. We use the Polynomial class 
+    /// This property contains the individual terms of the functional equation, in the form of a triple, which
+    /// represent the mathematical expression \f$\sum_{i=1}^N q_i(x) F^i(p_i(x))\f$, where \f$q_i, p_i\in K[x]\f$
+    /// for all \f$1\le i\le N\f$, with \f$K\f$ the base field of this template class. We use the Polynomial class
     /// to store the \f$p_i(x)\f$ and \f$q_i(x)\f$.
     std::vector<std::tuple<Integer_Polynomial<kind>,Integer_Polynomial<kind>,unsigned int> > terms;
-    /// This property stores the inhomogeneous term \f$q_0(x)\in K[x]\f$ in the functional equation \f$\sum_{i=1}^N 
-    /// q_i(x) F^i(p_i(x)) + q_0(x) = 0\f$, assuming it exists. 
+    /// This property stores the inhomogeneous term \f$q_0(x)\in K[x]\f$ in the functional equation \f$\sum_{i=1}^N
+    /// q_i(x) F^i(p_i(x)) + q_0(x) = 0\f$, assuming it exists.
     Integer_Polynomial<kind> remainder;
-    /// This Boolean property is true if the functional equation has the form \f$q_1(x) F(p_1(x)) + q_0(x) = 0\f$, 
-    /// where \f$p_1\f$ and the \f$q_i\f$ are members of \f$K[x]\f$ with \f$K\f$ the base field of this template class. 
+    /// This Boolean property is true if the functional equation has the form \f$q_1(x) F(p_1(x)) + q_0(x) = 0\f$,
+    /// where \f$p_1\f$ and the \f$q_i\f$ are members of \f$K[x]\f$ with \f$K\f$ the base field of this template class.
     bool linear = false;
     /// This Boolean property is true if the functional equation has the form \f$\sum_{i=1}^N q_i(x) F^i(p_i(x)) = 0\f$,
     /// where \f$q_i, p_i\in K[x]\f$ for all \f$1\le i\le N\f$, with \f$K\f$ the base field of this template class.
     bool homogeneous = false;
-   
+
     /// This method initializes the functional equation, with the argument representing the degree \f$N\f$ of the equation \f$\sum_{i=1}^N q_i(x) F^i(p_i(x)) + q_0(x)=0\f$. The \f$p_i, q_i\in K[x]\f$ are chosen at random and have a degree that is the minimum among 5 and \f$1+2N\f$. 
     void initialize(unsigned int);
     /// This method parses three vectors of strings to build the contents of the Functional_Equation::terms and Functional_Equation::remainder properties; the three arguments contain the coefficient polynomial \f$q_i(x)\f$, the argument polynomial \f$p_i(x)\f$ and the exponent \f$i\f$.

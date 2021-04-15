@@ -44,22 +44,22 @@ namespace SYNARMOSMA {
   template<class kind>
   class Multitime {
    protected:
-    /// This array represents the value of the time in each of its dimensions, 
-    /// along with a Boolean that indicates whether this temporal dimension is 
+    /// This array represents the value of the time in each of its dimensions,
+    /// along with a Boolean that indicates whether this temporal dimension is
     /// currently active.
-    std::pair<kind,bool>* chronos; 
-    /// This property sets the length of the vector chronos and is so the maximum 
-    /// number of possible temporal dimensions; currently set to the conventional 
+    std::pair<kind,bool>* chronos;
+    /// This property sets the length of the vector chronos and is so the maximum
+    /// number of possible temporal dimensions; currently set to the conventional
     /// value of unity.
     static const int tdimension = 1;
-    /// This constant represents the smallest possible spatial separation between 
-    /// two moments of time; it is only meaningful when this template class is instantiated 
+    /// This constant represents the smallest possible spatial separation between
+    /// two moments of time; it is only meaningful when this template class is instantiated
     /// with a discrete base type.
     static const double time_quantum;
 
     /// This method sets each element of the Multitime::chronos array to (0.0,true), i.e. the same state as after the allocate() method.
     void clear();
-    /// This method allocates the memory for the Multitime::chronos array and initializes each element to (0.0,true). 
+    /// This method allocates the memory for the Multitime::chronos array and initializes each element to (0.0,true).
     void allocate();
    public:
     /// The default constructor, which just calls the allocate() method and exits.

@@ -4,29 +4,29 @@
 #define _vertexh
 
 namespace SYNARMOSMA {
-  template<class kind>
   /// A class representing the vertex, node or 0-simplex of a simplicial complex of dimension greater than zero or the elements of a set.
+  template<class kind>
   class Vertex {
    protected:
-    /// This integer property encodes the relaxation or time step at which the vertex was 
-    /// created. 
+    /// This integer property encodes the relaxation or time step at which the vertex was
+    /// created.
     int incept = -1;
-    /// This integer property reflects the highest dimensional simplex to which this vertex 
-    /// belongs. 
+    /// This integer property reflects the highest dimensional simplex to which this vertex
+    /// belongs.
     int topological_dimension = 0;
-    /// This property, either an unsigned 64 bit integer or a double precision floating point 
-    /// number, represents the energy of a vertex and should therefore always be non-negative. 
+    /// This property, either an unsigned 64 bit integer or a double precision floating point
+    /// number, represents the energy of a vertex and should therefore always be non-negative.
     kind energy = kind(0);
-    /// This integer set contains the index of the vertices connected to this vertex by 
-    /// outgoing directed edges. To the extent that the direction of an edge has a causal 
-    /// sense, this set thus represents the immediate future of this vertex-event. 
+    /// This integer set contains the index of the vertices connected to this vertex by
+    /// outgoing directed edges. To the extent that the direction of an edge has a causal
+    /// sense, this set thus represents the immediate future of this vertex-event.
     std::set<int> posterior;
-    /// This integer set contains the index of the vertices connected to this vertex by 
-    /// incoming directed edges. To the extent that the direction of an edge has a causal 
-    /// sense, this set thus represents the immediate past of this vertex-event. 
+    /// This integer set contains the index of the vertices connected to this vertex by
+    /// incoming directed edges. To the extent that the direction of an edge has a causal
+    /// sense, this set thus represents the immediate past of this vertex-event.
     std::set<int> anterior;
-    /// This integer set contains the index of all vertices connected to this vertex, thus the 
-    /// elements of the Vertex::anterior and Vertex::posterior properties but also vertices that 
+    /// This integer set contains the index of all vertices connected to this vertex, thus the
+    /// elements of the Vertex::anterior and Vertex::posterior properties but also vertices that
     /// are connected by an undirected (Relation::disparate) edge.
     std::set<int> neighbours;
     /// This property is a set of the index of all of the edges (as stored by the

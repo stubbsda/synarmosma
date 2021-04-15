@@ -228,9 +228,10 @@ Word Word::swap(unsigned int p,unsigned int q,bool invert) const
   return output;
 }
 
-Word Word::mutate() const
+Word Word::mutate(int exp_limit) const
 {
   if (empty()) throw std::runtime_error("An empty word cannot be mutated!");
+  if (exp_limit < 1) throw std::invalid_argument("The argument of the Word::mutate method must be greater than zero!");
 
   Word output;
   std::set<unsigned int> S;
@@ -246,8 +247,8 @@ Word Word::mutate() const
 
     output.content[0].first = content[0].first;
     do {
-      n = RND.irandom(1,10);
-      if (RND.irandom(2) == 0) n *= 1;
+      n = RND.irandom(1,exp_limit+1);
+      if (RND.irandom(2) == 0) n *= -1;
       if (n != content[0].second) break;
     } while(true);
     output.content[0].second = n;
@@ -258,7 +259,7 @@ Word Word::mutate() const
       doublet.first = RND.irandom(S); 
       if (doublet.first != content[n].first) break;
     } while(true);
-    doublet.second = RND.irandom(1,10);
+    doublet.second = RND.irandom(1,exp_limit+1);
     if (RND.irandom(2) == 0) doublet.second = -doublet.second;
     output.content[n] = doublet;
   }

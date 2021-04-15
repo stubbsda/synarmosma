@@ -43,8 +43,8 @@ namespace SYNARMOSMA {
   template<class kind>
   unsigned int normalize(Integer_Matrix<kind>&);
 
-  template<class kind>
   /// A template class representing a general rectangular matrix over an integer base type.
+  template<class kind>
   class Integer_Matrix {
    protected:
     /// This property is heart of the Integer_Matrix class as it contains all of the
