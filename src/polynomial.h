@@ -222,22 +222,21 @@ namespace SYNARMOSMA {
     } 	
     return s;
   }
-
+  
   template<>
-  bool operator ==(const Polynomial<Rational>& p1,const Polynomial<Rational>& p2)
+  inline bool operator ==(const Polynomial<Rational>& p1,const Polynomial<Rational>& p2)
   {
     if (p1.degree != p2.degree) return false;
     unsigned int i;
-    Rational q;
+
     for(i=0; i<p1.degree; ++i) {
-      q = p1.terms[i] - p2.terms[i];
-      if (!q.is_null()) return false;
+      if (p1.terms[i] != p2.terms[i]) return false;
     }
     return true;
   }
-
+  
   template<class kind>
-  bool operator ==(const Polynomial<kind>& p1,const Polynomial<kind>& p2)
+  inline bool operator ==(const Polynomial<kind>& p1,const Polynomial<kind>& p2)
   {
     if (p1.degree != p2.degree) return false;
     unsigned int i;
@@ -248,7 +247,7 @@ namespace SYNARMOSMA {
   }
 
   template<class kind>
-  bool operator !=(const Polynomial<kind>& p1,const Polynomial<kind>& p2)
+  inline bool operator !=(const Polynomial<kind>& p1,const Polynomial<kind>& p2)
   {
     return !(p1 == p2);
   }
