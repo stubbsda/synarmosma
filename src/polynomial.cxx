@@ -282,6 +282,23 @@ kind Polynomial<kind>::evaluate(kind x)
   return y;
 }
 
+namespace SYNARMOSMA {
+  template<>
+  /// This method is an instantiation of derivative() for the case of a polynomial over the rationals, needed so that the coefficient of each term is correctly identified as a Rational instance.
+  Polynomial<Rational> Polynomial<Rational>::derivative() const
+  {
+    unsigned int i;
+    Rational q;
+    Polynomial<Rational> output(degree-1);
+    for(i=0; i<degree-1; ++i) {
+      q = Rational(1+i,1);
+      output.set_value(q*terms[i+1],i);
+    }
+    output.simplify();
+    return output;
+  }
+}
+
 template<class kind>
 Polynomial<kind> Polynomial<kind>::derivative() const
 {

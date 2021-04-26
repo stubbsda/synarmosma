@@ -29,6 +29,33 @@ Rational::Rational(const NTL::ZZ& x,const NTL::ZZ& y)
   normalize();
 }
 
+Rational::Rational(double t,double tolerance)
+{
+  if (tolerance < std::numeric_limits<double>::epsilon()) throw std::invalid_argument("The tolerance for the rational approximation must be greater than zero!");
+  int q;
+  long double f,g,wcopy = std::abs(t);
+  std::vector<int> cfractions;
+  std::vector<int>::reverse_iterator rit;
+  Rational sum;
+
+  do {
+    f = std::modf(wcopy,&g);
+    q = int(g);
+    wcopy = 1.0/f;
+    // Now compute the rational...
+    sum = Rational(q,1);
+    for(rit=cfractions.rbegin(); rit!=cfractions.rend(); ++rit) {
+      sum = 1/sum + Rational(*rit,1);
+    }
+    cfractions.push_back(q);
+    if (std::abs(sum.to_double() - std::abs(t)) < tolerance) break;
+  } while(true);
+
+  n = sum.get_numerator();
+  d = sum.get_denominator();
+  if (t < -std::numeric_limits<double>::epsilon()) n = -n;    
+}
+
 Rational::Rational(const Rational& source)
 {
   n = source.n;

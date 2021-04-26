@@ -41,6 +41,8 @@ namespace SYNARMOSMA {
     Rational(int,int);
     /// A constructor for a standard rational number but which directly accepts multi-precision integers for the numerator and denominator.
     Rational(const NTL::ZZ&,const NTL::ZZ&);
+    /// A constructor that computes a rational approximation to its first argument, where the optional second argument is the desired tolerance of this rational approximation.
+    Rational(double,double = 0.000001);
     /// The assignment operator for instances of the Rational class.
     Rational& operator =(const Rational&);
     /// The unary negation operator which multiplies the numerator by -1.
@@ -59,6 +61,8 @@ namespace SYNARMOSMA {
     NTL::ZZ get_denominator() const;
     /// This method returns the height.
     double get_height() const;
+    /// This method converts this instance of the Rational class to a double precision floating point number and returns this value.
+    double to_double() const;
     /// This method writes the Rational::n and Rational::d properties to a binary disk file and returns the number of bytes written to the file.
     int serialize(std::ofstream&) const;
     /// This method reads the Rational::n and Rational::d properties from a binary disk file, computes the Rational::height property and returns the number of bytes read.
@@ -118,7 +122,7 @@ namespace SYNARMOSMA {
     return (n == NTL::to_ZZ(0));
   }
 
-  inline void Rational::compute_height() 
+  inline void Rational::compute_height()
   {
     height = (NTL::abs(n) > NTL::abs(d)) ? NTL::log(NTL::abs(n)) : NTL::log(NTL::abs(d));
   }
@@ -136,6 +140,12 @@ namespace SYNARMOSMA {
   inline NTL::ZZ Rational::get_denominator() const
   {
     return d;
+  }
+
+  inline double Rational::to_double() const
+  {
+    double output = NTL::conv<double>(n)/NTL::conv<double>(d);
+    return output;
   }
 
   inline Rational compute_mean(int a,int b,const std::string& type)
