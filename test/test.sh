@@ -1,6 +1,6 @@
 #!/bin/bash
 
-modules="Rational Polynomial Lattice Poset Graph Pseudograph Directed_Graph Group Integer_Matrix"
+modules="Rational Integer_Polynomial Polynomial Lattice Poset Graph Pseudograph Directed_Graph Group Integer_Matrix"
 np=0
 
 for case in $modules
@@ -15,5 +15,5 @@ do
 		echo "Failed!" 
 	fi
 done 
-echo "Passed $np of 9 tests"
+echo "Passed $np of 10 tests"
 

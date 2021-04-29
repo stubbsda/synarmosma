@@ -65,7 +65,7 @@ logic_graph.o: global.h random.h edge.h schema.h pseudograph.h matrix.h binary_m
 polynomial_wrapper.o: global.h rational.h polynomial.h random.h polynomial.cxx polynomial_wrapper.cxx
 	$(CXX) $(CXX_FLAGS) -c polynomial_wrapper.cxx
 
-integer_polynomial_wrapper.o: global.h integer_polynomial.h integer_polynomial.cxx integer_polynomial_wrapper.cxx
+integer_polynomial_wrapper.o: global.h rational.h group.h integer_polynomial.h integer_polynomial.cxx integer_polynomial_wrapper.cxx
 	$(CXX) $(CXX_FLAGS) -c integer_polynomial_wrapper.cxx
 
 variety_wrapper.o: global.h rational.h variety.h random.h variety.cxx variety_wrapper.cxx

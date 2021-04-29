@@ -134,6 +134,58 @@ int Rational::deserialize(std::ifstream& s)
   return count;
 }
 
+bool Rational::perfect_square() const
+{
+  // We use binary search to check if both the numerator and 
+  // denominator are perfect squares, returning true if so. 
+  bool output = true;
+  NTL::ZZ lo,hi,mid,sq,nt;
+
+  nt = (n < 0) ? -n : n;
+  if (nt > 1) {
+    output = false; 
+    lo = NTL::to_ZZ(2);
+    hi = NTL::to_ZZ(nt);
+    do {
+      mid = lo + (hi - lo)/2;
+      sq = mid*mid;
+      if (sq == nt) {
+        output = true;
+        break;
+      }
+      if (sq < nt) {
+        lo = mid;
+      }
+      else {
+        hi = mid;
+      }
+    } while((hi - lo) > 1);
+    if (!output) return false;
+  }
+
+  nt = (d < 0) ? -d : d;
+  if (nt > 1) {
+    output = false;
+    lo = NTL::to_ZZ(2);
+    hi = NTL::to_ZZ(nt);
+    do {
+      mid = lo + (hi - lo)/2;
+      sq = mid*mid;
+      if (sq == nt) {
+        output = true;
+        break;
+      }
+      if (sq < nt) {
+        lo = mid;
+      }
+      else {
+        hi = mid;
+      }
+    } while((hi - lo) > 1);
+  }
+  return output;
+}
+
 long Rational::agreeableness() const
 {
   // First calculate the least common multiple M of the numerator 

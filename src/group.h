@@ -56,7 +56,7 @@ namespace SYNARMOSMA {
     Group(unsigned int,unsigned int);
     /// This is the constructor for an Abelian group in canonical form, with the first argument the rank and the second the torsion coefficients.
     Group(unsigned int,const std::vector<unsigned int>&);
-    /// This constructor accepts a series of potential values for the named group type (first argument) as well as an index, permitting the creation of a canonical presentation for such groups as the dihedral or cyclic.
+    /// This constructor calls the appropriate initialize() method (i.e. the one with the same arguments) to create a group of named type (symmetric, alternating, cyclic, dihedral, etc.) and index. 
     Group(const std::string&,unsigned int);
     /// The standard copy constructor.
     Group(const Group&);
@@ -74,6 +74,8 @@ namespace SYNARMOSMA {
     bool consistent(std::set<unsigned int>&) const;
     /// This method initializes the group presentation after the value of Group::ngenerator has been specified (in the constructor) and where the argument is the number of relations, which are constructed randomly.
     void initialize(unsigned int);
+    /// This method accepts a series of potential values for the named group type (first argument) as well as an index, permitting the creation of a canonical presentation for such groups as the dihedral or cyclic.
+    void initialize(const std::string&,unsigned int);
     /// This method initializes the group presentation, where the first argument is the number of generators and the second the accompanying relations.
     void initialize(unsigned int,const std::vector<Word>&);
     /// This method initializes the group structure for an Abelian group, where the first argument is the rank and the second the torsion coefficients.

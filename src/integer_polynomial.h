@@ -1,4 +1,5 @@
-#include "global.h"
+#include "group.h"
+#include "rational.h"
 
 #ifndef _integerpolynomialh
 #define _integerpolynomialh
@@ -76,7 +77,7 @@ namespace SYNARMOSMA {
     /// This method reads the content of the polynomial itself in binary format from an input stream is used by the deserialize() method; it returns the number of bytes read.
     int read_terms(std::ifstream&);
    public:
-    /// The default constructor which does nothing. 
+    /// The default constructor which does nothing.
     Integer_Polynomial();
     /// This constructor accepts as its argument the degree \f$d\f$ of the polynomial and constructs the polynomial \f$x^d + x^{d-1} + \dots + x + 1\f$.
     Integer_Polynomial(unsigned int);
@@ -97,7 +98,7 @@ namespace SYNARMOSMA {
     /// This method takes the current instance and reduces its coefficients modulo \f$p\f$, the method's argument, which must be a prime number. The output is an instance of the Integer_Polynomial class over the integers.
     Integer_Polynomial<int> reduce(unsigned int);
     /// This method evaluates the polynomial at the method's argument \f$\alpha\f$, returning the value of \f$p(\alpha)\f$.
-    kind evaluate(kind);
+    kind evaluate(kind) const;
     /// This method takes its argument and sets Integer_Polynomial::degree to this value, then calls initialize().
     void generate(unsigned int);
     /// This method returns the value of the degree.
@@ -114,6 +115,12 @@ namespace SYNARMOSMA {
     int serialize(std::ofstream&) const;
     /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
     int deserialize(std::ifstream&);
+    /// This method returns the value of the Integer_Polynomial::irreducible property. 
+    bool get_irreducibility() const;
+    /// This method attempts to determine the irreducibility of this instance of the class using the Eisenstein criterion, successively testing prime numbers from two up to the method's argument.
+    void compute_irreducibility(long);
+    /// This method determines, if possible, the Galois group of this instance and assumes the compute_irreducibility() method has already been called. In a handful of simple cases the Galois group can be obtained easily and if successful this method returns true and sets the method's argument to the appropriate group. 
+    bool compute_galois_group(Group*) const;
     /// This method computes and returns the formal derivative of the polynomial, i.e. \f$p'(x) = d a_d x^{d-1} + \dots 2 a_2 x + a_1\f$. 
     Integer_Polynomial<kind> derivative() const;
     /// This overloading of the ostream operator writes the instance of the Integer_Polynomial to the screen in a "pretty print" format.
@@ -134,7 +141,13 @@ namespace SYNARMOSMA {
     return degree;
   }
 
-  template<class kind> 
+  template<class kind>
+  inline bool Integer_Polynomial<kind>::get_irreducibility() const
+  {
+    return irreducible;
+  }
+
+  template<class kind>
   inline bool Integer_Polynomial<kind>::is_null() const
   {
     if (terms.empty()) return true;
@@ -182,7 +195,7 @@ namespace SYNARMOSMA {
           s << "-" << -source.terms[1] << "*x ";
         }
         else {
-          s << "-" << -source.terms[source.degree] << "*x^" << source.degree << " "; 	
+          s << "-" << -source.terms[source.degree] << "*x^" << source.degree << " ";
         }
       }
     }
@@ -201,9 +214,9 @@ namespace SYNARMOSMA {
           }
           else {
             s << "- " << -source.terms[i] << "*x^" << i << " ";
-          }	    	
+          }
         }
-      }	
+      }
       else if (i == 1) {
         if (source.terms[i] == 1) {
           s << "+ x ";
@@ -217,18 +230,18 @@ namespace SYNARMOSMA {
           }
           else {
             s << "- " << -source.terms[i] << "*x ";
-          }	    	
-        }  	
-      }   	
+          }
+        }
+      }
     }
     if (!source.homogeneous) {
       if (source.terms[0] > 0) {
         s << "+ " << source.terms[0];
       }
       else {
-        s << "- " << -source.terms[0]; 		
+        s << "- " << -source.terms[0];
       }
-    } 	
+    }
     return s;
   }
 
@@ -312,7 +325,7 @@ namespace SYNARMOSMA {
   }
 
   template<class kind>
-  Integer_Polynomial<kind> operator *(const Integer_Polynomial<kind>& p1,const Integer_Polynomial<kind>& p2)  
+  Integer_Polynomial<kind> operator *(const Integer_Polynomial<kind>& p1,const Integer_Polynomial<kind>& p2)
   {
     unsigned int i,j,k,mdegree = p1.degree + p2.degree;
     kind sum;
@@ -328,13 +341,13 @@ namespace SYNARMOSMA {
         }
       }
       new_terms.push_back(sum);
-    }    
-    new_terms.push_back(p1.terms[p1.degree]*p2.terms[p2.degree]);        
+    }
+    new_terms.push_back(p1.terms[p1.degree]*p2.terms[p2.degree]);
     Integer_Polynomial<kind> output(new_terms);
     output.simplify();
     return output;
-  } 
-} 
+  }
+}
 #endif
 
 

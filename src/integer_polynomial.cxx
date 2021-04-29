@@ -248,6 +248,139 @@ void Integer_Polynomial<kind>::scale_coefficients()
 }
 
 template<class kind>
+void Integer_Polynomial<kind>::compute_irreducibility(long limit)
+{
+  // We will try to use Eisenstein's criterion on this polynomial...
+  unsigned int i;
+  long p;
+  bool good,success = false;
+  NTL::PrimeSeq s;
+  
+  do {
+    p = s.next();
+    if (p > limit) break;
+    if (terms[degree] % p == 0) continue;
+    good = true;
+    for(i=0; i<degree; ++i) {
+      if (terms[i] % p != 0) {
+        good = false;
+        break;
+      }
+    }
+    if (!good) continue;
+    if (terms[0] % (p*p) != 0) success = true;
+  } while(!success);
+  if (success) irreducible = true;
+}
+
+template<class kind>
+bool Integer_Polynomial<kind>::compute_galois_group(Group* G) const
+{
+  G->clear();
+
+  if (degree < 2) {
+    G->initialize("ORDER",1);
+    return true;
+  }
+  if (degree == 2) {
+    G->initialize("SYMMETRIC",2);
+    return true;
+  }
+  if (degree == 3) {
+    if (!irreducible) return false;
+    Rational s1(-terms[2],terms[3]),s2(terms[1],terms[3]),s3(-terms[0],terms[3]);
+    Rational delta = s1*s1*s2*s2 + 18*s1*s2*s3 - 27*s3*s3 - 4*s1*s1*s1*s3 - 4*s2*s2*s2;
+    // Now check if the numerator and denominator of delta are both perfect squares...
+    if (delta.perfect_square()) {
+      G->initialize("ALTERNATING",3);
+    }
+    else {
+      G->initialize("SYMMETRIC",3);
+    }
+    return true;
+  }
+
+  if (irreducible && NTL::ProbPrime(degree)) {
+    // If this polynomial has precisely two non-real roots, the Galois group is S(degree); 
+    // however the degree of this polynomial must be at least five and using Descartes' rule 
+    // of signs we can at best conclusively demonstrate the existence of only two real roots, 
+    // one positive and one negative. 
+    unsigned int i,ncomplex,nchange = 0,nreal = 0; 
+    int s,nsign;
+
+    nsign = (terms[0] > 0) ? 1 : -1;
+    // First the positive real roots...
+    for(i=1; i<=degree; ++i) {
+      if (nsign*terms[i] < 0) {
+        nchange++;
+        nsign *= -1;
+      }
+    }
+    if (nchange < 2) {
+      nreal += nchange;
+    }
+    else if (nchange == 2) {
+      kind y1,y2,x = zero;
+      bool rfound = false;
+
+      y1 = evaluate(x);
+      for(i=1; i<=50; ++i) {
+        x += unity;
+        y2 = evaluate(x);
+        if (y1*y2 < 0) {
+          rfound = true;
+          break;
+        }
+      }
+      // If we find a positive root, that means in fact there are 
+      // two of them...
+      if (rfound) nreal += 2;
+    }
+    // Now the negative real roots...
+    nchange = 0;
+    nsign = (terms[0] > 0) ? 1 : -1;
+    for(i=1; i<=degree; ++i) {
+      s = ((i % 2) == 0) ? 1 : -1;
+      if (nsign*s*terms[i] < 0) {
+        nchange++;
+        nsign *= -1;
+      } 
+    }
+    if (nchange < 2) {
+      nreal += nchange;
+    }
+    else if (nchange == 2) {
+      kind y1,y2,x = zero;
+      bool rfound = false;
+
+      y1 = evaluate(x);
+      for(i=1; i<=50; ++i) {
+        x = x - unity;
+        y2 = evaluate(x);
+        if (y1*y2 < 0) {
+          rfound = true;
+          break;
+        }
+      }
+      // If we find a negative root, that means in fact there are 
+      // two of them...
+      if (rfound) nreal += 2;
+    }
+    // Finally, the number of non-real roots is the degree minus the number of real roots...
+    ncomplex = degree - nreal;
+    // Except that the number of complex roots must be even since the polynomial is over the 
+    // reals...
+    if ((ncomplex % 2) != 0) ncomplex--;
+    if (ncomplex == 2) {
+      G->initialize("SYMMETRIC",degree);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+template<class kind>
 void Integer_Polynomial<kind>::simplify()
 {
   unsigned int i,d = 0;
@@ -333,7 +466,7 @@ void Integer_Polynomial<kind>::set_value(kind x,unsigned int n)
 namespace SYNARMOSMA {
   template<>
   /// This method is an instantiation of the evaluate() method for the case of a multiprecision integer, needed to handle the modulus calculation with a multiprecision representation of the characteristic.
-  NTL::ZZ Integer_Polynomial<NTL::ZZ>::evaluate(NTL::ZZ x)
+  NTL::ZZ Integer_Polynomial<NTL::ZZ>::evaluate(NTL::ZZ x) const
   {
     if (characteristic > 0) {
       if (x >= characteristic) throw std::invalid_argument("Argument exceeds field characteristic!");  
@@ -350,7 +483,7 @@ namespace SYNARMOSMA {
 }
 
 template<class kind>
-kind Integer_Polynomial<kind>::evaluate(kind x)
+kind Integer_Polynomial<kind>::evaluate(kind x) const
 {
   if (characteristic > 0) {
     if (x >= (signed) characteristic) throw std::invalid_argument("Argument exceeds field characteristic!");

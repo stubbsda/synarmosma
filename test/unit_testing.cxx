@@ -18,6 +18,18 @@ int main(int argc,char** argv)
     qx.push_back(SYNARMOSMA::Rational(3,5));
     if (SYNARMOSMA::compute_mean(qx,"Harmonic") != s) return 1;
   }
+  else if (test == "Integer_Polynomial") {
+    std::vector<NTL::ZZ> vx;
+    vx.push_back(NTL::to_ZZ(3)); vx.push_back(NTL::to_ZZ(0)); vx.push_back(NTL::to_ZZ(0));
+    vx.push_back(NTL::to_ZZ(9)); vx.push_back(NTL::to_ZZ(-15)); vx.push_back(NTL::to_ZZ(2));
+    SYNARMOSMA::Integer_Polynomial<NTL::ZZ> p(vx);
+    p.compute_irreducibility(25);
+    if (!p.get_irreducibility()) return 1;
+    SYNARMOSMA::Group G;
+    // The Galois group in this case is the symmetric group on five elements
+    p.compute_galois_group(&G);
+    if (G.order() != 120) return 1;
+  }
   else if (test == "Polynomial") {
     SYNARMOSMA::Polynomial<SYNARMOSMA::Rational> p(2),q(3);
     SYNARMOSMA::Polynomial<SYNARMOSMA::Rational> r = p + q;
