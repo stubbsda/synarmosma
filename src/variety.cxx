@@ -98,6 +98,17 @@ Variety<kind>::~Variety()
 }
 
 template<class kind>
+void Variety<kind>::initialize(int N,int p)
+{
+  clear();
+
+  nequation = N;
+  characteristic = p;
+
+  allocate();
+}
+
+template<class kind>
 void Variety<kind>::allocate()
 {
   if (nequation < 1) throw std::invalid_argument("The number of equations to be allocated must be greater than zero!");
@@ -210,6 +221,120 @@ void Variety<kind>::clear()
   linear = false;
   homogeneous = false;
   projective = false;
+}
+
+namespace SYNARMOSMA {
+  template<>
+  /// This method is an instantiation of evaluate() for the case of a rational number, which is needed because certain operations (modulus and augmented assignment) are not defined for the Rational class.
+  void Variety<Rational>::evaluate(const std::vector<Rational>& x,std::vector<Rational>& eqns) const
+  {
+    unsigned int i,j,k,l,d;
+    Rational s,t,product;
+
+    eqns.clear();
+    for(i=0; i<nequation; ++i) {
+      t = remainder[i];
+      for(j=0; j<equations[i].size(); ++j) {
+        product = equations[i][j].coefficient;
+        for(k=0; k<equations[i][j].exponents.size(); ++k) {
+          s = x[equations[i][j].exponents[k].first];
+          d = equations[i][j].exponents[k].second;
+          if (d > 1) {
+            for(l=0; l<d-1; ++l) {
+              s = s*s;
+            }
+          }
+          product = product*s; 
+        }
+        t = t + product;
+      }
+      eqns.push_back(t);
+    }
+  }
+}
+
+template<class kind>
+void Variety<kind>::evaluate(const std::vector<kind>& x,std::vector<kind>& eqns) const
+{
+  unsigned int i,j,k,l,d;
+  kind s,t,product;
+
+  eqns.clear();
+  for(i=0; i<nequation; ++i) {
+    t = remainder[i];
+    for(j=0; j<equations[i].size(); ++j) {
+      product = equations[i][j].coefficient;
+      for(k=0; k<equations[i][j].exponents.size(); ++k) {
+        s = x[equations[i][j].exponents[k].first];
+        d = equations[i][j].exponents[k].second;
+        if (d > 1) {
+          for(l=0; l<d-1; ++l) {
+            s *= s;
+          }
+        }
+      }
+      t += product;
+    }
+    if (characteristic > 0) t = t % characteristic;
+    eqns.push_back(t);
+  }
+}
+
+namespace SYNARMOSMA {
+  template<>
+  /// This method is an instantiation of solve() for the case of a rational number and does nothing but throw an exception since the rationals have characteristic zero.
+  void Variety<Rational>::solve(std::vector<Rational>& solutions) const
+  {
+    throw std::invalid_argument("The Variety::solve method can only be used with finite fields!");
+  }
+}
+
+template<class kind>
+void Variety<kind>::solve(std::vector<kind>& solutions) const
+{
+  if (characteristic == 0) throw std::invalid_argument("The Variety::solve method can only be used with finite fields!");
+
+  UINT64 i,j,p,q,t;
+  bool good;
+  std::vector<kind> candidate,eqns;
+  const UINT64 ulimit = ipow(characteristic,characteristic);
+
+  solutions.clear();
+
+  for(i=0; i<characteristic; ++i) {
+    candidate.push_back(Variety<kind>::zero);
+  }
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared) private(i,j,p,q,t,good,candidate,eqns)
+#endif
+  for(i=0; i<ulimit; ++i) {
+    t = i;
+    for(j=0; j<characteristic; ++j) {
+      p = ipow(characteristic,characteristic-1-j);
+      q = t/p;
+      // This conversion shouldn't be an issue since q will always lie between 0 and characteristic-1, though t and p 
+      // may be extremely large even for modest values of the field characteristic, e.g. 11^(11) = 285,311,670,611. 
+      candidate[j] = kind(q);
+      t = t - q*p;
+    }
+    evaluate(candidate,eqns);
+    good = true;
+    for(j=0; j<nequation; ++j) {
+      if (eqns[j] != Variety<kind>::zero) {
+        good = false;
+        break;
+      }
+    }
+    if (good) {
+#ifdef _OPENMP
+#pragma omp critical
+#endif
+      for(j=0; j<characteristic; ++j) {
+        solutions.push_back(candidate[j]);
+      }
+    }
+  }
 }
 
 namespace SYNARMOSMA {

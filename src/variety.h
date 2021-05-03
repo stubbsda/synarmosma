@@ -64,7 +64,7 @@ namespace SYNARMOSMA {
     Variety();
     /// The principal constructor for the Variety class, which sets the Variety::nequation property to the argument and then calls the allocate() method.
     Variety(int);
-    /// This constructor sets Variety::nequation equal to the first argument and the set argument is the characteristic of the base field; the constructor then calls the allocate() method.
+    /// This constructor sets Variety::nequation equal to the first argument and Variety::characteristic to the second argument; the constructor then calls the allocate() method.
     Variety(int,int);
     /// The standard copy constructor which copies over the properties from the source instance. 
     Variety(const Variety&);
@@ -72,6 +72,8 @@ namespace SYNARMOSMA {
     Variety& operator =(const Variety&);
     /// The destructor which, if Variety::nequation is greater than -1, frees the memory in the Variety::equations property.
     ~Variety();
+    /// This method calls the clear() method, sets Variety::nequation to the first argument and Variety::characteristic to the second argument and finally calls the allocate() method.
+    void initialize(int,int);
     /// This method writes the properties of this instance of the class to a binary disk file and returns the number of bytes written to the file.
     int serialize(std::ofstream&) const;
     /// This method calls the clear() method on the instance and then reads the properties from a binary disk file and returns the number of bytes read.
@@ -86,7 +88,11 @@ namespace SYNARMOSMA {
     void set_remainder(int,kind);
     /// This method first checks if the variety is projective and, if not, adds a further variable to it so as to make each term homogeneous for each of the equations separately. 
     void make_projective();
-    /// This method frees the memory associated with the Variety::equations property (if any has been allocated), clears the Variety::remainder and Variety::dependencies vectors and sets all of the class' properties back to their default values.
+    /// This method uses a brute force approach to finding solutions to the equations of the variety over a finite field \f$\textnormal{GF}(p)\f$ for \f$p\f$ prime, so it will throw an exception if Variety::characteristic is zero. Due to the problem of overflow, this method should also only be used if Variety::characteristic is less than seventeen. The solutions found (each of size Variety::characteristic), if any, are written successively to the method's unique argument.
+    void solve(std::vector<kind>&) const;
+    /// This method computes the value of the variety's equations for a given set of values of the variables, the method's first argument, and writes the equation values to the method's second argument, which will have a length equal to Variety::nequation.
+    void evaluate(const std::vector<kind>&,std::vector<kind>&) const;
+    /// This method frees the memory associated with the Variety::equations property when Variety::nequation is greater than zero, clears the Variety::remainder and Variety::dependencies vectors and sets all of the class' properties back to their default values.
     void clear();
     /// This method tries to determine the correct value of various of the class properties, such as Variety::homogeneous, Variety::linear, Variety::dependencies and Variety::projective. 
     void compute_properties();

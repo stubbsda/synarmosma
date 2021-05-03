@@ -78,7 +78,7 @@ namespace SYNARMOSMA {
     /// The standard copy constructor - it calls the clear() method and then copies over all properties from the source instance to this one.
     Polynomial(const Polynomial&);
     /// This method evaluates the polynomial at the method's argument \f$\alpha\f$, returning the value of \f$p(\alpha)\f$.
-    kind evaluate(kind);
+    kind evaluate(kind) const;
     /// This method returns the value of the degree.
     unsigned int get_degree() const;
     /// This method returns true if this is the zero polynomial and false otherwise.

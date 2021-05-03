@@ -271,7 +271,7 @@ void Polynomial<kind>::set_value(kind x,unsigned int n)
 }
 
 template<class kind>
-kind Polynomial<kind>::evaluate(kind x)
+kind Polynomial<kind>::evaluate(kind x) const
 {
   int i;
   kind y = kind(0);

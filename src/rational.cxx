@@ -134,6 +134,48 @@ int Rational::deserialize(std::ifstream& s)
   return count;
 }
 
+unsigned int Rational::reduce(unsigned int p) const
+{
+  if (d % p == 0) throw std::invalid_argument("The denominator must not be a multiple of the characteristic!");
+  // This method must convert this rational number to an element of GF(p) for prime p, by first reducing 
+  // the numerator and denominator over p and then doing the multiplication in the finite field.
+  unsigned int np,dp;
+
+  np = n % p;
+  dp = d % p;
+  if (np == 0 || dp == 1) return np;
+  // In this more complex case, we need to actually carry out the multiplication np * dp^(-1) in GF(p); we 
+  // begin by using the Euclidean algorithm to find the value of dp^(-1) in GF(p), i.e. solving the congruence
+  // a*dp = 1 mod p for a
+  unsigned int i = 1;
+  std::vector<unsigned int> r,q;
+  std::vector<int> s,t;
+  s.push_back(1); s.push_back(0);
+  t.push_back(0); t.push_back(1);
+  r.push_back(p); r.push_back(dp);
+  q.push_back(0);
+  
+  do {
+    q.push_back(r[i-1]/r[i]);
+    r.push_back(r[i-1] - q[i]*r[i]);
+    s.push_back(s[i-1] - q[i]*s[i]);
+    t.push_back(t[i-1] - q[i]*t[i]);
+    if (r[i+1] == 1) break;
+    i++;
+  } while(true);
+  // Correct the result so that it belongs to the right domain for this Galois field...
+  int m,tf = t[t.size()-1];
+  do {
+    m = tf + p;
+    if (m >= 0) break;
+  } while(true);
+  unsigned int um = (unsigned) m;
+  // Now do the multiplication and return the result...
+  unsigned int output = (np * um) % p;
+  
+  return output; 
+}
+
 bool Rational::perfect_square() const
 {
   // We use binary search to check if both the numerator and 

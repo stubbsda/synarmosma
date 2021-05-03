@@ -327,7 +327,7 @@ namespace SYNARMOSMA
 {
   template<>
   /// This method is specialized to handle the base of a NTL::ZZ base field, due to the complexity of reducing a multiprecision integer modulo a prime p.   
-  Variety<unsigned int> Functional_Equation<NTL::ZZ>::reduce(unsigned int p)
+  void Functional_Equation<NTL::ZZ>::reduce(unsigned int p,Variety<unsigned int>* output) const
   {
     if (!NTL::ProbPrime(p)) throw std::invalid_argument("Functional equation must be reduced over a prime!");
     unsigned int i,j,in1;
@@ -335,11 +335,10 @@ namespace SYNARMOSMA
     NTL::ZZ z;
     std::pair<unsigned int,unsigned int> duo;
     std::tuple<Integer_Polynomial<NTL::ZZ>,Integer_Polynomial<NTL::ZZ>,unsigned int> trio;
-    Variety<unsigned int> output(p,p);
     Integer_Polynomial<NTL::ZZ> py;
     Monomial<unsigned int> term;
 
-    output.clear();
+    output->initialize(p,p);
 
     for(i=0; i<p; ++i) {
       z = NTL::to_ZZ(long(i));
@@ -359,20 +358,19 @@ namespace SYNARMOSMA
         // Finally we have to find out the exponent 
         duo.second = std::get<2>(trio);
         term.exponents.push_back(duo);
-        output.add_term(i,term);
+        output->add_term(i,term);
         term.exponents.clear();
       }
       NTL::conv(q,remainder.evaluate(z));
       in1 = std::abs(q % p);
-      output.set_remainder(i,in1);
+      output->set_remainder(i,in1);
     }
-    output.compute_properties();
-    return output;
+    output->compute_properties();
   }
 }
 
 template<class kind>
-Variety<unsigned int> Functional_Equation<kind>::reduce(unsigned int p)
+void Functional_Equation<kind>::reduce(unsigned int p,Variety<unsigned int>* output) const
 {
   if (!NTL::ProbPrime(p)) throw std::invalid_argument("Functional equation must be reduced over a prime!");
 
@@ -380,11 +378,10 @@ Variety<unsigned int> Functional_Equation<kind>::reduce(unsigned int p)
   kind q;
   std::pair<unsigned int,unsigned int> duo;
   std::tuple<Integer_Polynomial<kind>,Integer_Polynomial<kind>,unsigned int> trio;
-  Variety<unsigned int> output(p,p);
   Integer_Polynomial<kind> py;
   Monomial<unsigned int> term;
 
-  output.clear();
+  output->initialize(p,p);
 
   for(i=0; i<p; ++i) {
     for(j=0; j<terms.size(); ++j) {
@@ -405,14 +402,13 @@ Variety<unsigned int> Functional_Equation<kind>::reduce(unsigned int p)
       // Finally we have to find out the exponent 
       duo.second = std::get<2>(trio);
       term.exponents.push_back(duo);
-      output.add_term(i,term);
+      output->add_term(i,term);
       term.exponents.clear();
     }
     q = remainder.evaluate(i);
     in1 = q % p;
     if (in1 < 0) in1 *= -1;
-    output.set_remainder(i,in1);
+    output->set_remainder(i,in1);
   }
-  output.compute_properties();
-  return output;
+  output->compute_properties();
 }

@@ -57,6 +57,8 @@ namespace SYNARMOSMA {
     bool perfect_square() const;
     /// This method returns true if this rational number is zero and false otherwise.
     bool is_null() const;
+    /// This method reduces the rational number over the Galois field \f$\textnormal{GF}(p)\f$ for prime \f$p\f$, the method's argument, and then returns this reduced element of the Galois field.
+    unsigned int reduce(unsigned int) const;
     /// This method returns the numerator.
     NTL::ZZ get_numerator() const;
     /// This method returns the denominator.

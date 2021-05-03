@@ -3,6 +3,7 @@
 #include <synarmosma/directed_graph.h>
 #include <synarmosma/group.h>
 #include <synarmosma/integer_matrix.h>
+#include <synarmosma/variety.h>
 
 int main(int argc,char** argv)
 {
