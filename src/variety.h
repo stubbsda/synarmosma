@@ -41,7 +41,7 @@ namespace SYNARMOSMA {
     std::vector<Monomial<kind> >* equations;
     /// This vector stores the remainder term for each equation in the variety and
     /// thus should have a length equal to Variety::nequation.
-    std::vector<kind> remainder;
+    std::vector<kind> constant;
     /// This property is a vector of integer sets, each element of which contains the
     /// independent variables upon which this equation in the variety depends.
     std::vector<std::set<unsigned int> > dependencies;
@@ -85,7 +85,7 @@ namespace SYNARMOSMA {
     /// This method directly adds a new term, the second argument, to the equation specified by the first argument. 
     bool add_term(int,const Monomial<kind>&);
     /// This method sets the remainder to the value in the second argument for the equation specified by the first argument. 
-    void set_remainder(int,kind);
+    void set_constant(int,kind);
     /// This method first checks if the variety is projective and, if not, adds a further variable to it so as to make each term homogeneous for each of the equations separately. 
     void make_projective();
     /// This method uses a brute force approach to finding solutions to the equations of the variety over a finite field \f$\textnormal{GF}(p)\f$ for \f$p\f$ prime, so it will throw an exception if Variety::characteristic is zero. Due to the problem of overflow, this method should also only be used if Variety::characteristic is less than seventeen. The solutions found (each of size Variety::characteristic), if any, are written successively to the method's unique argument.
@@ -103,11 +103,11 @@ namespace SYNARMOSMA {
   };
 
   template<class kind>
-  inline void Variety<kind>::set_remainder(int n,kind r)
+  inline void Variety<kind>::set_constant(int n,kind r)
   {
     if (n < 0 || n >= (signed) nequation) throw std::invalid_argument("Illegal equation number in Variety::set_remainder!");
 
-    remainder[n] = r;
+    constant[n] = r;
   }
 
   template<class kind>
@@ -129,7 +129,7 @@ namespace SYNARMOSMA {
         s << "x(" << term.exponents[term.exponents.size()-1].first << ")^" << term.exponents[term.exponents.size()-1].second;
         if (j < source.equations[i].size()-1) s << " + ";
       }
-      if (source.remainder[i] > Variety<kind>::zero) s << " + " << source.remainder[i];
+      if (source.constant[i] > Variety<kind>::zero) s << " + " << source.constant[i];
       s << " = 0" << std::endl;
     }
     return s;

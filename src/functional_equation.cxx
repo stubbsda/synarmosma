@@ -2,24 +2,14 @@
 
 using namespace SYNARMOSMA;
 
-template<class kind>
-Functional_Equation<kind>::Functional_Equation()
+Functional_Equation::Functional_Equation()
 {
 
 }
 
-template<class kind>
-Functional_Equation<kind>::Functional_Equation(unsigned int n)
-{
-  if (n == 0) throw std::invalid_argument("The degree of the functional equation must be greater than zero!");
-  initialize(n);
-}
-
-template<class kind>
-Functional_Equation<kind>::Functional_Equation(const std::string& filename)
+Functional_Equation::Functional_Equation(const std::string& filename)
 {
   unsigned int i;
-  bool first = true;
   std::string line,store;
   std::vector<std::string> alpha,beta,exponents;
   std::vector<unsigned int> bk;
@@ -35,12 +25,6 @@ Functional_Equation<kind>::Functional_Equation(const std::string& filename)
       if (line.empty()) continue;
       // If the line begins with a #, ignore it
       if (line[0] == '#') continue;
-      if (first) {
-        // We need to determine the field of this equation 
-        trim(line);
-        first = false;
-        continue;
-      }
       // Find the position of the colons
       for(i=0; i<line.length(); ++i) {
         if (line[i] == ':') bk.push_back(i);
@@ -63,155 +47,136 @@ Functional_Equation<kind>::Functional_Equation(const std::string& filename)
   }
   s.close();
 
-  analyze_file(alpha,beta,exponents);
+  parse_equation(alpha,beta,exponents);
 }
 
-namespace SYNARMOSMA {
-  template<>
-  /// This method has to specialized for the NTL::ZZ base field again due to the complexity of reading in multiprecision integers as input data.
-  void Functional_Equation<NTL::ZZ>::analyze_file(std::vector<std::string>& alpha,std::vector<std::string>& beta,std::vector<std::string>& exponents)
-  {
-    unsigned int i,j,degree;
-    char c;
-    std::string store;
-    Integer_Polynomial<NTL::ZZ> p1,p2;
-    std::vector<NTL::ZZ> vx;
-
-    for(i=0; i<alpha.size(); ++i) {
-      degree = boost::lexical_cast<unsigned int>(exponents[i]);
-      for(j=0; j<alpha[i].length(); ++j) {
-        c = alpha[i][j];
-        if (c == '(') continue;
-        if (c == ',' || c == ')') {
-          vx.push_back(NTL::to_ZZ(boost::lexical_cast<signed int>(store)));
-          store.clear();
-          continue;
-        }
-        store.push_back(c);
-      }
-      p1 = Integer_Polynomial<NTL::ZZ>(vx);
-
-      vx.clear();
-      store.clear();
-      if (degree == 0) {
-        remainder = p1;
-        continue;
-      }
-      for(j=0; j<beta[i].length(); ++j) {
-        c = beta[i][j];
-        if (c == '(') continue;
-        if (c == ',' || c == ')') {
-          vx.push_back(NTL::to_ZZ(boost::lexical_cast<signed int>(store)));
-          store.clear();
-          continue;
-        }
-        store.push_back(c);
-      }
-      p2 = Integer_Polynomial<NTL::ZZ>(vx);
-
-      vx.clear();
-      store.clear();
-      std::tuple<Integer_Polynomial<NTL::ZZ>,Integer_Polynomial<NTL::ZZ>,unsigned int> trio(p1,p2,degree);
-      terms.push_back(trio);
-    }
-    simplify();
-    if (!consistent()) throw std::invalid_argument("The functional equation input is not consistent with this class!");
-  }
-}
-
-template<class kind>
-void Functional_Equation<kind>::analyze_file(std::vector<std::string>& alpha,std::vector<std::string>& beta,std::vector<std::string>& exponents)
+void Functional_Equation::parse_equation(const std::vector<std::string>& alpha,const std::vector<std::string>& beta,const std::vector<std::string>& exponents)
 {
   unsigned int i,j,degree;
+  int p,q;
   char c;
-  std::string store;
-  Integer_Polynomial<kind> p1,p2;
-  std::vector<kind> vx;
+  bool top;
+  std::string numerator,denominator;
+  Polynomial<Rational> p1,p2;
+  std::vector<Rational> vx;
 
   for(i=0; i<alpha.size(); ++i) {
     degree = boost::lexical_cast<unsigned int>(exponents[i]);
     for(j=0; j<alpha[i].length(); ++j) {
       c = alpha[i][j];
-      if (c == '(') continue;
-      if (c == ',' || c == ')') {
-        vx.push_back(boost::lexical_cast<signed int>(store));
-        store.clear();
+      if (c == '(') {
+        top = true;
         continue;
       }
-      store.push_back(c);
+      if (c == ',' || c == ')') {
+        if (denominator.empty()) denominator = "1";
+        p = boost::lexical_cast<signed int>(numerator);
+        q = boost::lexical_cast<signed int>(denominator);
+        vx.push_back(Rational(p,q));
+        denominator.clear();
+        numerator.clear();
+        top = true;
+        continue;
+      }
+      if (c == '/') {
+        top = false;
+        continue;
+      }
+      if (top) {
+        numerator.push_back(c);
+      }
+      else {
+        denominator.push_back(c);
+      }
     }
-    p1 = Integer_Polynomial<kind>(vx);
+    p1 = Polynomial<Rational>(vx);
 
     vx.clear();
-    store.clear();
+    numerator.clear();
+    denominator.clear();
+    top = true;
     if (degree == 0) {
-      remainder = p1;
+      constant = p1;
       continue;
     }
     for(j=0; j<beta[i].length(); ++j) {
       c = beta[i][j];
-      if (c == '(') continue;
-      if (c == ',' || c == ')') {
-        vx.push_back(boost::lexical_cast<signed int>(store));
-        store.clear();
+      if (c == '(') {
+        top = true;
         continue;
       }
-      store.push_back(c);
+      if (c == ',' || c == ')') {
+        if (denominator.empty()) denominator = "1";
+        p = boost::lexical_cast<signed int>(numerator);
+        q = boost::lexical_cast<signed int>(denominator);
+        vx.push_back(Rational(p,q));
+        denominator.clear();
+        numerator.clear();
+        top = true;
+        continue;
+      }
+      if (c == '/') {
+        top = false;
+        continue;
+      }
+      if (top) {
+        numerator.push_back(c);
+      }
+      else {
+        denominator.push_back(c);
+      }
     }
-    p2 = Integer_Polynomial<kind>(vx);
+    p2 = Polynomial<Rational>(vx);
 
     vx.clear();
-    store.clear();
-    std::tuple<Integer_Polynomial<kind>,Integer_Polynomial<kind>,unsigned int> trio(p1,p2,degree);
+    numerator.clear();
+    denominator.clear();
+    top = true;
+    std::tuple<Polynomial<Rational>,Polynomial<Rational>,unsigned int> trio(p1,p2,degree);
     terms.push_back(trio);
   }
   simplify();
   if (!consistent()) throw std::invalid_argument("The functional equation input is not consistent with this class!");
 }
 
-template<class kind>
-Functional_Equation<kind>::Functional_Equation(const Functional_Equation& source)
+Functional_Equation::Functional_Equation(const Functional_Equation& source)
 {
   linear = source.linear;
   homogeneous = source.homogeneous;
   terms = source.terms;
-  remainder = source.remainder;
+  constant = source.constant;
 }
 
-template<class kind>
-Functional_Equation<kind>& Functional_Equation<kind>::operator =(const Functional_Equation<kind>& source)
+Functional_Equation& Functional_Equation::operator =(const Functional_Equation& source)
 {
   if (this == &source) return *this;
 
   linear = source.linear;
   homogeneous = source.homogeneous;
   terms = source.terms;
-  remainder = source.remainder;
+  constant = source.constant;
 
   return *this;
 }
 
-template<class kind>
-Functional_Equation<kind>::~Functional_Equation()
+Functional_Equation::~Functional_Equation()
 {
 
 }
 
-template<class kind>
-void Functional_Equation<kind>::clear()
+void Functional_Equation::clear()
 {
   terms.clear();
-  remainder.clear();
+  constant.clear();
   linear = false;
   homogeneous = false;
 }
 
-template<class kind>
-int Functional_Equation<kind>::serialize(std::ofstream& s) const
+int Functional_Equation::serialize(std::ofstream& s) const
 {
   unsigned int i,j,n;
   int count = 0;
-  Integer_Polynomial<kind> p;
+  Polynomial<Rational> p;
   
   s.write((char*)(&linear),sizeof(bool)); count += sizeof(bool);
   s.write((char*)(&homogeneous),sizeof(bool)); count += sizeof(bool);
@@ -225,17 +190,16 @@ int Functional_Equation<kind>::serialize(std::ofstream& s) const
     p = std::get<1>(terms[i]);
     count += p.serialize(s);
   }
-  count += remainder.serialize(s);
+  count += constant.serialize(s);
   
   return count;
 }
 
-template<class kind>
-int Functional_Equation<kind>::deserialize(std::ifstream& s)
+int Functional_Equation::deserialize(std::ifstream& s)
 {
   unsigned int i,j,n;
   int count = 0;
-  Integer_Polynomial<kind> p1,p2;
+  Polynomial<Rational> p1,p2;
 
   clear();
 
@@ -246,39 +210,14 @@ int Functional_Equation<kind>::deserialize(std::ifstream& s)
     s.read((char*)(&j),sizeof(int)); count += sizeof(int);
     count += p1.deserialize(s);
     count += p2.deserialize(s);
-    terms.push_back(std::tuple<Integer_Polynomial<kind>,Integer_Polynomial<kind>,unsigned int>(p1,p2,j));
+    terms.push_back(std::tuple<Polynomial<Rational>,Polynomial<Rational>,unsigned int>(p1,p2,j));
   }
-  count += remainder.deserialize(s);
+  count += constant.deserialize(s);
 
   return count;
 }
 
-template<class kind>
-void Functional_Equation<kind>::initialize(unsigned int n)
-{
-  unsigned int i,d = (5 < (1 + 2*n)) ? 5 : 1 + 2*n;
-  Integer_Polynomial<kind> q,p;
-
-  for(i=1; i<n; ++i) {
-    q.generate(d - 1);
-    p.generate(d);
-    terms.push_back(std::tuple<Integer_Polynomial<kind>,Integer_Polynomial<kind>,unsigned int>(q,p,i));
-  }
-  do {
-    q.generate(d - 1);
-  } while(q.is_null());
-  p.generate(d);
-  terms.push_back(std::tuple<Integer_Polynomial<kind>,Integer_Polynomial<kind>,unsigned int>(q,p,n));
-
-  q.generate(d - 1);
-  remainder = q;
-
-  simplify();
-  if (!consistent()) throw std::runtime_error("The randomly generated functional equation is inconsistent!");
-}
-
-template<class kind>
-bool Functional_Equation<kind>::consistent() const
+bool Functional_Equation::consistent() const
 {
   unsigned int i,d,n = terms.size();
   std::set<unsigned int> dset;
@@ -292,16 +231,15 @@ bool Functional_Equation<kind>::consistent() const
   return true;
 }
 
-template<class kind>
-bool Functional_Equation<kind>::simplify()
+bool Functional_Equation::simplify()
 {
   unsigned int i,d = 0,n = terms.size();
   bool output = false;
-  Integer_Polynomial<kind> q;
-  std::vector<std::tuple<Integer_Polynomial<kind>,Integer_Polynomial<kind>,unsigned int> > nterms;
+  Polynomial<Rational> q;
+  std::vector<std::tuple<Polynomial<Rational>,Polynomial<Rational>,unsigned int> > nterms;
 
   if (!homogeneous) {
-    if (remainder.is_null()) {
+    if (constant.is_null()) {
       homogeneous = true;
       output = true;
     }
@@ -323,92 +261,60 @@ bool Functional_Equation<kind>::simplify()
   return true;  
 }
 
-namespace SYNARMOSMA
-{
-  template<>
-  /// This method is specialized to handle the base of a NTL::ZZ base field, due to the complexity of reducing a multiprecision integer modulo a prime p.   
-  void Functional_Equation<NTL::ZZ>::reduce(unsigned int p,Variety<unsigned int>* output) const
-  {
-    if (!NTL::ProbPrime(p)) throw std::invalid_argument("Functional equation must be reduced over a prime!");
-    unsigned int i,j,in1;
-    long q;
-    NTL::ZZ z;
-    std::pair<unsigned int,unsigned int> duo;
-    std::tuple<Integer_Polynomial<NTL::ZZ>,Integer_Polynomial<NTL::ZZ>,unsigned int> trio;
-    Integer_Polynomial<NTL::ZZ> py;
-    Monomial<unsigned int> term;
-
-    output->initialize(p,p);
-
-    for(i=0; i<p; ++i) {
-      z = NTL::to_ZZ(long(i));
-      for(j=0; j<terms.size(); ++j) {
-        trio = terms[j];
-        // First convert alpha(p) to an element of GF(p)
-        py = std::get<0>(trio);
-        NTL::conv(q,py.evaluate(z));
-        in1 = std::abs(q % p);
-        if (in1 == 0) continue;
-        term.coefficient = in1;
-        // Next we need to convert beta(p) to an element of GF(p)
-        py = std::get<1>(trio);
-        NTL::conv(q,py.evaluate(z));
-        in1 = std::abs(q % p);
-        duo.first = in1;
-        // Finally we have to find out the exponent 
-        duo.second = std::get<2>(trio);
-        term.exponents.push_back(duo);
-        output->add_term(i,term);
-        term.exponents.clear();
-      }
-      NTL::conv(q,remainder.evaluate(z));
-      in1 = std::abs(q % p);
-      output->set_remainder(i,in1);
-    }
-    output->compute_properties();
-  }
-}
-
-template<class kind>
-void Functional_Equation<kind>::reduce(unsigned int p,Variety<unsigned int>* output) const
+bool Functional_Equation::reduce(unsigned int p,Variety<unsigned int>* output) const
 {
   if (!NTL::ProbPrime(p)) throw std::invalid_argument("Functional equation must be reduced over a prime!");
 
-  unsigned int i,j,in1;
-  kind q;
+  unsigned int i,j,degree = terms.size();
+  bool failed;
+  NTL::ZZ z;
   std::pair<unsigned int,unsigned int> duo;
-  std::tuple<Integer_Polynomial<kind>,Integer_Polynomial<kind>,unsigned int> trio;
-  Integer_Polynomial<kind> py;
-  Monomial<unsigned int> term;
+  std::vector<unsigned int> solutions;
+  Rational q,a,gamma;
+  Monomial<unsigned int> t;
+  std::vector<Rational> cvector,dvector;
 
   output->initialize(p,p);
 
   for(i=0; i<p; ++i) {
-    for(j=0; j<terms.size(); ++j) {
-      trio = terms[j];
-      // First convert alpha(p) to an element of GF(p)
-      py = std::get<0>(trio);
-      q = py.evaluate(i);
-      in1 = q % p;
-      if (in1 < 0) in1 *= -1;
-      if (in1 == 0) continue;
-      term.coefficient = in1;
-      // Next we need to convert beta(p) to an element of GF(p)
-      py = std::get<1>(trio);
-      q = py.evaluate(i);
-      in1 = q % p;
-      if (in1 < 0) in1 *= -1;
-      duo.first = in1; 
-      // Finally we have to find out the exponent 
-      duo.second = std::get<2>(trio);
-      term.exponents.push_back(duo);
-      output->add_term(i,term);
-      term.exponents.clear();
+    q = Rational(i,1);
+    for(j=0; j<degree; ++j) {
+      a = std::get<0>(terms[j]).evaluate(q);
+      cvector.push_back(a);
+      a = std::get<1>(terms[j]).evaluate(q);
+      dvector.push_back(a);
     }
-    q = remainder.evaluate(i);
-    in1 = q % p;
-    if (in1 < 0) in1 *= -1;
-    output->set_remainder(i,in1);
+    gamma = constant.evaluate(q);
+    // If any of the delay vector elements has a denominator 
+    // which is divisible by the field characteristic, this 
+    // method must return with the information that no such 
+    // reduction is possible.
+    failed = false;
+    for(j=0; j<degree; ++j) {
+      z = dvector[j].get_denominator();
+      if (z % p == 0) {
+        failed = true;
+        break;
+      }
+    }
+    if (failed) return false;
+    z = gamma.get_denominator();
+    for(j=0; j<degree; ++j) {
+      z *= cvector[j].get_denominator();
+    }
+    a = Rational(z,NTL::ZZ(1));
+    for(j=0; j<degree; ++j) {
+      q = a*cvector[j];
+      t.coefficient = q.reduce(p);
+      duo.first = dvector[j].reduce(p);
+      duo.second = std::get<2>(terms[j]);
+      t.exponents.push_back(duo);
+      output->add_term(i,t);
+    }
+    q = a*gamma;
+    output->set_constant(i,q.reduce(p)); 
   }
+
   output->compute_properties();
+  return true;
 }

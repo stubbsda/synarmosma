@@ -3,8 +3,8 @@ include ../Makefile.config
 OBJECTS = global.o random.o cell.o nexus.o schema.o group.o graph.o geometry_wrapper.o word.o rational.o\
 variety_wrapper.o polynomial_wrapper.o integer_polynomial_wrapper.o proposition.o propositional_system.o\
 vertex_wrapper.o multitime_wrapper.o binary_matrix.o integer_matrix_wrapper.o matrix_wrapper.o logic_graph.o\
-functional_equation_wrapper.o homology.o homotopy.o markov_chain.o lattice.o pseudograph.o solver_wrapper.o\
-directed_graph.o poset.o edge.o
+functional_equation.o homology.o homotopy.o markov_chain.o lattice.o pseudograph.o solver_wrapper.o edge.o\
+directed_graph.o poset.o
 
 LD_FLAGS += -Wl,-rpath $(INSTALL_DIR)/lib
 
@@ -71,8 +71,8 @@ integer_polynomial_wrapper.o: global.h rational.h group.h integer_polynomial.h i
 variety_wrapper.o: global.h rational.h variety.h random.h variety.cxx variety_wrapper.cxx
 	$(CXX) $(CXX_FLAGS) -c variety_wrapper.cxx
 
-functional_equation_wrapper.o: global.h rational.h variety.h polynomial.h functional_equation.h functional_equation.cxx functional_equation_wrapper.cxx
-	$(CXX) $(CXX_FLAGS) -c functional_equation_wrapper.cxx
+functional_equation.o: global.h rational.h variety.h polynomial.h functional_equation.h functional_equation.cxx
+	$(CXX) $(CXX_FLAGS) -c functional_equation.cxx
 
 propositional_system.o: global.h graph.h proposition.h propositional_system.h propositional_system.cxx binary_matrix.h directed_graph.h
 	$(CXX) $(CXX_FLAGS) -c propositional_system.cxx

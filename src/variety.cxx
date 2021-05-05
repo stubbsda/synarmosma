@@ -55,7 +55,7 @@ Variety<kind>::Variety(const Variety<kind>& source)
   clear();
 
   unsigned int i;
-  remainder = source.remainder;
+  constant = source.constant;
   nequation = source.nequation;
   nvariable = source.nvariable;
   characteristic = source.characteristic;
@@ -76,7 +76,7 @@ Variety<kind>& Variety<kind>::operator =(const Variety<kind>& source)
   clear();
 
   unsigned int i;
-  remainder = source.remainder;
+  constant = source.constant;
   nequation = source.nequation;
   nvariable = source.nvariable;
   characteristic = source.characteristic;
@@ -199,7 +199,7 @@ void Variety<kind>::random_variety(unsigned int mdegree)
       term.exponents.clear();
     }
     rho = generate_coefficient(10);
-    remainder.push_back(rho);
+    constant.push_back(rho);
     dependencies.push_back(atoms);
   }
 }
@@ -213,7 +213,7 @@ void Variety<kind>::clear()
   // sets containing the variable dependency information for each equation in this
   // algebraic variety over GF(p).
   dependencies.clear();
-  remainder.clear();
+  constant.clear();
   if (nequation > 0) delete[] equations;
   nequation = 0;
   nvariable = 0;
@@ -233,7 +233,7 @@ namespace SYNARMOSMA {
 
     eqns.clear();
     for(i=0; i<nequation; ++i) {
-      t = remainder[i];
+      t = constant[i];
       for(j=0; j<equations[i].size(); ++j) {
         product = equations[i][j].coefficient;
         for(k=0; k<equations[i][j].exponents.size(); ++k) {
@@ -261,7 +261,7 @@ void Variety<kind>::evaluate(const std::vector<kind>& x,std::vector<kind>& eqns)
 
   eqns.clear();
   for(i=0; i<nequation; ++i) {
-    t = remainder[i];
+    t = constant[i];
     for(j=0; j<equations[i].size(); ++j) {
       product = equations[i][j].coefficient;
       for(k=0; k<equations[i][j].exponents.size(); ++k) {
@@ -293,6 +293,7 @@ template<class kind>
 void Variety<kind>::solve(std::vector<kind>& solutions) const
 {
   if (characteristic == 0) throw std::invalid_argument("The Variety::solve method can only be used with finite fields!");
+  if (characteristic > 13) throw std::invalid_argument("The Variety::solve method will overflow if the field characteristic is greater than thirteen!");
 
   UINT64 i,j,p,q,t;
   bool good;
@@ -366,7 +367,7 @@ namespace SYNARMOSMA {
     for(i=0; i<nequation; ++i) {
       count += read_ZZ(s,q1);
       count += read_ZZ(s,q2);
-      remainder.push_back(Rational(q1,q2));
+      constant.push_back(Rational(q1,q2));
     }
     return count;
   }
@@ -397,7 +398,7 @@ namespace SYNARMOSMA {
     }
     for(i=0; i<nequation; ++i) {
       count += read_ZZ(s,q);
-      remainder.push_back(q);
+      constant.push_back(q);
     }
     return count;
   }
@@ -428,7 +429,7 @@ int Variety<kind>::read_equations(std::ifstream& s)
   }
   for(i=0; i<nequation; ++i) {
     s.read((char*)(&x),sizeof(kind)); count += sizeof(kind);
-    remainder.push_back(x);
+    constant.push_back(x);
   }
   return count;
 }
@@ -458,8 +459,8 @@ namespace SYNARMOSMA {
       }
     }
     for(i=0; i<nequation; ++i) {
-      count += write_ZZ(s,remainder[i].get_numerator());
-      count += write_ZZ(s,remainder[i].get_denominator());
+      count += write_ZZ(s,constant[i].get_numerator());
+      count += write_ZZ(s,constant[i].get_denominator());
     }
     return count;
   }
@@ -487,7 +488,7 @@ namespace SYNARMOSMA {
       }
     }
     for(i=0; i<nequation; ++i) {
-      count += write_ZZ(s,remainder[i]);
+      count += write_ZZ(s,constant[i]);
     }
     return count;
   }
@@ -517,7 +518,7 @@ int Variety<kind>::write_equations(std::ofstream& s) const
     }
   }
   for(i=0; i<nequation; ++i) {
-    x = remainder[i];
+    x = constant[i];
     s.write((char*)(&x),sizeof(kind)); count += sizeof(kind);
   }
   return count;
@@ -597,13 +598,13 @@ void Variety<kind>::make_projective()
       }
     }
     exponents.clear();
-    if (remainder[i] != Variety<kind>::zero) {
+    if (constant[i] != Variety<kind>::zero) {
       term.exponents.clear();
-      term.coefficient = remainder[i];
+      term.coefficient = constant[i];
       duo.second = in1;
       term.exponents.push_back(duo);
       equations[i].push_back(term);
-      remainder[i] = Variety<kind>::zero;
+      constant[i] = Variety<kind>::zero;
     }
   }
   nvariable += 1;
@@ -667,7 +668,7 @@ void Variety<kind>::compute_properties()
   homogeneous = true;
   projective = true;
   for(i=0; i<nequation; ++i) {
-    if (remainder[i] != Variety<kind>::zero) {
+    if (constant[i] != Variety<kind>::zero) {
       homogeneous = false;
       projective = false;
     }

@@ -49,9 +49,9 @@ namespace SYNARMOSMA {
     /// currently active.
     std::pair<kind,bool>* chronos;
     /// This property sets the length of the vector chronos and is so the maximum
-    /// number of possible temporal dimensions; currently set to the conventional
-    /// value of unity.
-    static const int tdimension = 1;
+    /// number of possible temporal dimensions; currently set to the mildly unconventional
+    /// value of two.
+    static const int tdimension = 2;
     /// This constant represents the smallest possible spatial separation between
     /// two moments of time; it is only meaningful when this template class is instantiated
     /// with a discrete base type.
@@ -78,6 +78,8 @@ namespace SYNARMOSMA {
     int serialize(std::ofstream&) const;
     /// This method first frees the memory of the Multitime::chronos array, reads in the Multitime::tdimension value, allocates the Multitime::chronos array and then reads in the contents of this array from a binary disk file and returns the number of bytes read.
     int deserialize(std::ifstream&);
+    /// This method returns the value of the Multitime::tdimension property.
+    static int get_dimension();
     /// This method returns the value of the sum of squares of the time values whose dimension is active.
     double norm() const;
     /// This method sets the time value of the element indicated by the second argument to the first argument and activates this element while deactivating all others.
@@ -105,6 +107,12 @@ namespace SYNARMOSMA {
     /// This overloading of the ostream operator writes the Multitime instance to the screen in a "pretty print" format.
     friend std::ostream& operator << <>(std::ostream&,const Multitime<kind>&);
   };
+
+  template<class kind>
+  inline int Multitime<kind>::get_dimension()
+  {
+    return tdimension;
+  }
 
   template<class kind>
   std::ostream& operator <<(std::ostream& s,const Multitime<kind>& source)
