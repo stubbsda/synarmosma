@@ -84,6 +84,8 @@ namespace SYNARMOSMA {
     double norm() const;
     /// This method sets the time value of the element indicated by the second argument to the first argument and activates this element while deactivating all others.
     void set(kind,int = 0);
+    /// This method sets the initial \f$n\f$ elements of the Multitime::chronos property to the method's argument, a vector of length \f$n\f$; all of the subsequent elements of Multitime::chronos are set to be inactive.
+    void set(const std::vector<kind>&);
     /// This method extracts the time coordinate value for each active time dimension and puts it in a vector that will be the method's output.
     void extract(std::vector<kind>&) const;
     /// This operator assigns as output for each element the sum of the coordinate values if both argument dimensions are active, otherwise one or the other coordinative value if only one dimension is active.

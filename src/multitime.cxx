@@ -88,6 +88,23 @@ void Multitime<kind>::set(kind alpha,int n)
 }
 
 template<class kind>
+void Multitime<kind>::set(const std::vector<kind>& alpha)
+{
+  const int n = (signed) alpha.size();
+  if (n > Multitime<kind>::tdimension) throw std::invalid_argument("Illegal vector length in Multitime::set method!");
+
+  int i;
+  for(i=0; i<n; ++i) {
+    chronos[i].first = alpha[i];
+    chronos[i].second = true;
+  }
+  for(i=n; i<Multitime<kind>::tdimension; ++i) {
+    chronos[i].first = kind(0);
+    chronos[i].second = false;
+  }
+}
+
+template<class kind>
 int Multitime<kind>::serialize(std::ofstream& s) const
 {
   int count = 0;

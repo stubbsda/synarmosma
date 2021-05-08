@@ -85,6 +85,8 @@ namespace SYNARMOSMA {
     bool is_null() const;
     /// This method returns the value of the coefficient specified by the method's unique argument.
     kind get_value(unsigned int) const;
+    /// This method writes the entire collection of coefficients of the polynomial, i.e. the Polynomial::terms property, to the method's unique argument.
+    void get_value(std::vector<kind>&) const;
     /// This method sets the coefficient specified by the second argument to the value specified by the first argument.
     void set_value(kind,unsigned int);
     /// This method clears the vector Polynomial::terms and restores all the scalar properties to their default value.

@@ -254,6 +254,12 @@ kind Polynomial<kind>::get_value(unsigned int n) const
 }
 
 template<class kind>
+void Polynomial<kind>::get_value(std::vector<kind>& vx) const
+{
+  vx = terms;
+}
+
+template<class kind>
 void Polynomial<kind>::set_value(kind x,unsigned int n)
 {
   if (n <= degree) {
