@@ -74,8 +74,42 @@ void Multitime<kind>::allocate()
   }
 }
 
+namespace SYNARMOSMA {
+  template<>
+  /// This method is an instantiation of set() for the case of a discrete time vector, which is needed because in this case the method's initial argument first needs to be converted to a 64 bit integer through division by Multitime::time_quantum.
+  void Multitime<INT64>::set(double alpha,int n)
+  {
+    if (n < 0 || n >= Multitime<INT64>::tdimension) throw std::invalid_argument("Illegal Multitime::set index!");
+
+    chronos[n].first = INT64(alpha/time_quantum);
+    chronos[n].second = true;
+    for(int i=0; i<Multitime<INT64>::tdimension; ++i) {
+      if (i == n) continue;
+      chronos[i].second = false;
+    }
+  }
+
+  template<>
+  /// This method is an instantiation of set() for the case of a discrete time vector, which is needed because in this case the elements of the input vector first need to be converted to 64 bit integers through division by Multitime::time_quantum.
+  void Multitime<INT64>::set(const std::vector<double>& alpha)
+  {
+    const int n = (signed) alpha.size();
+    if (n > Multitime<INT64>::tdimension) throw std::invalid_argument("Illegal vector length in Multitime::set method!");
+
+    int i;
+    for(i=0; i<n; ++i) {
+      chronos[i].first = INT64(alpha[i]/time_quantum);
+      chronos[i].second = true;
+    }
+    for(i=n; i<Multitime<INT64>::tdimension; ++i) {
+      chronos[i].first = 0;
+      chronos[i].second = false;
+    }
+  }
+}
+
 template<class kind>
-void Multitime<kind>::set(kind alpha,int n)
+void Multitime<kind>::set(double alpha,int n)
 {
   if (n < 0 || n >= Multitime<kind>::tdimension) throw std::invalid_argument("Illegal Multitime::set index!");
 
@@ -88,7 +122,7 @@ void Multitime<kind>::set(kind alpha,int n)
 }
 
 template<class kind>
-void Multitime<kind>::set(const std::vector<kind>& alpha)
+void Multitime<kind>::set(const std::vector<double>& alpha)
 {
   const int n = (signed) alpha.size();
   if (n > Multitime<kind>::tdimension) throw std::invalid_argument("Illegal vector length in Multitime::set method!");
@@ -142,6 +176,54 @@ int Multitime<kind>::deserialize(std::ifstream& s)
   return count;
 }
 
+namespace SYNARMOSMA {
+  template<>
+  /// This method is an instantiation of norm() for the case of a discrete time vector, which is needed because in this case the temporal elements first need to be converted to doubles through multiplication by Multitime::time_quantum.
+  double Multitime<INT64>::norm() const
+  {
+    double alpha,sum = 0.0;
+  
+    for(int i=0; i<Multitime<INT64>::tdimension; ++i) {
+      if (!chronos[i].second) continue;
+      alpha = time_quantum*double(chronos[i].first);
+      sum += alpha*alpha;
+    }
+    return sum;
+  }
+
+  template<>
+  /// This method is an instantiation of compactify() for the case of a discrete time vector, which is needed because in this case the temporal elements first need to be converted to doubles through multiplication by Multitime::time_quantum.
+  double Multitime<INT64>::compactify(double R) const
+  {
+    if (!chronos[0].second) std::invalid_argument("The initial time dimension must be active in the Multitime::compactify method!");
+    double alpha,sum = time_quantum*double(chronos[0].first);
+    const double pfactor = 2.0/M_PI;
+
+    for(int i=1; i<Multitime<INT64>::tdimension; ++i) {
+      if (!chronos[i].second) continue;
+      alpha = time_quantum*double(chronos[i].first);
+      alpha = pfactor*std::atan(alpha);
+      sum += alpha/R;
+    }
+    return sum;
+  }
+
+  template<>
+  /// This method is an instantiation of extract() for the case of a discrete time vector, which is needed because in this case the temporal elements first need to be converted to doubles through multiplication by Multitime::time_quantum.
+  void Multitime<INT64>::extract(std::vector<double>& tau) const
+  {
+    double alpha;
+
+    tau.clear();
+
+    for(int i=0; i<Multitime<INT64>::tdimension; ++i) {
+      if (!chronos[i].second) continue;
+      alpha = time_quantum*double(chronos[i].first);
+      tau.push_back(alpha);
+    }
+  }
+}
+
 template<class kind>
 double Multitime<kind>::norm() const
 {
@@ -149,13 +231,28 @@ double Multitime<kind>::norm() const
   
   for(int i=0; i<Multitime<kind>::tdimension; ++i) {
     if (!chronos[i].second) continue;
-    sum += double(chronos[i].first)*double(chronos[i].first);
+    sum += chronos[i].first*chronos[i].first;
   }
   return sum;
 }
 
 template<class kind>
-void Multitime<kind>::extract(std::vector<kind>& tau) const
+double Multitime<kind>::compactify(double R) const
+{
+  if (!chronos[0].second) std::invalid_argument("The initial time dimension must be active in the Multitime::compactify method!");
+  double alpha,sum = chronos[0].first;
+  const double pfactor = 2.0/M_PI;
+
+  for(int i=1; i<Multitime<kind>::tdimension; ++i) {
+    if (!chronos[i].second) continue;
+    alpha = pfactor*std::atan(chronos[i].first);
+    sum += alpha/R;
+  }
+  return sum;
+}
+
+template<class kind>
+void Multitime<kind>::extract(std::vector<double>& tau) const
 {
   tau.clear();
 

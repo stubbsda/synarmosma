@@ -82,12 +82,14 @@ namespace SYNARMOSMA {
     static int get_dimension();
     /// This method returns the value of the sum of squares of the time values whose dimension is active.
     double norm() const;
+    /// This method converts the instance to a scalar temporal value by compactifying the active higher-dimensional elements. The method first checks that the initial element of Multitime::chronos is active and then adds to it the remaining active elements \f$t_i\f$, after first performing the transformation \f$2\arctan(t_i)/(C\pi)\f$ (mapping it to the interval \f$[-C^{-1},C^{-1}]\f$), where \f$C > 1\f$ is the method's argument.
+    double compactify(double) const;
     /// This method sets the time value of the element indicated by the second argument to the first argument and activates this element while deactivating all others.
-    void set(kind,int = 0);
+    void set(double,int = 0);
     /// This method sets the initial \f$n\f$ elements of the Multitime::chronos property to the method's argument, a vector of length \f$n\f$; all of the subsequent elements of Multitime::chronos are set to be inactive.
-    void set(const std::vector<kind>&);
+    void set(const std::vector<double>&);
     /// This method extracts the time coordinate value for each active time dimension and puts it in a vector that will be the method's output.
-    void extract(std::vector<kind>&) const;
+    void extract(std::vector<double>&) const;
     /// This operator assigns as output for each element the sum of the coordinate values if both argument dimensions are active, otherwise one or the other coordinative value if only one dimension is active.
     friend Multitime<kind> operator + <>(const Multitime<kind>&,const Multitime<kind>&);
     /// This operator assigns as output for each element the product of the coordinate values if both argument dimensions are active, otherwise it is zero and the dimension is inactive.
