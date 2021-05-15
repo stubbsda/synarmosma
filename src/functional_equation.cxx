@@ -50,88 +50,63 @@ Functional_Equation::Functional_Equation(const std::string& filename)
   parse_equation(alpha,beta,exponents);
 }
 
-void Functional_Equation::parse_equation(const std::vector<std::string>& alpha,const std::vector<std::string>& beta,const std::vector<std::string>& exponents)
+void Functional_Equation::parse_polynomial(const std::string& polynomial,std::vector<Rational>& coefficients) const
 {
-  unsigned int i,j,degree;
+  // Note that this method assumes that a polynomial like 3x^4 - 11/2 x^2 + 7x - 2 is written as 
+  // (-2,7,-11/2,0,3), i.e. in ascending order of degree.
+  unsigned int i;
   int p,q;
   char c;
-  bool top;
+  bool top = true;
   std::string numerator,denominator;
+
+  coefficients.clear();
+
+  for(i=0; i<polynomial.length(); ++i) {
+    c = polynomial[i];
+    if (c == '(') {
+      top = true;
+      continue;
+    }
+    if (c == ',' || c == ')') {
+      if (denominator.empty()) denominator = "1";
+      p = boost::lexical_cast<signed int>(numerator);
+      q = boost::lexical_cast<signed int>(denominator);
+      coefficients.push_back(Rational(p,q));
+      denominator.clear();
+      numerator.clear();
+      top = true;
+      continue;
+    }
+    if (c == '/') {
+      top = false;
+      continue;
+    }
+    if (top) {
+      numerator.push_back(c);
+    }
+    else {
+      denominator.push_back(c);
+    }
+  }
+}
+
+void Functional_Equation::parse_equation(const std::vector<std::string>& alpha,const std::vector<std::string>& beta,const std::vector<std::string>& exponents)
+{  
+  unsigned int i,degree;
   Polynomial<Rational> p1,p2;
   std::vector<Rational> vx;
 
   for(i=0; i<alpha.size(); ++i) {
     degree = boost::lexical_cast<unsigned int>(exponents[i]);
-    for(j=0; j<alpha[i].length(); ++j) {
-      c = alpha[i][j];
-      if (c == '(') {
-        top = true;
-        continue;
-      }
-      if (c == ',' || c == ')') {
-        if (denominator.empty()) denominator = "1";
-        p = boost::lexical_cast<signed int>(numerator);
-        q = boost::lexical_cast<signed int>(denominator);
-        vx.push_back(Rational(p,q));
-        denominator.clear();
-        numerator.clear();
-        top = true;
-        continue;
-      }
-      if (c == '/') {
-        top = false;
-        continue;
-      }
-      if (top) {
-        numerator.push_back(c);
-      }
-      else {
-        denominator.push_back(c);
-      }
-    }
+    parse_polynomial(alpha[i],vx);
     p1 = Polynomial<Rational>(vx);
-
-    vx.clear();
-    numerator.clear();
-    denominator.clear();
-    top = true;
     if (degree == 0) {
       constant = p1;
       continue;
     }
-    for(j=0; j<beta[i].length(); ++j) {
-      c = beta[i][j];
-      if (c == '(') {
-        top = true;
-        continue;
-      }
-      if (c == ',' || c == ')') {
-        if (denominator.empty()) denominator = "1";
-        p = boost::lexical_cast<signed int>(numerator);
-        q = boost::lexical_cast<signed int>(denominator);
-        vx.push_back(Rational(p,q));
-        denominator.clear();
-        numerator.clear();
-        top = true;
-        continue;
-      }
-      if (c == '/') {
-        top = false;
-        continue;
-      }
-      if (top) {
-        numerator.push_back(c);
-      }
-      else {
-        denominator.push_back(c);
-      }
-    }
+    parse_polynomial(beta[i],vx);
     p2 = Polynomial<Rational>(vx);
-
-    vx.clear();
-    numerator.clear();
-    denominator.clear();
-    top = true;
     std::tuple<Polynomial<Rational>,Polynomial<Rational>,unsigned int> trio(p1,p2,degree);
     terms.push_back(trio);
   }

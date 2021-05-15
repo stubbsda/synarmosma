@@ -279,10 +279,9 @@ void Polynomial<kind>::set_value(kind x,unsigned int n)
 template<class kind>
 kind Polynomial<kind>::evaluate(kind x) const
 {
-  int i;
   kind y = kind(0);
   // Use Horner's method to speed evaluation of the polynomial
-  for(i=degree; i>0; --i) {
+  for(int i=degree; i>=0; --i) {
     y = y*x + terms[i];
   }
   return y;

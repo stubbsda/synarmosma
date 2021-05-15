@@ -9,24 +9,27 @@ namespace SYNARMOSMA {
   class Functional_Equation {
    protected:
     /// This property contains the individual terms of the functional equation, in the form of a triple, which
-    /// represent the mathematical expression \f$\sum_{i=1}^N q_i(x) F^i(p_i(x))\f$, where \f$q_i, p_i\in \mathbf{Q}[x]\f$
-    /// for all \f$1\le i\le N\f$. We use the Polynomial class to store the \f$p_i(x)\f$ and \f$q_i(x)\f$.
+    /// represent the mathematical expression \f$\sum_{i=1}^N \alpha_i(x) [F(\beta_i(x))]^i\f$, where the
+    /// \f$\alpha_i, \beta_i\in \mathbf{Q}[x]\f$ for \f$1\le i\le N\f$. We use the Polynomial class over 
+    /// the base type Rational to store the \f$\alpha_i(x)\f$ and \f$\beta_i(x)\f$.
     std::vector<std::tuple<Polynomial<Rational>,Polynomial<Rational>,unsigned int> > terms;
-    /// This property stores the inhomogeneous term \f$q_0(x)\in \mathbf{Q}[x]\f$ in the functional equation \f$\sum_{i=1}^N
-    /// q_i(x) F^i(p_i(x)) + q_0(x) = 0\f$, assuming it exists.
+    /// This property stores the inhomogeneous term \f$\gamma(x)\in \mathbf{Q}[x]\f$ in the functional equation \f$\sum_{i=1}^N
+    /// \alpha_i(x) [F(\beta_i(x))]^i + \gamma(x) = 0\f$, assuming it exists.
     Polynomial<Rational> constant;
-    /// This Boolean property is true if the functional equation has the form \f$q_1(x) F(p_1(x)) + q_0(x) = 0\f$,
-    /// where \f$p_1\f$ and the \f$q_i\f$ are members of \f$\mathbf{Q}[x]\f$.
+    /// This Boolean property is true if the functional equation has the form \f$\alpha_1(x) F(\beta_1(x)) + \gamma(x) = 0\f$,
+    /// where \f$\alpha_1\f$, \f$\beta_1\f$ and \f$\gamma\f$ are all members of \f$\mathbf{Q}[x]\f$.
     bool linear = false;
-    /// This Boolean property is true if the functional equation has the form \f$\sum_{i=1}^N q_i(x) F^i(p_i(x)) = 0\f$,
-    /// where \f$q_i, p_i\in \mathbf{Q}[x]\f$ for all \f$1\le i\le N\f$.
+    /// This Boolean property is true if the functional equation has the form \f$\sum_{i=1}^N \alpha_i(x) [F(\beta_i(x))]^i = 0\f$,
+    /// where \f$\alpha_i, \beta_i\in \mathbf{Q}[x]\f$ for all \f$1\le i\le N\f$, with the constant identically equal to zero.
     bool homogeneous = false;
 
-    /// This method parses three vectors of strings to build the contents of the Functional_Equation::terms and Functional_Equation::constant properties; the three arguments contain the coefficient polynomial \f$q_i(x)\f$, the argument polynomial \f$p_i(x)\f$ and the exponent \f$i\f$.
+    /// This method takes as its first argument a string of the form "(-1,0,2/3,7)", representing the rational polynomial \f$7x^3 + (2/3)x^2 -1\f$ in this case, and parses the string to form a vector of elements of the Rational class, written to the method's second argument, which can be used to initialize an instance of the Polynomial class.
+    void parse_polynomial(const std::string&,std::vector<Rational>&) const;
+    /// This method parses three vectors of strings to build the contents of the Functional_Equation::terms and Functional_Equation::constant properties; the three arguments contain the coefficient polynomial \f$\alpha_i(x)\f$, the argument polynomial \f$\beta_i(x)\f$ and the exponent \f$i\ge 1\f$ as well as the constant term \f$\gamma(x)\f$ when \f$i=0\f$. Each of these strings encoding a rational polynomial are then analyzed using parse_polynomial().
     void parse_equation(const std::vector<std::string>&,const std::vector<std::string>&,const std::vector<std::string>&);
     /// This method checks that the class instance is consistent with the mathematical model of a polynomial functional equation, i.e. the degree of each term in the equation is unique, and returns true if this is so.
     bool consistent() const;
-    /// This method eliminates terms whose coefficient polynomial \f$q_i(x)\f$ is identically zero and correctly sets the value of the Functional_Equation::linear and Functional_Equation::homogeneous properties; it returns true if any changes have been made to the instance.
+    /// This method eliminates terms whose coefficient polynomial \f$\alpha_i(x)\f$ is identically zero and correctly sets the value of the Functional_Equation::linear and Functional_Equation::homogeneous properties; it returns true if any changes have been made to the instance.
     bool simplify();
    public:
     /// The default constructor which does nothing.

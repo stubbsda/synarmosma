@@ -22,6 +22,7 @@ Multitime<kind>::Multitime(kind t)
 template<class kind>
 Multitime<kind>::Multitime(const Multitime<kind>& source)
 {
+  allocate();
   for(int i=0; i<Multitime<kind>::tdimension; ++i) {
     chronos[i] = source.chronos[i];
   }
@@ -31,7 +32,8 @@ template<class kind>
 Multitime<kind>& Multitime<kind>::operator=(const Multitime<kind>& source)
 {
   if (this == &source) return *this;
- 
+
+  allocate();
   for(int i=0; i<Multitime<kind>::tdimension; ++i) {
     chronos[i] = source.chronos[i];
   }
