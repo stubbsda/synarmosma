@@ -46,6 +46,7 @@ void Solver<kind>::clear()
   t = 1.0;
   homotopy = false;
   broyden = false;
+  verbose = false;
   method = Linear_Solver::iterative;
   dependencies.clear();
   current_solution.clear();
@@ -66,8 +67,9 @@ int Solver<kind>::serialize(std::ofstream& s) const
   s.write((char*)(&max_its),sizeof(int)); count += sizeof(int);
   s.write((char*)(&max_linear_its),sizeof(int)); count += sizeof(int);
   s.write((char*)(&dimension),sizeof(int)); count += sizeof(int);
-  s.write((char*)(&homotopy),sizeof(int)); count += sizeof(bool);
-  s.write((char*)(&broyden),sizeof(int)); count += sizeof(bool);
+  s.write((char*)(&homotopy),sizeof(bool)); count += sizeof(bool);
+  s.write((char*)(&broyden),sizeof(bool)); count += sizeof(bool);
+  s.write((char*)(&verbose),sizeof(bool)); count += sizeof(bool);
   s.write((char*)(&t),sizeof(int)); count += sizeof(double);
   s.write((char*)(&error_threshold),sizeof(int)); count += sizeof(double);
   n = (method == Linear_Solver::iterative) ? 0 : 1;
@@ -113,8 +115,9 @@ int Solver<kind>::deserialize(std::ifstream& s)
   s.read((char*)(&max_its),sizeof(int)); count += sizeof(int);
   s.read((char*)(&max_linear_its),sizeof(int)); count += sizeof(int);
   s.read((char*)(&dimension),sizeof(int)); count += sizeof(int);
-  s.read((char*)(&homotopy),sizeof(int)); count += sizeof(bool);
-  s.read((char*)(&broyden),sizeof(int)); count += sizeof(bool);
+  s.read((char*)(&homotopy),sizeof(bool)); count += sizeof(bool);
+  s.read((char*)(&broyden),sizeof(bool)); count += sizeof(bool);
+  s.read((char*)(&verbose),sizeof(bool)); count += sizeof(bool);
   s.read((char*)(&t),sizeof(int)); count += sizeof(double);
   s.read((char*)(&error_threshold),sizeof(int)); count += sizeof(double);
   s.read((char*)(&n),sizeof(int)); count += sizeof(int);
@@ -276,9 +279,7 @@ double Solver<kind>::compute_dependencies()
   unsigned int sum = 0;
   for(i=0; i<dimension; ++i) {
     sum += dependencies[i].size();
-#ifdef VERBOSE
-    std::cout << "For equation " << 1+i << " there are " << dependencies[i].size() << " independent variables" << std::endl;
-#endif
+    if (verbose) std::cout << "For equation " << 1+i << " there are " << dependencies[i].size() << " independent variables" << std::endl;
   }
   return double(sum)/double(dimension*dimension);
 }
@@ -286,7 +287,7 @@ double Solver<kind>::compute_dependencies()
 template<class kind>
 bool Solver<kind>::compute_dependency_graph(Graph* G) const
 {
-  // This method computes the dependency graph for the variety's equations.
+  // This method computes the dependency graph for the system's equations.
   // There is a vertex for each equation and if two equations share at least
   // one independent variable there is an edge connecting the two vertices.
   unsigned int i,j;
@@ -359,7 +360,7 @@ bool Solver<kind>::linear_solver(const std::vector<kind>& x,const std::vector<ki
     // Use the native Gauss-Seidel iterative solver in the Matrix class
     xnew = x;
     try {
-      J->gauss_seidel_solver(xnew,b,error_threshold,max_linear_its);
+      J->gauss_seidel_solver(xnew,b,error_threshold,max_linear_its,verbose);
     }
     catch (std::runtime_error& e) {
       success = false;
@@ -399,9 +400,7 @@ int Solver<kind>::forward_step()
     old_norm += q*q;
   }
   old_norm = std::sqrt(old_norm);
-#ifdef VERBOSE
-  std::cout << "Initial function norm is " << old_norm << std::endl;
-#endif
+  if (verbose) std::cout << "Initial function norm is " << old_norm << std::endl;
   do {
     // Now compute the rhs of the equation, b = J*x - F(x)
     J->multiply(x,z);
@@ -410,7 +409,10 @@ int Solver<kind>::forward_step()
     }
     // And solve the linear system J*xnew = b
     success = linear_solver(x,b,xnew);
-    if (!success) break;
+    if (!success) {
+      if (verbose) std::cout << "Failed to solve linear system, exiting..." << std::endl;
+      break;
+    }
     xnorm = 0.0;
     for(i=0; i<dimension; ++i) {
       xdiff[i] = xnew[i] - x[i];
@@ -420,9 +422,7 @@ int Solver<kind>::forward_step()
     xnorm = std::sqrt(xnorm);
     // Check to see if the new solution differs appreciably from
     // the old one
-#ifdef VERBOSE
-    std::cout << "Iterative difference is " << xnorm << " at " << its << std::endl;
-#endif
+    if (verbose) std::cout << "Iterative difference is " << xnorm << " at " << its << std::endl;
     if (xnorm < error_threshold) break;
     F(xnew,fnew);
     for(i=0; i<dimension; ++i) {
@@ -437,9 +437,7 @@ int Solver<kind>::forward_step()
     fnorm = std::sqrt(fnorm);
     // Check to see if the new solution in fact solves the nonlinear
     // system
-#ifdef VERBOSE
-    std::cout << "Function norm is " << fnorm << " at " << its << std::endl;
-#endif
+    if (verbose) std::cout << "Function norm is " << fnorm << " at " << its << std::endl;
     if (fnorm < error_threshold) {
       output = true;
       break;
@@ -540,23 +538,17 @@ bool Solver<kind>::solve(std::vector<kind>& output)
         n = forward_step();
       }
       catch (std::runtime_error& e) {
-#ifdef VERBOSE
-        std::cout << "Homotopy solver failed at t = " << t << ", halving step size..." << std::endl;
-#endif
+        if (verbose) std::cout << "Homotopy solver failed at t = " << t << ", halving step size..." << std::endl;
         dt /= 2.0;
         t -= dt;
       }
       if (n > 0) {
         if (std::abs(1.0 - t) < error_threshold) {
-#ifdef VERBOSE
-          std::cout << "Homotopy solver has converged, exiting..." << std::endl;
-#endif
+          if (verbose) std::cout << "Homotopy solver has converged, exiting..." << std::endl;
           converged = true;
         }
         else {
-#ifdef VERBOSE
-          std::cout << "Homotopy solver succeeded at t = " << t << " after " << n << " iterations." << std::endl;
-#endif
+          if (verbose) std::cout << "Homotopy solver succeeded at t = " << t << " after " << n << " iterations." << std::endl;
           if (n < int(0.25*max_its)) {
             dt *= 2.0;
           }
@@ -567,9 +559,7 @@ bool Solver<kind>::solve(std::vector<kind>& output)
         }
       }
       if (dt < error_threshold) {
-#ifdef VERBOSE
-        std::cout << "Homotopy method has failed, exiting..." << std::endl;
-#endif
+        if (verbose) std::cout << "Homotopy method has failed, exiting..." << std::endl;
         success = false;
         break;
       }

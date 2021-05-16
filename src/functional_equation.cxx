@@ -253,6 +253,7 @@ bool Functional_Equation::reduce(unsigned int p,Variety<unsigned int>* output) c
 
   for(i=0; i<p; ++i) {
     q = Rational(i,1);
+    cvector.clear(); dvector.clear();
     for(j=0; j<degree; ++j) {
       a = std::get<0>(terms[j]).evaluate(q);
       cvector.push_back(a);
@@ -285,6 +286,7 @@ bool Functional_Equation::reduce(unsigned int p,Variety<unsigned int>* output) c
       duo.second = std::get<2>(terms[j]);
       t.exponents.push_back(duo);
       output->add_term(i,t);
+      t.exponents.clear();
     }
     q = a*gamma;
     output->set_constant(i,q.reduce(p)); 

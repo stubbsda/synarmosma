@@ -58,6 +58,12 @@ namespace SYNARMOSMA {
     /// Jacobian calculation at the expense of having to perform more Newton-Raphson
     /// iterations to satisfy the convergence threshold.
     bool broyden = false;
+    /// This Boolean property determines whether or not an instance of this class 
+    /// produces diagnostic information, written to the console, about the progress 
+    /// of the algorithm for obtaining a numerical solution of the system of equations.  
+    /// When false, no information of any kind is written to the console, regardless 
+    /// of the success (or lack thereof) of the iterative process. 
+    bool verbose = false;
     /// This enumerated class determines whether the Solver will use a direct
     /// or iterative linear solver; the former calls an LAPACK routine and is
     /// suitable for dense matrices, while the latter makes use of the Gauss-Seidel

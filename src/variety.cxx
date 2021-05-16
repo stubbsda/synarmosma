@@ -114,6 +114,9 @@ void Variety<kind>::allocate()
   if (nequation < 1) throw std::invalid_argument("The number of equations to be allocated must be greater than zero!");
 
   equations = new std::vector<Monomial<kind> >[nequation];
+  for(unsigned int i=0; i<nequation; ++i) {
+    constant.push_back(Variety<kind>::zero);
+  }
 }
 
 namespace SYNARMOSMA {
@@ -295,23 +298,29 @@ void Variety<kind>::solve(std::vector<kind>& solutions) const
   if (characteristic == 0) throw std::invalid_argument("The Variety::solve method can only be used with finite fields!");
   if (characteristic > 13) throw std::invalid_argument("The Variety::solve method will overflow if the field characteristic is greater than thirteen!");
 
-  UINT64 i,j,p,q,t;
-  bool good;
-  std::vector<kind> candidate,eqns;
+  const UINT64 chi = UINT64(characteristic);
   const UINT64 ulimit = ipow(characteristic,characteristic);
 
   solutions.clear();
 
-  for(i=0; i<characteristic; ++i) {
+#ifdef _OPENMP
+#pragma omp parallel default(shared)
+  {
+#endif
+  UINT64 i,j,p,q,t;
+  bool good;
+  std::vector<kind> candidate,eqns;
+
+  for(i=0; i<chi; ++i) {
     candidate.push_back(Variety<kind>::zero);
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(shared) private(i,j,p,q,t,good,candidate,eqns)
+#pragma omp for  
 #endif
   for(i=0; i<ulimit; ++i) {
     t = i;
-    for(j=0; j<characteristic; ++j) {
+    for(j=0; j<chi; ++j) {
       p = ipow(characteristic,characteristic-1-j);
       q = t/p;
       // This conversion shouldn't be an issue since q will always lie between 0 and characteristic-1, though t and p 
@@ -336,6 +345,9 @@ void Variety<kind>::solve(std::vector<kind>& solutions) const
       }
     }
   }
+#ifdef _OPENMP
+  }
+#endif
 }
 
 namespace SYNARMOSMA {

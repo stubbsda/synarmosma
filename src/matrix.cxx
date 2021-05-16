@@ -235,50 +235,52 @@ kind Matrix<kind>::determinant() const
 }
 
 template<class kind>
-bool Matrix<kind>::diagonally_dominant() const
+bool Matrix<kind>::diagonally_dominant(bool verbose) const
 {
   unsigned int i,j;
   double sum,d,q;
   bool output = true;
 
-#ifndef VERBOSE
-  unsigned int nf = 0;
-  for(i=0; i<nrow; ++i) {
-    d = 0.0;
-    sum = 0.0;
-    for(j=0; j<elements[i].size(); ++j) {
-      q = std::abs(elements[i][j].first);
-      if (elements[i][j].second == i) {
-        d = q;
-        continue;
+  if (verbose) {
+    unsigned int nf = 0;
+    for(i=0; i<nrow; ++i) {
+      d = 0.0;
+      sum = 0.0;
+      for(j=0; j<elements[i].size(); ++j) {
+        q = std::abs(elements[i][j].first);
+        if (elements[i][j].second == i) {
+          d = q;
+          continue;
+        }
+        sum += q;
       }
-      sum += q;
-    }
-    if (d < sum || std::abs(d) < std::numeric_limits<double>::epsilon()) {
-      nf++; 
-      output = false;
-    }
-    else {
-      std::cout << "DOMINANT ";
-    }
-    std::cout << 1+i << "  " << d << "  " << sum << "   " << sum/d << std::endl;
-  }
-  std::cout << "There are " << nrow - nf << " diagonally dominant rows." << std::endl;
-#else
-  for(i=0; i<nrow; ++i) {
-    d = 0.0;
-    sum = 0.0;
-    for(j=0; j<elements[i].size(); ++j) {
-      q = std::abs(elements[i][j].first);
-      if (elements[i][j].second == i) {
-        d = q;
-        continue;
+      if (d < sum || std::abs(d) < std::numeric_limits<double>::epsilon()) {
+        nf++; 
+        output = false;
       }
-      sum += q;
+      else {
+        std::cout << "DOMINANT ";
+      }
+      std::cout << 1+i << "  " << d << "  " << sum << "   " << sum/d << std::endl;
     }
-    if (d < sum || std::abs(d) < std::numeric_limits<double>::epsilon()) return false;
+    std::cout << "There are " << nrow - nf << " diagonally dominant rows." << std::endl;
   }
-#endif
+  else {
+    for(i=0; i<nrow; ++i) {
+      d = 0.0;
+      sum = 0.0;
+      for(j=0; j<elements[i].size(); ++j) {
+        q = std::abs(elements[i][j].first);
+        if (elements[i][j].second == i) {
+          d = q;
+          continue;
+        }
+        sum += q;
+      }
+      if (d < sum || std::abs(d) < std::numeric_limits<double>::epsilon()) return false;
+    }
+  }
+
   return output;
 }
 
@@ -344,7 +346,7 @@ void Matrix<kind>::get_diagonal(std::vector<kind>& output) const
 }
 
 template<class kind>
-void Matrix<kind>::gauss_seidel_solver(std::vector<kind>& soln,const std::vector<kind>& source,double threshold,int max_its)
+void Matrix<kind>::gauss_seidel_solver(std::vector<kind>& soln,const std::vector<kind>& source,double threshold,int max_its,bool verbose)
 {
   if (soln.size() != nrow || source.size() != nrow) throw std::invalid_argument("The vector dimensions are wrong for the Gauss-Seidel solver!");
   unsigned int i,j;
@@ -366,9 +368,7 @@ void Matrix<kind>::gauss_seidel_solver(std::vector<kind>& soln,const std::vector
       b[permutation[i]] = source[i];
       x[permutation[i]] = soln[i];
     }
-#ifdef VERBOSE
-    if (j < nrow) std::cout << "Matrix is not diagonally dominant (" << j << "/" << nrow << "), convergence not guaranteed!" << std::endl;
-#endif
+    if (verbose) if (j < nrow) std::cout << "Matrix is not diagonally dominant (" << j << "/" << nrow << "), convergence not guaranteed!" << std::endl;
   }
 
   get_diagonal(diagonal);
@@ -387,9 +387,7 @@ void Matrix<kind>::gauss_seidel_solver(std::vector<kind>& soln,const std::vector
   }
   error = std::sqrt(error);
 
-#ifdef VERBOSE
-  std::cout << "For iteration " << its << " the solution error of the linear system is " << error << std::endl;  
-#endif
+  if (verbose) std::cout << "For iteration " << its << " the solution error of the linear system is " << error << std::endl;  
 
   do {
     its++;
@@ -414,9 +412,7 @@ void Matrix<kind>::gauss_seidel_solver(std::vector<kind>& soln,const std::vector
       error_new += rho*rho;
     }
     error_new = std::sqrt(error_new);
-#ifdef VERBOSE
-    std::cout << "For iteration " << its << " the solution error of the linear system is " << error_new << std::endl;
-#endif
+    if (verbose) std::cout << "For iteration " << its << " the solution error of the linear system is " << error_new << std::endl;
     if (error_new < threshold) break;
     if (error_new > 10000.0) throw std::runtime_error("Iterations are diverging!");
     if (error_new > 2.0*error && error_new > 5.0) throw std::runtime_error("Iterations are diverging!");

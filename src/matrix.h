@@ -93,8 +93,8 @@ namespace SYNARMOSMA {
     kind get_diagonal(unsigned int) const;
     /// This method obtains the vector of diagonal elements of the matrix, i.e. those elements whose row index is the same as their column index; the output vector will have a length of Matrix::nrow.
     void get_diagonal(std::vector<kind>&) const;
-    /// This method checks if the matrix is diagonally dominant, i.e. if for every row \f$i\f$ the inequality \f$|a_{ii}| \ge \sum_{j=1, j\ne i}^N |a_{ij}|\f$ is satisfied, and returns true if this is the case.
-    bool diagonally_dominant() const;
+    /// This method checks if the matrix is diagonally dominant, i.e. if for every row \f$i\f$ the inequality \f$|a_{ii}| \ge \sum_{j=1, j\ne i}^N |a_{ij}|\f$ is satisfied, and returns true if this is the case. The method's unique argument controls whether or not any output concerning the matrix's diagonal dominance is written to the console.
+    bool diagonally_dominant(bool = false) const;
     /// This method checks if the row whose index is this method's unique argument is diagonally dominant, i.e. \f$|a_{ii}| \ge \sum_{j=1, j\ne i}^N |a_{ij}|\f$ for the row \f$i\f$, returning true if this is the case.
     bool diagonally_dominant(unsigned int) const;
     /// This method checks if the element specified by the two arguments (row and column index) dominates its row, i.e. \f$|a_{ik}| \ge \sum_{j=1, j\ne k}^N |a_{ij}|\f$, where \f$i\f$ and \f$k\f$ are the two arguments of this method. 
@@ -109,8 +109,8 @@ namespace SYNARMOSMA {
     void increment(const Matrix<kind>&);
     /// This method multiplies the instance matrix by the first argument and then adds to it the identity matrix of appropriate dimension multiplied by the second argument, writing the result in the final argument; in summary, \f$B = \lambda_1 A + \lambda_2 I\f$ where the three arguments are \f$\lambda_1\f$, \f$\lambda_2\f$ and \f$B\f$, with \f$A\f$ the current instance.
     void homotopy_scaling(kind,kind,Matrix<kind>*) const;
-    /// This method uses the Gauss-Seidel iterative algorithm to attempt to solve the linear system \f$A x = b\f$, where \f$A\f$ is the current instance, \f$x\f$ and \f$b\f$ the first and second arguments. The third argument is the convergence threshold and the fourth the maximum number of iterations to perform. 
-    void gauss_seidel_solver(std::vector<kind>&,const std::vector<kind>&,double,int);
+    /// This method uses the Gauss-Seidel iterative algorithm to attempt to solve the linear system \f$A x = b\f$, where \f$A\f$ is the current instance, \f$x\f$ and \f$b\f$ the first and second arguments. The third argument is the convergence threshold and the fourth the maximum number of iterations to perform. The final argument controls whether or not any output concerning the progress of the iterative solver is written to the console.
+    void gauss_seidel_solver(std::vector<kind>&,const std::vector<kind>&,double,int,bool = false);
     /// This method takes as its input the final argument, a column index, and then writes the complete column vector (zeros included) in the first argument.
     void get_column(std::vector<kind>&,unsigned int) const;
     /// This method takes as its input the final argument, a row index, and then writes the complete row vector (zeros included) in the first argument.

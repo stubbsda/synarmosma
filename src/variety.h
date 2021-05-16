@@ -113,24 +113,26 @@ namespace SYNARMOSMA {
   template<class kind>
   std::ostream& operator <<(std::ostream& s,const Variety<kind>& source)
   {
-    int i;
-    unsigned int j,k;
+    unsigned int i,j,k;
     Monomial<kind> term;
 
     for(i=0; i<source.nequation; ++i) {
       for(j=0; j<source.equations[i].size(); ++j) {
         term = source.equations[i][j];
-        s << "(" << term.coefficient << ")*";
+        if (term.coefficient == Variety<kind>::zero) continue;
+        if (term.coefficient != kind(1)) s << term.coefficient << "*";
         for(k=0; k<term.exponents.size()-1; ++k) {
           s << "x(" << term.exponents[k].first << ")";
           if (term.exponents[k].second > 1) s << "^" << term.exponents[k].second;
           s << "*";
         }
-        s << "x(" << term.exponents[term.exponents.size()-1].first << ")^" << term.exponents[term.exponents.size()-1].second;
+        s << "x(" << term.exponents[term.exponents.size()-1].first << ")";
+        if (term.exponents[term.exponents.size()-1].second > 1) s << "^" << term.exponents[term.exponents.size()-1].second;
         if (j < source.equations[i].size()-1) s << " + ";
       }
-      if (source.constant[i] > Variety<kind>::zero) s << " + " << source.constant[i];
-      s << " = 0" << std::endl;
+      if (source.constant[i] != Variety<kind>::zero) s << " + " << source.constant[i];
+      s << " = 0"; 
+      if (i < (source.nequation-1)) s << std::endl;
     }
     return s;
   }
