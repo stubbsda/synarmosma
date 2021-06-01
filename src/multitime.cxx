@@ -42,17 +42,6 @@ Multitime<kind>& Multitime<kind>::operator=(const Multitime<kind>& source)
 }
 
 template<class kind>
-Multitime<kind>& Multitime<kind>::operator -(const Multitime<kind>& source)
-{
-  for(int i=0; i<Multitime<kind>::tdimension; ++i) {
-    chronos[i] = source.chronos[i];
-    if (chronos[i].second) chronos[i].first = -source.chronos[i].first;
-  }
-
-  return *this;
-}
-
-template<class kind>
 Multitime<kind>::~Multitime()
 {
   delete[] chronos;

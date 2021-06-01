@@ -3,6 +3,7 @@
 #include "matrix.h"
 #include "binary_matrix.h"
 #include "pseudograph.h"
+#include "integer_polynomial.h"
 
 #ifndef _graphh
 #define _graphh
@@ -38,7 +39,7 @@ namespace SYNARMOSMA {
     Graph(int);
     /// This is the constructor for "named" graphs - DÜRER, GOLOMB, HERSCHEL, PETERSEN and WAGNER - which have a fixed number of vertices and edges as well as topology.
     Graph(const std::string&);
-    /// This is the contructor for a category of named graphs that also require the number of vertices \f$n > 0\f$ to be specified: COMPLETE, CHAIN, CYCLIC and CONNECTED. The latter constructs a graph on \f$n\f$ vertices by adding edges randomly until the graph is connected. 
+    /// This is the contructor for a category of named graphs that also require the number of vertices \f$n > 0\f$ to be specified: COMPLETE, PATH, CYCLIC and CONNECTED. The latter constructs a graph on \f$n\f$ vertices by adding edges randomly until the graph is connected. 
     Graph(int,const std::string&);
     /// This constructor accepts the number of vertices \f$n > 0\f$ (the first argument) and a minimum degree \f$d > 0\f$ (the second argument) to construct a scale-free graph on \f$n\f$ vertices with minimum degree \f$d\f$.
     Graph(int,int);
@@ -110,8 +111,10 @@ namespace SYNARMOSMA {
     double inverse_girth() const;
     /// This method computes the complement of this graph, i.e. the graph with the same vertices but where two vertices are connected if and only if they are not connected in the original graph.
     void complement(Graph*) const;
-    /// This method builds a pseudograph representation of the graph and then uses the defoliate() method to encode this pseudograph into a multivariate polynomial, the Tutte polynomial of the graph.
+    /// This method builds a pseudograph representation of the graph and then uses the defoliate() method to encode this pseudograph into a multivariate polynomial, the Tutte polynomial of the graph \f$T_G(x,y)\f$.
     void tutte_polynomial(std::vector<Monomial<int> >&) const;
+    /// This method computes the chromatic polynomial \f$\chi_G(x)\f$ of the graph, which must be connected, and then storing it in the method's argument. The method uses the known formula for certain well-known classes of graphs (path, cyclic and complete graphs on \f$n\f$ vertices) and otherwise calls tutte_polynomial() to obtain the Tutte polynomial \f$T_G(x,y)\f$ from which we may compute \f$\chi_G(x)=(-1)^{n-1} xT_G(1-x,0)\f$.
+    void chromatic_polynomial(Integer_Polynomial<int>&) const;
     /// This method accepts a vertex as its argument v and computes the percentage of the distinct pairs of neighbours of v whose members are also directly connected together.
     double clustering_coefficient(int) const;
     /// This method computes the sum of the clustering coefficient over all vertices in the graph and divides this by the number of vertices, which is then returned.

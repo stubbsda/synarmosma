@@ -419,31 +419,17 @@ Integer_Polynomial<kind>& Integer_Polynomial<kind>::operator =(const Integer_Pol
 }
 
 template<class kind>
-Integer_Polynomial<kind>& Integer_Polynomial<kind>::operator -(const Integer_Polynomial<kind>& source)
-{
-  unsigned int i;
-
-  degree = source.degree;
-  characteristic = source.characteristic;
-  monic = source.monic;
-  homogeneous = source.homogeneous;
-  irreducible = source.irreducible;
-  terms = source.terms;  
-  for(i=0; i<=degree; ++i) {
-    terms[i] = Integer_Polynomial<kind>::neg1*terms[i];
-  }
-
-  simplify();
-
-  return *this;
-}
-
-template<class kind>
 kind Integer_Polynomial<kind>::get_value(unsigned int n) const
 {
   if (n > degree) throw std::invalid_argument("The integer polynomial coefficient cannot exceed the degree!");
  
   return terms[n];
+}
+
+template<class kind>
+void Integer_Polynomial<kind>::get_value(std::vector<kind>& vx) const
+{
+  vx = terms;
 }
 
 template<class kind>
@@ -460,6 +446,14 @@ void Integer_Polynomial<kind>::set_value(kind x,unsigned int n)
     terms.push_back(x);
     degree = n;
   }
+  simplify();
+}
+
+template<class kind>
+void Integer_Polynomial<kind>::set_value(const std::vector<kind>& vx)
+{
+  degree = vx.size() - 1;
+  terms = vx;
   simplify();
 }
 

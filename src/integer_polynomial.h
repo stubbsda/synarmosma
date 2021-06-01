@@ -21,6 +21,9 @@ namespace SYNARMOSMA {
   Integer_Polynomial<kind> operator +(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);
 
   template<class kind>
+  Integer_Polynomial<kind> operator -(const Integer_Polynomial<kind>&);
+
+  template<class kind>
   Integer_Polynomial<kind> operator -(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);
 
   template<class kind>
@@ -28,6 +31,9 @@ namespace SYNARMOSMA {
 
   template<class kind>
   Integer_Polynomial<kind> operator *(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);
+
+  template<class kind>
+  Integer_Polynomial<kind> operator ^(const Integer_Polynomial<kind>&,int);
 
   /// A class representing a low-degree polynomial over an integral domain, such as the integers or a Galois field.
   template<class kind>
@@ -91,8 +97,6 @@ namespace SYNARMOSMA {
     ~Integer_Polynomial();
     /// The overloaded assignment operator for this class, which first calls clear() and then behaves exactly like the copy constructor for this class.
     Integer_Polynomial& operator =(const Integer_Polynomial&);
-    /// This overloaded unary negation operator multiplies every element of the Integer_Polynomial::terms vector by -1 and then calls the simplify() method.
-    Integer_Polynomial& operator -(const Integer_Polynomial&);
     /// The standard copy constructor - it calls the clear() method and then copies over all properties from the source instance to this one.
     Integer_Polynomial(const Integer_Polynomial&);
     /// This method takes the current instance and reduces its coefficients modulo \f$p\f$, the method's argument, which must be a prime number. The output is an instance of the Integer_Polynomial class over the integers.
@@ -107,8 +111,12 @@ namespace SYNARMOSMA {
     bool is_null() const;
     /// This method returns the value of the coefficient specified by the method's unique argument.
     kind get_value(unsigned int) const;
-    /// This method sets the coefficient specified by the second argument to the value specified by the first argument.
+    /// This method writes the entire collection of coefficients of the polynomial, i.e. the Integer_Polynomial::terms property, to the method's unique argument.
+    void get_value(std::vector<kind>&) const;
+    /// This method sets the coefficient specified by the second argument to the value specified by the first argument and then calls the simplify() method.
     void set_value(kind,unsigned int);
+    /// This method sets the coefficients of the polynomial, i.e. the Integer_Polynomial::terms property, to the method's argument and then calls the simplify() method.
+    void set_value(const std::vector<kind>&);
     /// This method clears the vector Integer_Polynomial::terms and restores all the scalar properties to their default value.
     void clear();
     /// This method writes the instance properties to a binary disk file and returns the number of bytes written to the file.
@@ -129,10 +137,14 @@ namespace SYNARMOSMA {
     friend bool operator == <>(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);
     /// This overloaded addition operator adds together the two polynomial arguments according to the standard mathematical convention and then calls the simplify() method on the resulting output.
     friend Integer_Polynomial<kind> operator +<>(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);
+    /// This overloaded unary negation operator uses the overloaded multiplication operator to multiply each element of Integer_Polynomial::terms by Integer_Polynomial::neg1 and then returns the resulting output.
+    friend Integer_Polynomial<kind> operator -<>(const Integer_Polynomial<kind>&);
     /// This overloaded multiplication operator multiplies a polynomial (the second argument) by a scalar (the first argument) and then calls the simplify() method on the resulting output.
     friend Integer_Polynomial<kind> operator *<>(kind,const Integer_Polynomial<kind>&);
     /// This overloaded multiplication operator multiplies two polynomials together according to the standard mathematical convention and then calls the simplify() method on the resulting output.
     friend Integer_Polynomial<kind> operator *<>(const Integer_Polynomial<kind>&,const Integer_Polynomial<kind>&);
+    /// This overloaded exponentiation operation multiplies the first argument by itself \f$n\f$ times, where \f$n \ge 0\f$ is the second argument. The function then calls the simplify() method on the resulting output.  
+    friend Integer_Polynomial<kind> operator ^<>(const Integer_Polynomial<kind>&,int);
   };
 
   template<class kind>
@@ -184,10 +196,10 @@ namespace SYNARMOSMA {
     else {
       if (source.terms[source.degree] == -1) {
         if (source.degree == 1) {
-          s << "-x ";
+          s << "- x ";
         }
         else {
-          s << "-x^" << source.degree << " ";
+          s << "- x^" << source.degree << " ";
         }
       }
       else {
@@ -203,10 +215,10 @@ namespace SYNARMOSMA {
       if (source.terms[i] == 0) continue;
       if (i > 1) {
         if (source.terms[i] == 1) {
-          s << "x^" << i << " ";
+          s << "+ x^" << i << " ";
         }
         else if (source.terms[i] == -1) {
-          s << "-x^" << i << " ";
+          s << "- x^" << i << " ";
         }
         else {
           if (source.terms[i] > 0) {
@@ -263,26 +275,18 @@ namespace SYNARMOSMA {
   }
 
   template<class kind>
+  Integer_Polynomial<kind> operator -(const Integer_Polynomial<kind>& p)
+  {
+    Integer_Polynomial<kind> output = Integer_Polynomial<kind>::neg1*p;
+    
+    return output;
+  }
+
+  template<class kind>
   Integer_Polynomial<kind> operator -(const Integer_Polynomial<kind>& p1,const Integer_Polynomial<kind>& p2)
   {
-    unsigned int i,mu = std::min(p1.degree,p2.degree);
-    std::vector<kind> new_terms;
-
-    for(i=0; i<=mu; ++i) {
-      new_terms.push_back(p1.terms[i] - p2.terms[i]);
-    }
-    if (p1.degree > p2.degree) {
-      for(i=1+mu; i<=p1.degree; ++i) {
-        new_terms.push_back(p1.terms[i]);
-      }
-    }
-    else if (p2.degree > p1.degree) {
-      for(i=1+mu; i<=p2.degree; ++i) {
-        new_terms.push_back(-p2.terms[i]);
-      }
-    }
-    Integer_Polynomial<kind> output(new_terms);
-    output.simplify();
+    Integer_Polynomial<kind> output = p1 + (-p2);
+    
     return output;
   }
 
@@ -332,9 +336,9 @@ namespace SYNARMOSMA {
     std::vector<kind> new_terms;
 
     new_terms.push_back(p1.terms[0]*p2.terms[0]);
-    for(i=0; i<mdegree-1; ++i) {
+    for(i=1; i<mdegree; ++i) {
       // Need all the two factor additive partitions of "i"
-      sum = 0;
+      sum = Integer_Polynomial<kind>::zero;
       for(j=0; j<=p1.degree; ++j) {
         for(k=0; k<=p2.degree; ++k) {
           if ((j+k) == i) sum = sum + p1.terms[j]*p2.terms[k];
@@ -344,6 +348,20 @@ namespace SYNARMOSMA {
     }
     new_terms.push_back(p1.terms[p1.degree]*p2.terms[p2.degree]);
     Integer_Polynomial<kind> output(new_terms);
+    output.simplify();
+    return output;
+  }
+
+  template<class kind>
+  Integer_Polynomial<kind> operator ^(const Integer_Polynomial<kind>& p,int n)
+  {
+    if (n < 0) throw std::invalid_argument("The exponent must be non-negative!");
+
+    Integer_Polynomial<kind> output(0);
+
+    for(int i=0; i<n; ++i) {
+      output = output*p;
+    }
     output.simplify();
     return output;
   }

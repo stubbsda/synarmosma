@@ -32,6 +32,9 @@ namespace SYNARMOSMA {
   Multitime<kind> operator +(const Multitime<kind>&,const Multitime<kind>&);
 
   template<class kind>
+  Multitime<kind> operator -(const Multitime<kind>&);
+
+  template<class kind>
   Multitime<kind> operator -(const Multitime<kind>&,const Multitime<kind>&);
 
   template<class kind>
@@ -72,8 +75,6 @@ namespace SYNARMOSMA {
     ~Multitime();
     /// The assignment operator which copies over the contents of the Multitime::chronos array.
     Multitime& operator =(const Multitime&);
-    /// This overloaded unary negation operator multiplies every element of the Multitime::chronos array by -1.
-    Multitime& operator -(const Multitime&);
     /// This method writes the value of the Multitime::tdimension property and the contents of the Multitime::chronos array to a binary disk file, returning the number of bytes written.
     int serialize(std::ofstream&) const;
     /// This method first frees the memory of the Multitime::chronos array, reads in the Multitime::tdimension value, allocates the Multitime::chronos array and then reads in the contents of this array from a binary disk file and returns the number of bytes read.
@@ -90,12 +91,14 @@ namespace SYNARMOSMA {
     void set(const std::vector<double>&);
     /// This method extracts the time coordinate value for each active time dimension and puts it in a vector that will be the method's output.
     void extract(std::vector<double>&) const;
-    /// This operator assigns as output for each element the sum of the coordinate values if both argument dimensions are active, otherwise one or the other coordinative value if only one dimension is active.
-    friend Multitime<kind> operator + <>(const Multitime<kind>&,const Multitime<kind>&);
-    /// This operator assigns as output for each element the product of the coordinate values if both argument dimensions are active, otherwise it is zero and the dimension is inactive.
-    friend Multitime<kind> operator * <>(const Multitime<kind>&,const Multitime<kind>&);
-    /// This operator multiplies the coordinate of each active temporal dimension by the first argument.
-    friend Multitime<kind> operator * <>(kind,const Multitime<kind>&);
+    /// This overloaded addition operator assigns as output for each element the sum of the coordinate values if both argument dimensions are active, otherwise one or the other coordinative value if only one dimension is active.
+    friend Multitime<kind> operator +<>(const Multitime<kind>&,const Multitime<kind>&);
+    /// This overloaded unary negation operator multiplies the first part of the elements of the argument's Multitime::chronos property by -1, when the second part of that element is active. 
+    friend Multitime<kind> operator -<>(const Multitime<kind>&);
+    /// This overloaded multiplication operator assigns as output for each element the product of the coordinate values if both argument dimensions are active, otherwise it is zero and the dimension is inactive.
+    friend Multitime<kind> operator *<>(const Multitime<kind>&,const Multitime<kind>&);
+    /// This overloaded multiplication operator multiplies the coordinate of each active temporal dimension by the first argument.
+    friend Multitime<kind> operator *<>(kind,const Multitime<kind>&);
     /// A Boolean operator that compares the norm of the two Multitime instances to determine their relative order.
     friend bool operator > <>(const Multitime<kind>&,const Multitime<kind>&);
     /// A Boolean operator that compares the norm of the two Multitime instances to determine their relative order.
@@ -206,24 +209,23 @@ namespace SYNARMOSMA {
   }
 
   template<class kind>
-  Multitime<kind> operator -(const Multitime<kind>& t1,const Multitime<kind>& t2)
+  Multitime<kind>& operator -(const Multitime<kind>& source)
   {
     Multitime<kind> output;
 
     for(int i=0; i<Multitime<kind>::tdimension; ++i) {
-      output.chronos[i].second = false;
-      if (!t1.chronos[i].second && !t2.chronos[i].second) continue;
-      output.chronos[i].second = true;
-      if (t1.chronos[i].second && t2.chronos[i].second) {
-        output.chronos[i].first = t1.chronos[i].first - t2.chronos[i].first;
-      }
-      else if (t1.chronos[i].second && !t2.chronos[i].second) {
-        output.chronos[i].first = t1.chronos[i].first;
-      }
-      else if (!t1.chronos[i].second && t2.chronos[i].second) {
-        output.chronos[i].first = -t2.chronos[i].first;
-      }
+      output.chronos[i] = source.chronos[i];
+      if (output.chronos[i].second) output.chronos[i].first = -source.chronos[i].first;
     }
+
+    return output;
+  }
+
+  template<class kind>
+  Multitime<kind> operator -(const Multitime<kind>& t1,const Multitime<kind>& t2)
+  {
+    Multitime<kind> output = t1 + (-t2);
+
     return output;
   }
 

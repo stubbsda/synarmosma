@@ -12,6 +12,8 @@ namespace SYNARMOSMA {
   Rational compute_mean(const Rational&,const Rational&,const std::string& = std::string("ARITHMETIC"));
   Rational compute_mean(const std::vector<int>&,const std::string& = std::string("ARITHMETIC"));
   Rational compute_mean(const std::vector<Rational>&,const std::string& = std::string("ARITHMETIC"));
+  /// This function implements the subtraction operator for two instances of the Rational class.
+  Rational operator -(const Rational&,const Rational&);
 
   /// A class representing rational numbers, i.e. a number of the form n/d where n and d are whole numbers.
   class Rational {
@@ -45,8 +47,6 @@ namespace SYNARMOSMA {
     Rational(double,double = 0.000001);
     /// The assignment operator for instances of the Rational class.
     Rational& operator =(const Rational&);
-    /// The unary negation operator which multiplies the numerator by -1.
-    Rational operator -();
     /// The copy constructor for this class.
     Rational(const Rational&);
     /// A destructor that is empty.
@@ -71,27 +71,25 @@ namespace SYNARMOSMA {
     int serialize(std::ofstream&) const;
     /// This method reads the Rational::n and Rational::d properties from a binary disk file, computes the Rational::height property and returns the number of bytes read.
     int deserialize(std::ifstream&);
-    /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of two integers; the default is to compute the arithmetic mean.
+    /// This function returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of two integers; the default is to compute the arithmetic mean.
     friend Rational compute_mean(int,int,const std::string&);
-    /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of an integer and an instance of the Rational class; the default is to compute the arithmetic mean.
+    /// This function returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of an integer and an instance of the Rational class; the default is to compute the arithmetic mean.
     friend Rational compute_mean(int,const Rational&,const std::string&);
-    /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of an integer and an instance of the Rational class; the default is to compute the arithmetic mean.
+    /// This function returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of an integer and an instance of the Rational class; the default is to compute the arithmetic mean.
     friend Rational compute_mean(const Rational&,int,const std::string&);
-    /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of two instances of the Rational class; the default is to compute the arithmetic mean.
+    /// This function returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of two instances of the Rational class; the default is to compute the arithmetic mean.
     friend Rational compute_mean(const Rational&,const Rational&,const std::string&);
-    /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of a vector of integers; the default is to compute the arithmetic mean.
+    /// This function returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of a vector of integers; the default is to compute the arithmetic mean.
     friend Rational compute_mean(const std::vector<int>&,const std::string&);
-    /// This method returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of a vector of instances of the Rational class; the default is to compute the arithmetic mean.
+    /// This function returns as a rational number the arithmetic or harmonic (according to the third argument's value) mean of a vector of instances of the Rational class; the default is to compute the arithmetic mean.
     friend Rational compute_mean(const std::vector<Rational>&,const std::string&);
-    /// This method implements the unary negation operator for an instance of the Rational class.
+    /// This function implements the unary negation operator for an instance of the Rational class.
     friend Rational operator -(const Rational&);
-    /// This method implements the addition operator for two instances of the Rational class.
+    /// This function implements the addition operator for two instances of the Rational class.
     friend Rational operator +(const Rational&,const Rational&);
-    /// This method implements the subtraction operator for two instances of the Rational class.
-    friend Rational operator -(const Rational&,const Rational&);
-    /// This method implements the multiplication operator for two instances of the Rational class.
+    /// This functiom implements the multiplication operator for two instances of the Rational class.
     friend Rational operator *(const Rational&,const Rational&);
-    /// This method implements the division operator for two instances of the Rational class.
+    /// This function implements the division operator for two instances of the Rational class.
     friend Rational operator /(const Rational&,const Rational&);
     /// One of a set of overloaded Boolean operators for the Rational class, testing order relations among rationals and integers.
     friend bool operator ==(const Rational&,const Rational&);
@@ -117,7 +115,7 @@ namespace SYNARMOSMA {
     friend bool operator >(const Rational&,const Rational&);
     /// One of a set of overloaded Boolean operators for the Rational class, testing order relations among rationals and integers.
     friend bool operator >(const Rational&,int);
-    /// This method overrides the ostream operator so as to do a pretty print of an instance of the Rational class.
+    /// This function overrides the ostream operator so as to do a pretty print of an instance of the Rational class.
     friend std::ostream& operator <<(std::ostream&,const Rational&);
   };
 

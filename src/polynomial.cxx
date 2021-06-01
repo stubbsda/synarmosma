@@ -229,23 +229,6 @@ Polynomial<kind>& Polynomial<kind>::operator =(const Polynomial<kind>& source)
 }
 
 template<class kind>
-Polynomial<kind>& Polynomial<kind>::operator -(const Polynomial<kind>& source)
-{
-  unsigned int i;
-
-  degree = source.degree;
-  monic = source.monic;
-  homogeneous = source.homogeneous;
-  irreducible = source.irreducible;
-  terms = source.terms;
-  for(i=0; i<=degree; ++i) {
-    terms[i] = kind(-1)*terms[i];
-  }
-
-  return *this;
-}
-
-template<class kind>
 kind Polynomial<kind>::get_value(unsigned int n) const
 {
   if (n > degree) throw std::invalid_argument("The polynomial coefficient cannot exceed the degree!");

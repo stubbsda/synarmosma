@@ -61,6 +61,7 @@ int main(int argc,char** argv)
     std::vector<int> path,bdry;
     SYNARMOSMA::Graph G("Petersen"),H(n,"CYCLIC"),K(3,"Complete");
     std::vector<SYNARMOSMA::Monomial<int> > output;
+    SYNARMOSMA::Integer_Polynomial<int> chi;
     SYNARMOSMA::Random RND; 
 
     G.entwinement();
@@ -75,7 +76,24 @@ int main(int argc,char** argv)
     G.compute_shortest_path(0,6,path);
     if (path.size() != 2) return 1;
     if (path[0] != 1 || path[1] != 6) return 1;
-
+    G.chromatic_polynomial(chi);
+    chi.get_value(path);
+    if (path.size() == 11) {
+      if (path[0] != 0) return 1;
+      if (path[1] != -704) return 1;
+      if (path[2] != 2606) return 1;
+      if (path[3] != -4305) return 1;
+      if (path[4] != 4275) return 1;
+      if (path[5] != -2861) return 1;
+      if (path[6] != 1353) return 1;
+      if (path[7] != -455) return 1;
+      if (path[8] != 105) return 1;
+      if (path[9] != -15) return 1;
+      if (path[10] != 1) return 1;
+    }
+    else {
+      return 1;
+    }
     if (H.compactness(2,3) != 7) return 1;
     RND.set_seed(12);
     H.clustering_coefficient();

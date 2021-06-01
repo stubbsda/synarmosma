@@ -167,7 +167,7 @@ Graph::Graph(int n,const std::string& type) : Schema(n)
       }
     }
   }
-  else if (utype == "CHAIN") {
+  else if (utype == "PATH") {
     // A minimally connected graph with n - 1 edges
     for(int i=0; i<n-1; ++i) {
       add_edge(i,i+1);
@@ -1291,6 +1291,84 @@ void Graph::tutte_polynomial(std::vector<Monomial<int> >& output) const
     occupied[i] = true;
     term.coefficient = cf;
     output.push_back(term);
+  }
+}
+
+void Graph::chromatic_polynomial(Integer_Polynomial<int>& output) const
+{
+  if (!connected()) throw std::runtime_error("The graph must be connected to compute its chromatic polynomial!");
+  std::vector<int> vx;
+  const int ne = size();
+
+  output.clear();
+  
+  if (ne == 0) {
+    for(int i=0; i<nvertex; ++i) {
+      vx.push_back(0);
+    }
+    vx.push_back(1);
+    output.set_value(vx);
+  }
+  else if (ne == (nvertex-1)) {
+    vx.push_back(-1); vx.push_back(1);
+    Integer_Polynomial<int> b1(vx);
+
+    output = b1^(nvertex-1);
+
+    vx[0] = 0;
+    Integer_Polynomial<int> b2(vx);
+    output = b2*output;
+  }
+  else if (ne == nvertex) {
+    vx.push_back(-1); vx.push_back(1);
+    Integer_Polynomial<int> base(vx);
+    
+    output = base^nvertex;
+    if (nvertex%2 == 0) {
+      output = output + base;
+    }
+    else {
+      output = output - base;
+    }
+  }
+  else if (ne == (nvertex*(nvertex-1)/2)) {
+    vx.push_back(0); vx.push_back(1);
+    Integer_Polynomial<int> base(vx);
+    
+    output = output*base;
+    for(int i=1; i<nvertex; ++i) {
+      vx[0] = -i;
+      output = output*Integer_Polynomial<int>(vx);
+    }
+  }
+  else {
+    // The generic case, so we will first need to compute the Tutte polynomial...
+    unsigned int i,j,n;
+    bool zterm;
+    std::vector<Monomial<int> > T;
+    int pfactor = (nvertex%2 == 0) ? -1 : 1;
+    vx.push_back(1); vx.push_back(-1);
+    Integer_Polynomial<int> base(vx);
+    vx[0] = 0; vx[1] = 0;
+    Integer_Polynomial<int> T2(vx);
+
+    tutte_polynomial(T);
+  
+    for(i=0; i<T.size(); ++i) {
+      zterm = false;
+      for(j=0; j<T[i].exponents.size(); ++j) {
+        if (T[i].exponents[j].first == 1 && T[i].exponents[j].second > 0) {
+          zterm = true;
+          break;
+        }
+      }
+      if (zterm) continue;
+      n = T[i].exponents[0].second;
+      T2 = T2 + T[i].coefficient*(base^n);
+    }
+    vx[0] = 0; vx[1] = pfactor;
+    Integer_Polynomial<int> b2(vx);
+    output = b2*T2;
   }
 }
 

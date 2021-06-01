@@ -74,15 +74,6 @@ Rational& Rational::operator =(const Rational& source)
   return *this;
 }
 
-Rational Rational::operator -()
-{
-  Rational output;
-  output.n = -n;
-  output.d = d;
-  output.height = height;
-  return output;
-}
-
 Rational::~Rational()
 {
 
@@ -290,18 +281,21 @@ namespace SYNARMOSMA {
     return output;
   }
 
+  Rational operator -(const Rational& r)
+  {
+    Rational output; 
+
+    output.n = -r.n;
+    output.d = r.d;
+    output.normalize();
+
+    return output;
+  }
+
   Rational operator -(const Rational& r1,const Rational& r2)
   {
-    Rational output(0);
-    if (r1.d == r2.d) {
-      output.d = r1.d;
-      output.n = r1.n - r2.n;
-      output.normalize();
-      return output;
-    }
-    output.d = r1.d*r2.d;
-    output.n = (r1.n*r2.d - r2.n*r1.d);
-    output.normalize();
+    Rational output = r1 + (-r2);
+
     return output;
   }
 
@@ -328,14 +322,6 @@ namespace SYNARMOSMA {
   {
     s << "(" << source.n << ")/(" << source.d << ")";
     return s;
-  }
-
-  Rational operator -(const Rational& r)
-  {
-    Rational output = r; 
-    if (output.d < 0) output.d = -output.d;
-    if (output.n < 0) output.n = -output.n;
-    return output;
   }
 
   bool operator >=(const Rational& r1,const Rational& r2)

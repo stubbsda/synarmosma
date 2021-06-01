@@ -22,6 +22,9 @@ namespace SYNARMOSMA {
   Polynomial<kind> operator +(const Polynomial<kind>&,const Polynomial<kind>&);
 
   template<class kind>
+  Polynomial<kind> operator -(const Polynomial<kind>&);
+
+  template<class kind>
   Polynomial<kind> operator -(const Polynomial<kind>&,const Polynomial<kind>&);
 
   template<class kind>
@@ -29,6 +32,9 @@ namespace SYNARMOSMA {
 
   template<class kind>
   Polynomial<kind> operator *(const Polynomial<kind>&,const Polynomial<kind>&);
+
+  template<class kind>
+  Polynomial<kind> operator ^(const Polynomial<kind>&,int);
 
   /// A class representing a low-degree polynomial over a floating point domain, modelling a polynomial over the real or complex numbers.
   template<class kind>
@@ -73,8 +79,6 @@ namespace SYNARMOSMA {
     ~Polynomial();
     /// The overloaded assignment operator for this class, which first calls clear() and then behaves exactly like the copy constructor for this class.
     Polynomial& operator =(const Polynomial&);
-    /// This overloaded unary negation operator multiplies every element of the Polynomial::terms vector by -1 and then calls the simplify() method.
-    Polynomial& operator -(const Polynomial&);
     /// The standard copy constructor - it calls the clear() method and then copies over all properties from the source instance to this one.
     Polynomial(const Polynomial&);
     /// This method evaluates the polynomial at the method's argument \f$\alpha\f$, returning the value of \f$p(\alpha)\f$.
@@ -89,6 +93,8 @@ namespace SYNARMOSMA {
     void get_value(std::vector<kind>&) const;
     /// This method sets the coefficient specified by the second argument to the value specified by the first argument.
     void set_value(kind,unsigned int);
+    /// This method sets the coefficients of the polynomial, i.e. the Polynomial::terms property, to the method's argument and then calls the simplify() method.
+    void set_value(const std::vector<kind>&);
     /// This method clears the vector Polynomial::terms and restores all the scalar properties to their default value.
     void clear();
     /// This method writes the instance properties to a binary disk file and returns the number of bytes written to the file.
@@ -107,6 +113,8 @@ namespace SYNARMOSMA {
     friend Polynomial<kind> operator *<>(kind,const Polynomial<kind>&);
     /// This overloaded multiplication operator multiplies two polynomials together according to the standard mathematical convention and then calls the simplify() method on the resulting output.
     friend Polynomial<kind> operator *<>(const Polynomial<kind>&,const Polynomial<kind>&);
+    /// This overloaded exponentiation operation multiplies the first argument by itself \f$n\f$ times, where \f$n \ge 0\f$ is the second argument. The function then calls the simplify() method on the resulting output.  
+    friend Polynomial<kind> operator ^<>(const Polynomial<kind>&,int);
   };
 
   template<class kind>
@@ -255,26 +263,18 @@ namespace SYNARMOSMA {
   }
 
   template<class kind>
+  Polynomial<kind> operator -(const Polynomial<kind>& p)
+  {
+    Polynomial<kind> output = kind(-1)*p;
+    
+    return output;
+  }
+
+  template<class kind>
   Polynomial<kind> operator -(const Polynomial<kind>& p1,const Polynomial<kind>& p2)
   {
-    unsigned int i,mu = std::min(p1.degree,p2.degree);
-    std::vector<kind> new_terms;
+    Polynomial<kind> output = p1 + (kind(-1)*p2);
 
-    for(i=0; i<=mu; ++i) {
-      new_terms.push_back(p1.terms[i] - p2.terms[i]);
-    }
-    if (p1.degree > p2.degree) {
-      for(i=1+mu; i<=p1.degree; ++i) {
-        new_terms.push_back(p1.terms[i]);
-      }
-    }
-    else if (p2.degree > p1.degree) {
-      for(i=1+mu; i<=p2.degree; ++i) {
-        new_terms.push_back(-p2.terms[i]);
-      }
-    }
-    Polynomial<kind> output(new_terms);
-    output.simplify();
     return output;
   }
 
@@ -324,9 +324,9 @@ namespace SYNARMOSMA {
     std::vector<kind> new_terms;
 
     new_terms.push_back(p1.terms[0]*p2.terms[0]);
-    for(i=0; i<mdegree-1; ++i) {
+    for(i=1; i<mdegree; ++i) {
       // Need all the two factor additive partitions of "i"
-      sum = 0;
+      sum = kind(0);
       for(j=0; j<=p1.degree; ++j) {
         for(k=0; k<=p2.degree; ++k) {
           if ((j+k) == i) sum = sum + p1.terms[j]*p2.terms[k];
@@ -339,6 +339,20 @@ namespace SYNARMOSMA {
     output.simplify();
     return output;
   } 
+
+  template<class kind>
+  Polynomial<kind> operator ^(const Polynomial<kind>& p,int n)
+  {
+    if (n < 0) throw std::invalid_argument("The exponent must be non-negative!");
+
+    Polynomial<kind> output(0);
+
+    for(int i=0; i<n; ++i) {
+      output = output*p;
+    }
+    output.simplify();
+    return output;
+  }
 } 
 #endif
 

@@ -83,7 +83,7 @@ multitime_wrapper.o: global.h multitime.h multitime.cxx multitime_wrapper.cxx
 vertex_wrapper.o: global.h vertex.h vertex.cxx vertex_wrapper.cxx
 	$(CXX) $(CXX_FLAGS) -c vertex_wrapper.cxx
 
-graph.o: graph.cxx graph.h edge.h schema.h pseudograph.h matrix.h binary_matrix.h random.h global.h
+graph.o: graph.cxx graph.h edge.h schema.h pseudograph.h matrix.h binary_matrix.h integer_polynomial.h random.h global.h
 	$(CXX) $(CXX_FLAGS) -c graph.cxx
 
 geometry_wrapper.o: geometry_wrapper.cxx geometry.cxx geometry.h matrix.h random.h global.h 
