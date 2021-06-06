@@ -11,13 +11,25 @@ namespace SYNARMOSMA {
   std::ostream& operator <<(std::ostream&,const Matrix<kind>&);
 
   template<class kind>
+  Matrix<kind> operator -(const Matrix<kind>&);
+
+  template<class kind>
+  Matrix<kind> operator +(const Matrix<kind>&,const Matrix<kind>&);
+
+  template<class kind>
+  Matrix<kind> operator -(const Matrix<kind>&,const Matrix<kind>&);
+
+  template<class kind>
+  Matrix<kind> operator *(kind,const Matrix<kind>&);
+
+  template<class kind>
   std::vector<kind> operator *(const Matrix<kind>&,const std::vector<kind>&);
 
   template<class kind>
   Matrix<kind> operator *(const Matrix<kind>&,const Matrix<kind>&);
 
   template<class kind>
-  Matrix<kind> operator +(const Matrix<kind>&,const Matrix<kind>&);
+  Matrix<kind> operator ^(const Matrix<kind>&,int);
 
   /// A template class representing a general rectangular matrix over a floating point base type.
   template<class kind>
@@ -125,13 +137,30 @@ namespace SYNARMOSMA {
     Matrix<kind>& operator =(const Matrix<kind>&);
     /// This overloading of the ostream operator writes the matrix to the screen according to the same conventions as the display() method.
     friend std::ostream& operator << <>(std::ostream&,const Matrix<kind>&);
-    /// This overloading of the multiplication operator carries out the usual matrix multiplication adapted to the compressed storage format used by this class.
-    friend Matrix<kind> operator * <>(const Matrix<kind>&,const Matrix<kind>&);
-    /// This overloading of the multiplication operator carries out the usual matrix-vector multiplication adapted to the compressed storage format used by this class.
-    friend std::vector<kind> operator * <>(const Matrix<kind>&,const std::vector<kind>&);
-    /// This overloading of the addition operator carries out the usual element-wise matrix addition adapted to the compressed storage format used by this class.
-    friend Matrix<kind> operator + <>(const Matrix<kind>&,const Matrix<kind>&);
+    /// This overloading of the multiplication operator carries out the usual multiplication of a matrix by a scalar, adapted to the compressed storage format used by this class.
+    friend Matrix<kind> operator *<>(kind,const Matrix<kind>&);
+    /// This overloading of the multiplication operator carries out the usual matrix multiplication, adapted to the compressed storage format used by this class.
+    friend Matrix<kind> operator *<>(const Matrix<kind>&,const Matrix<kind>&);
+    /// This overloading of the multiplication operator carries out the usual matrix-vector multiplication, adapted to the compressed storage format used by this class.
+    friend std::vector<kind> operator *<>(const Matrix<kind>&,const std::vector<kind>&);
+    /// This overloading of the addition operator carries out the usual element-wise matrix addition, adapted to the compressed storage format used by this class.
+    friend Matrix<kind> operator +<>(const Matrix<kind>&,const Matrix<kind>&);
   };
+
+  template<class kind>
+  Matrix<kind> operator *(kind alpha,const Matrix<kind>& A)
+  {
+    unsigned int i,j;
+    Matrix<kind> output = A;
+
+    for(i=0; i<output.nrow; ++i) {
+      for(j=0; j<output.elements[i].size(); ++j) {
+        output.elements[i][j].first *= alpha;
+      }      
+    }
+    output.eliminate_zeros();
+    return output;
+  }
 
   template<class kind>
   std::vector<kind> operator *(const Matrix<kind>& A,const std::vector<kind>& b)
@@ -151,6 +180,23 @@ namespace SYNARMOSMA {
 
     return output;
   }
+
+  template<class kind>
+  Matrix<kind> operator -(const Matrix<kind>& p)
+  {
+    Matrix<kind> output = kind(-1)*p;
+    
+    return output;
+  }
+
+  template<class kind>
+  Matrix<kind> operator -(const Matrix<kind>& p1,const Matrix<kind>& p2)
+  {
+    Matrix<kind> output = p1 + (-p2);
+    
+    return output;
+  }
+
 
   template<class kind>
   Matrix<kind> operator +(const Matrix<kind>& A,const Matrix<kind>& B)
@@ -225,6 +271,20 @@ namespace SYNARMOSMA {
     output.eliminate_zeros();
     delete[] BC;
     delete[] BC_row;
+    return output;
+  }
+
+  template<class kind>
+  Matrix<kind> operator ^(const Matrix<kind>& p,int n)
+  {
+    if (n < 1) throw std::invalid_argument("The exponent must be positive!");
+
+    Matrix<kind> output = p;
+
+    for(int i=1; i<n; ++i) {
+      output = output*p;
+    }
+
     return output;
   }
 

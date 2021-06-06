@@ -19,6 +19,9 @@ namespace SYNARMOSMA {
   bool operator !=(const Polynomial<kind>&,const Polynomial<kind>&);
 
   template<class kind>
+  Polynomial<kind> operator +(kind,const Polynomial<kind>&);
+
+  template<class kind>
   Polynomial<kind> operator +(const Polynomial<kind>&,const Polynomial<kind>&);
 
   template<class kind>
@@ -57,7 +60,8 @@ namespace SYNARMOSMA {
     bool monic = false;
     /// This is the principal property of the class and contains a list of the polynomial coefficients
     /// stored in a dense manner, so that this class is intended for low-degree polynomials and not one
-    /// like \f$x^{250} - 7x +1\f$. The length of the vector is always Polynomial::degree plus one.
+    /// like \f$x^{250} - 7x +1\f$. The length of the vector is always Polynomial::degree plus one. The 
+    /// vector is in ascending degree order, so terms[0] corresponds to \f$a_0\f$.
     std::vector<kind> terms;
 
     /// This method constructs the polynomial \f$p(x) = a_d x^d + a_{d-1}x^{d-1} + \dots + a_1 x + a_0\f$ where \f$d\f$ is Polynomial::degree and the \f$a_i\f$ (\f$a_d\ne 0\f$) are uniform random variates on the interval \f$[-L,L]\f$ where \f$L\f$ is the method's argument.
@@ -107,14 +111,14 @@ namespace SYNARMOSMA {
     friend std::ostream& operator << <>(std::ostream&,const Polynomial<kind>&);
     /// This overloaded operator tests the two polynomial for equality, first checking if they have the same degree and then testing the two coefficient vectors element by element.
     friend bool operator == <>(const Polynomial<kind>&,const Polynomial<kind>&);
+    /// This overloaded addition operator adds a scalar constant to the polynomial, i.e. alters the non-homogeneous term \f$a_0\f$, and then calls the simplify() method on the resulting output.  
+    friend Polynomial<kind> operator +<>(kind,const Polynomial<kind>&);
     /// This overloaded addition operator adds together the two polynomial arguments according to the standard mathematical convention and then calls the simplify() method on the resulting output.
     friend Polynomial<kind> operator +<>(const Polynomial<kind>&,const Polynomial<kind>&);
     /// This overloaded multiplication operator multiplies a polynomial (the second argument) by a scalar (the first argument) and then calls the simplify() method on the resulting output.
     friend Polynomial<kind> operator *<>(kind,const Polynomial<kind>&);
     /// This overloaded multiplication operator multiplies two polynomials together according to the standard mathematical convention and then calls the simplify() method on the resulting output.
     friend Polynomial<kind> operator *<>(const Polynomial<kind>&,const Polynomial<kind>&);
-    /// This overloaded exponentiation operation multiplies the first argument by itself \f$n\f$ times, where \f$n \ge 0\f$ is the second argument. The function then calls the simplify() method on the resulting output.  
-    friend Polynomial<kind> operator ^<>(const Polynomial<kind>&,int);
   };
 
   template<class kind>
@@ -279,6 +283,17 @@ namespace SYNARMOSMA {
   }
 
   template<class kind>
+  Polynomial<kind> operator +(kind c,const Polynomial<kind>& p)
+  {
+    Polynomial<kind> output = p;
+
+    output.terms[0] = output.terms[0] + c;
+    output.simplify();
+
+    return output;    
+  }
+
+  template<class kind>
   Polynomial<kind> operator +(const Polynomial<kind>& p1,const Polynomial<kind>& p2)
   {
     unsigned int i,mu = std::min(p1.degree,p2.degree);
@@ -299,6 +314,7 @@ namespace SYNARMOSMA {
     }
     Polynomial<kind> output(new_terms);
     output.simplify();
+
     return output;
   }
 
@@ -313,6 +329,7 @@ namespace SYNARMOSMA {
     }
     Polynomial<kind> output(new_terms);
     output.simplify();
+
     return output;
   }
 
@@ -337,6 +354,7 @@ namespace SYNARMOSMA {
     new_terms.push_back(p1.terms[p1.degree]*p2.terms[p2.degree]);        
     Polynomial<kind> output(new_terms);
     output.simplify();
+
     return output;
   } 
 
@@ -350,7 +368,7 @@ namespace SYNARMOSMA {
     for(int i=0; i<n; ++i) {
       output = output*p;
     }
-    output.simplify();
+
     return output;
   }
 } 

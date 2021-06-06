@@ -11,13 +11,25 @@ namespace SYNARMOSMA {
   std::ostream& operator <<(std::ostream&,const Integer_Matrix<kind>&);
 
   template<class kind>
+  Integer_Matrix<kind> operator -(const Integer_Matrix<kind>&);
+
+  template<class kind>
+  Integer_Matrix<kind> operator +(const Integer_Matrix<kind>&,const Integer_Matrix<kind>&);
+
+  template<class kind>
+  Integer_Matrix<kind> operator -(const Integer_Matrix<kind>&,const Integer_Matrix<kind>&);
+
+  template<class kind>
+  Integer_Matrix<kind> operator *(kind,const Integer_Matrix<kind>&);
+
+  template<class kind>
   std::vector<kind> operator *(const Integer_Matrix<kind>&,const std::vector<kind>&);
 
   template<class kind>
   Integer_Matrix<kind> operator *(const Integer_Matrix<kind>&,const Integer_Matrix<kind>&);
 
   template<class kind>
-  Integer_Matrix<kind> operator +(const Integer_Matrix<kind>&,const Integer_Matrix<kind>&);
+  Integer_Matrix<kind> operator ^(const Integer_Matrix<kind>&,int);
 
   template<class kind>
   void permute(Integer_Matrix<kind>&,unsigned int,unsigned int,char);
@@ -158,13 +170,32 @@ namespace SYNARMOSMA {
     friend unsigned int normalize<>(Integer_Matrix<kind>&);
     /// This overloading of the ostream operator writes the matrix to the screen according to the same conventions as the display() method.
     friend std::ostream& operator << <>(std::ostream&,const Integer_Matrix<kind>&);
-    /// This overloading of the multiplication operator carries out the usual matrix multiplication adapted to the compressed storage format used by this class.
-    friend Integer_Matrix<kind> operator * <>(const Integer_Matrix<kind>&,const Integer_Matrix<kind>&);
-    /// This overloading of the multiplication operator carries out the usual matrix-vector multiplication adapted to the compressed storage format used by this class.
-    friend std::vector<kind> operator * <>(const Integer_Matrix<kind>&,const std::vector<kind>&);
-    /// This overloading of the addition operator carries out the usual element-wise matrix addition adapted to the compressed storage format used by this class.
-    friend Integer_Matrix<kind> operator + <>(const Integer_Matrix<kind>&,const Integer_Matrix<kind>&);
+    /// This overloaded unary negation operator uses the overloaded multiplication operator to multiply each element of the matrix by negative one.
+    friend Integer_Matrix<kind> operator -<>(const Integer_Matrix<kind>&);
+    /// This overloading of the multiplication operator carries out the usual multiplication of a matrix by a scalar, adapted to the compressed storage format used by this class.
+    friend Integer_Matrix<kind> operator *<>(kind,const Integer_Matrix<kind>&);
+    /// This overloading of the multiplication operator carries out the usual matrix multiplication, adapted to the compressed storage format used by this class.
+    friend Integer_Matrix<kind> operator *<>(const Integer_Matrix<kind>&,const Integer_Matrix<kind>&);
+    /// This overloading of the multiplication operator carries out the usual matrix-vector multiplication, adapted to the compressed storage format used by this class.
+    friend std::vector<kind> operator *<>(const Integer_Matrix<kind>&,const std::vector<kind>&);
+    /// This overloading of the addition operator carries out the usual element-wise matrix addition, adapted to the compressed storage format used by this class.
+    friend Integer_Matrix<kind> operator +<>(const Integer_Matrix<kind>&,const Integer_Matrix<kind>&);
   };
+
+  template<class kind>
+  Integer_Matrix<kind> operator *(kind alpha,const Integer_Matrix<kind>& A)
+  {
+    unsigned int i,j;
+    Integer_Matrix<kind> output = A;
+
+    for(i=0; i<output.nrow; ++i) {
+      for(j=0; j<output.elements[i].size(); ++j) {
+        output.elements[i][j].first *= alpha;
+      }      
+    }
+    output.eliminate_zeros();
+    return output;
+  }
 
   template<class kind>
   std::vector<kind> operator *(const Integer_Matrix<kind>& A,const std::vector<kind>& b)
@@ -182,6 +213,22 @@ namespace SYNARMOSMA {
       output.push_back(sum);
     }
 
+    return output;
+  }
+
+  template<class kind>
+  Integer_Matrix<kind> operator -(const Integer_Matrix<kind>& p)
+  {
+    Integer_Matrix<kind> output = Integer_Matrix<kind>::neg1*p;
+    
+    return output;
+  }
+
+  template<class kind>
+  Integer_Matrix<kind> operator -(const Integer_Matrix<kind>& p1,const Integer_Matrix<kind>& p2)
+  {
+    Integer_Matrix<kind> output = p1 + (-p2);
+    
     return output;
   }
 
@@ -258,6 +305,20 @@ namespace SYNARMOSMA {
     output.eliminate_zeros();
     delete[] BC;
     delete[] BC_row;
+    return output;
+  }
+
+  template<class kind>
+  Integer_Matrix<kind> operator ^(const Integer_Matrix<kind>& p,int n)
+  {
+    if (n < 1) throw std::invalid_argument("The exponent must be positive!");
+
+    Integer_Matrix<kind> output = p;
+
+    for(int i=1; i<n; ++i) {
+      output = output*p;
+    }
+
     return output;
   }
 
