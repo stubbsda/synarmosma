@@ -1,4 +1,4 @@
-The Synarmosma library consists of approximately 21,000 lines of C++ code and has been developed
+The Synarmosma library consists of approximately 23,000 lines of C++ code and has been developed
 and tested in a Linux (x86, x86-64 and ARMv6) environment. The library's external dependencies include 
 a modern C++ compiler as well as the [Boost library](https://www.boost.org), Victor Shoup's number-theoretic 
 library [NTL](https://www.shoup.net/ntl), the GNU [multiprecision library](https://www.gmplib.org) and an 
