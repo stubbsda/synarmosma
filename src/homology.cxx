@@ -598,3 +598,17 @@ void Homology::compute(const Nexus* NX)
   }
 }
 
+bool Homology::get_group(int n,Group* G) const
+{
+  if (n < 0) throw std::invalid_argument("The index of the homology group must be non-negative!");
+
+  G->clear();
+
+  // If the homology group hasn't been calculated, then return an empty group...
+  if (n >= (signed) betti_number.size()) return false;
+  
+  G->initialize(betti_number[n],torsion[n]);
+
+  return true;
+}
+

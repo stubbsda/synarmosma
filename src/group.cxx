@@ -662,11 +662,11 @@ void Group::initialize(unsigned int m)
 
 void Group::initialize(unsigned int r,const std::vector<unsigned int>& torsion)
 {
-  // The constructor for a finitely generated abelian group, whose presentation 
+  // The constructor for a finitely generated Abelian group, whose presentation 
   // is thus of the form
   // \begin{equation*}
-  // G = <g_1,\dotsc,g_{r+s};g_i g_j g_i^{-1}g_j^{-1}, 1 \le i < j \le r, g_{r+k}^{t_k}, 
-  // 1 \le k \le s>
+  // G = \langle g_1,\dotsc,g_{r+s}\mid g_i g_j g_i^{-1}g_j^{-1}, 1 \le i < j \le r, g_{r+k}^{t_k}, 
+  // 1 \le k \le s\rangle
   // \end{equation*}
   // corresponding to
   // \begin{equation*} 

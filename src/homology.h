@@ -71,7 +71,9 @@ namespace SYNARMOSMA {
     /// The standard "get" method that returns the current value of the Homology::field property.
     Field get_field() const;
     /// This method sets the argument to the vector of Betti numbers that have been calculated.
-    void get_betti_numbers(std::vector<unsigned int>&) const; 
+    void get_betti_numbers(std::vector<unsigned int>&) const;
+    /// This method returns the \f$n\f$-th homology group \f$H_n(X,K)\f$ as an instance of the Group class, if it has been computed (otherwise the method returns false); the first argument must be non-negative.
+    bool get_group(int,Group*) const; 
     /// This method clears the Homology::betti_number and Homology::torsion vectors and sets the other class properties to their default value.
     void clear();
     /// This method computes the homology groups of an instance of the Nexus class, i.e. an abstract simplicial complex.
@@ -104,6 +106,7 @@ namespace SYNARMOSMA {
 
   inline void Homology::get_betti_numbers(std::vector<unsigned int>& output) const
   {
+    if (betti_number.empty()) throw std::runtime_error("This instance of the Homology class is empty!");
     output = betti_number;
   }
 }

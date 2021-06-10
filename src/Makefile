@@ -44,7 +44,7 @@ proposition.o: proposition.cxx proposition.h random.h global.h
 word.o: word.cxx word.h random.h global.h
 	$(CXX) $(CXX_FLAGS) -c word.cxx
 
-homology.o: homology.cxx homology.h integer_matrix.h binary_matrix.h nexus.h global.h
+homology.o: homology.cxx homology.h integer_matrix.h binary_matrix.h group.h nexus.h global.h
 	$(CXX) $(CXX_FLAGS) -c homology.cxx
 
 homotopy.o: homotopy.cxx homotopy.h group.h word.h nexus.h random.h global.h
