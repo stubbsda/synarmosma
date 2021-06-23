@@ -1504,9 +1504,8 @@ double Graph::return_probability(int base,int length,int ntrials) const
   {
   s *= long(1 + omp_get_thread_num());
 #endif
-  Random RND;
+  Random RND(s);
 
-  RND.set_seed(s);
 #pragma omp for reduction(+:sum) schedule(dynamic,1)
   for(i=0; i<ntrials; ++i) {
     current = base;

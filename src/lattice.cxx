@@ -114,10 +114,14 @@ int Lattice::deserialize(std::ifstream& s)
 
 void Lattice::initialize()
 {
+  static unsigned long scount = 0;
+
   if (N < 2) throw std::runtime_error("A lattice must have at least two elements!");
 
+  scount++;
+
   int i,j,n1,n2,ndelta,delta = 2*N*(N-1);
-  Random RND;
+  Random RND(scount*std::time(nullptr));
 
   do {
     n1 = RND.irandom(N);

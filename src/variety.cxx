@@ -154,14 +154,19 @@ kind Variety<kind>::generate_coefficient(int L) const
 template<class kind>
 void Variety<kind>::random_variety(unsigned int mdegree)
 {
+  static unsigned long scount = 0;
+
   if (mdegree < 1) throw std::invalid_argument("The maximum degree of a randomly generated variety must be greater than zero!");
+
+  scount++;
+
   unsigned int i,j,k,l,nterm,alpha,beta,test,tpower;
   Monomial<kind> term;
   std::set<unsigned int> atoms;
   std::pair<unsigned int,unsigned int> duo;
   bool good;
   kind rho;
-  Random RND;
+  Random RND(scount*std::time(nullptr));
 
   projective = false;
   for(i=0; i<nequation; ++i) {

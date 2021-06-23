@@ -198,10 +198,15 @@ int Polynomial<kind>::deserialize(std::ifstream& s)
 template<class kind>
 void Polynomial<kind>::initialize(int L)
 {
+  static unsigned long scount = 0;
+
   if (L < 1) throw std::invalid_argument("The argument for Polynomial::initialize must be positive!");
+
+  scount++;
+
   unsigned int i;
   kind test;
-  Random RND;
+  Random RND(scount*std::time(nullptr));
 
   for(i=0; i<degree; ++i) {
     terms.push_back(kind(RND.irandom(-L,L)));

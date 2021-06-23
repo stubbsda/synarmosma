@@ -50,7 +50,7 @@ void Propositional_System::initialize(unsigned int n)
   unsigned int i;
 
   for(i=0; i<n; ++i) {
-    theorems.push_back(Proposition(atoms));
+    theorems.push_back(Proposition(atoms)); 
   }
 }
 
@@ -195,6 +195,68 @@ void Propositional_System::compute_implication_graph(Directed_Graph* G,const std
       if (temp.count() == nuniverse) G->add_edge(i,j,Relation::before);
     }
   }
+}
+
+bool Propositional_System::compute_propositional_lattice(Lattice* L) const
+{
+  int i,j,zero,unity;
+  bool subset;
+  std::set<int> U,V;
+  std::set<int>::const_iterator it;
+  const int nnode = (signed) theorems.size();
+
+  L->clear();
+
+  for(i=0; i<nnode; ++i) {
+    theorems[i].get_atoms(U);
+    if (U.empty()) throw std::runtime_error("Empty theorem in the Propositional_System::compute_propositional_lattice method!");    
+  }
+
+  for(i=0; i<nnode; ++i) {
+    L->add_element();
+  }
+  zero = L->add_element();
+  unity = L->add_element();
+
+  for(i=0; i<nnode; ++i) {
+    theorems[i].get_atoms(U);
+    for(j=1+i; j<nnode; ++j) {
+      // Check if one of these sets of propositional atoms is a 
+      // subset of the other
+      theorems[j].get_atoms(V);
+      if (U.size() == V.size()) continue;
+      if (U.size() < V.size()) {
+        subset = true;
+        for(it=U.begin(); it!=U.end(); ++it) {
+          if (V.count(*it) == 0) {
+            subset = false;
+            break;
+          }
+        }
+        if (subset) L->set_order(i,j);
+      }
+      else {
+        subset = true;
+        for(it=V.begin(); it!=V.end(); ++it) {
+          if (U.count(*it) == 0) {
+            subset = false;
+            break;
+          }
+        }
+        if (subset) L->set_order(j,i);
+      }
+    }
+  }
+
+  for(i=0; i<nnode; ++i) {
+    // The zero element is the empty set containing no atomic propositions...
+    if (L->source(i)) L->set_order(zero,i);
+    // The unity element is the set of all atomic propositions used in the theorems 
+    // of this propositional system...
+    if (L->sink(i)) L->set_order(i,unity);
+  }
+
+  return L->consistent();
 }
 
 unsigned int Propositional_System::add_theorem(const std::set<int>& a)

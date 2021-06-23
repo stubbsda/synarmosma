@@ -2,8 +2,10 @@
 
 using namespace SYNARMOSMA;
 
-Random::Random()
+Random::Random(unsigned long seed)
 {
+  s = (seed == 0) ? std::time(nullptr) : seed;
+  BGT.seed(s);
   uniform = new boost::uniform_real<>(0,1);
   gaussian = new boost::normal_distribution<>;
   VRG = new boost::variate_generator<base_generator_type&,boost::uniform_real<> >(BGT,*uniform);

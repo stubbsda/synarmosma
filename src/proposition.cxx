@@ -38,14 +38,20 @@ Proposition::~Proposition()
 
 void Proposition::initialize(unsigned int nc,const std::set<int>& atoms)
 {
+  static unsigned long scount = 0;
+
   clear();
+
   if (atoms.empty()) return;
+
+  scount++;
 
   int a;
   unsigned int i,j,k;
   double alpha;
   std::set<int> used;
-  Random RND;
+  Random RND(scount*std::time(nullptr));
+
   const unsigned int na = atoms.size();
 
   if (nc == 0) nc = 1 + RND.irandom(na/Proposition::NP);

@@ -37,7 +37,7 @@ namespace SYNARMOSMA {
     /// This method verifies that the poset's order property satisfies the axioms of an ordering, namely that is reflexive, anti-symmetric and transitive.
     virtual bool consistent() const;
     /// This method simply increments the property Poset::N by one. 
-    void add_element();
+    int add_element();
     /// This method tests if the element given by the argument is a sink, i.e. its posteriority is the empty set.
     bool sink(int) const;
     /// This method tests if the element given by the argument is a sink, i.e. its anteriority is the empty set.
@@ -72,10 +72,17 @@ namespace SYNARMOSMA {
     Relation get_order(int,int) const;
     /// This method computes the covering graph \f$G(V,E)\f$ of the poset, i.e. the set of poset elements is \f$V\f$ while an edge exists between two vertices \f$x\f$ and \f$y\f$ if \f$y\f$ covers \f$x\f$. The method returns whether or not this graph is planar.  
     bool compute_covering_graph(Graph*) const;
+    /// This returns the current value of the Poset::N property. 
+    int cardinality() const;
   };
 
-  inline void Poset::add_element() {
+  inline int Poset::add_element() {
     N += 1;
+    return N-1;
+  }
+
+  inline int Poset::cardinality() const {
+    return N;
   }
 }
 #endif

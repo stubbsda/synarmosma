@@ -60,12 +60,15 @@ Word::~Word()
 
 void Word::initialize(unsigned int n)
 {
+  static unsigned long scount = 0;
   content.clear();
   if (n == 0) return;
 
+  scount++;
+
   unsigned int i;
   std::pair<unsigned int,int> doublet;
-  Random RND;
+  Random RND(scount*std::time(nullptr));
 
   for(i=0; i<n; ++i) {
     doublet.first = i; 
@@ -237,7 +240,7 @@ Word Word::mutate(int exp_limit) const
   std::set<unsigned int> S;
   std::pair<unsigned int,int> doublet;
   unsigned int m = get_alphabet(S);
-  Random RND;
+  Random RND((1 + length())*std::time(nullptr));
 
   output.content = content;
 

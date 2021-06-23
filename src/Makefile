@@ -74,7 +74,7 @@ variety_wrapper.o: variety_wrapper.cxx variety.cxx variety.h graph.h rational.h 
 functional_equation.o: functional_equation.cxx functional_equation.h variety.h polynomial.h rational.h global.h
 	$(CXX) $(CXX_FLAGS) -c functional_equation.cxx
 
-propositional_system.o: propositional_system.cxx propositional_system.h proposition.h directed_graph.h binary_matrix.h global.h
+propositional_system.o: propositional_system.cxx propositional_system.h proposition.h directed_graph.h lattice.h binary_matrix.h global.h
 	$(CXX) $(CXX_FLAGS) -c propositional_system.cxx
 
 multitime_wrapper.o: multitime_wrapper.cxx multitime.cxx multitime.h global.h

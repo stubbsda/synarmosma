@@ -2,6 +2,7 @@
 #include <synarmosma/polynomial.h>
 #include <synarmosma/directed_graph.h>
 #include <synarmosma/group.h>
+#include <synarmosma/propositional_system.h>
 #include <synarmosma/integer_matrix.h>
 #include <synarmosma/variety.h>
 
@@ -54,6 +55,14 @@ int main(int argc,char** argv)
   else if (test == "Lattice") {
     SYNARMOSMA::Lattice L(4);
     if (!L.consistent()) return 1;
+    
+    std::set<int> atoms;
+    for(int i=0; i<25; ++i) {
+      atoms.insert(i);
+    }
+    SYNARMOSMA::Propositional_System P(atoms,5);
+    P.compute_propositional_lattice(&L);
+    if (L.cardinality() != 7) return 1;
   }
   else if (test == "Graph") {
     int i,j,n = 25;

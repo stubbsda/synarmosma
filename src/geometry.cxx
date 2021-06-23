@@ -83,14 +83,14 @@ void Geometry<kind>::clear()
 }
 
 template<class kind>
-bool Geometry<kind>::consistent() const
+bool Geometry<kind>::consistent(bool verbose) const
 {
   int i,j;
   const int nc = (signed) coordinates.size();
   const int nd = (signed) distances.size();
 
   if (nvertex != nc) {
-    std::cout << "Illegal length for Geometry::coordinates " << nc << "  " << nvertex << std::endl;
+    if (verbose) std::cout << "Illegal length for Geometry::coordinates " << nc << "  " << nvertex << std::endl;
     return false;
   }
 
@@ -98,7 +98,7 @@ bool Geometry<kind>::consistent() const
     for(i=0; i<nvertex; ++i) {
       for(j=0; j<nc; ++j) {
         if (std::isnan(coordinates[i][j])) {
-          std::cout << "NaN in Geometry::coordinates at " << i << " and " << j << std::endl;
+          if (verbose) std::cout << "NaN in Geometry::coordinates at " << i << " and " << j << std::endl;
           return false;
         }
       }
@@ -108,8 +108,10 @@ bool Geometry<kind>::consistent() const
   for(i=0; i<nvertex; ++i) {
     for(j=1+i; j<nvertex; ++j) {
       if (std::isnan(get_squared_distance(i,j,false))) {
-        std::cout << "NaN in Geometry::get_squared_distance for " << i << "  " << j << std::endl;
-        std::cout << coordinates[i].size() << "  " << coordinates[j].size() << std::endl;
+        if (verbose) {
+          std::cout << "NaN in Geometry::get_squared_distance for " << i << "  " << j << std::endl;
+          std::cout << coordinates[i].size() << "  " << coordinates[j].size() << std::endl;
+        }
         return false;
       }
     }
@@ -118,13 +120,13 @@ bool Geometry<kind>::consistent() const
   if (!high_memory && !relational) return true;
 
   if ((nvertex*(nvertex-1))/2 != nd) {
-    std::cout << "Illegal length for Geometry::distances " << nd << "  " << nvertex << "  " << (nvertex*(nvertex-1))/2 << std::endl;
+    if (verbose) std::cout << "Illegal length for Geometry::distances " << nd << "  " << nvertex << "  " << (nvertex*(nvertex-1))/2 << std::endl;
     return false;
   }
 
   for(i=0; i<nd; ++i) {
     if (std::isnan(distances[i])) {
-      std::cout << "NaN in Geometry::distances at " << i << "  " << distances[i] << std::endl;
+      if (verbose) std::cout << "NaN in Geometry::distances at " << i << "  " << distances[i] << std::endl;
       return false;
     }
   }

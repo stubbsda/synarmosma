@@ -65,7 +65,7 @@ namespace SYNARMOSMA {
     bool poisson_allocated = false;
    public:
     /// The unique constructor, which allocates the Random::uniform and Random::gaussian objects as well as their variate generations, Random::VRG and Random::NRG. 
-    Random();
+    Random(unsigned long = 0);
     /// The destructor which frees the memory associated with the pointers Random::uniform, Random::VRG, Random::gaussian, Random::NRG and the other distributions, if the Random::poisson_allocated, Random::beta_allocated and Random::brn_allocated properties are true.
     ~Random();
     /// This method returns the current value of the pseud-random number seed.

@@ -85,8 +85,8 @@ namespace SYNARMOSMA {
     void load(const Geometry*);
     /// This method stores the properties of the current instance in the method's argument.
     void store(Geometry*) const;
-    /// This method verifies that the lengths of Geometry::coordinates and Geometry::distances and then tests these two vectors for any NaN elements; if there are any problems it returns false.
-    bool consistent() const;
+    /// This method verifies that the lengths of Geometry::coordinates and Geometry::distances and then tests these two vectors for any NaN elements; if there are any problems it returns false. If the argument is true, then diagnostic information about the particular inconsistency is written to the console.
+    bool consistent(bool = false) const;
     /// This method creates a relational geometry involving n vertices (where n is the first argument) and a geometric model, described in the second argument: CARTESIAN, SINGLETON, MONOPLEX or RANDOM; by default we suppose a Cartesian geometric model.
     void create(int,const std::string& = std::string("CARTESIAN"));
     /// This method adds a vertex to the geometry; the first argument is the vertex's parent and the second its distance from this parent. If the first argument is -1, the vertex is placed randomly and the second argument is ignored. The return value is the index of the new vertex.

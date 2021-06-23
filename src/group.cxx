@@ -595,6 +595,8 @@ void Group::initialize(const std::string& type,unsigned int n)
 
 void Group::initialize(unsigned int m)
 {
+  static unsigned long scount = 0;
+
   abelian = false;
   finite = false;
   solvable = false;
@@ -602,13 +604,15 @@ void Group::initialize(unsigned int m)
 
   if (m == 0) return;
 
+  scount++;
+
   int e;
   unsigned int i,j,k,b,sum = 0;
   bool duplicate;
   std::vector<unsigned int> length,base;
   std::vector<int> exponent;
   Word w;
-  Random RND;
+  Random RND(scount*std::time(nullptr));
 
   for(i=0; i<m; ++i) {
    relations.push_back(w);

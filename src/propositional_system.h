@@ -1,5 +1,6 @@
 #include "proposition.h"
 #include "directed_graph.h"
+#include "lattice.h"
 
 #ifndef _psystemh
 #define _psystemh
@@ -56,6 +57,8 @@ namespace SYNARMOSMA {
     void get_atoms(unsigned int,std::set<int>&) const;
     /// This method returns the truth value of a given proposition in Propositional_System::theorems (whose index is the first argumemt), when its atoms are assigned the truth values specified in the second argument. 
     bool evaluate(unsigned int,const std::unordered_map<int,bool>&) const;
+    /// This method computes the lattice corresponding to the subset relation among the set of atomic propositions for each element of the Propositional_System::theorems property, which is then written to the method's argument. The return value is that of the consistent method called on the argument after the lattice has been constructed.
+    bool compute_propositional_lattice(Lattice*) const;
     friend class Logic_Graph;
   };
 
