@@ -179,7 +179,10 @@ int Directed_Graph::build_lattice(int n,const std::vector<int>& btype,int time)
   std::vector<int> vx,index;
   Relation rho;
 
-  clear();
+  number_directed = 0;
+  neighbours.clear();
+  edges.clear();
+  index_table.clear();
 
   if (time >= 0) {
     if (btype[time] == 1) std::cout << "Warning: This directed graph will have a toroidal time dimension!" << std::endl;
@@ -203,12 +206,7 @@ int Directed_Graph::build_lattice(int n,const std::vector<int>& btype,int time)
       q = q - p*base;
     }
     for(j=0; j<d; ++j) {
-      if (j == time) {
-        rho = Relation::before;
-      }
-      else {
-        rho = Relation::disparate;
-      }
+      rho = (j == time) ? Relation::before : Relation::disparate;
       vx = index;
       if (index[j] > 0) {
         vx[j] -= 1;
@@ -808,7 +806,7 @@ bool Directed_Graph::add_edge(int u,int v,Relation d,double ell)
   std::set<int> S;
   S.insert(u); S.insert(v);
   hash_map::const_iterator qt = index_table.find(S);
-
+ 
   if (d == Relation::disparate) {
     edges[qt->second].set_direction(d);
   }

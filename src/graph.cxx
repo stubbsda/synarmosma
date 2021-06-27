@@ -315,7 +315,9 @@ int Graph::build_lattice(int n,const std::vector<int>& btype)
   std::set<int> S;
   std::vector<int> vx,index;
 
-  clear();
+  neighbours.clear();
+  edges.clear();
+  index_table.clear();
 
   nvertex = int(ipow(n,d));
   for(i=0; i<nvertex; ++i) {
